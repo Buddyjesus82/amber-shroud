@@ -1,0 +1,217 @@
+import type { DoorDef, HubDef, ItemDef, ItemId } from '../types'
+
+export const ITEMS: Record<ItemId, ItemDef> = {
+  vial_empty: {
+    id: 'vial_empty',
+    name: 'Empty Vial',
+    kind: 'gear',
+    desc: 'A throat of glass. Waiting.',
+  },
+  vial_drop: {
+    id: 'vial_drop',
+    name: 'Vial (Drop)',
+    kind: 'gear',
+    desc: 'One Drop of sap. Heat and honey. Life.',
+  },
+  scrap: {
+    id: 'scrap',
+    name: 'Scrap',
+    kind: 'gear',
+    desc: 'Bent metal. Wire. Things that cut or trade.',
+  },
+  glints: {
+    id: 'glints',
+    name: 'Glints',
+    kind: 'currency',
+    desc: 'Chips of spent amber. Dune money.',
+  },
+  scrip: {
+    id: 'scrip',
+    name: 'Cartel Scrip',
+    kind: 'currency',
+    desc: 'Paper that only Ironwood loves.',
+  },
+  shiv: {
+    id: 'shiv',
+    name: 'Bleed Shiv',
+    kind: 'key',
+    desc: 'A vat-edge ground to a point.',
+  },
+  strider_bit: {
+    id: 'strider_bit',
+    name: 'Strider Bit',
+    kind: 'key',
+    desc: 'Stolen. Still warm from the mouth.',
+  },
+  ceremonial_cloth: {
+    id: 'ceremonial_cloth',
+    name: 'Vessel Cloth',
+    kind: 'key',
+    desc: 'Gold-thread lie. Seekers bow to it.',
+  },
+  overseer_chip: {
+    id: 'overseer_chip',
+    name: 'Overseer Chip',
+    kind: 'key',
+    desc: 'Valerius does not know it is gone. Yet.',
+  },
+  ossa_token: {
+    id: 'ossa_token',
+    name: "Ossa's Knot",
+    kind: 'key',
+    desc: 'Stilt-cord knotted twice. She is alive. She remembers.',
+  },
+  kallik_mark: {
+    id: 'kallik_mark',
+    name: "Kallik's Mark",
+    kind: 'key',
+    desc: "A burned map-scar. Points at Red Maw whether you want it to or not.",
+  },
+  kohl_smear: {
+    id: 'kohl_smear',
+    name: "Sybella's Kohl",
+    kind: 'key',
+    desc: 'She wiped her thumb on you. A claim.',
+  },
+  false_vessel: {
+    id: 'false_vessel',
+    name: 'False Vessel Sigil',
+    kind: 'key',
+    desc: 'You walked as a cup. The desert noticed.',
+  },
+  cache_map: {
+    id: 'cache_map',
+    name: 'Cache Scratch',
+    kind: 'key',
+    desc: "Not a map. A drunk's directions to Kallik's hole.",
+  },
+}
+
+export const DOORS: Record<string, DoorDef> = {
+  prisoner: {
+    id: 'prisoner',
+    title: 'Ironwood Break',
+    role: 'Prisoner',
+    place: 'Camp-04 Bleed',
+    epithet: 'the Bleed-Cut',
+    blurb:
+      'The vat wall gave. You crawled the trench with glass in your palm and Cartel dust in your lungs. Camp-04 still thinks it owns your hours.',
+    sap: 4,
+    heat: { cartel: 3, seekers: 0, strays: 1 },
+    items: { vial_drop: 1, scrap: 1 },
+    flags: { origin: 'prisoner', campInside: true },
+    sceneId: 'open:prisoner',
+    hubId: 'camp04',
+  },
+  outcast: {
+    id: 'outcast',
+    title: 'First Drop',
+    role: 'Outcast',
+    place: 'Bleached Spine',
+    epithet: 'the Noon-Empty',
+    blurb:
+      'Empty vial. Noon heat. Tongue like cloth. The Spine does not offer shade for free, and your first Drop — if you get it — will taste like a dare.',
+    sap: 2,
+    heat: { cartel: 0, seekers: 1, strays: 2 },
+    items: { vial_empty: 1 },
+    flags: { origin: 'outcast', noonEmpty: true },
+    sceneId: 'open:outcast',
+    hubId: 'spine',
+  },
+  vessel: {
+    id: 'vessel',
+    title: 'Vessel',
+    role: 'Cult',
+    place: 'Outer Threshold',
+    epithet: 'the False Cup',
+    blurb:
+      'You are not their vessel. You walk like you are. Steal the Strider before the cloth stops convincing anyone. The Seekers love a full cup. They hate a liar.',
+    sap: 5,
+    heat: { cartel: 0, seekers: 3, strays: 0 },
+    items: { ceremonial_cloth: 1, false_vessel: 1, strider_bit: 1, vial_drop: 1 },
+    flags: { origin: 'vessel', fakeVessel: true },
+    sceneId: 'open:vessel',
+    hubId: 'threshold',
+  },
+}
+
+export const HUBS: Record<string, HubDef> = {
+  camp04: {
+    id: 'camp04',
+    name: 'Ironwood Camp-04',
+    region: 'Cartel wire',
+    blurb: 'Prison-works. The Bleed never dries.',
+    defaultScene: 'camp:yard',
+    places: [
+      { id: 'yard', name: 'Bleed Yard', sceneId: 'camp:yard' },
+      { id: 'cages', name: 'Cage Row', sceneId: 'camp:cages' },
+      { id: 'lean', name: "Oil-Tooth's Lean-to", sceneId: 'camp:lean' },
+      { id: 'tower', name: 'Watchtower Drip', sceneId: 'camp:tower' },
+      { id: 'wire', name: 'The Wire', sceneId: 'camp:wire' },
+    ],
+    hungerHook: {
+      label: 'Take the rumor into the dunes',
+      sub: "Kallik's cache. Red Maw. The Hunger.",
+      sceneId: 'ch1:leave',
+      show: { flag: 'hungerKnown' },
+    },
+  },
+  spine: {
+    id: 'spine',
+    name: 'Bleached Spine',
+    region: 'Stray country',
+    blurb: "A ridge like a dead animal's back. Noon never ends here.",
+    defaultScene: 'spine:ridge',
+    places: [
+      { id: 'ridge', name: 'Noon Spine', sceneId: 'spine:ridge' },
+      { id: 'shade', name: "Silas's Shade", sceneId: 'spine:shade' },
+      { id: 'well', name: 'Dry Well', sceneId: 'spine:well' },
+      { id: 'hound', name: 'Hound Sign', sceneId: 'spine:hound' },
+    ],
+    hungerHook: {
+      label: 'Walk the Hunger toward Red Maw',
+      sub: 'Empty vial. Full rumor. Kallik buried something.',
+      sceneId: 'ch1:leave',
+      show: { flag: 'hungerKnown' },
+    },
+  },
+  threshold: {
+    id: 'threshold',
+    name: 'Outer Threshold',
+    region: 'Seeker fringe',
+    blurb: 'Where the cult still pretends the desert is a church.',
+    defaultScene: 'thresh:court',
+    places: [
+      { id: 'court', name: 'Threshold Court', sceneId: 'thresh:court' },
+      { id: 'cell', name: 'False Vessel Cell', sceneId: 'thresh:cell' },
+      { id: 'paddock', name: 'Strider Paddock', sceneId: 'thresh:paddock' },
+      { id: 'guard', name: 'Guard Post', sceneId: 'thresh:guard' },
+    ],
+    hungerHook: {
+      label: 'Ride the stolen Strider into Hunger',
+      sub: 'Kallik’s cache. Before the cloth fails.',
+      sceneId: 'ch1:leave',
+      show: { flag: 'hungerKnown' },
+    },
+  },
+  redmaw: {
+    id: 'redmaw',
+    name: 'Red Maw Approach',
+    region: 'The Hunger holds',
+    blurb: 'Harder sand. Sybella hunting. The Maw breathes at night.',
+    defaultScene: 'maw:rim',
+    places: [
+      { id: 'rim', name: 'Maw Rim', sceneId: 'maw:rim' },
+      { id: 'market', name: 'Bone Market', sceneId: 'maw:market' },
+      { id: 'stilt', name: 'Stilt Shade', sceneId: 'maw:stilt' },
+      { id: 'smoke', name: 'Skiff Smoke', sceneId: 'maw:smoke' },
+      { id: 'lip', name: 'Hollow Lip', sceneId: 'maw:lip' },
+    ],
+    hungerHook: {
+      label: 'The Walking Amber',
+      sub: 'Chapter 2 — sealed for now.',
+      sceneId: 'ch2:stub',
+      show: { flag: 'chapter1Done' },
+    },
+  },
+}
