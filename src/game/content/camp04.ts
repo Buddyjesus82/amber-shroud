@@ -207,6 +207,16 @@ A bar on the third cage is loose enough to work. Jaxson stashes things here when
         reply: 'Jaxson grins with the gold tooth. He has been waiting to spend this story.',
         effects: { goto: 'camp:jaxson-cache', ticks: 1 },
       },
+      {
+        tags: ['valerius', 'overseer', 'tower', 'hound'],
+        reply: 'You sit. The name Valerius does something ugly to the air.',
+        effects: { goto: 'camp:jaxson', ticks: 1 },
+      },
+      {
+        tags: ['talk', 'ask', 'speak'],
+        reply: 'He makes a space on the crate that is not quite hospitality.',
+        effects: { goto: 'camp:jaxson', ticks: 1 },
+      },
     ],
   },
   {
@@ -252,6 +262,16 @@ He taps the lean-to pole. "You want a Drop, you want a way out, or you want the 
         tags: ['kaelen', 'wire', 'escape', 'leave'],
         reply: '"Wire. Dusk. Bring scrap or Glints. He cuts holes for people who pay in things that are not prayers."',
         effects: { flag: { kaelenKnown: true }, flash: 'Kaelen. The Wire. Dusk if you can steal dusk.' },
+      },
+      {
+        tags: ['valerius', 'overseer', 'tower', 'blonde', 'sybella', 'skiff'],
+        reply: 'Jaxson spits resin and spends the name like it costs him.',
+        effects: {
+          ticks: 1,
+          flag: { sybellaNamed: true },
+          flash:
+            '"Overseer wants you back in a bucket. Also says a Seeker woman has been skiffing the outer dunes asking who can hold sap without dying. Blonde. Kohl ruined. Blindfold up like she got bored of holy."',
+        },
       },
       {
         tags: ['steal', 'pick', 'pocket', 'rob'],
