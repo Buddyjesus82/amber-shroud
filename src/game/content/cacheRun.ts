@@ -654,7 +654,8 @@ Chapter 1 holds. The Approach is harder country. Sybella is not done. Ossa is al
         effects: {
           enterHub: 'redmaw',
           goto: 'maw:rim',
-          flash: 'Red Maw Approach. The cache is close. So is she.',
+          sap: 3,
+          flash: 'Red Maw Approach. The cache is close. So is she. You steal a breath. Sap returns, a little.',
         },
       },
     ],

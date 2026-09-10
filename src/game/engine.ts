@@ -87,7 +87,6 @@ function hunterScene(state: GameState): string | null {
 }
 
 export function applyEffect(state: GameState, fx: Effect): GameState {
-  const sapBefore = state.sap
   let next = applyDelta(state, fx)
   next.flash = fx.flash
 
@@ -104,16 +103,22 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     }
   }
 
-  const arrivingLand = fx.goto === 'ch1:land' || fx.goto === 'ch1:bargain' || fx.goto === 'ch1:flee' || fx.goto === 'ch1:false' || fx.goto === 'ch1:hollow'
-  const sapCollapsed = next.sap <= 0 && sapBefore > 0
+  const arrivingLand =
+    fx.goto === 'ch1:land' ||
+    fx.goto === 'ch1:bargain' ||
+    fx.goto === 'ch1:flee' ||
+    fx.goto === 'ch1:false' ||
+    fx.goto === 'ch1:hollow'
   const dest = fx.goto
   const destScene = dest ? getScene(dest) : null
+  const recovering = sceneOf(state).kind === 'crisis' && next.sap > 0
+  const sapCollapsed = next.sap <= 0
   const skipCrisis =
     !!fx.enterHub ||
     !!fx.startChapter ||
     arrivingLand ||
     destScene?.kind === 'crisis' ||
-    sceneOf(state).kind === 'crisis'
+    recovering
 
   if (dest) next.sceneId = dest
 
