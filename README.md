@@ -31,24 +31,15 @@ npm run build
 npm run preview
 ```
 
-## Put it on a phone (HTTPS / PWA)
+## Phone (permanent)
 
-Installable as a standalone PWA (`manifest.webmanifest` + service worker in production builds).
+GitHub Pages (project site): **https://bigjerm21.github.io/amber-shroud/**
 
-Static output is `dist/`. Any static host works:
+Open that URL in Safari (iPhone) or Chrome (Android) → Share / menu → **Add to Home Screen**.
 
-- **Cloudflare Pages:** upload `dist/`, or connect the repo with build command `npm run build` and output `dist`.
-- **Netlify:** same (`publish = dist`).
-- **Quick tunnel from your machine:**
+CI: `.github/workflows/pages.yml` runs `npm ci && npm run build` with `GITHUB_PAGES=true` (Vite `base` is `/amber-shroud/`) and deploys `dist/`.
 
-  ```bash
-  npm run build
-  npx serve dist
-  ```
-
-  Then expose that URL with a HTTPS tunnel, or deploy `dist` so the phone can **Add to Home Screen**.
-
-Service workers and install prompts need HTTPS (localhost is fine).
+Local play stays at the site root (`npm run dev`). For a local Pages-shaped build: `GITHUB_PAGES=true npm run build && npx serve dist`.
 
 ## Content for later chapters
 

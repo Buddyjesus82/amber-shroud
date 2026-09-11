@@ -1,9 +1,16 @@
-const CACHE = 'amber-shroud-v1'
+const CACHE = 'amber-shroud-v2'
+const SCOPE = self.location.pathname.replace(/sw\.js$/, '')
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE).then((cache) =>
-      cache.addAll(['/', '/manifest.webmanifest', '/favicon.svg', '/covers/world.png', '/covers/hunger.png']),
+      cache.addAll([
+        SCOPE,
+        `${SCOPE}manifest.webmanifest`,
+        `${SCOPE}favicon.svg`,
+        `${SCOPE}covers/world.png`,
+        `${SCOPE}covers/hunger.png`,
+      ]),
     ),
   )
   self.skipWaiting()
@@ -26,6 +33,6 @@ self.addEventListener('fetch', (event) => {
         caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {})
         return res
       })
-      .catch(() => caches.match(req).then((hit) => hit || caches.match('/'))),
+      .catch(() => caches.match(req).then((hit) => hit || caches.match(SCOPE))),
   )
 })

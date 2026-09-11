@@ -44,7 +44,12 @@ export function PlayScreen({ state, onChange, onTitle }: Props) {
     onChange(interpret(state, t))
   }
 
-  const art = scene.art === 'hunger' ? '/covers/hunger.png' : scene.art === 'world' ? '/covers/world.png' : null
+  const art =
+    scene.art === 'hunger'
+      ? `${import.meta.env.BASE_URL}covers/hunger.png`
+      : scene.art === 'world'
+        ? `${import.meta.env.BASE_URL}covers/world.png`
+        : null
 
   return (
     <div className="screen play-screen">

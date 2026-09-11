@@ -9,7 +9,7 @@ export function TitleScreen({ hasSave, onNew, onContinue, onErase }: Props) {
   return (
     <div className="screen title-screen">
       <div className="title-hero">
-        <img src="/covers/world.png" alt="The Amber Shroud — three factions, one desert" />
+        <img src={`${import.meta.env.BASE_URL}covers/world.png`} alt="The Amber Shroud — three factions, one desert" />
         <div className="title-veil" />
         <div className="title-copy">
           <p className="kicker">A desert of Drops, Glints, and bad religion</p>
