@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
+    "smoke": "npx tsx scripts/smoke.ts",
     "preview": "vite preview --host --port 43177"
   },
   "dependencies": {

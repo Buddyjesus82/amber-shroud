@@ -11,6 +11,11 @@ export const thresholdScenes: Scene[] = [
 Thalia stands at the dais with gold on her cheeks that might be kohl and might be sap. Oram is not chanting. Oram is counting. That is why you might live.`,
     variants: [
       {
+        if: { heatMin: ['seekers', 3] },
+        mode: 'append',
+        body: `Thalia's gold tracks find you even when she is not looking. Seeker Heat is a pressure behind the chant. The cloth is already a countdown.`,
+      },
+      {
         if: { pressureMin: 8 },
         mode: 'append',
         body: `The bowing is shallower. Someone has asked whether the cup is empty.`,
@@ -24,8 +29,7 @@ Thalia stands at the dais with gold on her cheeks that might be kohl and might b
           ticks: 1,
           heat: { seekers: 1 },
           pressure: 1,
-          flash:
-            'You raise a hand. They shudder like the desert agreed. Thalia weeps. A guard looks too long at your stolen Strider-bit-shaped absence.',
+          flash: 'Heads bow a half-inch. Belief is a muscle. You flex it. Seeker Heat ticks. Thalia weeps like a countdown.',
         },
       },
     ],
@@ -209,12 +213,24 @@ Oram is here more than the Court. He prefers animals to hymns. Animals do not as
       {
         id: 'map',
         label: 'Ask for a heading',
+        show: { not: { item: 'oram_map' } },
         effects: {
           flag: { hungerKnown: true, sybellaNamed: true },
           add: { cache_map: 1, kallik_mark: 1 },
           ticks: 1,
           goto: 'thresh:paddock',
           flash: 'He tears a corner off the ledger. A crime. A kindness. Red Maw in feed-pencil.',
+        },
+      },
+      {
+        id: 'have-map',
+        label: 'Show him his own map',
+        show: { item: 'oram_map' },
+        effects: {
+          flag: { hungerKnown: true, sybellaNamed: true, oramKnows: true },
+          ticks: 1,
+          goto: 'thresh:paddock',
+          flash: '"I know," he says. "I counted it leaving. Ride before Thalia finishes turning love into a net. The dagger was a poor idea and a good one."',
         },
       },
       {
@@ -271,6 +287,20 @@ Oram is here more than the Court. He prefers animals to hymns. Animals do not as
           ticks: 1,
           goto: 'thresh:guard',
           flash: 'He kneels badly. The path is not open. It is only confused. Confused is a start.',
+        },
+      },
+      {
+        id: 'dagger',
+        label: 'Show the rusted dagger under the cloth',
+        sub: 'Holy plus steel. Seeker Heat notices.',
+        show: { item: 'rusted_dagger' },
+        tone: 'danger',
+        effects: {
+          flag: { guardCut: true, guardBowed: true },
+          heat: { seekers: 1 },
+          ticks: 1,
+          goto: 'thresh:guard',
+          flash: 'He sees kitchen rust and a Vessel who packs it. He looks away with professional holiness. The path is confused and afraid.',
         },
       },
       {

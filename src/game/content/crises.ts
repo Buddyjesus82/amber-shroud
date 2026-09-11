@@ -91,7 +91,7 @@ Stilts plant on either side of your head. Ossa is alive — of course she is —
           sap: 3,
           flag: { ossaMet: true, ossaAlive: true, ossaAlly: true, hungerKnown: true },
           add: { ossa_token: 1 },
-          goto: 'ch1:pursuit',
+          goto: 'ch1:sybella',
           flash: 'You stand because she requires it. The skiff is closer. So is the Maw.',
         },
       },

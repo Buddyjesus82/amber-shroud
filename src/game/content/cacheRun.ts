@@ -1,5 +1,11 @@
 import type { Scene } from '../types'
 
+const done = {
+  chapter1Done: true,
+  ossaAlive: true,
+  sybellaHunting: true,
+} as const
+
 export const cacheRunScenes: Scene[] = [
   {
     id: 'ch1:leave',
@@ -7,37 +13,38 @@ export const cacheRunScenes: Scene[] = [
     kind: 'story',
     art: 'hunger',
     title: 'Cache Run',
-    body: `You leave the last honest shade behind.
+    body: `Want is simple: Kallik's cache at Red Maw. A pile of Drops next to a mouth.
 
-The dunes take your footprints and keep them like debts. Somewhere ahead: Kallik's cache at the Red Maw. Somewhere closer: a blonde on a sand-skiff who wants a person that can hold sap without cracking.
+The problem is also simple: a blonde on a sand-skiff who needs a lantern that can walk. You are carrying sap like a signal fire.
 
-You are not a hero. You are a custom-made survivor with a dry mouth and a heading.`,
+Three beats between you and her. Then you spend.`,
     variants: [
       {
         if: { door: 'prisoner' },
         mode: 'append',
-        body: `Camp-04's sirens thin behind you. Bleed-dust still in the seams of your hands. Valerius will not stay a tower forever.`,
+        body: `Camp-04 sirens thin. The wrench still smells like vat-bolts. Scrip will not buy dunes. Cartel Heat will.`,
       },
       {
         if: { door: 'outcast' },
         mode: 'append',
-        body: `Noon follows like it signed a contract. The empty vial era is over only if you find something worth putting in it.`,
+        body: `Noon follows. Silas's tip is a scratch in your palm. The vial is still a dry throat unless you filled it.`,
       },
       {
         if: { door: 'vessel' },
         mode: 'append',
-        body: `The stolen Strider eats distance and hates you for it. The cloth still smells like Thalia's gold. Seekers do not forgive a cup that walks away.`,
+        body: `Oram's map is already a crime. The rusted dagger sits against your ribs. Seeker Heat is a hymn with teeth.`,
       },
       {
         if: { flag: 'cacheBlind' },
         mode: 'append',
-        body: `You do not have a real map. You have panic and a rumor of red rock. That has been enough for worse people.`,
+        body: `You do not have a real heading. You have panic and a rumor of red rock.`,
       },
     ],
     choices: [
       {
         id: 'go',
         label: 'Take the dune trail',
+        sub: 'Beat 1 — how you move is what you carry.',
         tone: 'hunger',
         effects: { goto: 'ch1:trail', ticks: 1, sap: -1, pressure: 1 },
       },
@@ -47,41 +54,149 @@ You are not a hero. You are a custom-made survivor with a dry mouth and a headin
     id: 'ch1:trail',
     chapterId: 'cache-run',
     kind: 'story',
-    art: 'hunger',
     title: 'Dune Trail',
     body: `Wind writes the same sentence on every slope: keep moving.
 
-Three ways present themselves like bad friends. The straight wash is fast and naked. The high ridge sees everything, including you. Off the left, stilt-prints — too light for a loaded man, too regular for a dying one.`,
+The straight wash is naked. A culvert grate rusts in the cut. Stilt-prints tick left. Heat-haze south could be a skiff — or a wish.`,
+    variants: [
+      {
+        if: { heatMin: ['cartel', 3] },
+        mode: 'append',
+        body: `Cartel Heat has a smell. Shard-Hound dust on the wash. Linger and Valerius writes your name in grit.`,
+      },
+      {
+        if: { heatMin: ['seekers', 3] },
+        mode: 'append',
+        body: `Seeker Heat has a sound: runners, still far, already angling. Thalia's love made you loud.`,
+      },
+      {
+        if: { heatMin: ['strays', 2] },
+        mode: 'append',
+        body: `Stray country recognizes its own. The shade-cuts are real if you were sold one.`,
+      },
+      {
+        if: { item: 'silas_tip' },
+        mode: 'append',
+        body: `Silas's scratch matches a rib of rock the wash pretends not to have.`,
+      },
+      {
+        if: { item: 'oram_map' },
+        mode: 'append',
+        body: `Oram's feed-pencil marks the second rib. You could walk like you already know.`,
+      },
+      {
+        if: { item: 'wrench' },
+        mode: 'append',
+        body: `The culvert bolts are Camp-04 cheap. The wrench knows that language.`,
+      },
+    ],
     choices: [
+      {
+        id: 'wrench',
+        label: 'Wrench the culvert',
+        sub: 'Pry the grate. Stay off the naked wash.',
+        show: { item: 'wrench' },
+        effects: {
+          goto: 'ch1:ossa-meet',
+          ticks: 1,
+          sap: -1,
+          heat: { cartel: 1 },
+          flag: { wrenchCut: true },
+          flash: 'Bolts complain. You crawl the dark. Hounds lose a minute. Cartel Heat does not.',
+        },
+      },
+      {
+        id: 'silas',
+        label: "Walk Silas's shade-cut",
+        sub: 'The tip keeps you off the noon slope. Sap holds.',
+        show: { item: 'silas_tip' },
+        effects: {
+          goto: 'ch1:ossa-meet',
+          ticks: 1,
+          flag: { silasCut: true },
+          flash: "Shade like a stolen minute. The tip is still in your palm — unused, unless you spend it later.",
+        },
+      },
+      {
+        id: 'oram',
+        label: "Follow Oram's heading",
+        sub: 'Skip getting lost. Seeker Heat notices a confident cup.',
+        show: { item: 'oram_map' },
+        effects: {
+          goto: 'ch1:ossa-meet',
+          ticks: 1,
+          sap: -1,
+          heat: { seekers: 1 },
+          flag: { oramHeading: true },
+          flash: "You walk like a ledger. The map is still yours. The skiff likes certainty.",
+        },
+      },
       {
         id: 'straight',
         label: 'Take the straight wash',
         sub: 'Fast. Exposed. Sap burns.',
-        effects: { goto: 'ch1:zafir', ticks: 1, sap: -2, pressure: 1 },
-      },
-      {
-        id: 'ridge',
-        label: 'Climb the high ridge',
-        sub: 'You will see the skiff. The skiff may see you.',
-        effects: { goto: 'ch1:ridge', ticks: 1, sap: -1, heat: { seekers: 1 } },
+        effects: {
+          goto: 'ch1:ossa-meet',
+          ticks: 1,
+          sap: -2,
+          pressure: 1,
+          flag: { washRun: true },
+        },
       },
       {
         id: 'stilts',
         label: 'Follow the stilt-prints',
         sub: 'Someone is alive out here on purpose.',
-        effects: { goto: 'ch1:ossa-meet', ticks: 1, sap: -1 },
+        effects: { goto: 'ch1:ossa-meet', ticks: 1, sap: -1, flag: { followedStilts: true } },
+      },
+      {
+        id: 'ridge',
+        label: 'Climb the high ridge',
+        sub: 'You will see the skiff. It may see you.',
+        effects: {
+          goto: 'ch1:ossa-meet',
+          ticks: 1,
+          sap: -1,
+          heat: { seekers: 1 },
+          flag: { sawSkiff: true },
+        },
       },
     ],
     intents: [
       {
         tags: ['ossa', 'stilt', 'tracks', 'follow', 'woman'],
         reply: 'The prints are a person who refused to sink. You follow.',
-        effects: { goto: 'ch1:ossa-meet', ticks: 1, sap: -1 },
+        effects: { goto: 'ch1:ossa-meet', ticks: 1, sap: -1, flag: { followedStilts: true } },
       },
       {
-        tags: ['bury', 'hollow', 'hide', 'magic'],
-        reply: 'Not yet. The sand is listening, but it charges more when you are in a hurry.',
-        effects: { goto: 'ch1:hollow-edge' },
+        tags: ['wrench', 'grate', 'culvert', 'pry', 'bolt'],
+        show: { item: 'wrench' },
+        reply: 'Bolts. Dark. The wash goes on without you.',
+        effects: {
+          goto: 'ch1:ossa-meet',
+          ticks: 1,
+          sap: -1,
+          heat: { cartel: 1 },
+          flag: { wrenchCut: true },
+        },
+      },
+      {
+        tags: ['silas', 'shade', 'tip', 'cut'],
+        show: { item: 'silas_tip' },
+        reply: 'You take the cut he sold. Noon misses a bite.',
+        effects: { goto: 'ch1:ossa-meet', ticks: 1, flag: { silasCut: true } },
+      },
+      {
+        tags: ['oram', 'map', 'heading', 'rib'],
+        show: { item: 'oram_map' },
+        reply: "Feed-pencil doesn't lie as often as hymns.",
+        effects: {
+          goto: 'ch1:ossa-meet',
+          ticks: 1,
+          sap: -1,
+          heat: { seekers: 1 },
+          flag: { oramHeading: true },
+        },
       },
       {
         tags: ['drink', 'sip', 'drop'],
@@ -96,39 +211,38 @@ Three ways present themselves like bad friends. The straight wash is fast and na
     ],
   },
   {
-    id: 'ch1:ridge',
-    chapterId: 'cache-run',
-    kind: 'story',
-    title: 'Brass Horizon',
-    body: `From the ridge the world is a pan of slag.
-
-A sand-skiff cuts the south wind — lateen sail the color of old bone, hull on runners. A figure at the tiller: pale hair, a ceremonial blindfold pushed up like a crown she got tired of. Even at this distance she looks reasonable. That is the terrifying part.
-
-She is not hunting randomly. She is hunting a furnace that learned to walk.`,
-    choices: [
-      {
-        id: 'down',
-        label: 'Drop off the ridge before she angles',
-        effects: { goto: 'ch1:zafir', ticks: 1, sap: -1, flag: { sawSkiff: true } },
-      },
-      {
-        id: 'ossa',
-        label: 'Cut toward the stilt-line while you still can',
-        effects: { goto: 'ch1:ossa-meet', ticks: 1, sap: -1, flag: { sawSkiff: true } },
-      },
-    ],
-  },
-  {
     id: 'ch1:ossa-meet',
     chapterId: 'cache-run',
     kind: 'story',
     title: 'Stilts',
     speaker: 'Ossa',
-    body: `She is alive.
+    body: `Beat 2 is a living person.
 
-Ossa stands three feet above the hungry sand on stilts lashed with cord that has been repaired more times than it has been made. A vial rides her hip, half-full, honest. Wind has made a banner of her wrap. She sees you seeing the vial. She does not reach for a weapon. She reaches for balance.
+Ossa stands three feet above the hungry sand on stilts lashed with cord repaired more times than made. A vial rides her hip, half-full, honest. She sees your kit before she sees your face.
 
 "If you came to rob a woman on sticks," she says, "you should have eaten first. I fall funny."`,
+    variants: [
+      {
+        if: { flag: 'silasCut' },
+        mode: 'append',
+        body: `"Silas still selling shade to thirsty people," she adds. "That means you might be stupid. Not necessarily cruel."`,
+      },
+      {
+        if: { item: 'ceremonial_cloth' },
+        mode: 'append',
+        body: `Her eyes snag on the gold thread. "Cups don't walk this wash unless they are lying or hunting. Both are expensive."`,
+      },
+      {
+        if: { item: 'wrench' },
+        mode: 'append',
+        body: `A lash on her left stilt is failing. The wrench would make a lever. She has not asked.`,
+      },
+      {
+        if: { item: 'vial_empty' },
+        mode: 'append',
+        body: `She hears the empty glass tick. "That sound is a kind of honesty. Don't waste it."`,
+      },
+    ],
     choices: [
       {
         id: 'hail',
@@ -136,25 +250,57 @@ Ossa stands three feet above the hungry sand on stilts lashed with cord that has
         effects: { goto: 'ch1:ossa-talk', flag: { ossaMet: true }, ticks: 1 },
       },
       {
-        id: 'watch',
-        label: 'Hold back. Watch.',
-        tone: 'quiet',
+        id: 'vial',
+        label: 'Show the empty vial',
+        sub: 'Thirst as a credential. Stray lean.',
+        show: { all: [{ item: 'vial_empty' }, { not: { item: 'vial_drop' } }] },
+        effects: {
+          sap: 1,
+          flag: { ossaMet: true, ossaAlive: true, ossaAlly: true, emptyShown: true },
+          add: { ossa_token: 1 },
+          ticks: 1,
+          goto: 'ch1:zafir',
+          flash:
+            'She does not give you her Drop. She wets your lip from a smear in the lash-wax. "I don\'t die easy. Neither do empty glasses that admitted it." A twice-tied knot lands in your palm.',
+        },
+      },
+      {
+        id: 'wrench',
+        label: 'Lever her failing lash',
+        sub: 'Use the wrench. Keep the wrench.',
+        show: { item: 'wrench' },
+        effects: {
+          flag: { ossaMet: true, ossaAlive: true, ossaAlly: true, wrenchLash: true },
+          add: { ossa_token: 1 },
+          ticks: 1,
+          goto: 'ch1:zafir',
+          flash: 'Steel against cord. The stilt seats. She nods like a receipt. "Zafir is at the cairn. I can stand with you when the skiff comes."',
+        },
+      },
+      {
+        id: 'dagger',
+        label: 'Keep the rusted dagger visible',
+        show: { item: 'rusted_dagger' },
+        tone: 'danger',
         effects: {
           goto: 'ch1:ossa-talk',
           flag: { ossaMet: true, ossaWary: true },
           ticks: 1,
-          flash: 'She lets you have the silence. Stilts do not mean weak. Stilts mean she understood the ground.',
+          heat: { strays: 1 },
+          flash: 'She watches your hands now. Stilts do not mean weak. Stilts mean she understood the ground.',
         },
       },
       {
         id: 'steal',
         label: 'Lunge for the vial',
         tone: 'danger',
-        effects: {
-          goto: 'ch1:ossa-rob',
-          flag: { ossaMet: true },
-          ticks: 1,
-        },
+        effects: { goto: 'ch1:ossa-rob', flag: { ossaMet: true }, ticks: 1 },
+      },
+      {
+        id: 'skip',
+        label: 'Pass her. The cairn is the heading.',
+        tone: 'quiet',
+        effects: { goto: 'ch1:zafir', flag: { ossaMet: true, ossaAlive: true }, ticks: 1 },
       },
     ],
     intents: [
@@ -162,6 +308,27 @@ Ossa stands three feet above the hungry sand on stilts lashed with cord that has
         tags: ['steal', 'grab', 'take', 'vial', 'rob'],
         reply: 'You go for the hip. The desert tilts.',
         effects: { goto: 'ch1:ossa-rob' },
+      },
+      {
+        tags: ['help', 'wrench', 'lash', 'fix', 'repair'],
+        show: { item: 'wrench' },
+        reply: 'You seat the lash. She lets you keep the steel.',
+        effects: {
+          flag: { ossaMet: true, ossaAlive: true, ossaAlly: true, wrenchLash: true },
+          add: { ossa_token: 1 },
+          goto: 'ch1:zafir',
+        },
+      },
+      {
+        tags: ['empty', 'vial', 'thirst', 'dry'],
+        show: { item: 'vial_empty' },
+        reply: 'Honesty about thirst is a Stray password.',
+        effects: {
+          sap: 1,
+          flag: { ossaMet: true, ossaAlive: true, ossaAlly: true, emptyShown: true },
+          add: { ossa_token: 1 },
+          goto: 'ch1:zafir',
+        },
       },
       {
         tags: ['help', 'hail', 'hello', 'talk', 'friend'],
@@ -178,9 +345,7 @@ Ossa stands three feet above the hungry sand on stilts lashed with cord that has
     title: 'A Ugly Reach',
     body: `You take the vial. She takes a fall she planned for — knees, then a tumble that keeps the stilts from spearing her.
 
-She is alive. Angry. Breathing. The sand does not get her because she refused to let it, even with your hands on her life.
-
-"Walk," she says, from the ground. "If Sybella asks, I will describe your back."`,
+She is alive. Angry. Breathing. "Walk," she says, from the ground. "If Sybella asks, I will describe your back."`,
     choices: [
       {
         id: 'go',
@@ -200,7 +365,7 @@ She is alive. Angry. Breathing. The sand does not get her because she refused to
           flag: { ossaAlive: true, ossaWary: true, ossaMet: true },
           unsetFlag: ['ossaRobbed'],
           goto: 'ch1:ossa-talk',
-          flash: 'She takes the vial without thanks. Thanks would be a lie. The option of later is still open.',
+          flash: 'She takes the vial without thanks. Thanks would be a lie. The cairn is still ahead.',
         },
       },
     ],
@@ -211,29 +376,34 @@ She is alive. Angry. Breathing. The sand does not get her because she refused to
     kind: 'talk',
     title: 'Ossa',
     speaker: 'Ossa',
-    body: `"Kallik's cache is bait with a building around it," Ossa says. "I go to Red Maw because the stilts work better where the sand is honest about wanting you. Zafir is at the bone cairn ahead, selling maps to dead men. Sybella wants a walking battery. If that's you, don't tell her. If it isn't, don't tell her that either."
+    body: `"Kallik's cache is bait with a building around it. Zafir sells maps at the bone cairn. Sybella wants a walking battery. If that's you, don't tell her.
 
-The vial on her hip stays hers. She is alive. She intends to remain so.`,
+I go to Red Maw because the stilts work better where the sand is honest about wanting you."`,
     variants: [
       {
         if: { flag: 'ossaRobbed' },
         mode: 'replace',
-        body: `She looks at you like a weather she will outlast. The stilts are back under her. The vial is not. She is still alive. That fact is now a debt with teeth.`,
+        body: `She looks at you like weather she will outlast. The stilts are back under her. The vial is not. She is still alive. That fact is now a debt with teeth.`,
+      },
+      {
+        if: { flag: 'ossaWary' },
+        mode: 'append',
+        body: `She has not forgotten your hands.`,
       },
     ],
     choices: [
       {
         id: 'share',
-        label: 'Offer a Drop if you have one',
+        label: 'Offer a Drop',
         show: { all: [{ item: 'vial_drop' }, { flagUnset: 'ossaRobbed' }] },
         effects: {
           remove: { vial_drop: 1 },
           add: { vial_empty: 1, ossa_token: 1 },
           flag: { ossaAlly: true, ossaAlive: true },
           ticks: 1,
-          goto: 'ch1:ossa-talk',
+          goto: 'ch1:zafir',
           flash:
-            'She does not drink it. She pockets it for a worse hour. A knot of stilt-cord lands in your palm. Twice-tied. "I don\'t die easy. Neither do my debts."',
+            'She pockets it for a worse hour. A knot of stilt-cord lands in your palm. Twice-tied. "I don\'t die easy. Neither do my debts."',
         },
       },
       {
@@ -245,23 +415,12 @@ The vial on her hip stays hers. She is alive. She intends to remain so.`,
           add: { ossa_token: 1 },
           ticks: 1,
           goto: 'ch1:zafir',
-          flash: 'She shortens her stride so a person without stilts can pretend to keep up. That is love, in the dunes.',
-        },
-      },
-      {
-        id: 'sybella',
-        label: 'Ask how to survive Sybella',
-        effects: {
-          ticks: 1,
-          goto: 'ch1:ossa-talk',
-          flash:
-            '"She bargains first. She is good at it. False trail if you have scrap or a friend. Flee if you can spend sap you don\'t have. Or bury something you mean and let the Hollows bill you later. I will not bury with you. I like being alive."',
-          flag: { ossaAlive: true },
+          flash: 'She shortens her stride so a person without stilts can pretend to keep up.',
         },
       },
       {
         id: 'on',
-        label: 'Leave her on her stilts',
+        label: 'On to the cairn',
         tone: 'quiet',
         effects: { goto: 'ch1:zafir', flag: { ossaAlive: true, ossaMet: true }, ticks: 1 },
       },
@@ -270,7 +429,7 @@ The vial on her hip stays hers. She is alive. She intends to remain so.`,
       {
         tags: ['steal', 'rob', 'vial', 'take'],
         show: { flagUnset: 'ossaRobbed' },
-        reply: 'Second chances at theft are how graves get filled. She is watching your hands now.',
+        reply: 'Second chances at theft are how graves get filled.',
         effects: { goto: 'ch1:ossa-rob' },
       },
       {
@@ -286,17 +445,62 @@ The vial on her hip stays hers. She is alive. She intends to remain so.`,
     kind: 'talk',
     title: 'Bone Cairn',
     speaker: 'Zafir',
-    body: `Zafir has built a shop out of a cairn of animal bones and other people's mistakes. He is smiling in a way that costs extra.
+    body: `Beat 3 is a shop made of other people's mistakes.
 
-"You look like Hunger," he says. "I sell headings to Kallik's hole. I also sell the news that Sybella already knows you're coming. Pick the product that hurts less."`,
+Zafir smiles in a way that costs extra. "You look like Hunger. I sell headings to Kallik's hole. I also sell the news that Sybella already knows you're coming. Pick the product that hurts less."`,
     variants: [
       {
         if: { flag: 'ossaAlly' },
         mode: 'append',
         body: `Ossa stays at the edge of his shade, stilts planted, a second opinion with a shadow.`,
       },
+      {
+        if: { item: 'oram_map' },
+        mode: 'append',
+        body: `His eyes flick to the feed-pencil crease. "Oram still thinks animals are scripture. That heading is better than mine. I hate admitting that."`,
+      },
+      {
+        if: { item: 'silas_tip' },
+        mode: 'append',
+        body: `"You smell like Silas's tent. He still sending me thirsty people with scratches in their palms?"`,
+      },
+      {
+        if: { item: 'scrip' },
+        mode: 'append',
+        body: `He sniffs the scrip on you. "Ironwood lullabies. I can pretend they are money."`,
+      },
+      {
+        if: { heatMin: ['seekers', 3] },
+        mode: 'append',
+        body: `"Seekers are paying for news of a walking cup. You are expensive gossip."`,
+      },
     ],
     choices: [
+      {
+        id: 'oram',
+        label: "Show Oram's map. Skip the fee.",
+        show: { item: 'oram_map' },
+        effects: {
+          flag: { zafirPaid: true, zafirMet: true, oramShown: true },
+          ticks: 1,
+          heat: { seekers: 1 },
+          goto: 'ch1:sybella',
+          flash: 'He confirms the second rib with a grimace. You keep the map. The skiff likes people who already know the way.',
+        },
+      },
+      {
+        id: 'silas',
+        label: "Spend Silas's tip for the heading",
+        show: { item: 'silas_tip' },
+        effects: {
+          remove: { silas_tip: 1 },
+          add: { cache_map: 1 },
+          flag: { zafirPaid: true, zafirMet: true, silasNamed: true },
+          ticks: 1,
+          goto: 'ch1:sybella',
+          flash: 'Stray-to-stray. He draws the Maw in bone-dust and keeps the scratch. The tip is spent.',
+        },
+      },
       {
         id: 'buy',
         label: 'Buy the heading for a Glint',
@@ -306,8 +510,8 @@ The vial on her hip stays hers. She is alive. She intends to remain so.`,
           add: { cache_map: 1 },
           flag: { zafirPaid: true, zafirMet: true },
           ticks: 1,
-          goto: 'ch1:pursuit',
-          flash: 'He draws the Maw in bone-dust. "False lip on the east. Real cache under the second rib. Do not thank me."',
+          goto: 'ch1:sybella',
+          flash: 'He draws the Maw in bone-dust. "False lip on the east. Real cache under the second rib."',
         },
       },
       {
@@ -318,9 +522,37 @@ The vial on her hip stays hers. She is alive. She intends to remain so.`,
           remove: { scrap: 1 },
           add: { cache_map: 1 },
           flag: { zafirPaid: true, zafirMet: true },
-          goto: 'ch1:pursuit',
+          goto: 'ch1:sybella',
           ticks: 1,
           flash: 'He takes scrap like it is a language he still speaks.',
+        },
+      },
+      {
+        id: 'scrip',
+        label: 'Pay in Cartel scrip',
+        show: { item: 'scrip' },
+        effects: {
+          remove: { scrip: 1 },
+          add: { cache_map: 1 },
+          flag: { zafirMet: true, zafirScrip: true, zafirSore: true },
+          heat: { cartel: 1 },
+          ticks: 1,
+          goto: 'ch1:sybella',
+          flash: 'He takes paper that only Ironwood loves. The heading he draws has a lie in it. Cartel Heat ticks up anyway — scrip leaves a trail.',
+        },
+      },
+      {
+        id: 'dagger',
+        label: 'Crowd him with the rusted dagger',
+        show: { item: 'rusted_dagger' },
+        tone: 'danger',
+        effects: {
+          flag: { zafirMet: true, zafirSore: true },
+          add: { cache_map: 1 },
+          heat: { strays: 1 },
+          ticks: 1,
+          goto: 'ch1:sybella',
+          flash: 'He hands you a map with a smile that will outlive you if he gets a vote.',
         },
       },
       {
@@ -332,8 +564,8 @@ The vial on her hip stays hers. She is alive. She intends to remain so.`,
           add: { cache_map: 1 },
           heat: { strays: 1 },
           ticks: 1,
-          goto: 'ch1:pursuit',
-          flash: 'He hands you a worse map with a better smile. You will not know which lie he kept.',
+          goto: 'ch1:sybella',
+          flash: 'He hands you a worse map with a better smile.',
         },
       },
       {
@@ -343,15 +575,15 @@ The vial on her hip stays hers. She is alive. She intends to remain so.`,
         effects: {
           flag: { zafirMet: true },
           ticks: 1,
-          goto: 'ch1:pursuit',
-          flash: '"Skiff is an hour south and closing. She will bargain. She is very good at remaining the most reasonable person in a murder."',
+          goto: 'ch1:sybella',
+          flash: '"Skiff is closing. She will bargain. She is very good at remaining the most reasonable person in a murder."',
         },
       },
     ],
     intents: [
       {
-        tags: ['kallik', 'cache', 'map', 'heading', 'maw'],
-        reply: 'He taps bone. Pay or threaten or walk. Those are the three religions.',
+        tags: ['kallik', 'cache', 'map', 'heading', 'maw', 'oram'],
+        reply: 'He taps bone. Pay, show a map, name Silas, threaten, or walk.',
         effects: { ticks: 1 },
       },
       {
@@ -362,219 +594,210 @@ The vial on her hip stays hers. She is alive. She intends to remain so.`,
     ],
   },
   {
-    id: 'ch1:hollow-edge',
-    chapterId: 'cache-run',
-    kind: 'story',
-    title: 'Listening Sand',
-    body: `A patch of dune that does not move with the others. Hollow-sign. Low magic lives here: bury a thing you value, and the desert may misplace your hunters. It may also remember your name in a mouth you do not want.
-
-You can save this for Sybella. Or you can spend it now like a coward with foresight.`,
-    choices: [
-      {
-        id: 'later',
-        label: 'Keep the option. Move.',
-        effects: { goto: 'ch1:trail', flag: { hollowSeen: true } },
-      },
-      {
-        id: 'bury',
-        label: 'Bury a Glint now',
-        show: { item: 'glints' },
-        effects: {
-          remove: { glints: 1 },
-          flag: { hollowMarked: true, hollowSeen: true },
-          heat: { seekers: -1 },
-          sap: -1,
-          goto: 'ch1:zafir',
-          flash: 'The sand takes the Glint like a tongue. Somewhere a skiff runner hits a rut that was not there.',
-        },
-      },
-    ],
-  },
-  {
-    id: 'ch1:pursuit',
-    chapterId: 'cache-run',
-    kind: 'story',
-    art: 'hunger',
-    title: 'Skiff',
-    body: `The sky goes brass.
-
-Sybella's sand-skiff comes in low, runners screaming in the grit. She does not look hurried. Hurry is for people who are not sure.
-
-When she steps down, the blindfold is up on her hair like a discarded halo. Blonde. Kohl ruined under both eyes — not sloppy, ruined on purpose, a funeral that kept walking. She is reasonable the way a closed door is reasonable.
-
-"You are carrying sap like a lantern," she says. "I need a lantern that can walk. Shall we be adults?"`,
-    variants: [
-      {
-        if: { flag: 'ossaAlly' },
-        mode: 'append',
-        body: `Ossa does not run. Stilts planted. A second lantern, if Sybella wants to count.`,
-      },
-    ],
-    choices: [
-      {
-        id: 'talk',
-        label: 'Stand still. Hear the bargain.',
-        effects: { goto: 'ch1:sybella', ticks: 1 },
-      },
-    ],
-  },
-  {
     id: 'ch1:sybella',
     chapterId: 'cache-run',
     kind: 'talk',
     art: 'hunger',
     title: 'Sybella',
     speaker: 'Sybella',
-    body: `"Kallik's cache is a pile of Drops next to a mouth. Drink it wrong and you are a stain. Drink it right and you are a battery. I am done being the cup. I will not pour myself again.
+    body: `The sky goes brass. The skiff comes in low.
 
-Walk with me to the Maw. Fill. Come back useful. Or run, and I will follow you until your sap is a story I tell the sand.
+Hard choice. Resource poker. No dice — only what you still have.
 
-I prefer useful. I am not kind. Those are different sentences."`,
+Sybella steps down, blindfold up like a discarded halo, kohl ruined on purpose. "You are carrying sap like a lantern. I need a lantern that can walk. Spend something, or I write the receipt myself."`,
+    variants: [
+      {
+        if: { flag: 'ossaAlly' },
+        mode: 'append',
+        body: `Ossa does not run. Stilts planted. A second lantern, if she wants to count.`,
+      },
+      {
+        if: { sapMax: 2 },
+        mode: 'append',
+        body: `Your sap is thin. Fleeing is a wish unless you burn what is left.`,
+      },
+    ],
     choices: [
       {
-        id: 'bargain',
-        label: 'Bargain. Be useful on purpose.',
-        effects: { goto: 'ch1:bargain', ticks: 1 },
+        id: 'sap',
+        label: 'Spend sap. Stand in the wash.',
+        sub: 'Look expensive to break.',
+        enable: { sapMin: 2 },
+        locked: 'Sap too thin to stand as a furnace.',
+        effects: {
+          sap: -2,
+          add: { kohl_smear: 1 },
+          flag: { ...done, climax: 'sap', sybellaBargain: true },
+          goto: 'ch1:land',
+          flash: 'You burn fuel where she can see it. She thumbs kohl at your throat anyway — a softer receipt. You cost too much to crack today.',
+        },
+      },
+      {
+        id: 'glint',
+        label: 'Burn a Glint',
+        sub: 'Toss a spark. Buy a delay. Not magic — money.',
+        show: { item: 'glints' },
+        effects: {
+          remove: { glints: 1 },
+          flag: { ...done, climax: 'glint' },
+          heat: { seekers: 1 },
+          goto: 'ch1:land',
+          flash: 'The Glint skips like a coin into a worse religion. She tracks the spark a breath too long. You take the Approach.',
+        },
+      },
+      {
+        id: 'hollow',
+        label: 'Bait the Hollows',
+        sub: 'Bury a valued thing. Low magic. A real bill.',
+        enable: {
+          any: [
+            { item: 'glints' },
+            { item: 'vial_drop' },
+            { item: 'kallik_mark' },
+            { item: 'strider_bit' },
+            { item: 'ceremonial_cloth' },
+            { item: 'rusted_dagger' },
+            { item: 'wrench' },
+          ],
+        },
+        locked: 'You must bury a valued thing — Glint, Drop, mark, bit, cloth, dagger, or wrench.',
+        effects: { goto: 'ch1:hollow', ticks: 1 },
       },
       {
         id: 'flee',
-        label: 'Break for the Maw. Spend everything.',
+        label: 'Flee. Spend the legs you have.',
+        sub: 'Sap burns. Seeker Heat climbs.',
         tone: 'danger',
-        effects: { goto: 'ch1:flee', ticks: 1 },
+        enable: { sapMin: 1 },
+        locked: 'Legs without sap are a wish.',
+        effects: {
+          sap: -3,
+          heat: { seekers: 2 },
+          flag: { ...done, climax: 'flee' },
+          goto: 'ch1:land',
+          flash: 'Dunes become stairs. A runner clips the slope you just left. You keep the face. You lose the easy hours.',
+        },
       },
       {
         id: 'false',
         label: 'Lay a false trail',
-        sub: 'Needs scrap, a map, or Ossa.',
+        sub: 'Spend scrap, wrench, a map, Silas\'s tip, the dagger, or Ossa.',
         enable: {
-          any: [{ item: 'scrap' }, { item: 'cache_map' }, { flag: 'ossaAlly' }],
+          any: [
+            { item: 'scrap' },
+            { item: 'wrench' },
+            { item: 'cache_map' },
+            { item: 'oram_map' },
+            { item: 'rusted_dagger' },
+            { item: 'silas_tip' },
+            { flag: 'ossaAlly' },
+          ],
         },
-        locked: 'You need scrap, a cache scratch, or Ossa standing with you.',
-        effects: { goto: 'ch1:false', ticks: 1 },
+        locked: 'You need scrap, a tool, a heading, Silas\'s tip, or Ossa standing with you.',
+        effects: {
+          flag: { ...done, climax: 'false', falseTrail: true },
+          heat: { seekers: 1 },
+          goto: 'ch1:land',
+          flash: 'You spend what the sand can tell as a lie. She is a moment late. Reasonable people hate being late.',
+        },
       },
       {
-        id: 'hollow',
-        label: 'Bury something valued. Call the Hollows.',
-        sub: 'Low magic. A real cost.',
-        enable: {
-          any: [{ item: 'glints' }, { item: 'vial_drop' }, { item: 'kallik_mark' }, { item: 'strider_bit' }],
+        id: 'bargain-drop',
+        label: 'Bargain. Spend a Drop so she thinks you are already a furnace.',
+        show: { item: 'vial_drop' },
+        effects: {
+          remove: { vial_drop: 1 },
+          add: { vial_empty: 1, kohl_smear: 1 },
+          flag: { ...done, climax: 'bargain', sybellaBargain: true, bargainDrop: true },
+          heat: { seekers: -1 },
+          goto: 'ch1:land',
+          flash: 'She watches you pour. Kohl at your throat. "Useful. Do not become a hymn." The skiff peels — not far.',
         },
-        locked: 'You must bury a valued thing — Glints, a Drop, Kallik\'s mark, or the Strider bit.',
-        effects: { goto: 'ch1:hollow', ticks: 1 },
+      },
+      {
+        id: 'bargain',
+        label: 'Bargain empty-handed',
+        tone: 'quiet',
+        effects: {
+          add: { kohl_smear: 1 },
+          flag: { ...done, climax: 'bargain', sybellaBargain: true },
+          goto: 'ch1:land',
+          flash: 'She writes the receipt on your throat. You will fill at the Maw. She will use you. Kind is a different sentence.',
+        },
       },
     ],
     intents: [
       {
         tags: ['bargain', 'deal', 'yes', 'useful', 'agree', 'walk'],
         reply: 'You nod like an adult. She almost looks grateful. That is worse.',
-        effects: { goto: 'ch1:bargain' },
+        effects: {
+          add: { kohl_smear: 1 },
+          flag: { ...done, climax: 'bargain', sybellaBargain: true },
+          goto: 'ch1:land',
+        },
       },
       {
         tags: ['run', 'flee', 'maw', 'go'],
+        show: { sapMin: 1 },
         reply: 'Sand. Breath. The skiff screams behind you.',
-        effects: { goto: 'ch1:flee' },
+        effects: {
+          sap: -3,
+          heat: { seekers: 2 },
+          flag: { ...done, climax: 'flee' },
+          goto: 'ch1:land',
+        },
+      },
+      {
+        tags: ['glint', 'burn', 'toss', 'coin', 'pay'],
+        show: { item: 'glints' },
+        reply: 'A spark. A delay. She hates delays.',
+        effects: {
+          remove: { glints: 1 },
+          flag: { ...done, climax: 'glint' },
+          heat: { seekers: 1 },
+          goto: 'ch1:land',
+        },
       },
       {
         tags: ['false', 'trick', 'lie', 'trail', 'ossa'],
-        show: { any: [{ item: 'scrap' }, { item: 'cache_map' }, { flag: 'ossaAlly' }] },
+        show: {
+          any: [
+            { item: 'scrap' },
+            { item: 'wrench' },
+            { item: 'cache_map' },
+            { item: 'oram_map' },
+            { item: 'rusted_dagger' },
+            { item: 'silas_tip' },
+            { flag: 'ossaAlly' },
+          ],
+        },
         reply: 'You spend a thing. The desert spends a direction.',
-        effects: { goto: 'ch1:false' },
+        effects: {
+          flag: { ...done, climax: 'false', falseTrail: true },
+          heat: { seekers: 1 },
+          goto: 'ch1:land',
+        },
       },
       {
-        tags: ['bury', 'hollow', 'magic', 'pray'],
-        show: { any: [{ item: 'glints' }, { item: 'vial_drop' }, { item: 'kallik_mark' }, { item: 'strider_bit' }] },
+        tags: ['bury', 'hollow', 'magic', 'pray', 'bait'],
+        show: {
+          any: [
+            { item: 'glints' },
+            { item: 'vial_drop' },
+            { item: 'kallik_mark' },
+            { item: 'strider_bit' },
+            { item: 'ceremonial_cloth' },
+            { item: 'rusted_dagger' },
+            { item: 'wrench' },
+          ],
+        },
         reply: 'You put a valued thing in the listening sand.',
         effects: { goto: 'ch1:hollow' },
       },
       {
-        tags: ['attack', 'kill', 'stab', 'hit'],
+        tags: ['attack', 'kill', 'stab', 'hit', 'dagger'],
         reply: 'She does not flinch. "No. We are past that kind of childish." The skiff runners tick like a clock.',
         effects: { heat: { seekers: 1 } },
-      },
-    ],
-  },
-  {
-    id: 'ch1:bargain',
-    chapterId: 'cache-run',
-    kind: 'story',
-    speaker: 'Sybella',
-    title: 'Useful',
-    body: `She thumbs kohl from under her eye and paints a mark at the base of your throat. A claim. A receipt.
-
-"Fill yourself at the Maw. Do not become a hymn. Do not become a Cartel story. Come back able to walk with sap in you like a furnace that did not explode. If you lie, I will still use you. I will just use less of you."
-
-The skiff peels away, not far. Hunting is a circling verb.`,
-    choices: [
-      {
-        id: 'on',
-        label: 'Walk into Red Maw Approach',
-        tone: 'hunger',
-        effects: {
-          add: { kohl_smear: 1 },
-          flag: {
-            sybellaBargain: true,
-            sybellaHunting: true,
-            chapter1Done: true,
-            climax: 'bargain',
-            ossaAlive: true,
-          },
-          heat: { seekers: -1 },
-          goto: 'ch1:land',
-        },
-      },
-    ],
-  },
-  {
-    id: 'ch1:flee',
-    chapterId: 'cache-run',
-    kind: 'story',
-    title: 'Spend Everything',
-    body: `You run. The skiff screams. Dunes become stairs. Sap burns out of you like stolen fuel.
-
-A runner clips the slope you just left and throws a sheet of grit that would have taken your face. You keep the face. You lose the easy hours. She will not stop. You knew that when you moved.`,
-    variants: [
-      {
-        if: { flag: 'ossaAlly' },
-        mode: 'append',
-        body: `Ossa is still with you, stilts eating distance, alive, cursing your choices in a way that means she has not left.`,
-      },
-    ],
-    choices: [
-      {
-        id: 'on',
-        label: 'Fall into the Maw\'s first shadow',
-        tone: 'hunger',
-        effects: {
-          sap: -2,
-          heat: { seekers: 2 },
-          flag: { sybellaHunting: true, chapter1Done: true, climax: 'flee', ossaAlive: true },
-          remove: { scrap: 1 },
-          goto: 'ch1:land',
-        },
-      },
-    ],
-  },
-  {
-    id: 'ch1:false',
-    chapterId: 'cache-run',
-    kind: 'story',
-    title: 'False Trail',
-    body: `You spend what you have on a lie the sand can tell.
-
-Scrap becomes a second set of prints. A cache scratch becomes a heading that points at nothing. If Ossa is with you, her stilts plant a story of a woman going west while you go east.
-
-Sybella reads the ground, then the wind, then you — but she is a moment late. Reasonable people hate being late. She will bill you.`,
-    choices: [
-      {
-        id: 'on',
-        label: 'Use the moment. Take the Approach.',
-        tone: 'hunger',
-        effects: {
-          flag: { falseTrail: true, sybellaHunting: true, chapter1Done: true, climax: 'false', ossaAlive: true },
-          heat: { seekers: 1 },
-          remove: { scrap: 1 },
-          goto: 'ch1:land',
-        },
       },
     ],
   },
@@ -585,16 +808,14 @@ Sybella reads the ground, then the wind, then you — but she is a moment late. 
     title: 'A Valued Thing',
     body: `You bury it. The dune takes the offering the way a lock takes a key it might not return.
 
-For a breath the skiff sinks to one runner. Sybella's head turns as if someone said her true name in a room she had sealed. Kohl-black tears do not fall. She will not give the Hollows her water.
-
-You run. Behind you, the buried thing is not silent. That is the bill. It will come due in Red Maw, or later, or in a dream with teeth.`,
+For a breath the skiff sinks to one runner. Sybella's head turns as if someone said her true name in a room she had sealed. You run. Behind you, the buried thing is not silent. That is the bill.`,
     choices: [
       {
         id: 'on',
         label: 'Carry the mark into the Approach',
         tone: 'hunger',
         effects: {
-          flag: { hollowMarked: true, sybellaHunting: true, chapter1Done: true, climax: 'hollow', ossaAlive: true },
+          flag: { ...done, climax: 'hollow', hollowMarked: true },
           sap: -1,
           heat: { seekers: 1 },
           goto: 'ch1:land',
@@ -608,11 +829,9 @@ You run. Behind you, the buried thing is not silent. That is the bill. It will c
     kind: 'story',
     art: 'hunger',
     title: 'Red Maw Approach',
-    body: `The Maw is not a canyon. It is a bite the land never closed. Red rock. Heat that feels personal. The cache is close enough to poison your decisions.
+    body: `The Maw is a bite the land never closed. The cache is close enough to poison your decisions.
 
-You are not who you were at the start door. The desert has edited you.
-
-Chapter 1 holds. The Approach is harder country. Sybella is not done. Ossa is alive — that matters, and it will keep mattering.`,
+Chapter 1 holds. What you spent is the person you are now.`,
     variants: [
       {
         if: { flagEq: ['climax', 'bargain'] },
@@ -620,9 +839,14 @@ Chapter 1 holds. The Approach is harder country. Sybella is not done. Ossa is al
         body: `Kohl on your throat. A bargain that thinks it is a future.`,
       },
       {
+        if: { flag: 'bargainDrop' },
+        mode: 'append',
+        body: `The Drop you poured bought a softer leash. Softer is still a leash.`,
+      },
+      {
         if: { flagEq: ['climax', 'flee'] },
         mode: 'append',
-        body: `Your lungs are knives. She is behind you like weather.`,
+        body: `Your lungs are knives. She is behind you like weather. Seeker Heat will not cool in the Approach.`,
       },
       {
         if: { flagEq: ['climax', 'false'] },
@@ -630,9 +854,34 @@ Chapter 1 holds. The Approach is harder country. Sybella is not done. Ossa is al
         body: `The false trail bought an hour. Hours are currency. You are already spending it.`,
       },
       {
+        if: { flagEq: ['falseSpent', 'wrench'] },
+        mode: 'append',
+        body: `The wrench is in the sand now, telling a story of a prisoner who went west.`,
+      },
+      {
+        if: { flagEq: ['falseSpent', 'oram_map'] },
+        mode: 'append',
+        body: `Oram's map is a lie pointing the other way. He would hate that. He might also understand.`,
+      },
+      {
+        if: { flagEq: ['falseSpent', 'silas_tip'] },
+        mode: 'append',
+        body: `Silas's scratch just bought you a direction that is not yours. Stray-to-stray, spent.`,
+      },
+      {
         if: { flagEq: ['climax', 'hollow'] },
         mode: 'append',
         body: `Something you loved is in the sand, screaming quietly. You and the Maw can both hear it.`,
+      },
+      {
+        if: { flagEq: ['climax', 'glint'] },
+        mode: 'append',
+        body: `One Glint poorer. One breath richer. She will bill the delay in Red Maw.`,
+      },
+      {
+        if: { flagEq: ['climax', 'sap'] },
+        mode: 'append',
+        body: `You stood as a furnace and paid in sap. The kohl receipt is lighter. Your glass is not.`,
       },
       {
         if: { flag: 'ossaAlly' },

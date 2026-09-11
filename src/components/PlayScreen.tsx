@@ -12,6 +12,7 @@ import {
   travelTo,
   visibleChoices,
 } from '../game/engine'
+import { effectPills, listedKit } from '../game/kit'
 import type { GameState } from '../game/types'
 import { InventorySheet } from './InventorySheet'
 
@@ -32,6 +33,8 @@ export function PlayScreen({ state, onChange, onTitle }: Props) {
   const hook = hub?.hungerHook
   const hookOn = hook && isChoiceOn(state, hook.show)
   const closing = !state.flags.chapter1Done && state.pressure >= 10 && !!state.flags.hungerKnown && !state.chapterId
+  const chips = listedKit(state.items)
+  const sapThin = state.sap <= 2
 
   useEffect(() => {
     storyRef.current?.scrollTo({ top: 0 })
@@ -58,7 +61,7 @@ export function PlayScreen({ state, onChange, onTitle }: Props) {
           <button type="button" className="brand" onClick={onTitle} title="Title">
             Amber
           </button>
-          <div className="sap" title="Sap — Drops of life">
+          <div className={`sap ${sapThin ? 'thin' : ''}`} title="Sap — Drops of life">
             <span className="sap-label">Sap</span>
             <div className="pips" aria-label={`${state.sap} of ${state.sapMax} sap`}>
               {Array.from({ length: state.sapMax }, (_, i) => (
@@ -69,6 +72,7 @@ export function PlayScreen({ state, onChange, onTitle }: Props) {
           </div>
           <button type="button" className="kit-btn" onClick={() => setKit(true)}>
             Kit
+            {chips.length ? <span className="kit-count">{chips.length}</span> : null}
           </button>
         </div>
         <div className="heat-row">
@@ -78,6 +82,17 @@ export function PlayScreen({ state, onChange, onTitle }: Props) {
             </span>
           ))}
         </div>
+        <button type="button" className="kit-strip" onClick={() => setKit(true)} aria-label="Open kit">
+          {chips.length === 0 ? (
+            <span className="kit-empty">Kit empty</span>
+          ) : (
+            chips.map((c) => (
+              <span key={c.id} className={`chip ${c.kind}`}>
+                {c.n > 1 ? `${c.name} ×${c.n}` : c.name}
+              </span>
+            ))
+          )}
+        </button>
         <div className="place-line">
           <strong>{scene.title ?? hub?.name ?? 'The dunes'}</strong>
           {hub ? <span>{hub.name}</span> : scene.chapterId === 'cache-run' ? <span>The Hunger</span> : null}
@@ -98,6 +113,13 @@ export function PlayScreen({ state, onChange, onTitle }: Props) {
             <p key={i}>{p}</p>
           ))}
         {state.flash ? <p className="flash">{state.flash}</p> : null}
+        {sapThin && scene.kind !== 'crisis' ? (
+          <p className="pressure-note">
+            {state.sap <= 0
+              ? 'Sap is empty. The next act that costs sap will be a crisis, not a death.'
+              : 'Sap is thin. Walks and work will empty you.'}
+          </p>
+        ) : null}
         {state.pressure >= 8 && !state.flags.chapter1Done && !state.chapterId ? (
           <p className="pressure-note">Pressure is mounting. Hunters use the hours you spend lingering.</p>
         ) : null}
@@ -115,6 +137,7 @@ export function PlayScreen({ state, onChange, onTitle }: Props) {
                 disabled={p.sceneId === state.sceneId}
               >
                 {p.name}
+                {p.sceneId !== state.sceneId ? <small>−1 Sap</small> : null}
               </button>
             ))}
           </div>
@@ -154,6 +177,7 @@ export function PlayScreen({ state, onChange, onTitle }: Props) {
         <div className="choices">
           {visibleChoices(state).map((c) => {
             const on = isChoiceOn(state, c.enable)
+            const pills = effectPills(c.effects)
             return (
               <button
                 type="button"
@@ -162,9 +186,20 @@ export function PlayScreen({ state, onChange, onTitle }: Props) {
                 disabled={!on}
                 onClick={() => on && onChange(applyEffect(state, c.effects))}
               >
-                {c.label}
-                {c.sub ? <small>{c.sub}</small> : null}
-                {!on && c.locked ? <small>{c.locked}</small> : null}
+                <span className="choice-copy">
+                  {c.label}
+                  {c.sub ? <small>{c.sub}</small> : null}
+                  {!on && c.locked ? <small>{c.locked}</small> : null}
+                </span>
+                {pills.length ? (
+                  <span className="pills">
+                    {pills.map((p) => (
+                      <i key={`${c.id}-${p.kind}-${p.text}`} className={p.kind}>
+                        {p.text}
+                      </i>
+                    ))}
+                  </span>
+                ) : null}
               </button>
             )
           })}
@@ -181,10 +216,10 @@ export function PlayScreen({ state, onChange, onTitle }: Props) {
             <input
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
-              placeholder="Say or do something…"
+              placeholder="hide · drink · take · bury…"
               enterKeyHint="go"
               autoComplete="off"
-              aria-label="Say or do something"
+              aria-label="Do something"
             />
             <button type="submit" className="btn btn-gold btn-tiny" disabled={!draft.trim()}>
               Do
@@ -194,7 +229,7 @@ export function PlayScreen({ state, onChange, onTitle }: Props) {
 
         {(state.items.vial_drop ?? 0) > 0 ? (
           <button type="button" className="text-link drink" onClick={() => onChange(drinkDrop(state))}>
-            Drink a Drop
+            Drink a Drop · +3 Sap
           </button>
         ) : null}
       </div>

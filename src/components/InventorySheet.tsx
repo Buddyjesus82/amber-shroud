@@ -1,6 +1,6 @@
-import { ITEMS } from '../game/content/catalog'
-import { drinkDrop } from '../game/engine'
-import type { GameState, ItemId } from '../game/types'
+import { drinkDrop, sapLabel } from '../game/engine'
+import { listedKit } from '../game/kit'
+import type { GameState } from '../game/types'
 
 type Props = {
   state: GameState
@@ -9,7 +9,7 @@ type Props = {
 }
 
 export function InventorySheet({ state, onClose, onChange }: Props) {
-  const ids = (Object.keys(state.items) as ItemId[]).filter((id) => (state.items[id] ?? 0) > 0)
+  const chips = listedKit(state.items)
   return (
     <div className="sheet-backdrop" role="dialog" aria-label="Kit" onClick={onClose}>
       <div className="sheet" onClick={(e) => e.stopPropagation()}>
@@ -20,37 +20,36 @@ export function InventorySheet({ state, onClose, onChange }: Props) {
           </button>
         </header>
         <p className="epithet">You are {state.epithet}.</p>
-        {ids.length === 0 ? (
-          <p className="empty">Pockets full of heat. Nothing else.</p>
+        <p className="kit-sap">
+          Sap {state.sap}/{state.sapMax} · {sapLabel(state.sap)}. Empty sap is a crisis, not a death.
+        </p>
+        {chips.length === 0 ? (
+          <p className="empty">Pockets full of heat. Nothing else. Find, buy, or steal before the next spend.</p>
         ) : (
           <ul className="kit-list">
-            {ids.map((id) => {
-              const def = ITEMS[id]
-              const n = state.items[id] ?? 0
-              return (
-                <li key={id}>
-                  <div>
-                    <strong>
-                      {def.name}
-                      {n > 1 ? ` ×${n}` : ''}
-                    </strong>
-                    <span>{def.desc}</span>
-                  </div>
-                  {id === 'vial_drop' ? (
-                    <button
-                      type="button"
-                      className="btn btn-gold btn-tiny"
-                      onClick={() => {
-                        onChange(drinkDrop(state))
-                        onClose()
-                      }}
-                    >
-                      Drink
-                    </button>
-                  ) : null}
-                </li>
-              )
-            })}
+            {chips.map((c) => (
+              <li key={c.id}>
+                <div>
+                  <strong>
+                    {c.name}
+                    {c.n > 1 ? ` ×${c.n}` : ''}
+                  </strong>
+                  <span>{c.desc}</span>
+                </div>
+                {c.id === 'vial_drop' ? (
+                  <button
+                    type="button"
+                    className="btn btn-gold btn-tiny"
+                    onClick={() => {
+                      onChange(drinkDrop(state))
+                      onClose()
+                    }}
+                  >
+                    Drink
+                  </button>
+                ) : null}
+              </li>
+            ))}
           </ul>
         )}
         <div className="heat-legend">

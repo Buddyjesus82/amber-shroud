@@ -51,17 +51,34 @@ function pickCrisis(state: GameState): string {
   return 'crisis:thresh'
 }
 
-function spendValued(state: GameState): GameState {
-  const order: ItemId[] = ['vial_drop', 'glints', 'kallik_mark', 'strider_bit', 'ceremonial_cloth', 'shiv']
+function spendFirst(state: GameState, order: ItemId[], flagKey: string): GameState {
   for (const id of order) {
     if ((state.items[id] ?? 0) > 0) {
       let next = applyDelta(state, { remove: { [id]: 1 } })
       if (id === 'vial_drop') next = applyDelta(next, { add: { vial_empty: 1 } })
-      next.flags = { ...next.flags, buriedItem: id }
+      next.flags = { ...next.flags, [flagKey]: id }
       return next
     }
   }
   return state
+}
+
+function spendValued(state: GameState): GameState {
+  return spendFirst(
+    state,
+    ['vial_drop', 'glints', 'kallik_mark', 'strider_bit', 'ceremonial_cloth', 'rusted_dagger', 'wrench', 'shiv'],
+    'buriedItem',
+  )
+}
+
+function spendFalse(state: GameState): GameState {
+  const spent = spendFirst(
+    state,
+    ['scrap', 'wrench', 'cache_map', 'oram_map', 'rusted_dagger', 'silas_tip'],
+    'falseSpent',
+  )
+  if (spent.flags.falseSpent) return spent
+  return applyDelta(state, { flag: { falseSpent: 'ossa' } })
 }
 
 function hunterScene(state: GameState): string | null {
@@ -93,7 +110,10 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   if (fx.startChapter) {
     next.chapterId = fx.startChapter
     next.hubId = null
-    next.flags = { ...next.flags, hungerLocked: true }
+    next.flags = { ...next.flags, hungerLocked: true, hungerKnown: true }
+    if (next.items.oram_map || next.items.silas_tip || next.items.cache_map) {
+      delete next.flags.cacheBlind
+    }
   }
   if (fx.enterHub) {
     const hub = HUBS[fx.enterHub]
@@ -124,6 +144,9 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
 
   if (next.sceneId === 'ch1:hollow' && state.sceneId !== 'ch1:hollow') {
     next = spendValued(next)
+  }
+  if (next.flags.climax === 'false' && state.flags.climax !== 'false') {
+    next = spendFalse(next)
   }
 
   const arrived = getScene(next.sceneId)
@@ -160,7 +183,7 @@ export function travelTo(state: GameState, sceneId: string): GameState {
     sap: -1,
     ticks: 1,
     pressure: 1,
-    flash: undefined,
+    flash: state.sap <= 2 ? 'The walk takes a Drop you do not have to spare.' : undefined,
   })
 }
 

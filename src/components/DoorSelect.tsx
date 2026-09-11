@@ -1,4 +1,5 @@
 import { DOORS } from '../game/content/catalog'
+import { kitLine } from '../game/kit'
 import type { DoorId } from '../game/types'
 
 type Props = {
@@ -16,7 +17,7 @@ export function DoorSelect({ onPick, onBack }: Props) {
           ← Title
         </button>
         <h2>Choose a start door</h2>
-        <p>Three ways into the same Hunger. No dice. Only consequence.</p>
+        <p>Same Hunger. Different kit. No dice — only what you carry.</p>
       </header>
       <div className="door-list">
         {order.map((id) => {
@@ -26,6 +27,10 @@ export function DoorSelect({ onPick, onBack }: Props) {
               <span className="door-role">{d.role}</span>
               <strong>{d.title}</strong>
               <span className="door-place">{d.place}</span>
+              <span className="door-stats">
+                Sap {d.sap} · Cartel {d.heat.cartel} · Seekers {d.heat.seekers} · Strays {d.heat.strays}
+              </span>
+              <span className="door-kit">Kit: {kitLine(d.items)}</span>
               <span className="door-blurb">{d.blurb}</span>
             </button>
           )

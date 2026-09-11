@@ -6,15 +6,15 @@ This is not a tabletop clone. There are no dice, no skill checks, and no rolls. 
 
 ## Play
 
-1. **New game** and pick a start door:
-   - **Ironwood Break** (Prisoner) — Camp-04 Bleed breakout
-   - **First Drop** (Outcast) — Bleached Spine, empty vial, noon heat
-   - **Vessel** (Cult) — Outer Threshold, fake the vessel, steal a Strider
-2. Roam the hub: move between places (costs Sap), talk to NPCs, search, delay.
-3. Optional free-text: type things like `ask cache`, `drink`, `hide`, `bury`, `steal`. The game matches keywords to a small intent map — no live LLM.
-4. When you learn of **Kallik's cache**, the Hunger hook unlocks. You can linger until Sap runs out or hunters close in. At 0 Sap you get an authored crisis beat, not a random death.
-5. Play **Chapter 1 — Cache Run** (Zafir, Ossa alive on stilts, Sybella on the sand-skiff). Climax is bargain / flee / false trail / Hollow attention.
-6. Land in **Red Maw Approach** with your consequences. Chapter 2, *The Walking Amber*, is stubbed on purpose.
+1. **New game** and pick a start door — kits are distinct and they bruise the same Cache Run:
+   - **Ironwood Break** (Prisoner) — Drop, scrap, Cartel scrip, vat wrench. Cartel Heat already on you.
+   - **First Drop** (Outcast) — empty vial, Silas's tip. Sap is thin. Stray lean.
+   - **Vessel** (Cult) — Drop, rusted dagger, Oram's map, cloth. Seeker / Thalia pressure.
+2. Roam the hub: moving costs **Sap**. Kit verbs change the yard, the Spine, and the Threshold. At 0 Sap you get an authored crisis, not a random death.
+3. Optional free-text: type things like `ask cache`, `drink`, `hide`, `bury`, `steal`. Keyword map — no live LLM, no dice.
+4. When you have a heading (rumor, Silas's tip, or Oram's map), the Hunger hook unlocks.
+5. **Chapter 1 — Cache Run** is the same spine for every door: want → trail → Ossa → Zafir → Sybella poker → Red Maw. Verbs and spends depend on kit, Heat, and flags. Climax is resource poker: spend Sap, burn a Glint, bait Hollows, flee+Heat, or lay a false trail.
+6. Land in **Red Maw Approach** with what you spent. Chapter 2, *The Walking Amber*, is stubbed on purpose.
 
 Progress saves to `localStorage` on every action. **Continue** from the title screen.
 
@@ -33,7 +33,7 @@ npm run preview
 
 ## Phone (permanent)
 
-GitHub Pages (project site): **https://bigjerm21.github.io/amber-shroud/**
+GitHub Pages (project site): **https://buddyjesus82.github.io/amber-shroud/**
 
 Open that URL in Safari (iPhone) or Chrome (Android) → Share / menu → **Add to Home Screen**.
 

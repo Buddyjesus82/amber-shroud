@@ -33,10 +33,17 @@ Down-slope: a tent the color of old teeth. Silas Vane sells shade by the minute.
             'East-south, a bruise of red in the heat. Maw-country. People bury fortunes there because they think the Maw is a lock. It is a mouth.',
         },
       },
+      {
+        id: 'tip',
+        label: "Follow Silas's tip",
+        sub: 'A shade-cut. May wet the empty vial. Costs no walk if you already paid him.',
+        show: { all: [{ item: 'silas_tip' }, { flagUnset: 'silasCutUsed' }] },
+        effects: { goto: 'spine:tip', ticks: 1 },
+      },
     ],
     intents: [
       {
-        tags: ['silas', 'shade', 'tent', 'vane'],
+        tags: ['silas', 'shade', 'tent', 'vane', 'tip'],
         reply: 'Shade is a country. You walk toward its border.',
         effects: { goto: 'spine:shade' },
       },
@@ -44,6 +51,50 @@ Down-slope: a tent the color of old teeth. Silas Vane sells shade by the minute.
         tags: ['well', 'water', 'drink'],
         reply: 'The well is a rumor of water. You go anyway.',
         effects: { goto: 'spine:well', ticks: 1 },
+      },
+    ],
+  },
+  {
+    id: 'spine:tip',
+    hubId: 'spine',
+    kind: 'story',
+    title: "Silas's Cut",
+    body: `The scratch leads under a rib of rock the noon pretends not to own. Shade. A smear of sap in a crack — not a Drop, a lie that still wets the tongue.
+
+The Hunger is a red bruise east-south. You could fill the empty vial with this smear and call it a first Drop, or you could save the tip for a later spend.`,
+    choices: [
+      {
+        id: 'fill',
+        label: 'Fill the empty vial',
+        sub: 'A smear, not a honest Drop. It will still keep you standing.',
+        show: { item: 'vial_empty' },
+        effects: {
+          remove: { vial_empty: 1 },
+          add: { vial_drop: 1 },
+          sap: 2,
+          flag: { firstDrop: true, silasCutUsed: true, hungerKnown: true },
+          ticks: 1,
+          goto: 'spine:ridge',
+          flash: 'The glass stops ticking. First Drop, stolen from a crack Silas already sold. The tip is still in your palm.',
+        },
+      },
+      {
+        id: 'lick',
+        label: 'Lick the smear. Leave the vial empty.',
+        show: { flagUnset: 'silasSmear' },
+        effects: {
+          sap: 1,
+          flag: { silasCutUsed: true, silasSmear: true, hungerKnown: true },
+          ticks: 1,
+          goto: 'spine:ridge',
+          flash: 'A taste. Not a future. The empty vial still argues. The tip is still spendable.',
+        },
+      },
+      {
+        id: 'back',
+        label: 'Back to the Spine',
+        tone: 'quiet',
+        effects: { goto: 'spine:ridge', flag: { silasCutUsed: true, hungerKnown: true } },
       },
     ],
   },
