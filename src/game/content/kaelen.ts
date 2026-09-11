@@ -2,7 +2,7 @@ import type { Scene } from '../types'
 
 const look = `Kaelen the Sifter jitters — a diminutive merchant in dust-caked canvas, an overstuffed pack of vials, gears, and amber jars, thick gloves on both hands. Independent scavenger. He plays all sides. Shrewd. Paranoid. Fast-talk. Everything is cost and profit. His hidden trade routes are unmatched.`
 
-const rumorHook = `"News is inventory. I don't give it away. Scrap buys a Drop of Oasis Sap. Glints buy intel. Ask. Pay. Then you get a lead — side trouble, or the Hunger, or both if your pockets are honest."`
+const rumorHook = `"You asked. That is free. I do not give you a job. I give you a mouth to bother. Ask the right question there and it becomes trouble with a shape. Glints still buy a faster heading if you want to skip the walk. Scrap still buys clocks and holes. Those are products. This was a rumor."`
 
 export const campKaelenScenes: Scene[] = [
   {
@@ -13,12 +13,17 @@ export const campKaelenScenes: Scene[] = [
     speaker: 'Kaelen the Sifter',
     body: `${look}
 
-He has the Wire at his back like a second pack-strap. "You're the trench story," he says, already counting what you might be worth. "I am not Oil-Tooth. He hotwires. I sell. Drops. Intel. Rumors that open trouble. Pick a product."`,
+He has the Wire at his back like a second pack-strap. "You're the trench story," he says, already counting what you might be worth. "I am not Oil-Tooth. He hotwires. I point. Ask me for a rumor and I name a mouth — not a job. Drops and intel are still for sale if you want to skip walking. Pick."`,
     variants: [
       {
         if: { flag: 'kaelenSoldDrop' },
         mode: 'append',
         body: `A vial-gap in the pack where your Drop used to live. He notices you noticing. Paranoid is a lifestyle.`,
+      },
+      {
+        if: { flag: 'kaelenRumorKallik' },
+        mode: 'append',
+        body: `He already pointed you at Oil-Tooth. "Debt. Not treasure. If you asked the bay the wrong way, that is your inventory problem."`,
       },
     ],
     choices: [
@@ -39,8 +44,8 @@ He has the Wire at his back like a second pack-strap. "You're the trench story,"
       },
       {
         id: 'rumors',
-        label: 'Ask for rumors. News.',
-        sub: 'He sells leads. They open trouble. They can point at the Hunger.',
+        label: 'Ask for a rumor. News.',
+        sub: 'Free pointer. Not a job. Not a shop.',
         effects: {
           goto: 'camp:kaelen-rumors',
           ticks: 1,
@@ -49,13 +54,14 @@ He has the Wire at his back like a second pack-strap. "You're the trench story,"
       },
       {
         id: 'glint',
-        label: 'Put a Glint on the pack. Buy intel.',
+        label: 'Put a Glint on the pack. Buy a faster heading.',
+        sub: 'Optional. Skips the walk to the right mouth.',
         show: { item: 'glints' },
         effects: {
           goto: 'camp:kaelen-rumors',
           ticks: 1,
           flag: { kaelenKnown: true, kaelenGlintOut: true },
-          flash: 'The Glint disappears into a thick glove. "Now we are talking inventory."',
+          flash: 'The Glint disappears into a thick glove. "Now we are talking inventory. The free rumor is still free."',
         },
       },
       {
@@ -84,17 +90,17 @@ He has the Wire at his back like a second pack-strap. "You're the trench story,"
       },
       {
         tags: ['kallik', 'cache', 'hunger', 'maw', 'heading'],
-        reply: '"That lead is intel. Glints. I do not donate the Hunger."',
+        reply: '"That is not a product I donate. I will point. Oil-Tooth. A debt. Not a map. Glints still buy the heading if you want to skip him."',
         effects: { goto: 'camp:kaelen-rumors', flag: { kaelenKnown: true } },
       },
       {
         tags: ['drop', 'sap', 'oasis', 'trade', 'buy', 'sell', 'scrap'],
-        reply: '"Scrap buys a Drop of Oasis Sap. That is the shop. Rumors are a different shelf."',
+        reply: '"Scrap buys a Drop of Oasis Sap. That is the shop. Rumors are a different shelf — and the first one is free."',
         effects: { ticks: 1 },
       },
       {
         tags: ['cut', 'hole', 'wire', 'route', 'escape'],
-        reply: '"A hole is a trade route. I sell those too. Pay on the rumor shelf. Oil-Tooth still hotwires the Strider — that is not me."',
+        reply: '"A hole is a trade route. I sell those. The free rumor is a mouth, not a hole. Pay on the other shelf if you want a cut."',
         effects: { goto: 'camp:kaelen-rumors' },
       },
       {
@@ -110,26 +116,39 @@ He has the Wire at his back like a second pack-strap. "You're the trench story,"
     kind: 'talk',
     title: 'Rumor Counter',
     speaker: 'Kaelen the Sifter',
-    body: `"Ask. Pay. I am not a church.
+    body: `"You asked. That is free.
 
-One: a Drop of Oasis Sap for scrap — that is the shop, not this shelf.
-Two: Glints buy intel. Kallik's cache. The Hunger. A blonde on a skiff.
-Three: cheaper leads. Side trouble. Relics Valerius hunts. When the Great Bleed hits the guard station. A hole in the wire if you want a route that is not a Strider.
+Oil-Tooth Vance. The stall. Do not ask him for a map, a Drop, or the Hunger. Ask him if Kallik still owes the bay. The right question is a debt. The wrong question is treasure. He will not mix the invoices for you. When he answers, it becomes a job — objective, stakes, cost. Until then it is only a rumor.
+
+I am not a church. I am also not a quest shop. Glints still buy a faster heading: Kallik's cache, the Hunger, a blonde on a skiff, a map so you can skip the stall. Scrap still buys smaller products: relics Valerius hunts, when the Great Bleed hits the guard station, a hole in the wire.
 
 Oil-Tooth remains your inside man. I remain the counter."`,
+    onEnter: { flag: { kaelenRumorKallik: true, kaelenKnown: true } },
     variants: [
       {
         if: { flag: 'kaelenGlintOut' },
         mode: 'append',
-        body: `Your Glint is already in the glove. He taps the pack. "Intel is paid. Point at a lead."`,
+        body: `Your Glint is already in the glove. He taps the pack. "Intel is paid. You can still walk to Oil-Tooth and ask the debt, or you can take the heading now and skip him."`,
+      },
+      {
+        if: { flag: 'hungerKnown' },
+        mode: 'append',
+        body: `The Hunger already has a shape in your pocket. He shrugs. "Then you are shopping. Not asking."`,
       },
     ],
     choices: [
       {
+        id: 'oil',
+        label: 'I heard. Find Oil-Tooth.',
+        sub: 'Ask if Kallik still owes the bay. Not for a map.',
+        show: { flagUnset: 'hungerKnown' },
+        effects: { goto: 'camp:lean', ticks: 1 },
+      },
+      {
         id: 'hunger-glint',
-        label: 'Buy the Hunger lead — Kallik, cache, the skiff',
-        sub: 'Glints buy intel.',
-        show: { all: [{ item: 'glints' }, { flagUnset: 'kaelenGlintOut' }] },
+        label: 'Pay a Glint. Take the Hunger heading now.',
+        sub: 'Optional shortcut. Map and mark. Skips the stall.',
+        show: { all: [{ item: 'glints' }, { flagUnset: 'kaelenGlintOut' }, { flagUnset: 'kaelenHunger' }] },
         effects: {
           remove: { glints: 1 },
           add: { kallik_mark: 1, cache_map: 1 },
@@ -137,12 +156,13 @@ Oil-Tooth remains your inside man. I remain the counter."`,
           ticks: 1,
           goto: 'camp:wire',
           flash:
-            '"Kallik owed the Maw. Cache is real. Sybella is more real. Red Maw. Second rib. You want a Strider, that is Oil-Tooth. You wanted the heading. You have it."',
+            '"Kallik owed the Maw. Cache is real. Sybella is more real. Red Maw. Second rib. You skipped the stall. That is what Glints are for. Strider is still Oil-Tooth."',
         },
       },
       {
         id: 'hunger-paid',
-        label: 'Take the Hunger lead. Intel is already paid.',
+        label: 'Take the Hunger heading. Intel is already paid.',
+        sub: 'Shortcut. You already put the Glint down.',
         show: { all: [{ flag: 'kaelenGlintOut' }, { flagUnset: 'kaelenHunger' }] },
         effects: {
           add: { kallik_mark: 1, cache_map: 1 },
@@ -151,7 +171,7 @@ Oil-Tooth remains your inside man. I remain the counter."`,
           ticks: 1,
           goto: 'camp:wire',
           flash:
-            '"Kallik owed the Maw. Cache is real. Sybella is more real. Red Maw. Second rib. Heading is yours. Strider is still Oil-Tooth."',
+            '"Kallik owed the Maw. Cache is real. Sybella is more real. Red Maw. Second rib. Heading is yours. You skipped the debt question. Strider is still Oil-Tooth."',
         },
       },
       {
@@ -217,8 +237,13 @@ Oil-Tooth remains your inside man. I remain the counter."`,
     ],
     intents: [
       {
+        tags: ['oil', 'tooth', 'jaxson', 'vance', 'owe', 'owes', 'debt', 'bay', 'stall'],
+        reply: '"The stall. Kallik. What he still owes. Not a map."',
+        effects: { goto: 'camp:lean', ticks: 1 },
+      },
+      {
         tags: ['kallik', 'cache', 'hunger', 'maw', 'heading', 'sybella'],
-        reply: 'He names a price with his eyes. Glints. Then the Maw.',
+        reply: 'He names a price with his eyes. Glints skip the stall. The free rumor already pointed. Walk, or pay.',
         effects: { ticks: 1 },
       },
       {
@@ -276,7 +301,14 @@ export const spineKaelenScenes: Scene[] = [
     speaker: 'Kaelen the Sifter',
     body: `${look}
 
-Dusk on the Spine. Same pack. Same gloves. Less wire, more dust. "You're the empty vial," he says. "I fill those if you pay. I also sell rumors. Silas sold you shade. I sell inventory."`,
+Dusk on the Spine. Same pack. Same gloves. Less wire, more dust. "You're the empty vial," he says. "I fill those if you pay. Ask me for a rumor and I name a mouth — not a job. Silas sold you shade. I do not. I point."`,
+    variants: [
+      {
+        if: { flag: 'kaelenRumorHound' },
+        mode: 'append',
+        body: `He already pointed you at the east wash. "The woman on the skiff. Not the cork. If you asked him the wrong way, that is not a refund."`,
+      },
+    ],
     choices: [
       {
         id: 'drop',
@@ -293,18 +325,20 @@ Dusk on the Spine. Same pack. Same gloves. Less wire, more dust. "You're the emp
       },
       {
         id: 'rumors',
-        label: 'Ask for rumors. News.',
+        label: 'Ask for a rumor. News.',
+        sub: 'Free pointer. Not a job.',
         effects: { goto: 'spine:kaelen-rumors', ticks: 1, flag: { kaelenKnown: true } },
       },
       {
         id: 'glint',
-        label: 'Put a Glint on the pack. Buy intel.',
+        label: 'Put a Glint on the pack. Buy a faster heading.',
+        sub: 'Optional. Skips the Hound.',
         show: { item: 'glints' },
         effects: {
           goto: 'spine:kaelen-rumors',
           ticks: 1,
           flag: { kaelenKnown: true, kaelenGlintOut: true },
-          flash: 'The Glint vanishes. "Intel. Point."',
+          flash: 'The Glint vanishes. "Intel. You can still walk, or you can skip."',
         },
       },
       {
@@ -322,7 +356,7 @@ Dusk on the Spine. Same pack. Same gloves. Less wire, more dust. "You're the emp
       },
       {
         tags: ['drop', 'sap', 'trade', 'buy', 'scrap'],
-        reply: '"Scrap buys a Drop of Oasis Sap. Rumors are Glints, or cheaper trouble for scrap."',
+        reply: '"Scrap buys a Drop of Oasis Sap. The first rumor is free. Faster headings are Glints."',
         effects: { ticks: 1 },
       },
     ],
@@ -333,13 +367,34 @@ Dusk on the Spine. Same pack. Same gloves. Less wire, more dust. "You're the emp
     kind: 'talk',
     title: 'Rumor Counter',
     speaker: 'Kaelen the Sifter',
-    body: `"Silas is shade. I am the counter. Glints buy the Hunger — Kallik's cache, the blonde on the skiff. Scrap buys smaller trouble: Hound-sign on the east wash. I do not take scrip. I do not hotwire. I do not pray."`,
+    body: `"Silas is shade. I am the counter. You asked. That is free.
+
+East wash. Shard-Hound Valerius. Do not ask him about the cork. Do not ask him to hunt you a cache. Ask about the woman on the skiff. He answers questions that are not about you. When he answers, it becomes a job. Until then it is a rumor.
+
+Glints still buy the Hunger outright — Kallik's cache, the blonde, a map — if you want to skip the Hound. Scrap still buys smaller trouble if you like paying to be walked there.
+
+I do not take scrip. I do not hotwire. I do not pray."`,
+    onEnter: { flag: { kaelenRumorHound: true, kaelenKnown: true } },
+    variants: [
+      {
+        if: { flag: 'kaelenGlintOut' },
+        mode: 'append',
+        body: `Your Glint is in the glove. "Skip the wash, or walk it. Both are inventory."`,
+      },
+    ],
     choices: [
       {
+        id: 'wash',
+        label: 'I heard. East wash.',
+        sub: 'Ask Valerius about the woman on the skiff. Not the cork.',
+        show: { flagUnset: 'hungerKnown' },
+        effects: { goto: 'spine:hound', ticks: 1 },
+      },
+      {
         id: 'hunger-glint',
-        label: 'Buy the Hunger lead',
-        sub: 'Glints buy intel.',
-        show: { all: [{ item: 'glints' }, { flagUnset: 'kaelenGlintOut' }] },
+        label: 'Pay a Glint. Take the Hunger heading now.',
+        sub: 'Optional shortcut. Skips the Hound.',
+        show: { all: [{ item: 'glints' }, { flagUnset: 'kaelenGlintOut' }, { flagUnset: 'kaelenHunger' }] },
         effects: {
           remove: { glints: 1 },
           add: { kallik_mark: 1, cache_map: 1 },
@@ -347,12 +402,12 @@ Dusk on the Spine. Same pack. Same gloves. Less wire, more dust. "You're the emp
           ticks: 1,
           goto: 'spine:well',
           flash:
-            'He scratches Red Maw in the dirt with a boot-heel. "Kallik\'s bait. Sybella\'s skiff. Ossa on stilts if she is still alive. Do not make me collect you as bones."',
+            'He scratches Red Maw in the dirt with a boot-heel. "Kallik\'s bait. Sybella\'s skiff. You skipped the Hound. Do not make me collect you as bones."',
         },
       },
       {
         id: 'hunger-paid',
-        label: 'Take the Hunger lead. Intel is already paid.',
+        label: 'Take the Hunger heading. Intel is already paid.',
         show: { all: [{ flag: 'kaelenGlintOut' }, { flagUnset: 'kaelenHunger' }] },
         effects: {
           add: { kallik_mark: 1, cache_map: 1 },
@@ -365,17 +420,17 @@ Dusk on the Spine. Same pack. Same gloves. Less wire, more dust. "You're the emp
       },
       {
         id: 'hound',
-        label: 'Buy side trouble — Hound on the east wash',
-        sub: 'One scrap.',
+        label: 'Pay scrap to be walked to the Hound',
+        sub: 'Optional. One scrap. You already have the rumor.',
         show: { all: [{ item: 'scrap' }, { flagUnset: 'kaelenHoundRumor' }] },
         effects: {
           remove: { scrap: 1 },
-          flag: { kaelenHoundRumor: true, kaelenKnown: true },
+          flag: { kaelenHoundRumor: true, kaelenRumorHound: true, kaelenKnown: true },
           heat: { cartel: 1 },
           ticks: 1,
           goto: 'spine:hound',
           flash:
-            '"Valerius. Shard-Hound. He hunts Sap thieves and unpermitted relic hoarders even out here. You paid to know he is close. Congratulations."',
+            '"Valerius. Shard-Hound. He hunts Sap thieves and unpermitted relic hoarders even out here. You paid to arrive. Ask about the woman. Not the cork."',
         },
       },
       {
