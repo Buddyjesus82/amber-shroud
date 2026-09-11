@@ -119,7 +119,7 @@ export const DOORS: Record<string, DoorDef> = {
     place: 'Ironwood Camp-04',
     epithet: 'the Bleed-Cut',
     blurb:
-      'Holding pens. Cartel Scrip only. The Great Bleed is about to hit. Oil-Tooth hotwires the Strider. Kaelen the Sifter sells rumors — he is not your inside man.',
+      'Holding pens. Cartel Scrip only. The Great Bleed is about to hit. Oil-Tooth hotwires the Strider. Kaelen the Sifter points free rumors at other mouths — he is not your inside man.',
     sap: 4,
     heat: { cartel: 3, seekers: 0, strays: 1 },
     items: { scrip: 2 },

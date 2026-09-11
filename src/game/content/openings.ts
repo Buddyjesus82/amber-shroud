@@ -15,7 +15,7 @@ Bunk next to you: Jaxson "Oil-Tooth" Vance. Overseer Valerius is the looming sha
       {
         id: 'pens',
         label: 'Sit the pens. Hear Oil-Tooth.',
-        sub: 'Kit: Cartel Scrip only. He is the inside man. Kaelen sells rumors elsewhere.',
+        sub: 'Kit: Cartel Scrip only. He is the inside man. Kaelen points rumors elsewhere.',
         effects: {
           enterHub: 'camp04',
           goto: 'camp:cages',
