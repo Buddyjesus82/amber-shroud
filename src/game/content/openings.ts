@@ -6,21 +6,22 @@ export const openingScenes: Scene[] = [
     kind: 'story',
     art: 'world',
     title: 'Ironwood Break',
-    body: `The vat wall gives with a sound like wet wood splitting.
+    body: `Ironwood Camp-04 is loud and polluted: an industrial labor camp behind razor-wire. Steam-vents scream. Harvesters strip-mine petrified groves. Ironclad Skiff-Striders patrol the yards.
 
-Camp-04 calls it the Bleed: amber cooked until it weeps, prisoners scraping the skin into buckets while Overseer Valerius counts hours like they are scrip. Tonight the trench floods. You go with it — a Drop stolen, Cartel scrip still in the hem they never searched, a vat-wrench riding your sleeve because the bolt came with you.
+You are a penniless laborer in the holding pens. Cartel Scrip only. The Great Bleed is about to hit.
 
-Sirens do not mean freedom. They mean the wire still thinks it owns you.`,
+Bunk next to you: Jaxson "Oil-Tooth" Vance. Overseer Valerius is the looming shadow. Sabotage the guard station. Hotwire a Strider. Escape the dunes. That is the first job — not the whole desert.`,
     choices: [
       {
-        id: 'crawl',
-        label: 'Crawl the trench into the Yard',
-        sub: 'Kit: Drop, scrap, scrip, wrench. Cartel Heat is already on you.',
+        id: 'pens',
+        label: 'Sit the pens. Hear Oil-Tooth.',
+        sub: 'Kit: Cartel Scrip only. He is the inside man. Kaelen sells rumors elsewhere.',
         effects: {
           enterHub: 'camp04',
-          goto: 'camp:yard',
+          goto: 'camp:cages',
           ticks: 1,
-          flash: 'You come up black to the elbows. The line of prisoners does not look. Looking is a skill they beat out of you.',
+          flash:
+            'Razor-wire. Steam. A brass jaw smirks in the next bunk. Cartel Scrip is a lullaby that does not buy Oasis Sap.',
         },
       },
     ],

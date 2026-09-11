@@ -2,6 +2,7 @@ import type { Scene } from '../types'
 import { campScenes } from './camp04'
 import { cacheRunScenes } from './cacheRun'
 import { crisisScenes } from './crises'
+import { campKaelenScenes, spineKaelenScenes } from './kaelen'
 import { openingScenes } from './openings'
 import { redMawScenes } from './redMaw'
 import { spineScenes } from './spine'
@@ -12,7 +13,9 @@ export { DOORS, HUBS, ITEMS } from './catalog'
 const all: Scene[] = [
   ...openingScenes,
   ...campScenes,
+  ...campKaelenScenes,
   ...spineScenes,
+  ...spineKaelenScenes,
   ...thresholdScenes,
   ...cacheRunScenes,
   ...redMawScenes,

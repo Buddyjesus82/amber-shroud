@@ -6,21 +6,20 @@ export const crisisScenes: Scene[] = [
     hubId: 'camp04',
     kind: 'crisis',
     title: 'Empty',
-    speaker: 'Jaxson Oil-Tooth',
-    body: `Sap hits zero in the Yard like a light going out.
+    speaker: 'Jaxson "Oil-Tooth" Vance',
+    body: `Sap hits zero in the pens like a light going out.
 
-You go to your knees in resin-slick dust. Jaxson is suddenly there — gold tooth, bad breath, a Drop forced against your lip. "I don't collect corpses. Corpses don't owe me. Get up. The cache at Red Maw is the only honest well left, and you are done playing prisoner."`,
+You go to your knees in resin-slick dust. Oil-Tooth is suddenly there — burly, grease-stained, brass jaw, a skimmed Drop of Oasis Sap forced against your lip. "I don't collect corpses. Corpses don't hotwire. Get up. Guard station. Strider. I am the inside man. If you want rumors, that is Kaelen — and he still charges."`,
     choices: [
       {
         id: 'up',
         label: 'Swallow. Get up.',
         effects: {
           sap: 3,
-          flag: { hungerKnown: true, crisisCamp: true, jaxsonFavor: true },
-          add: { kallik_mark: 1 },
+          flag: { crisisCamp: true, jaxsonFavor: true },
           pressure: 2,
-          goto: 'camp:forced',
-          flash: 'You live. You owe Oil-Tooth. The camp has less patience than he does.',
+          goto: 'camp:lean',
+          flash: 'You live. Oil-Tooth still wants the sabotage. Kaelen still charges for rumors.',
         },
       },
     ],
@@ -32,7 +31,7 @@ You go to your knees in resin-slick dust. Jaxson is suddenly there — gold toot
     title: 'Noon Takes Its Cut',
     body: `The Spine whites out.
 
-You wake with sand in your teeth and a Drop in your vial you did not earn. Silas's milk eye is somewhere above you, or Kaelen's wrists, or a Hollow that smelled like both.
+You wake with sand in your teeth and a Drop in your vial you did not earn. Silas's shade, or Kaelen the Sifter's thick gloves, or a Hollow that smelled like both.
 
 "First Drop," a voice says. "Last warning. East is the Maw. Stay and you become a story the well tells."`,
     choices: [

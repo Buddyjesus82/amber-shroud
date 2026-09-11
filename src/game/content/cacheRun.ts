@@ -22,7 +22,7 @@ Three beats between you and her. Then you spend.`,
       {
         if: { door: 'prisoner' },
         mode: 'append',
-        body: `Camp-04 sirens thin. The wrench still smells like vat-bolts. Scrip will not buy dunes. Cartel Heat will.`,
+        body: `Camp-04 sirens thin. Oil-Tooth's oversized wrench still smells like Strider hull. Scrip will not buy dunes. Cartel Heat will.`,
       },
       {
         if: { door: 'outcast' },

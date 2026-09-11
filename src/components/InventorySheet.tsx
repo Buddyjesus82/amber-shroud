@@ -60,7 +60,7 @@ export function InventorySheet({ state, onClose, onChange }: Props) {
             <b>Seekers</b> {state.heat.seekers} · cloth, vessels, Sybella
           </p>
           <p>
-            <b>Strays</b> {state.heat.strays} · Jaxson, Silas, dune law
+            <b>Strays</b> {state.heat.strays} · Oil-Tooth, Silas, Kaelen the Sifter
           </p>
         </div>
       </div>

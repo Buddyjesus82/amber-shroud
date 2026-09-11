@@ -7,12 +7,12 @@ This is not a tabletop clone. There are no dice, no skill checks, and no rolls. 
 ## Play
 
 1. **New game** and pick a start door — kits are distinct and they bruise the same Cache Run:
-   - **Ironwood Break** (Prisoner) — Drop, scrap, Cartel scrip, vat wrench. Cartel Heat already on you.
-   - **First Drop** (Outcast) — empty vial, Silas's tip. Sap is thin. Stray lean.
+   - **Ironwood Break** (Prisoner) — Cartel Scrip only in the holding pens. Oil-Tooth Jaxson is the inside man (sabotage + hotwire). **Kaelen the Sifter** is the rumor counter + merchant (scrap → Drops of Oasis Sap; Glints → intel).
+   - **First Drop** (Outcast) — empty vial, Silas's tip. Sap is thin. Stray lean. Kaelen still sells Drops and rumors at dusk.
    - **Vessel** (Cult) — Drop, rusted dagger, Oram's map, cloth. Seeker / Thalia pressure.
 2. Roam the hub: moving costs **Sap**. Kit verbs change the yard, the Spine, and the Threshold. At 0 Sap you get an authored crisis, not a random death.
 3. Optional free-text: type things like `ask cache`, `drink`, `hide`, `bury`, `steal`. Keyword map — no live LLM, no dice.
-4. When you have a heading (rumor, Silas's tip, or Oram's map), the Hunger hook unlocks.
+4. Ask **Kaelen the Sifter** for rumors/news (he sells or trades leads). Door facilitators (Oil-Tooth, Silas, Oram) run the first starting quest only — they are not the full cast. When you have a heading (Kaelen intel, Silas's tip, or Oram's map), the Hunger hook unlocks.
 5. **Chapter 1 — Cache Run** is the same spine for every door: want → trail → Ossa → Zafir → Sybella poker → Red Maw. Verbs and spends depend on kit, Heat, and flags. Climax is resource poker: spend Sap, burn a Glint, bait Hollows, flee+Heat, or lay a false trail.
 6. Land in **Red Maw Approach** with what you spent. Chapter 2, *The Walking Amber*, is stubbed on purpose.
 

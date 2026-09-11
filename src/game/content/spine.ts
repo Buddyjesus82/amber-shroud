@@ -142,7 +142,7 @@ The Hunger is a red bruise east-south. You could fill the empty vial with this s
           flag: { kaelenKnown: true },
           ticks: 1,
           flash:
-            '"Kaelen passes at dusk if dusk remembers him. He cuts things. Wire. Deals. Throats if the math says throat." Silas points his chin at the well. "He left a scratch in the stone. Read it or don\'t."',
+            '"Kaelen the Sifter passes at dusk if dusk remembers him. Jittery merchant. Pack of vials. He sells Drops for scrap and rumors for Glints. He is not shade. I am shade." Silas points his chin at the well. "He left a scratch in the stone. Read it or don\'t."',
           goto: 'spine:silas',
         },
       },
@@ -260,12 +260,13 @@ You can lower a hope. You cannot lower a bucket that still believes in water.`,
           ticks: 1,
           sap: -1,
           goto: 'spine:well',
-          flash: 'A Glint wedged like a tooth. Scrap wire. Kaelen leaves tools the way other people leave warnings.',
+          flash: 'A Glint wedged like a tooth. Scrap wire. Kaelen the Sifter leaves inventory the way other people leave warnings.',
         },
       },
       {
         id: 'kaelen',
-        label: 'Wait for dusk and Kaelen',
+        label: 'Wait for dusk and Kaelen the Sifter',
+        sub: 'Merchant. Rumors if you ask. Not Silas\'s shade.',
         effects: { goto: 'spine:kaelen', ticks: 1, sap: -1, pressure: 1 },
       },
     ],
@@ -275,43 +276,6 @@ You can lower a hope. You cannot lower a bucket that still believes in water.`,
         reply: 'The well eats a stone you kick. It does not send a Drop back. Some mouths only swallow.',
         effects: { sap: -1, ticks: 1, pressure: 1 },
       },
-    ],
-  },
-  {
-    id: 'spine:kaelen',
-    hubId: 'spine',
-    kind: 'talk',
-    title: 'Kaelen',
-    speaker: 'Kaelen',
-    body: `He arrives like a cut already made. Same wrists. Same patience. The Spine version of him has more dust and less wire.
-
-"You're the empty vial," Kaelen says. "I don't fill those. I point them at holes."`,
-    choices: [
-      {
-        id: 'hole',
-        label: 'Ask him to point',
-        effects: {
-          flag: { hungerKnown: true },
-          add: { cache_map: 1 },
-          ticks: 1,
-          goto: 'spine:well',
-          flash:
-            'He scratches Red Maw in the dirt with a boot. "Kallik\'s bait. Sybella\'s skiff. Ossa on stilts if she\'s still alive, and she was alive last week, which is a kind of miracle. Do not make me collect you as bones."',
-        },
-      },
-      {
-        id: 'trade',
-        label: 'Trade scrap for a sip',
-        show: { item: 'scrap' },
-        effects: {
-          remove: { scrap: 1 },
-          add: { vial_drop: 1 },
-          ticks: 1,
-          goto: 'spine:well',
-          flash: 'He hates that he did that. You love that he did that. The Drop is small and mean and enough.',
-        },
-      },
-      { id: 'go', label: 'Let him pass', tone: 'quiet', effects: { goto: 'spine:well' } },
     ],
   },
   {

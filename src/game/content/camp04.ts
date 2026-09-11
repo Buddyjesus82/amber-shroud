@@ -1,23 +1,18 @@
 import type { Scene } from '../types'
 
-const backYard = {
-  id: 'back-yard',
-  label: 'Back to the Bleed Yard',
-  tone: 'quiet' as const,
-  effects: { goto: 'camp:yard' },
-}
-
 export const campScenes: Scene[] = [
   {
     id: 'camp:yard',
     hubId: 'camp04',
     kind: 'place',
     title: 'Bleed Yard',
-    body: `The Yard still stinks of cooked resin and unwashed iron. Vats tick as they cool. A line of prisoners scrape amber skin into buckets like it is nothing but work.
+    body: `Ironwood Camp-04 does not quiet. Razor-wire. Steam-vents. Harvesters strip-mining petrified groves beyond the fence. Ironclad Skiff-Striders patrol like they own the heat.
 
-Camp-04 does not know you slipped the trench. Not yet. Jaxson Oil-Tooth is not in the line. That is either luck or a trap.
+The Yard stinks of cooked resin and unwashed iron. Vats tick toward the Great Bleed. A line of prisoners scrape amber skin into buckets like it is nothing but work.
 
-On the far wire, heat-haze makes a person out of nothing. The Hunger is a rumor until it isn't.`,
+Jaxson "Oil-Tooth" Vance is not in the line. He is either in the next bunk, or under a Strider. Kaelen the Sifter is a rumor at the Wire — merchant, not inside man.
+
+Overseer Valerius is the looming shadow. First major victory: get out from under him.`,
     variants: [
       {
         if: { flag: 'vatDripTaken' },
@@ -60,9 +55,14 @@ On the far wire, heat-haze makes a person out of nothing. The Hunger is a rumor 
         effects: { goto: 'camp:vats', ticks: 1, sap: -1, pressure: 1 },
       },
       {
-        tags: ['jaxson', 'oil', 'tooth', 'lean'],
-        reply: "Oil-Tooth's lean-to sits off the line, patched with vat-skin. He will want a reason.",
+        tags: ['jaxson', 'oil', 'tooth', 'lean', 'vance', 'bunk'],
+        reply: "Oil-Tooth's stall sits off the line. The next bunk in the pens is his. He is the inside man — not Kaelen.",
         effects: { goto: 'camp:lean' },
+      },
+      {
+        tags: ['kaelen', 'sifter', 'rumor', 'news', 'merchant', 'trade'],
+        reply: 'Kaelen the Sifter works the Wire. Rumors. Drops. He does not hotwire Striders.',
+        effects: { goto: 'camp:wire' },
       },
     ],
   },
@@ -119,11 +119,21 @@ Take it and you are a thief twice. Leave it and noon will take it anyway.`,
     id: 'camp:cages',
     hubId: 'camp04',
     kind: 'place',
-    title: 'Cage Row',
-    body: `Sleeping cages. Each one a ribcage for a person. Yours still smells like the Bleed.
+    title: 'Holding Pens',
+    body: `Holding pens. Each cage a ribcage for a penniless laborer. Yours still smells like the last Bleed. Cartel Scrip in the hem. Nothing else.
 
-A bar on the third cage is loose enough to work. Jaxson stashes things here when the Yard gets religious about searches.`,
+Bunk next to you: Jaxson "Oil-Tooth" Vance — burly, grease-stained, permanent smirk, cybernetic brass jaw catching the steam-light. Scorched welding leathers with corporate inventory tags. An oversized wrench when he is not hiding it.
+
+He is the prison-break technical inside man. Reckless. Charismatic. Anti-authority. Humor as a shield. Observant of security weaknesses. He has skimmed Oasis Sap for a lifetime of repairing Ironclad Skiff-Striders.
+
+Kaelen the Sifter is not here. Kaelen sells rumors at the Wire.`,
     choices: [
+      {
+        id: 'jaxson',
+        label: 'Talk to Oil-Tooth in the next bunk',
+        sub: 'Inside man. Hotwire. Not the rumor counter.',
+        effects: { goto: 'camp:jaxson', ticks: 1 },
+      },
       {
         id: 'bar',
         label: 'Work the loose bar',
@@ -143,18 +153,23 @@ A bar on the third cage is loose enough to work. Jaxson stashes things here when
         show: { all: [{ flag: 'jaxsonFavor' }, { flagUnset: 'jaxsonStash' }] },
         effects: {
           flag: { jaxsonStash: true, jaxsonPaid: true },
-          add: { cache_map: 1, scrap: 1 },
+          add: { scrap: 2 },
           ticks: 1,
           sap: -1,
           goto: 'camp:cages',
           flash:
-            "Under the pallet: a scratch-map that says RED MAW in a drunk's hand, and scrap enough to cut wire. You have paid him in risk.",
+            "Under the pallet: scrap enough to interest Kaelen the Sifter. Oil-Tooth does not sell headings. He sells a ride.",
         },
       },
     ],
     intents: [
       {
-        tags: ['sleep', 'lie', 'cage', 'hide'],
+        tags: ['jaxson', 'oil', 'tooth', 'vance', 'talk', 'hotwire'],
+        reply: 'The brass jaw turns. Humor as a shield. He has been waiting for the Bleed.',
+        effects: { goto: 'camp:jaxson', ticks: 1 },
+      },
+      {
+        tags: ['sleep', 'lie', 'cage', 'hide', 'bunk'],
         reply: 'You fold into the cage. Rest is a rumor. The metal keeps your shape.',
         effects: { sap: -1, ticks: 1, pressure: 2 },
       },
@@ -192,7 +207,7 @@ A bar on the third cage is loose enough to work. Jaxson stashes things here when
           flag: { shivTaken: true },
           goto: 'camp:cages',
           ticks: 1,
-          flash: 'Ugly metal for ugly trades. Kaelen on the Wire loves ugly.',
+          flash: 'Ugly metal for ugly trades. Kaelen the Sifter buys scrap. He sells Drops. He does not hotwire.',
         },
       },
     ],
@@ -201,32 +216,42 @@ A bar on the third cage is loose enough to work. Jaxson stashes things here when
     id: 'camp:lean',
     hubId: 'camp04',
     kind: 'place',
-    title: "Oil-Tooth's Lean-to",
-    speaker: 'Jaxson Oil-Tooth',
-    body: `Jaxson is built like a vat that learned to walk. One tooth is resin-gold from a year he will not explain. He does not look surprised to see you un-caged.
+    title: "Oil-Tooth's Stall",
+    speaker: 'Jaxson "Oil-Tooth" Vance',
+    body: `Jaxson "Oil-Tooth" Vance is a burly grease-stained mechanic with a permanent smirk and a cybernetic brass jaw. Scorched welding leathers. Corporate inventory tags he never cut off. The oversized wrench lives in his fist like a second opinion.
 
-"Bleed-Cut," he says, like it is already your name. "Camp still thinks you're in the trench. I know a hole that thinks otherwise."`,
+Lifetime labor: repairing Ironclad Skiff-Striders. He has skimmed Oasis Sap the whole time. Reckless. Charismatic. Anti-authority. Humor as a shield. He watches security weaknesses the way other men watch the sky.
+
+"Bleed-Cut," he says, like it is already your name. "Great Bleed is coming. You sabotage the guard station. I hotwire a Strider. That is the job. Kaelen the Sifter sells rumors at the Wire if you want news. He is not the inside man. I am."`,
     variants: [
       {
-        if: { flag: 'hungerKnown' },
+        if: { flag: 'striderHot' },
         mode: 'replace',
-        body: `Jaxson chews nothing and stares at the dunes beyond the wire.
-
-"Kallik buried Drops at Red Maw and the Maw buried Kallik. Cache is still there if you can outrun a blonde on a skiff. She wants batteries that walk. You look like you learned walking the hard way."`,
+        body: `The smirk holds. The Strider is live. "Valerius can eat the dust-cloaks. We ride, or you linger like a fool. Kaelen's rumors still cost if you have not paid for a heading."`,
+      },
+      {
+        if: { flag: 'jaxsonInside' },
+        mode: 'append',
+        body: `The wrench is yours now. Guard station. Then the bay. He will be under the hull.`,
       },
     ],
     choices: [
       {
         id: 'talk',
-        label: 'Sit and talk',
+        label: 'Take the inside job',
         effects: { goto: 'camp:jaxson', ticks: 1 },
       },
     ],
     intents: [
       {
-        tags: ['cache', 'kallik', 'maw', 'hunger', 'rumor', 'dune'],
-        reply: 'Jaxson grins with the gold tooth. He has been waiting to spend this story.',
-        effects: { goto: 'camp:jaxson-cache', ticks: 1 },
+        tags: ['hotwire', 'strider', 'sabotage', 'guard', 'escape', 'break'],
+        reply: 'The brass jaw grins. He has been waiting to spend this job.',
+        effects: { goto: 'camp:jaxson', ticks: 1 },
+      },
+      {
+        tags: ['cache', 'kallik', 'maw', 'hunger', 'rumor', 'news'],
+        reply: '"That is Kaelen the Sifter. Wire. Rumors for Glints. I hotwire. Do not mix the invoices."',
+        effects: { flag: { kaelenKnown: true }, goto: 'camp:wire' },
       },
       {
         tags: ['valerius', 'overseer', 'tower', 'hound'],
@@ -235,7 +260,7 @@ A bar on the third cage is loose enough to work. Jaxson stashes things here when
       },
       {
         tags: ['talk', 'ask', 'speak'],
-        reply: 'He makes a space on the crate that is not quite hospitality.',
+        reply: 'He makes a space that is not quite hospitality.',
         effects: { goto: 'camp:jaxson', ticks: 1 },
       },
     ],
@@ -244,55 +269,84 @@ A bar on the third cage is loose enough to work. Jaxson stashes things here when
     id: 'camp:jaxson',
     hubId: 'camp04',
     kind: 'talk',
-    title: 'Jaxson Oil-Tooth',
-    speaker: 'Jaxson Oil-Tooth',
-    body: `"Valerius counts like a machine that hates fractions. Kaelen on the Wire sells fractions. Me, I sell the one rumor that still has meat on it."
+    title: 'Jaxson "Oil-Tooth" Vance',
+    speaker: 'Jaxson "Oil-Tooth" Vance',
+    body: `"Valerius is the first major victory you have to overcome," Oil-Tooth says, smirking around the brass. "Imposing. Scarred. Reinforced iron plating over dust-cloaks. Steam-hissing shock baton. Cruel. Calculating. He hunts Sap thieves and unpermitted relic hoarders. Sadistic. Arrogant. Disciplined. Looming shadow. I have watched the guard station until I could draw it in grease.
 
-He taps the lean-to pole. "You want a Drop, you want a way out, or you want the thing that's going to eat both?"`,
+Great Bleed hits, you sabotage that station. I hotwire an Ironclad Skiff-Strider. We leave the pens. You want rumors — Kallik, the Hunger, the blonde — that is Kaelen the Sifter at the Wire. He sells leads. I sell a ride."`,
     choices: [
       {
-        id: 'cache',
-        label: "Ask about the rumor that has meat",
-        effects: { goto: 'camp:jaxson-cache', ticks: 1 },
+        id: 'inside',
+        label: 'Take the inside job. Take the oversized wrench.',
+        sub: 'Sabotage the guard station. He hotwires.',
+        show: { flagUnset: 'jaxsonInside' },
+        effects: {
+          add: { wrench: 1 },
+          flag: { jaxsonInside: true, wrenchPath: true, jaxsonFavor: true },
+          ticks: 1,
+          goto: 'camp:lean',
+          flash:
+            'The oversized wrench is heavier than pride. "West steam-vent. Bleed-hour. I will be under the hull. Do not make me wait. Humor is a shield. It is not a plan."',
+        },
+      },
+      {
+        id: 'have',
+        label: 'Confirm the job',
+        show: { flag: 'jaxsonInside' },
+        effects: {
+          ticks: 1,
+          goto: 'camp:lean',
+          flash: '"Guard station. Then the bay. Valerius eats dust if we are fast. Kaelen still charges for news."',
+        },
       },
       {
         id: 'drop',
-        label: 'Ask him for a Drop',
+        label: 'Ask him for a Drop of Oasis Sap',
         effects: { goto: 'camp:jaxson-drop', ticks: 1 },
       },
       {
         id: 'valerius',
-        label: 'Ask about Valerius',
+        label: 'Ask how to beat Valerius',
         effects: {
           ticks: 1,
           goto: 'camp:jaxson',
           flash:
-            '"Overseer wants you back in a bucket. Also says a Seeker woman has been skiffing the outer dunes asking who can hold sap without dying. Blonde. Kohl ruined. Blindfold up like she got bored of holy." Jaxson spits resin. "I would not be her battery."',
-          flag: { sybellaNamed: true },
+            '"You do not beat him in a conversation. You sabotage his station, you steal his Strider, you put dunes between his shock baton and your back. First major victory. After that he is still a shadow. Shadows follow."',
         },
       },
-      { id: 'leave', label: 'Leave him to his tooth', tone: 'quiet', effects: { goto: 'camp:lean' } },
+      {
+        id: 'kaelen',
+        label: 'Ask where Kaelen sells rumors',
+        effects: {
+          flag: { kaelenKnown: true },
+          ticks: 1,
+          goto: 'camp:jaxson',
+          flash:
+            '"The Wire. Jittery little Sifter. Dust-caked canvas. Pack full of vials. Glints buy intel. Scrap buys Drops. He plays all sides. He is not me."',
+        },
+      },
+      { id: 'leave', label: 'Leave him to the brass', tone: 'quiet', effects: { goto: 'camp:lean' } },
     ],
     intents: [
       {
-        tags: ['cache', 'kallik', 'maw', 'hunger', 'red'],
-        reply: 'He leans in. Gold tooth. Bad breath. True story.',
-        effects: { goto: 'camp:jaxson-cache' },
+        tags: ['hotwire', 'strider', 'sabotage', 'guard', 'inside', 'wrench'],
+        reply: 'The brass jaw grins. Guard station. Then the bay.',
+        effects: { goto: 'camp:jaxson' },
       },
       {
-        tags: ['kaelen', 'wire', 'escape', 'leave'],
-        reply: '"Wire. Dusk. Bring scrap or Glints. He cuts holes for people who pay in things that are not prayers."',
-        effects: { flag: { kaelenKnown: true }, flash: 'Kaelen. The Wire. Dusk if you can steal dusk.' },
+        tags: ['cache', 'kallik', 'maw', 'hunger', 'red', 'rumor', 'news'],
+        reply: '"Kaelen the Sifter. Wire. Rumors for Glints. I hotwire. Do not mix the invoices."',
+        effects: { flag: { kaelenKnown: true }, goto: 'camp:wire' },
       },
       {
-        tags: ['valerius', 'overseer', 'tower', 'blonde', 'sybella', 'skiff'],
-        reply: 'Jaxson spits resin and spends the name like it costs him.',
-        effects: {
-          ticks: 1,
-          flag: { sybellaNamed: true },
-          flash:
-            '"Overseer wants you back in a bucket. Also says a Seeker woman has been skiffing the outer dunes asking who can hold sap without dying. Blonde. Kohl ruined. Blindfold up like she got bored of holy."',
-        },
+        tags: ['kaelen', 'wire', 'sifter'],
+        reply: '"Wire. Jittery merchant. Pack of vials. He sells Drops and intel. He is not me."',
+        effects: { flag: { kaelenKnown: true }, goto: 'camp:wire' },
+      },
+      {
+        tags: ['valerius', 'overseer', 'tower'],
+        reply: '"Sabotage his station. Steal his Strider. First major victory. Shadows follow."',
+        effects: { ticks: 1 },
       },
       {
         tags: ['steal', 'pick', 'pocket', 'rob'],
@@ -305,81 +359,41 @@ He taps the lean-to pole. "You want a Drop, you want a way out, or you want the 
     id: 'camp:jaxson-cache',
     hubId: 'camp04',
     kind: 'talk',
-    title: "Kallik's Cache",
-    speaker: 'Jaxson Oil-Tooth',
-    body: `"Kallik ran Drops for the Cartel until he grew a conscience, which is a kind of tumor. He buried a cache at Red Maw — vials, Glints, a mark burned into tin. Then the Maw noticed him.
-
-You want it, you walk Hunger. You delay, Valerius finishes counting, or the blonde on the skiff finishes choosing a battery. I can scratch you a heading. I want you to pull my stash from Cage Row so I'm not holding it when they shake the Yard."`,
+    title: 'Wrong Counter',
+    speaker: 'Jaxson "Oil-Tooth" Vance',
+    body: `"That heading is not my product," Oil-Tooth says. "Kaelen the Sifter sells rumors. Wire. Glints for intel. Scrap for Drops. I am the inside man. Guard station. Strider. Go mix your invoices with him."`,
     choices: [
       {
-        id: 'yes',
-        label: 'Take the heading. Owe him the stash.',
-        effects: {
-          flag: { hungerKnown: true, jaxsonFavor: true, sybellaNamed: true },
-          add: { kallik_mark: 1 },
-          ticks: 1,
-          goto: 'camp:lean',
-          flash: "Red Maw. Cache. Sybella. The camp suddenly has an outside.",
-        },
+        id: 'wire',
+        label: 'Find Kaelen the Sifter',
+        effects: { flag: { kaelenKnown: true }, goto: 'camp:wire' },
       },
-      {
-        id: 'map',
-        label: 'Pay in Glints for the scratch now',
-        show: { itemMin: ['glints', 1] },
-        effects: {
-          flag: { hungerKnown: true, sybellaNamed: true },
-          remove: { glints: 1 },
-          add: { cache_map: 1, kallik_mark: 1 },
-          ticks: 1,
-          goto: 'camp:lean',
-          flash: 'He takes the Glint like it might hatch. You take a map that might be a suicide note.',
-        },
-      },
-      {
-        id: 'scrip',
-        label: 'Pay in Cartel scrip',
-        show: { item: 'scrip' },
-        effects: {
-          flag: { hungerKnown: true, sybellaNamed: true, jaxsonScrip: true },
-          remove: { scrip: 1 },
-          add: { kallik_mark: 1 },
-          heat: { cartel: 1 },
-          ticks: 1,
-          goto: 'camp:lean',
-          flash:
-            'He takes Ironwood paper like it might bite. "Now they can smell you on me. Heading anyway. Red Maw. The blonde. Go be Hunger."',
-        },
-      },
-      { id: 'later', label: 'Not yet', tone: 'quiet', effects: { goto: 'camp:jaxson' } },
+      { id: 'later', label: 'Back to the stall', tone: 'quiet', effects: { goto: 'camp:jaxson' } },
     ],
   },
   {
     id: 'camp:jaxson-drop',
     hubId: 'camp04',
     kind: 'talk',
-    speaker: 'Jaxson Oil-Tooth',
+    speaker: 'Jaxson "Oil-Tooth" Vance',
     title: 'A Drop',
-    body: `"I look like a charity?" He shows empty palms, then a vial in the palm that was not empty. "Favor first. Cage Row. My stash. Then this Drop thinks about changing pockets."`,
+    body: `"I skim Oasis Sap. Lifetime habit. I look like a charity?" The brass jaw ticks. "Sabotage first. Hotwire second. Then this Drop thinks about changing pockets. Kaelen will sell you one for scrap if you are impatient. Different invoice."`,
     choices: [
       {
         id: 'agree',
-        label: 'Agree to pull the stash',
-        effects: {
-          flag: { jaxsonFavor: true },
-          goto: 'camp:lean',
-          flash: 'He hides the vial again. Trust, in Camp-04, is just delayed theft.',
-        },
+        label: 'Take the inside job first',
+        show: { flagUnset: 'jaxsonInside' },
+        effects: { goto: 'camp:jaxson' },
       },
       {
         id: 'paid',
-        label: 'Remind him you already did',
-        show: { all: [{ flag: 'jaxsonPaid' }, { flagUnset: 'jaxsonDropGiven' }] },
+        label: 'The station is down. The Strider is live. Pay up.',
+        show: { all: [{ flag: 'striderHot' }, { flagUnset: 'jaxsonDropGiven' }] },
         effects: {
           add: { vial_drop: 1 },
-          sap: 0,
           goto: 'camp:lean',
-          flag: { jaxsonPaid: true, jaxsonDropGiven: true },
-          flash: 'He flicks the Drop like it burns him. "Go be Hunger before Valerius writes your name in a book."',
+          flag: { jaxsonDropGiven: true },
+          flash: 'He flicks a skimmed Drop like it burns him. "Ride. Valerius is a shadow with a baton. Shadows follow."',
         },
       },
       { id: 'no', label: 'Walk away thirsty', tone: 'quiet', effects: { goto: 'camp:lean' } },
@@ -390,9 +404,11 @@ You want it, you walk Hunger. You delay, Valerius finishes counting, or the blon
     hubId: 'camp04',
     kind: 'place',
     title: 'Watchtower Drip',
-    body: `The tower leaks shade and authority. Overseer Valerius stands in it like a nail stands in wood.
+    body: `The tower leaks shade, steam, and authority. Overseer Valerius stands in it like a nail stands in wood.
 
-He is Cartel in the bones: clean cuffs, ruined patience, a ledger instead of a heart. If he has seen your empty cage, his face has not spent it yet.`,
+Imposing. Scarred. Reinforced iron plating over dust-cloaks. A steam-hissing shock baton in the fist. Cruel. Calculating. Brutal enforcer protecting corporate interests. He hunts Sap thieves and unpermitted relic hoarders. Sadistic. Arrogant. Disciplined.
+
+He is the immediate antagonist. The looming shadow. First major victory: get out from under him.`,
     variants: [
       {
         if: { heatMin: ['cartel', 5] },
@@ -434,9 +450,11 @@ He is Cartel in the bones: clean cuffs, ruined patience, a ledger instead of a h
     kind: 'talk',
     title: 'Overseer Valerius',
     speaker: 'Overseer Valerius',
-    body: `"You are out of position," Valerius says, mild as boiled water. "The Bleed does not dismiss workers. If I write you down as escaped, Ironwood spends a Hound. If I write you down as useful, you scrape until your hands forget they were hands."
+    body: `Valerius does not bother to raise the shock baton. Steam hisses in the grip anyway.
 
-He waits. Men like him can afford waiting. You cannot.`,
+"You are out of position," he says, cruel and calculating, mild as boiled water. "I protect Ironwood's interests. I hunt Sap thieves and unpermitted relic hoarders. If I write you down as escaped, the company spends a Hound. If I write you down as useful, you scrape until your hands forget they were hands."
+
+He waits. Sadistic. Arrogant. Disciplined. Men like him can afford waiting. You cannot. He is the looming shadow. First major victory: leave him behind.`,
     choices: [
       {
         id: 'useful',
@@ -484,7 +502,7 @@ He waits. Men like him can afford waiting. You cannot.`,
           heat: { seekers: 1 },
           goto: 'camp:tower',
           flash:
-            '"Sybella." He says it like a stain. "Seeker-trained. Blindfold up. She is buying walking batteries — bodies that can hold sap and not crack. If she asks for you, I will sell you. If you run, run farther than Red Maw."',
+            '"Sybella." He says it like a stain on corporate inventory. "If she asks for you, I will sell you. If you run, run farther than Red Maw. I hunt thieves. I do not hunt weather."',
         },
       },
       {
@@ -520,9 +538,11 @@ He waits. Men like him can afford waiting. You cannot.`,
     hubId: 'camp04',
     kind: 'place',
     title: 'The Wire',
-    body: `The perimeter. Beyond it the dunes begin to have opinions. Kaelen is sometimes a shadow here, sometimes a rumor, sometimes a man with cutters.
+    body: `The perimeter. Razor-wire. Steam-vents coughing. Beyond it the dunes begin to have opinions.
 
-The Hunger lives past this line. So do Hounds.`,
+Kaelen the Sifter is here when profit says here: jittery diminutive merchant, dust-caked canvas, overstuffed pack, thick gloves. Primary early-game merchant. Also the rumor counter — if you ask. He is not the prison-break inside man. That is Oil-Tooth.
+
+Ironclad Skiff-Striders patrol the other side of this line. The Hunger lives past it. So do Hounds.`,
     variants: [
       {
         if: { flag: 'wireCut' },
@@ -533,7 +553,8 @@ The Hunger lives past this line. So do Hounds.`,
     choices: [
       {
         id: 'kaelen',
-        label: 'Find Kaelen',
+        label: 'Find Kaelen the Sifter',
+        sub: 'Merchant. Rumor counter. Not the inside man.',
         effects: { goto: 'camp:kaelen', ticks: 1, pressure: 1 },
       },
       {
@@ -544,83 +565,168 @@ The Hunger lives past this line. So do Hounds.`,
           ticks: 1,
           sap: -1,
           flash:
-            'Red in the far haze. Maw-country. If Jaxson is right, a dead smuggler\'s fortune is sitting in it like bait.',
+            'Red in the far haze. Maw-country. If Kaelen sold you the heading, a dead smuggler\'s fortune is sitting in it like bait. If not, it is only weather.',
           flag: { sawMawHaze: true },
+        },
+      },
+    ],
+    intents: [
+      {
+        tags: ['kaelen', 'sifter', 'rumor', 'news', 'trade', 'merchant'],
+        reply: 'The pack jitters. Cost. Profit. Ask.',
+        effects: { goto: 'camp:kaelen', ticks: 1 },
+      },
+    ],
+  },
+  {
+    id: 'camp:guard',
+    hubId: 'camp04',
+    kind: 'place',
+    title: 'Guard Station',
+    body: `The guard station is Ironwood's fist: shock-baton racks, steam-vents, a clerk who loves a ledger more than a throat. Ironclad Skiff-Striders pass on patrol and make the wire hum.
+
+The Great Bleed is a clock. Sabotage here, Oil-Tooth hotwires there. Valerius will take this personally. That is the point.`,
+    variants: [
+      {
+        if: { flag: 'guardDown' },
+        mode: 'append',
+        body: `Steam screams from a vent that should not be open. The station is coughing. First cut in the looming shadow.`,
+      },
+      {
+        if: { flag: 'bleedIntel' },
+        mode: 'append',
+        body: `Kaelen sold you a clock: west bolt, Bleed-hour. The Sifter does not work for Oil-Tooth. He sold a product.`,
+      },
+    ],
+    choices: [
+      {
+        id: 'sabotage',
+        label: 'Sabotage the west steam-vent',
+        sub: 'Oil-Tooth\'s inside job. Wrench on a bolt Valerius loves.',
+        show: { all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] },
+        effects: { goto: 'camp:sabotage', ticks: 1, sap: -1 },
+      },
+      {
+        id: 'locked',
+        label: 'Study the station',
+        show: { flagUnset: 'jaxsonInside' },
+        effects: {
+          ticks: 1,
+          sap: -1,
+          flash:
+            'Security weaknesses are Oil-Tooth\'s religion. Without the inside man you are only a penniless laborer staring at steam.',
         },
       },
     ],
   },
   {
-    id: 'camp:kaelen',
+    id: 'camp:sabotage',
     hubId: 'camp04',
-    kind: 'talk',
-    title: 'Kaelen',
-    speaker: 'Kaelen',
-    body: `Kaelen is all wrists and patience. Smuggler. Stray when it pays. Cartel when it doesn't.
+    kind: 'story',
+    title: 'Great Bleed',
+    body: `The Great Bleed hits like a factory finding its scream. Vats weep. Guards look at amber, not at you.
 
-"You're the trench story," he says. "I cut wire. I don't cut charity. Scrap, Glints, or you keep staring at sand until the sand stares back."`,
+Oil-Tooth named the west steam-vent. The oversized wrench knows the language.`,
+    variants: [
+      {
+        if: { flag: 'bleedIntel' },
+        mode: 'append',
+        body: `Kaelen's clock is exact. You work in a gap Valerius has not budgeted.`,
+      },
+    ],
     choices: [
       {
-        id: 'scrap',
-        label: 'Pay two scrap for a hole',
-        show: { itemMin: ['scrap', 2] },
+        id: 'do',
+        label: 'Crack the vent. Blind the station.',
+        tone: 'danger',
         effects: {
-          remove: { scrap: 2 },
-          flag: { wireCut: true, kaelenKnown: true },
-          ticks: 1,
-          goto: 'camp:wire',
-          flash: 'The cutters kiss. A person-sized disloyalty opens in Ironwood property.',
-        },
-      },
-      {
-        id: 'wrench',
-        label: 'Bend a hole with the wrench',
-        sub: 'Spend the wrench. Keep a twist of scrap.',
-        show: { item: 'wrench' },
-        effects: {
-          remove: { wrench: 1 },
+          flag: { guardDown: true },
           add: { scrap: 1 },
-          flag: { wireCut: true, kaelenKnown: true, wrenchSpent: true },
+          heat: { cartel: 1 },
+          pressure: 1,
           ticks: 1,
-          goto: 'camp:wire',
-          flash: 'Kaelen watches steel do his job. The wrench stays in the wire as a bent secret. You keep a twist.',
-        },
-      },
-      {
-        id: 'glint',
-        label: 'Pay a Glint',
-        show: { item: 'glints' },
-        effects: {
-          remove: { glints: 1 },
-          flag: { wireCut: true, kaelenKnown: true },
-          ticks: 1,
-          goto: 'camp:wire',
-          flash: 'He bites the Glint. Nods. The wire learns a new shape.',
-        },
-      },
-      {
-        id: 'rumor',
-        label: 'Ask if he knows Kallik',
-        effects: {
-          flag: { hungerKnown: true },
-          ticks: 1,
-          goto: 'camp:kaelen',
+          goto: 'camp:bay',
           flash:
-            '"Kallik owed me. Then he owed the Maw. Cache is real. Sybella is more real. You want a heading, talk to Oil-Tooth. You want a hole, pay."',
+            'Steam. Alarms that belong to the Bleed, not to you. Scrap in the palm. Oil-Tooth will be under a hull. First major victory starts here.',
         },
       },
-      { ...backYard, id: 'back', label: 'Leave the Wire' },
-    ],
-    intents: [
       {
-        tags: ['cut', 'hole', 'wire', 'open', 'escape'],
-        reply: 'He wiggles fingers. Pay first.',
-        effects: { ticks: 1 },
+        id: 'quiet',
+        label: 'Crack it on Kaelen\'s clock',
+        show: { flag: 'bleedIntel' },
+        effects: {
+          flag: { guardDown: true },
+          add: { scrap: 1 },
+          ticks: 1,
+          goto: 'camp:bay',
+          flash:
+            'No extra hymn for Valerius. The Sifter sold timing. Oil-Tooth still has to hotwire. Invoices stay unmixed.',
+        },
+      },
+    ],
+  },
+  {
+    id: 'camp:bay',
+    hubId: 'camp04',
+    kind: 'place',
+    title: 'Strider Bay',
+    body: `Ironclad Skiff-Striders stand like bad architecture — resin-sheen, too many joints, corporate inventory tags slapped on hulls Oil-Tooth has repaired until he could steal one in his sleep.
+
+If he is your inside man, he is already under a hull with a smirk the brass jaw cannot hide.`,
+    variants: [
+      {
+        if: { flag: 'striderHot' },
+        mode: 'append',
+        body: `One Strider ticks live. The dunes are a door.`,
       },
       {
-        tags: ['trade', 'buy', 'sell', 'price'],
-        reply: '"Two scrap. One Glint. A wrench if you want to spend steel. I do not take scrip. Scrip is a Cartel lullaby."',
-        effects: {},
+        if: { flag: 'guardDown' },
+        mode: 'append',
+        body: `The station behind you is coughing steam. Patrol is late. That was the sabotage.`,
+      },
+    ],
+    choices: [
+      {
+        id: 'hotwire',
+        label: 'Cover Oil-Tooth while he hotwires',
+        sub: 'He is the inside man. You are the extra pair of hands.',
+        show: { all: [{ flag: 'jaxsonInside' }, { flagUnset: 'striderHot' }] },
+        enable: { flag: 'guardDown' },
+        locked: 'Sabotage the guard station first. That was the job.',
+        effects: {
+          flag: { striderHot: true },
+          heat: { cartel: 1 },
+          ticks: 1,
+          goto: 'camp:bay',
+          flash:
+            'Welding leather. Oversized wrench. A Strider that believes it is still inventory. Oil-Tooth laughs once, a shield. "Ride, or linger, or go pay Kaelen for a heading. I did my half."',
+        },
+      },
+      {
+        id: 'ride',
+        label: 'Ride the Strider into the dunes',
+        tone: 'hunger',
+        show: { all: [{ flag: 'striderHot' }, { flag: 'hungerKnown' }] },
+        effects: {
+          startChapter: 'cache-run',
+          goto: 'ch1:leave',
+          heat: { cartel: 1 },
+          flash: 'Camp-04 falls behind like a bad hymn. The wrench still smells like Oil-Tooth\'s stall.',
+        },
+      },
+      {
+        id: 'ride-blind',
+        label: 'Ride anyway — no heading',
+        tone: 'danger',
+        show: { all: [{ flag: 'striderHot' }, { flagUnset: 'hungerKnown' }] },
+        effects: {
+          flag: { hungerKnown: true, cacheBlind: true },
+          startChapter: 'cache-run',
+          goto: 'ch1:leave',
+          heat: { cartel: 1 },
+          flash:
+            'You have a Strider and no rumor. Kaelen would call that bad inventory. The dunes do not care.',
+        },
       },
     ],
   },
@@ -632,10 +738,22 @@ The Hunger lives past this line. So do Hounds.`,
     speaker: 'Overseer Valerius',
     body: `Whistles. Boots. The Yard becomes a diagram.
 
-Valerius does not run. He arrives. "The trench prisoner is upright. How optimistic." Behind him a Hound-handler checks a muzzle that is not for dogs.
+Valerius does not run. He arrives, iron plating over dust-cloaks, shock baton hissing steam. "The penniless laborer is upright. How optimistic." Behind him a Hound-handler checks a muzzle that is not for dogs.
 
-If you still have a heading, this is the hour you spend it. If you don't, the camp will spend you.`,
+He hunts Sap thieves and unpermitted relic hoarders. You look like both. First major victory is leaving.`,
     choices: [
+      {
+        id: 'ride',
+        label: 'Run for Oil-Tooth\'s hotwired Strider',
+        show: { flag: 'striderHot' },
+        tone: 'hunger',
+        effects: {
+          startChapter: 'cache-run',
+          goto: 'ch1:leave',
+          heat: { cartel: 2 },
+          flag: { hungerKnown: true },
+        },
+      },
       {
         id: 'run',
         label: 'Break for the dunes — Hunger, now',
@@ -680,7 +798,7 @@ If you still have a heading, this is the hour you spend it. If you don't, the ca
     title: 'The Camp Closes',
     body: `Pressure has a sound. It is the vats, the whistles, the way nobody meets your eye.
 
-You can keep playing prisoner until the Drop in you burns out. Or you can take Jaxson's ugly gift and become Hunger.`,
+You can keep playing prisoner until the Drop in you burns out. Or Oil-Tooth's Strider. Or Kaelen's heading. Do not mix the invoices — just spend them.`,
     choices: [
       {
         id: 'go',
