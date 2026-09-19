@@ -324,7 +324,6 @@ h2 {
   overflow: auto;
 }
 
-.play-screen.play-split .hub-acts,
 .play-screen.play-split .say,
 .play-screen.play-split .verb-hint,
 .play-screen.play-split .drink {
@@ -424,15 +423,25 @@ h2 {
   background: linear-gradient(180deg, #f4a15a, #c4451a);
 }
 
-.hub-acts {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
+.scavenge-chip,
+.skim-chip {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  min-height: 32px;
+  padding: 0.1rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: #24150c;
+  color: var(--dust);
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
-.hub-act {
-  align-items: flex-start;
-  text-align: left;
+.skim-chip {
+  color: #ffb199;
+  border-color: rgba(196, 69, 26, 0.55);
+  background: rgba(196, 69, 26, 0.12);
 }
 
 .verb-hint {
@@ -554,6 +563,8 @@ h2 {
 
 .heat-row {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 0.45rem;
   margin-top: 0.4rem;
 }

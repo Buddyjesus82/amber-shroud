@@ -95,6 +95,14 @@ assert(
   !readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8').includes('kit-strip'),
   'kit strip removed from play',
 )
+assert(
+  !readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8').includes('hub-act'),
+  'Scavenge is not a fat pinned hub button',
+)
+assert(
+  readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8').includes('scavenge-chip'),
+  'Scavenge is a compact hub chip',
+)
 
 for (const hub of Object.values(HUBS)) {
   const map = HUB_MAPS[hub.id]

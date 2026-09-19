@@ -49,7 +49,7 @@ export function PlayScreen({ state, onChange, onTitle }: Props) {
   const choices = visibleChoices(state)
   const roam = canScavenge(state)
   const skimOn = canSkim(state)
-  const optionCount = choices.length + (roam ? 1 : 0) + (skimOn ? 1 : 0) + (hookOn ? 1 : 0)
+  const optionCount = choices.length + (hookOn ? 1 : 0)
   const split = optionCount >= 4
   const showDo = talky || roam
 
@@ -121,6 +121,26 @@ export function PlayScreen({ state, onChange, onTitle }: Props) {
           {showNav ? (
             <button type="button" className="map-btn" onClick={() => setMapOpen(true)}>
               Map
+            </button>
+          ) : null}
+          {roam ? (
+            <button
+              type="button"
+              className="scavenge-chip"
+              onClick={() => onChange(scavenge(state))}
+              aria-label="Scavenge this place for scrap or a Drop"
+            >
+              Scavenge
+            </button>
+          ) : null}
+          {skimOn ? (
+            <button
+              type="button"
+              className="skim-chip"
+              onClick={() => onChange(skim(state))}
+              aria-label="Skim a drip. Risky Drop. Costs Heat."
+            >
+              Skim
             </button>
           ) : null}
         </div>
@@ -195,21 +215,6 @@ export function PlayScreen({ state, onChange, onTitle }: Props) {
           >
             The desert is closing. Take the Hunger.
           </button>
-        ) : null}
-
-        {roam ? (
-          <div className="hub-acts">
-            <button type="button" className="btn btn-ghost hub-act" onClick={() => onChange(scavenge(state))}>
-              Scavenge
-              <small>Scrap, trade goods. Sometimes a Drop.</small>
-            </button>
-            {skimOn ? (
-              <button type="button" className="btn btn-danger hub-act" onClick={() => onChange(skim(state))}>
-                Skim a drip
-                <small>Risky Drop. Costs Heat.</small>
-              </button>
-            ) : null}
-          </div>
         ) : null}
 
         <div className="choices">
