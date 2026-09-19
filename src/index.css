@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Outfit:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Cinzel:wght@500;700&family=Kalam:wght@400;700&family=Outfit:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap');
 
 :root {
   --ink: #0c0704;
@@ -547,16 +547,19 @@ h2 {
   flex: 0 0 auto;
   min-width: 56px;
   min-height: 34px;
-  padding: 0 0.75rem;
-  border-radius: 999px;
-  border: 1px solid var(--amber);
-  background: #2a1a0c;
-  color: var(--amber-2);
-  font-family: Cinzel, serif;
+  padding: 0.1rem 0.7rem 0.05rem;
+  border-radius: 3px 10px 2px 8px;
+  border: 1px solid #5a4030;
+  background:
+    linear-gradient(165deg, #ead6b4 0%, #c9a57a 78%, #b89164 100%);
+  color: #1c140c;
+  font-family: Kalam, Caveat, cursive;
   font-weight: 700;
-  font-size: 0.7rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  font-size: 0.86rem;
+  letter-spacing: 0.03em;
+  text-transform: none;
+  box-shadow: 1px 2px 0 #2a1c12;
+  transform: rotate(-1.4deg);
 }
 
 .map-backdrop {
@@ -578,6 +581,126 @@ h2 {
   padding: 0.85rem 0.85rem calc(1.1rem + var(--safe-b));
 }
 
+.scrap-map {
+  background:
+    radial-gradient(120% 70% at 50% 110%, rgba(90, 50, 18, 0.28), transparent 55%),
+    rgba(6, 3, 2, 0.78);
+  padding: 0 0.35rem 0;
+}
+
+.scrap-sheet {
+  --charcoal: #1c140c;
+  --soot: #2a1c12;
+  --hide: #e4cba0;
+  position: relative;
+  background-color: #d9be94;
+  background-image:
+    radial-gradient(ellipse at 8% 6%, rgba(90, 48, 18, 0.2), transparent 42%),
+    radial-gradient(ellipse at 92% 12%, rgba(40, 22, 10, 0.16), transparent 38%),
+    radial-gradient(ellipse at 78% 94%, rgba(70, 32, 12, 0.28), transparent 48%),
+    radial-gradient(ellipse at 18% 72%, rgba(120, 70, 28, 0.14), transparent 36%),
+    repeating-linear-gradient(118deg, transparent 0 10px, rgba(70, 42, 18, 0.035) 11px, transparent 12px),
+    linear-gradient(168deg, #ead4b0 0%, #d4b48a 46%, #c49a6e 100%);
+  color: var(--charcoal);
+  border: 0;
+  border-radius: 0;
+  padding: 1.05rem 1rem calc(1.35rem + var(--safe-b));
+  filter: drop-shadow(0 -10px 28px rgba(0, 0, 0, 0.62));
+  clip-path: polygon(
+    1.1% 2.2%,
+    4.2% 0.5%,
+    9.8% 2%,
+    15.2% 0.3%,
+    21% 1.7%,
+    27.4% 0.4%,
+    34% 2.1%,
+    41% 0.3%,
+    48% 1.6%,
+    55% 0.2%,
+    62% 1.9%,
+    69% 0.4%,
+    76% 1.8%,
+    83% 0.3%,
+    90% 2%,
+    95.4% 0.6%,
+    99.1% 1.4%,
+    98.2% 9%,
+    99.5% 18%,
+    97.6% 29%,
+    99.3% 41%,
+    98% 53%,
+    99.6% 66%,
+    97.9% 78%,
+    99.2% 90%,
+    97.4% 99.1%,
+    88% 97.6%,
+    79% 99.4%,
+    70% 97.5%,
+    61% 99.2%,
+    52% 97.4%,
+    43% 99.3%,
+    34% 97.7%,
+    25% 99.4%,
+    16% 97.5%,
+    8% 99.1%,
+    0.7% 97.3%,
+    1.9% 88%,
+    0.4% 76%,
+    2.1% 64%,
+    0.5% 52%,
+    1.7% 40%,
+    0.4% 28%,
+    2% 16%,
+    0.6% 7%
+  );
+}
+
+.scrap-sheet::before {
+  content: '';
+  position: absolute;
+  inset: 8% 12%;
+  pointer-events: none;
+  background: linear-gradient(94deg, transparent 48.5%, rgba(42, 28, 18, 0.1) 50%, transparent 51.5%);
+  mix-blend-mode: multiply;
+}
+
+.scrap-sheet .sheet-head {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+  gap: 0.5rem;
+}
+
+.scrap-sheet h2 {
+  color: var(--charcoal);
+  font-family: Caveat, Kalam, cursive;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  font-size: 1.7rem;
+  line-height: 1.05;
+  transform: rotate(-0.8deg);
+  text-shadow: 0.4px 0.6px 0 rgba(28, 20, 12, 0.28);
+}
+
+.scrap-sheet .map-kicker,
+.scrap-sheet .kicker {
+  color: #5c4030;
+  font-family: Kalam, cursive;
+  letter-spacing: 0.12em;
+  font-size: 0.72rem;
+}
+
+.scrap-stow {
+  color: #2a1c12 !important;
+  font-family: Kalam, Caveat, cursive;
+  font-size: 1.05rem;
+  text-decoration: underline;
+  text-decoration-style: wavy;
+  text-underline-offset: 4px;
+  transform: rotate(2deg);
+}
+
 .map-kicker {
   margin: 0 0 0.15rem;
 }
@@ -589,6 +712,20 @@ h2 {
   font-size: 0.82rem;
   line-height: 1.4;
   margin: 0.35rem 0 0.65rem;
+}
+
+.scrap-sheet .map-blurb,
+.scrap-sheet .map-coming {
+  color: #4a3424;
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 0.88rem;
+}
+
+.scrap-sheet .map-hint {
+  color: #2a1c12;
+  font-family: Kalam, cursive;
+  font-size: 0.95rem;
+  margin: 0.55rem 0 0;
 }
 
 .map-hint {
@@ -605,10 +742,89 @@ h2 {
   background: #0a0604;
 }
 
+.scrap-sheet .hub-map {
+  border: 0;
+  border-radius: 0;
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(90, 50, 20, 0.08), transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(40, 22, 10, 0.12), transparent 46%),
+    repeating-linear-gradient(12deg, transparent 0 7px, rgba(42, 28, 18, 0.03) 8px);
+  box-shadow: inset 0 0 0 1px rgba(42, 28, 18, 0.18);
+  clip-path: polygon(
+    1.4% 1.8%,
+    12% 0.4%,
+    28% 1.6%,
+    47% 0.3%,
+    68% 1.5%,
+    86% 0.4%,
+    98.6% 1.7%,
+    99.2% 22%,
+    97.8% 48%,
+    99.4% 74%,
+    98.2% 98.4%,
+    72% 98.8%,
+    48% 97.6%,
+    24% 99%,
+    1.2% 98.2%,
+    0.6% 70%,
+    2% 42%,
+    0.5% 18%
+  );
+}
+
 .hub-map-art {
   display: block;
   width: 100%;
   height: auto;
+}
+
+.map-hide-wash {
+  fill: rgba(228, 203, 160, 0.18);
+}
+
+.map-stain {
+  fill: rgba(70, 40, 18, 0.12);
+}
+
+.map-stain.deep {
+  fill: rgba(36, 20, 10, 0.2);
+}
+
+.map-stain.maw {
+  fill: rgba(92, 32, 16, 0.32);
+}
+
+.map-stain.maw-core {
+  fill: rgba(28, 12, 8, 0.42);
+}
+
+.map-wire {
+  stroke: #2a1c12;
+  stroke-width: 0.55;
+  stroke-dasharray: 1.5 1.15;
+  stroke-linejoin: round;
+}
+
+.map-dune {
+  stroke: #4a2818;
+  stroke-width: 0.85;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.map-block {
+  stroke: #2a1c12;
+  stroke-width: 0.48;
+  stroke-linejoin: round;
+  fill-opacity: 0.55;
+}
+
+.map-hatch {
+  fill: none;
+  stroke: #2a1c12;
+  stroke-width: 0.42;
+  stroke-linecap: round;
+  opacity: 0.78;
 }
 
 .hub-map-nodes {
@@ -618,7 +834,7 @@ h2 {
 
 .map-node {
   position: absolute;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%) rotate(-1.2deg);
   min-width: 68px;
   min-height: 44px;
   padding: 0.28rem 0.48rem 0.22rem;
@@ -637,11 +853,42 @@ h2 {
   touch-action: manipulation;
 }
 
+.scrap-sheet .map-node {
+  border: 0;
+  background: radial-gradient(ellipse at 50% 48%, rgba(232, 212, 176, 0.88) 0%, rgba(232, 212, 176, 0.25) 62%, transparent 78%);
+  border-radius: 0;
+  color: #1c140c;
+  font-family: Kalam, Caveat, cursive;
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.05;
+  text-shadow:
+    0 0 6px rgba(228, 203, 160, 0.85),
+    0.4px 0.4px 0 rgba(228, 203, 160, 0.9);
+}
+
+.scrap-sheet .map-node:nth-child(2n) {
+  transform: translate(-50%, -50%) rotate(1.1deg);
+}
+
+.scrap-sheet .map-node:nth-child(3n) {
+  transform: translate(-50%, -50%) rotate(-2.1deg);
+}
+
 .map-node small {
   font-size: 0.58rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   opacity: 0.78;
+}
+
+.scrap-sheet .map-node small {
+  font-size: 0.62rem;
+  letter-spacing: 0.03em;
+  text-transform: none;
+  font-weight: 400;
+  opacity: 0.82;
 }
 
 .map-node.here {
@@ -651,44 +898,128 @@ h2 {
   box-shadow: 0 0 0 1px rgba(244, 193, 90, 0.35);
 }
 
+.scrap-sheet .map-node.here {
+  background: radial-gradient(ellipse at 48% 58%, rgba(28, 20, 12, 0.16), transparent 68%);
+  color: #120c08;
+  box-shadow: none;
+  z-index: 3;
+  font-size: 0.92rem;
+  min-width: 74px;
+  min-height: 48px;
+  padding: 0.4rem 0.62rem 0.32rem;
+}
+
+.scrap-sheet .map-node.here::before {
+  content: '';
+  position: absolute;
+  inset: 1px 4px;
+  border: 1.6px solid #1c140c;
+  border-radius: 48% 54% 46% 56% / 54% 44% 58% 46%;
+  opacity: 0.88;
+  pointer-events: none;
+  transform: rotate(-8deg);
+}
+
 .map-node.next {
   color: var(--paper);
   border-color: rgba(232, 163, 23, 0.7);
   background: rgba(42, 26, 12, 0.95);
 }
 
+.scrap-sheet .map-node.next {
+  color: #1a120c;
+  background: transparent;
+  box-shadow: none;
+}
+
+.scrap-sheet .map-node.next::after {
+  content: '';
+  position: absolute;
+  left: 16%;
+  right: 18%;
+  bottom: 11px;
+  height: 1.5px;
+  background: #2a1c12;
+  opacity: 0.55;
+  transform: rotate(-2deg);
+  pointer-events: none;
+}
+
 .map-node.far {
   opacity: 0.55;
 }
 
-.map-edge {
-  stroke: rgba(232, 163, 23, 0.32);
-  stroke-width: 0.85;
+.scrap-sheet .map-node.far {
+  opacity: 0.78;
+  color: #3a2818;
 }
 
-.map-edge.on {
-  stroke: #f4c15a;
-  stroke-width: 1.4;
+.map-edge,
+.map-edge-long {
+  fill: none;
+  stroke: #3a2a1c;
+  stroke-width: 0.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.55;
+}
+
+.map-edge-smudge {
+  fill: none;
+  stroke: #1a120c;
+  stroke-width: 2.1;
+  stroke-linecap: round;
+  opacity: 0.1;
+}
+
+.map-edge.on,
+.map-edge-long.on {
+  stroke: #1c140c;
+  stroke-width: 1.15;
+  opacity: 0.92;
+}
+
+.map-edge-smudge.on {
+  stroke-width: 2.8;
+  opacity: 0.2;
+}
+
+.map-edge-long {
+  stroke-dasharray: 1.6 1.1;
+  opacity: 0.42;
 }
 
 .map-compass,
 .map-maw-label {
-  fill: #c9a27a;
-  font-size: 3.1px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  font-family: Cinzel, serif;
+  fill: #3a2a1c;
+  font-size: 3.4px;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  font-family: Kalam, Caveat, cursive;
+  font-weight: 700;
 }
 
 .map-maw-label {
-  fill: #ffb199;
-  font-size: 3.5px;
+  fill: #6a2e18;
+  font-size: 3.7px;
+}
+
+.map-you-smudge {
+  fill: rgba(28, 20, 12, 0.16);
 }
 
 .map-you-ring {
   fill: none;
-  stroke: #f4c15a;
-  stroke-width: 0.7;
+  stroke: #1c140c;
+  stroke-width: 0.85;
+  stroke-linejoin: round;
+}
+
+.map-you-x {
+  fill: none;
+  stroke: #1c140c;
+  stroke-width: 0.95;
+  stroke-linecap: round;
 }
 
 .place-line {
