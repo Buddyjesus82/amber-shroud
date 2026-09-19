@@ -51,6 +51,19 @@ Down-slope: a tent the color of old teeth. Silas Vane sells shade by the minute.
         label: 'Walk the dry well',
         effects: { goto: 'spine:well', ticks: 1, sap: -1 },
       },
+      {
+        id: 'hunger',
+        label: 'Walk the Hunger toward Red Maw',
+        sub: "Silas's scratch is a heading. Noon will not get kinder.",
+        tone: 'hunger',
+        show: { any: [{ flag: 'hungerKnown' }, { item: 'silas_tip' }] },
+        effects: {
+          startChapter: 'cache-run',
+          goto: 'ch1:leave',
+          ticks: 1,
+          flash: 'You spend the noon on a direction. The Spine lets you go like a debt it can collect later.',
+        },
+      },
     ],
     intents: [
       {
@@ -123,6 +136,19 @@ The Hunger is a red bruise east-south. You could fill the empty vial with this s
         id: 'talk',
         label: 'Sit in the expensive shade',
         effects: { goto: 'spine:silas', ticks: 1 },
+      },
+      {
+        id: 'hunger',
+        label: 'Leave the shade. Walk the Hunger.',
+        sub: 'Red Maw. Kallik. The blonde on the skiff.',
+        tone: 'hunger',
+        show: { any: [{ flag: 'hungerKnown' }, { item: 'silas_tip' }] },
+        effects: {
+          startChapter: 'cache-run',
+          goto: 'ch1:leave',
+          ticks: 1,
+          flash: 'Silas does not bless the road. Shade ends. The wash begins.',
+        },
       },
     ],
   },
