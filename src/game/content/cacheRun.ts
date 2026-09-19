@@ -1,5 +1,10 @@
 import type { Scene } from '../types'
 
+// Cache Run spine (every door). Forward exits only except the authored Ossa retry:
+//   leave → trail → ossa-meet → (talk | rob | zafir)
+//   rob "give back" → talk (then cairn). Steal is blocked after a return.
+//   talk / skip / vial / wrench → zafir → sybella → (hollow) → land → maw:rim
+//   Unconditional finale: sybella "bargain" always sets chapter1Done and goes to land.
 const done = {
   chapter1Done: true,
   ossaAlive: true,
@@ -362,7 +367,7 @@ She is alive. Angry. Breathing. "Walk," she says, from the ground. "If Sybella a
         id: 'back',
         label: 'Give it back. Try to be a person.',
         effects: {
-          flag: { ossaAlive: true, ossaWary: true, ossaMet: true },
+          flag: { ossaAlive: true, ossaWary: true, ossaMet: true, ossaReturned: true },
           unsetFlag: ['ossaRobbed'],
           goto: 'ch1:ossa-talk',
           flash: 'She takes the vial without thanks. Thanks would be a lie. The cairn is still ahead.',
@@ -428,7 +433,7 @@ I go to Red Maw because the stilts work better where the sand is honest about wa
     intents: [
       {
         tags: ['steal', 'rob', 'vial', 'take'],
-        show: { flagUnset: 'ossaRobbed' },
+        show: { all: [{ flagUnset: 'ossaRobbed' }, { flagUnset: 'ossaReturned' }] },
         reply: 'Second chances at theft are how graves get filled.',
         effects: { goto: 'ch1:ossa-rob' },
       },

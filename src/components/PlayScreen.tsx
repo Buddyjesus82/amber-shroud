@@ -32,7 +32,7 @@ export function PlayScreen({ state, onChange, onTitle }: Props) {
   const showNav = !!hub && scene.kind !== 'crisis' && state.chapterId !== 'cache-run'
   const hook = hub?.hungerHook
   const hookOn = hook && isChoiceOn(state, hook.show)
-  const closing = !state.flags.chapter1Done && state.pressure >= 10 && !!state.flags.hungerKnown && !state.chapterId
+  const closing = !state.flags.chapter1Done && state.pressure >= 10 && !state.chapterId
   const chips = listedKit(state.items)
   const sapThin = state.sap <= 2
 
@@ -167,7 +167,14 @@ export function PlayScreen({ state, onChange, onTitle }: Props) {
             type="button"
             className="btn btn-danger"
             onClick={() =>
-              onChange(applyEffect(state, { startChapter: 'cache-run', goto: 'ch1:leave', ticks: 1 }))
+              onChange(
+                applyEffect(state, {
+                  startChapter: 'cache-run',
+                  goto: 'ch1:leave',
+                  ticks: 1,
+                  flag: state.flags.hungerKnown ? undefined : { cacheBlind: true },
+                }),
+              )
             }
           >
             The desert is closing. Take the Hunger.

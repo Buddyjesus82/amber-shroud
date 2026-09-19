@@ -40,6 +40,17 @@ Down-slope: a tent the color of old teeth. Silas Vane sells shade by the minute.
         show: { all: [{ item: 'silas_tip' }, { flagUnset: 'silasCutUsed' }] },
         effects: { goto: 'spine:tip', ticks: 1 },
       },
+      {
+        id: 'shade',
+        label: "Walk to Silas's tent",
+        sub: 'Shade is a country. He sells it by the minute.',
+        effects: { goto: 'spine:shade', ticks: 1 },
+      },
+      {
+        id: 'well',
+        label: 'Walk the dry well',
+        effects: { goto: 'spine:well', ticks: 1, sap: -1 },
+      },
     ],
     intents: [
       {

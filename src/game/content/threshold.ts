@@ -23,6 +23,16 @@ Thalia stands at the dais with gold on her cheeks that might be kohl and might b
     ],
     choices: [
       {
+        id: 'thalia',
+        label: 'Climb the dais. Speak to Thalia.',
+        effects: { goto: 'thresh:thalia', ticks: 1 },
+      },
+      {
+        id: 'oram',
+        label: 'Find Oram counting Striders.',
+        effects: { goto: 'thresh:oram', ticks: 1 },
+      },
+      {
         id: 'bless',
         label: 'Offer a false blessing',
         effects: {

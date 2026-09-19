@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "smoke": "npx tsx scripts/smoke.ts",
+    "smoke": "npx tsx scripts/smoke.ts && npx tsx scripts/scene-exits.ts",
+    "exits": "npx tsx scripts/scene-exits.ts",
     "preview": "vite preview --host --port 43177"
   },
   "dependencies": {
