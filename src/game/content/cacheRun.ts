@@ -588,8 +588,8 @@ Zafir smiles in a way that costs extra. "You look like Hunger. I sell headings t
     intents: [
       {
         tags: ['kallik', 'cache', 'map', 'heading', 'maw', 'oram'],
-        reply: 'He taps bone. Pay, show a map, name Silas, threaten, or walk.',
-        effects: { ticks: 1 },
+        reply: 'He taps bone and lets you keep walking. The heading is spent. The skiff is the next mouth.',
+        effects: { ticks: 1, flag: { zafirMet: true }, goto: 'ch1:sybella' },
       },
       {
         tags: ['sybella', 'skiff', 'blonde'],
@@ -748,7 +748,7 @@ Sybella steps down, blindfold up like a discarded halo, kohl ruined on purpose. 
     ],
     intents: [
       {
-        tags: ['bargain', 'deal', 'yes', 'useful', 'agree', 'walk'],
+        tags: ['bargain', 'deal', 'yes', 'useful', 'agree', 'walk', 'maw', 'approach', 'red'],
         reply: 'You nod like an adult. She almost looks grateful. That is worse.',
         effects: {
           add: { kohl_smear: 1 },

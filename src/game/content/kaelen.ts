@@ -313,6 +313,18 @@ Dusk on the Spine. Same pack. Same gloves. Less wire, more dust. "You're the emp
         tone: 'quiet',
         effects: { goto: 'spine:well' },
       },
+      {
+        id: 'hunger',
+        label: 'Walk the Hunger toward Red Maw',
+        tone: 'hunger',
+        show: { any: [{ flag: 'hungerKnown' }, { item: 'silas_tip' }] },
+        effects: {
+          startChapter: 'cache-run',
+          goto: 'ch1:leave',
+          ticks: 1,
+          flash: 'He is already counting the next customer. You spend the dusk on a road.',
+        },
+      },
     ],
     intents: [
       {
@@ -383,6 +395,18 @@ Dusk on the Spine. Same pack. Same gloves. Less wire, more dust. "You're the emp
         label: 'Back to the pack',
         tone: 'quiet',
         effects: { goto: 'spine:kaelen' },
+      },
+      {
+        id: 'walk',
+        label: 'The heading is enough. Walk the Maw.',
+        tone: 'hunger',
+        show: { any: [{ flag: 'hungerKnown' }, { flag: 'kaelenHunger' }, { item: 'silas_tip' }] },
+        effects: {
+          startChapter: 'cache-run',
+          goto: 'ch1:leave',
+          ticks: 1,
+          flash: 'He does not walk with you. Inventory stays. You do not.',
+        },
       },
     ],
   },

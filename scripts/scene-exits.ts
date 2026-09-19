@@ -69,6 +69,18 @@ function cacheRunOpenExits(): string[] {
     if (forward.length === 0 && scene.id !== 'ch1:land') {
       bad.push(`${scene.id} unconditional choices only stay/self`)
     }
+    for (const c of scene.choices) {
+      const g = c.effects.goto ?? ''
+      if (g.startsWith('spine:') || g.startsWith('camp:') || g.startsWith('thresh:')) {
+        bad.push(`${scene.id}:${c.id} bounces out of Cache Run to ${g}`)
+      }
+    }
+    for (const i of scene.intents ?? []) {
+      const g = i.effects.goto ?? ''
+      if (g.startsWith('spine:') || g.startsWith('camp:') || g.startsWith('thresh:')) {
+        bad.push(`${scene.id}:intent bounces out of Cache Run to ${g}`)
+      }
+    }
   }
   return bad
 }

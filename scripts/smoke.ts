@@ -171,6 +171,28 @@ assert(s.sceneId !== 'ch1:sybella' && s.sceneId !== 'spine:ridge', 'no bounce ba
 
 s = newGame('outcast')
 s = pick(s, 'stand')
+s = pick(s, 'shade')
+s = pick(s, 'talk')
+s = pick(s, 'cache')
+assert(ids(s).includes('now'), 'Silas Maw talk can start Cache Run without returning to shade')
+s = pick(s, 'now')
+assert(s.chapterId === 'cache-run' && s.sceneId === 'ch1:leave', 'Kallik heading walks now')
+s = pick(s, 'go')
+s = pick(s, ids(s).includes('silas') ? 'silas' : 'stilts')
+if (s.sceneId === 'ch1:ossa-meet') s = pick(s, 'skip')
+if (s.sceneId === 'crisis:dunes') s = pick(s, 'up')
+if (s.sceneId === 'ch1:zafir') {
+  s = interpret(s, 'walk the red maw heading')
+  assert(s.sceneId === 'ch1:sybella', 'Zafir maw-talk advances to Sybella, does not sit the cairn')
+}
+if (s.sceneId === 'ch1:sybella') {
+  s = interpret(s, 'take the maw approach')
+  assert(s.sceneId === 'ch1:land' && s.flags.chapter1Done, 'typing maw at Sybella lands the chapter')
+}
+assert(s.hubId !== 'spine', 'climax does not bounce to the Spine')
+
+s = newGame('outcast')
+s = pick(s, 'stand')
 s = applyEffect(s, { startChapter: 'cache-run', goto: 'ch1:leave', ticks: 1 })
 s = pick(s, 'go')
 s = pick(s, 'silas')
