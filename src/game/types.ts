@@ -20,6 +20,13 @@ export type ItemId =
   | 'kohl_smear'
   | 'false_vessel'
   | 'cache_map'
+  | 'ironwood_baton'
+  | 'needle_knife'
+  | 'dust_cloak'
+  | 'hide_wrap'
+
+export type ItemKind = 'gear' | 'currency' | 'key' | 'weapon' | 'armor'
+export type EquipSlot = 'weapon' | 'armor'
 
 export type Heat = {
   cartel: number
@@ -46,6 +53,7 @@ export type GameState = {
   flash?: string
   startedAt: number
   updatedAt: number
+  equipped: { weapon?: ItemId; armor?: ItemId }
 }
 
 export type Cond = {
@@ -64,6 +72,8 @@ export type Cond = {
   door?: DoorId
   pressureMin?: number
   ticksMin?: number
+  equipped?: ItemId
+  slot?: EquipSlot
 }
 
 export type Effect = {
@@ -79,6 +89,7 @@ export type Effect = {
   pressure?: number
   ticks?: number
   flash?: string
+  equip?: ItemId
 }
 
 export type Choice = {
@@ -141,6 +152,8 @@ export type HubDef = {
     sceneId: string
     show?: Cond
   }
+  mawLegs: number
+  mawNote: string
 }
 
 export type HubMapNode = {
@@ -191,6 +204,7 @@ export type DoorDef = {
 export type ItemDef = {
   id: ItemId
   name: string
-  kind: 'gear' | 'currency' | 'key'
+  kind: ItemKind
   desc: string
+  slot?: EquipSlot
 }

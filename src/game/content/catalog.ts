@@ -34,8 +34,9 @@ export const ITEMS: Record<ItemId, ItemDef> = {
   shiv: {
     id: 'shiv',
     name: 'Bleed Shiv',
-    kind: 'key',
-    desc: 'A vat-edge ground to a point.',
+    kind: 'weapon',
+    slot: 'weapon',
+    desc: 'A vat-edge ground to a point. Equip it to meet a throat, not a hymn.',
   },
   strider_bit: {
     id: 'strider_bit',
@@ -46,8 +47,9 @@ export const ITEMS: Record<ItemId, ItemDef> = {
   ceremonial_cloth: {
     id: 'ceremonial_cloth',
     name: 'Vessel Cloth',
-    kind: 'key',
-    desc: 'Gold-thread lie. Seekers bow to it.',
+    kind: 'armor',
+    slot: 'armor',
+    desc: 'Gold-thread lie. Seekers bow to it. Equip it and the desert reads a cup.',
   },
   overseer_chip: {
     id: 'overseer_chip',
@@ -88,14 +90,16 @@ export const ITEMS: Record<ItemId, ItemDef> = {
   wrench: {
     id: 'wrench',
     name: 'Oversized Wrench',
-    kind: 'gear',
-    desc: "Oil-Tooth's steel. Hotwires Striders. Pries bolts, wire, and lies.",
+    kind: 'weapon',
+    slot: 'weapon',
+    desc: "Oil-Tooth's steel. Hotwires Striders. Pries bolts, wire, and lies. Equip it if you mean to swing.",
   },
   rusted_dagger: {
     id: 'rusted_dagger',
     name: 'Rusted Dagger',
-    kind: 'gear',
-    desc: 'A Threshold kitchen knife that learned a worse job.',
+    kind: 'weapon',
+    slot: 'weapon',
+    desc: 'A Threshold kitchen knife that learned a worse job. Equip it to make the worse job count.',
   },
   silas_tip: {
     id: 'silas_tip',
@@ -108,6 +112,34 @@ export const ITEMS: Record<ItemId, ItemDef> = {
     name: "Oram's Map",
     kind: 'key',
     desc: "Feed-pencil heading to Kallik's second rib. Oram will deny it.",
+  },
+  ironwood_baton: {
+    id: 'ironwood_baton',
+    name: 'Shock Baton',
+    kind: 'weapon',
+    slot: 'weapon',
+    desc: "Ironwood issue. Still warm from a clerk who loved a ledger more than a throat.",
+  },
+  needle_knife: {
+    id: 'needle_knife',
+    name: 'Needle Knife',
+    kind: 'weapon',
+    slot: 'weapon',
+    desc: "Kaelen's shelf. Thin. Mean. Cost, not charity.",
+  },
+  dust_cloak: {
+    id: 'dust_cloak',
+    name: 'Dust Cloak',
+    kind: 'armor',
+    slot: 'armor',
+    desc: 'Canvas that has outlived three owners. Hides a silhouette. Does not hide Heat.',
+  },
+  hide_wrap: {
+    id: 'hide_wrap',
+    name: 'Hound Hide',
+    kind: 'armor',
+    slot: 'armor',
+    desc: 'Resin-jawed scrap from a Shard-Hound that lost. Wear it and the next glance slides.',
   },
 }
 
@@ -185,10 +217,12 @@ export const HUBS: Record<string, HubDef> = {
     ],
     hungerHook: {
       label: 'Take the rumor into the dunes',
-      sub: "Kallik's cache. Red Maw. The Hunger.",
+      sub: 'First Spires: days south. Four roads from the pens. Then the Hunger.',
       sceneId: 'ch1:leave',
       show: { flag: 'hungerKnown' },
     },
+    mawLegs: 4,
+    mawNote: 'First Spires sit days beyond the Wire. Cartel hinterland — farthest from the Maw.',
   },
   spine: {
     id: 'spine',
@@ -204,10 +238,12 @@ export const HUBS: Record<string, HubDef> = {
     ],
     hungerHook: {
       label: 'Walk the Hunger toward Red Maw',
-      sub: 'Empty vial. Full rumor. Kallik buried something.',
+      sub: 'First Spires: a hard day east-south. Closer than Ironwood. Not close.',
       sceneId: 'ch1:leave',
       show: { any: [{ flag: 'hungerKnown' }, { item: 'silas_tip' }] },
     },
+    mawLegs: 2,
+    mawNote: 'First Spires are a hard day east-south. Stray country sits nearer the bite than Camp-04.',
   },
   threshold: {
     id: 'threshold',
@@ -223,10 +259,12 @@ export const HUBS: Record<string, HubDef> = {
     ],
     hungerHook: {
       label: 'Ride the stolen Strider into Hunger',
-      sub: 'Kallik’s cache. Before the cloth fails.',
+      sub: 'First Spires: the paddock already faces them. Shortest Hunger-road.',
       sceneId: 'ch1:leave',
       show: { any: [{ flag: 'hungerKnown' }, { item: 'oram_map' }] },
     },
+    mawLegs: 1,
+    mawNote: 'First Spires stand off the paddock. Seeker fringe is the Maw’s doorstep.',
   },
   redmaw: {
     id: 'redmaw',
@@ -243,9 +281,11 @@ export const HUBS: Record<string, HubDef> = {
     ],
     hungerHook: {
       label: 'The Walking Amber',
-      sub: 'Chapter 2 — sealed for now.',
+      sub: 'Chapter 2 — sealed for now. You are already at the bite.',
       sceneId: 'ch2:stub',
       show: { flag: 'chapter1Done' },
     },
+    mawLegs: 0,
+    mawNote: 'Red Maw Approach. The Spires are the teeth around you.',
   },
 }

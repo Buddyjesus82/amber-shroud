@@ -8,6 +8,7 @@ export function loadSave(): GameState | null {
     if (!raw) return null
     const parsed = JSON.parse(raw) as GameState
     if (parsed?.version !== 1 || !parsed.door || !parsed.sceneId) return null
+    if (!parsed.equipped) parsed.equipped = {}
     return parsed
   } catch {
     return null

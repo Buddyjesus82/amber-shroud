@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { HUBS } from '../game/content/catalog'
 import { travelTo } from '../game/engine'
 import { adjacency, currentNode, edgeSap, hubMapOf, nodeById } from '../game/map'
 import type { GameState, HubMapDef, HubMapNode } from '../game/types'
@@ -71,6 +72,7 @@ function HubMapView({
 }) {
   const adj = here ? (adjacency(map).get(here.id) ?? []) : []
   const adjIds = new Set(adj.map((n) => n.id))
+  const hubNote = HUBS[map.hubId]?.mawNote
 
   function tap(node: HubMapNode) {
     if (here && node.id === here.id) {
@@ -89,7 +91,10 @@ function HubMapView({
 
   return (
     <>
-      <p className="map-blurb">{map.blurb}</p>
+          <p className="map-blurb">
+            {map.blurb}
+            {hubNote ? ` ${hubNote}` : ''}
+          </p>
       <div
         className={`hub-map hub-map-${map.hubId}`}
         style={{ aspectRatio: `${map.width} / ${map.height}` }}

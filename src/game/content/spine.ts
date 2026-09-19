@@ -393,6 +393,21 @@ Valerius is here in a different uniform: dust instead of cuffs, the same ledger 
         },
       },
       {
+        id: 'cut',
+        label: 'Meet the Hound with equipped steel',
+        sub: 'Weapon on. Loot the hide. No dice.',
+        show: { all: [{ slot: 'weapon' }, { flagUnset: 'hideWrap' }] },
+        effects: {
+          add: { hide_wrap: 1 },
+          flag: { hideWrap: true, houndCut: true },
+          ticks: 1,
+          heat: { cartel: 1 },
+          goto: 'spine:hound',
+          flash:
+            'Resin jaw, then silence. You take hide that still smells like Cartel loyalty. Equip it in Gear. Valerius will count this.',
+        },
+      },
+      {
         id: 'hunger',
         label: 'Leave the prints. Walk east to the Maw.',
         tone: 'hunger',

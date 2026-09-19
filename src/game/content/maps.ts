@@ -7,7 +7,7 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
     width: 100,
     height: 132,
     defaultNode: 'pens',
-    blurb: 'Cartel wire. South is Maw-country — far. Walk the roads. No teleport.',
+    blurb: 'Cartel wire. South is Maw-country — days away. First Spires are a rumor of distance. Walk the roads. No teleport.',
     maw: { x: 78, y: 124, label: 'Maw / dunes' },
     nodes: [
       { id: 'tower', name: 'Overseer', sceneId: 'camp:tower', x: 72, y: 11 },
@@ -29,7 +29,7 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
       { a: 'yard', b: 'lean' },
       { a: 'pens', b: 'lean' },
       { a: 'lean', b: 'bay' },
-      { a: 'bay', b: 'wire' },
+      { a: 'bay', b: 'wire', sap: 2 },
     ],
     sceneNode: {
       'camp:cages': 'pens',
@@ -60,7 +60,7 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
     width: 100,
     height: 120,
     defaultNode: 'ridge',
-    blurb: 'Stray country. Maw-haze sits closer than Ironwood ever allowed.',
+    blurb: 'Stray country. First Spires sit a hard day east-south — nearer than Ironwood, not a doorstep.',
     maw: { x: 86, y: 112, label: 'Maw-haze' },
     nodes: [
       { id: 'ridge', name: 'Noon Spine', short: 'Ridge', sceneId: 'spine:ridge', x: 30, y: 26 },
@@ -95,7 +95,7 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
     width: 100,
     height: 120,
     defaultNode: 'court',
-    blurb: 'Seeker fringe. The stolen Strider faces Maw-south. The cell does not.',
+    blurb: 'Seeker fringe. First Spires already face the paddock. Shortest road of the three starts.',
     maw: { x: 58, y: 112, label: 'Hunger south' },
     nodes: [
       { id: 'court', name: 'Threshold Court', short: 'Court', sceneId: 'thresh:court', x: 50, y: 40 },
@@ -127,7 +127,7 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
     width: 100,
     height: 120,
     defaultNode: 'rim',
-    blurb: 'The Hunger holds. The Lip is the only road into the walking dark.',
+    blurb: 'You are at the bite. First Spires are the teeth. The Lip is the only road into the walking dark.',
     maw: { x: 88, y: 96, label: 'The Maw' },
     nodes: [
       { id: 'rim', name: 'Maw Rim', short: 'Rim', sceneId: 'maw:rim', x: 50, y: 48 },

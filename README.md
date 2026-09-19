@@ -10,11 +10,14 @@ This is not a tabletop clone. There are no dice, no skill checks, and no rolls. 
    - **Ironwood Break** (Prisoner) — Cartel Scrip only in the holding pens. Oil-Tooth Jaxson is the inside man (sabotage + hotwire). **Kaelen the Sifter** is the rumor counter + merchant (scrap → Drops of Oasis Sap; Glints → intel).
    - **First Drop** (Outcast) — empty vial, Silas's tip. Sap is thin. Stray lean. Kaelen still sells Drops and rumors at dusk.
    - **Vessel** (Cult) — Drop, rusted dagger, Oram's map, cloth. Seeker / Thalia pressure.
-2. Roam the hub: open **Map** (next to Heat / Gear). Walk **connected routes** only — no teleport from any spot to any other. Each hop costs **Sap**; longer roads cost more hops (a few edges cost 2). At 0 Sap you get an authored crisis, not a random death. Gear verbs still change the yard, the Spine, and the Threshold.
-3. Optional free-text: type things like `ask cache`, `drink`, `hide`, `bury`, `steal`. Keyword map — no live LLM, no dice.
-4. Ask **Kaelen the Sifter** for rumors/news (he sells or trades leads). Door facilitators (Oil-Tooth, Silas, Oram) run the first starting quest only — they are not the full cast. When you have a heading (Kaelen intel, Silas's tip, or Oram's map), the Hunger hook unlocks.
-5. **Chapter 1 — Cache Run** is the same spine for every door: want → trail → Ossa → Zafir → Sybella poker → Red Maw. Verbs and spends depend on kit, Heat, and flags. Climax is resource poker: spend Sap, burn a Glint, bait Hollows, flee+Heat, or lay a false trail.
-6. Land in **Red Maw Approach** with what you spent. Chapter 2, *The Walking Amber*, is stubbed on purpose.
+2. Roam the hub: open **Map** (next to Heat / Gear). Walk **connected routes** only — no teleport. Each hop costs **Sap**; Camp-04 is farthest from Red Maw / First Spires (4 legs), Bleached Spine closer (2), Outer Threshold closest (1). Longer roads cost more hops (a few edges cost 2). At 0 Sap you get an authored crisis, not a random death.
+3. **Heat** is faction attention, not XP. A first-game tip explains it; tap a Heat number anytime; a toast fires when Heat rises.
+4. **Gear** is inventory: equip a **weapon** and **armor**. Loot from downed enemies. Buy a Needle Knife or Dust Cloak from **Kaelen the Sifter**. Gear gates verbs — still no dice.
+5. **Sybella is Seekers-only.** Prisoner / First Drop get hunt, skiff, capture pressure. She never feeds or bargains with Cartel or Dune-Strays.
+6. Optional free-text: type things like `ask cache`, `drink`, `hide`, `bury`, `steal`. Keyword map — no live LLM, no dice.
+7. Ask **Kaelen the Sifter** for rumors/news (he sells or trades leads). Door facilitators (Oil-Tooth, Silas, Oram) run the first starting quest only — they are not the full cast. When you have a heading (Kaelen intel, Silas's tip, or Oram's map), the Hunger hook unlocks.
+8. **Chapter 1 — Cache Run** is the same spine for every door: want → trail → Ossa → Zafir → Sybella poker → Red Maw. Verbs and spends depend on kit, Heat, and flags. Climax is resource poker: spend Sap, burn a Glint, bait Hollows, flee+Heat, or lay a false trail.
+9. Land in **Red Maw Approach** with what you spent. Chapter 2, *The Walking Amber*, is stubbed on purpose.
 
 Progress saves to `localStorage` on every action. **Continue** from the title screen.
 

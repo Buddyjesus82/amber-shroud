@@ -1,9 +1,9 @@
-import { DOORS, HUBS, getScene, resolveBody } from './content'
+import { DOORS, HUBS, ITEMS, getScene, resolveBody } from './content'
 import { applyDelta, check, clamp } from './logic'
 import { GLOBAL_INTENTS, matchIntent } from './intent'
 import { travelGate } from './map'
 import { writeSave } from './save'
-import type { DoorId, Effect, GameState, ItemId, Scene } from './types'
+import type { DoorId, Effect, EquipSlot, GameState, ItemId, Scene } from './types'
 
 export function newGame(door: DoorId): GameState {
   const d = DOORS[door]
@@ -16,6 +16,7 @@ export function newGame(door: DoorId): GameState {
     heat: { ...d.heat },
     items: { ...d.items },
     flags: { ...d.flags },
+    equipped: d.id === 'vessel' ? { weapon: 'rusted_dagger', armor: 'ceremonial_cloth' } : {},
     sceneId: d.sceneId,
     hubId: null,
     chapterId: null,
@@ -257,6 +258,34 @@ export function sapLabel(n: number): string {
   if (n <= 4) return 'Holding'
   if (n <= 6) return 'Warm'
   return 'Full'
+}
+
+export function equipItem(state: GameState, id: ItemId): GameState {
+  const def = ITEMS[id]
+  if (!def?.slot) {
+    return persist({ ...state, flash: 'That does not wear. Carry it.' })
+  }
+  if (!(state.items[id] ?? 0)) {
+    return persist({ ...state, flash: 'You do not have it to equip.' })
+  }
+  const equipped = { ...(state.equipped ?? {}), [def.slot]: id }
+  return persist({
+    ...state,
+    equipped,
+    flash: def.slot === 'weapon' ? `${def.name} in the hand.` : `${def.name} on the body.`,
+    updatedAt: Date.now(),
+  })
+}
+
+export function unequipSlot(state: GameState, slot: EquipSlot): GameState {
+  const equipped = { ...(state.equipped ?? {}) }
+  delete equipped[slot]
+  return persist({
+    ...state,
+    equipped,
+    flash: slot === 'weapon' ? 'Empty hand.' : 'Bare shoulders.',
+    updatedAt: Date.now(),
+  })
 }
 
 export { HUBS, DOORS, check, clamp, travelGate }

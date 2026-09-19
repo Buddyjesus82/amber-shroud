@@ -101,23 +101,58 @@ Stilts plant on either side of your head. Ossa is alive — of course she is —
     hubId: 'redmaw',
     kind: 'crisis',
     title: 'Approach Dry',
-    speaker: 'Sybella',
     body: `You go down on the Rim with nothing left in the glass.
 
-Sybella's shadow is cooler than the rock. She kneels — ceremonial, almost tender — and feeds you a Drop like a priest who has stopped believing in gods and started believing in tools.
+The desert does not send Sybella. She hunts Seekers' cups. Cartel property gets a clerk. Stray empty gets a scavenger. Nobody here is her battery.`,
+    variants: [
+      {
+        if: { door: 'prisoner' },
+        mode: 'replace',
+        body: `You go down on the Rim with nothing left in the glass.
 
-"Batteries do not get to be empty," she says. "Not while I have a use. Get up. The Walking Amber is still ahead. I will not carry you. I will also not let you become a stain on my waiting room."`,
+Valerius's Hound-handler is already there — not kind. A Drop forced against your lip like inventory maintenance. "Ironwood property stands. Sybella is Seekers. She does not feed Cartel mouths. Get up. You are still a heading I can sell."`,
+      },
+      {
+        if: { door: 'outcast' },
+        mode: 'replace',
+        body: `You go down on the Rim with nothing left in the glass.
+
+Silas's shade, or Kaelen's gloves — Stray arithmetic. A Drop you will owe. Sybella's skiff is a brass line on the horizon. She does not come. She does not feed Dune-Strays. She hunts.`,
+      },
+      {
+        if: { door: 'vessel' },
+        mode: 'replace',
+        body: `You go down on the Rim with nothing left in the glass.
+
+Sybella's shadow is cooler than the rock. She kneels — ceremonial, not tender — and feeds you a Drop because batteries do not get to be empty while she has a use.
+
+"Get up. The Walking Amber is still ahead. I will not carry you. I keep my own cups. Cartel and Strays can die thirsty."`,
+      },
+    ],
     choices: [
       {
         id: 'up',
+        label: 'Get up. Stay hunted.',
+        show: { not: { door: 'vessel' } },
+        effects: {
+          sap: 3,
+          flag: { sybellaHunting: true },
+          heat: { seekers: 1 },
+          goto: 'maw:rim',
+          flash: 'You live. Not by her hand. The skiff is still a warrant.',
+        },
+      },
+      {
+        id: 'up-vessel',
         label: 'Take the Drop from her hand',
+        show: { door: 'vessel' },
         effects: {
           sap: 3,
           flag: { sybellaBargain: true, sybellaHunting: true },
           add: { kohl_smear: 1 },
           heat: { seekers: 1 },
           goto: 'maw:rim',
-          flash: 'You live on her terms for an hour. The kohl receipt is darker.',
+          flash: 'You live on her terms for an hour. The kohl receipt is darker. Seekers-only.',
         },
       },
     ],

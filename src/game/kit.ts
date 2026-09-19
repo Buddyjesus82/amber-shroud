@@ -1,7 +1,14 @@
 import { ITEMS } from './content/catalog'
-import type { Effect, ItemId } from './types'
+import type { Effect, EquipSlot, ItemId } from './types'
 
-export type KitChip = { id: ItemId; name: string; n: number; kind: 'gear' | 'currency' | 'key'; desc: string }
+export type KitChip = {
+  id: ItemId
+  name: string
+  n: number
+  kind: 'gear' | 'currency' | 'key' | 'weapon' | 'armor'
+  desc: string
+  slot?: EquipSlot
+}
 
 export function listedKit(items: Partial<Record<ItemId, number>>): KitChip[] {
   return (Object.keys(items) as ItemId[])
@@ -12,6 +19,7 @@ export function listedKit(items: Partial<Record<ItemId, number>>): KitChip[] {
       n: items[id] ?? 0,
       kind: ITEMS[id].kind,
       desc: ITEMS[id].desc,
+      slot: ITEMS[id].slot,
     }))
 }
 

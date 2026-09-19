@@ -11,9 +11,11 @@ import {
   sceneOf,
   visibleChoices,
 } from '../game/engine'
+import { HEAT_FACTIONS, heatRiseLine } from '../game/heat'
 import { effectPills, listedKit } from '../game/kit'
 import { isMawExit } from '../game/map'
-import type { GameState } from '../game/types'
+import type { Faction, GameState } from '../game/types'
+import { HeatExplainer, HeatTip } from './HeatGuide'
 import { InventorySheet } from './InventorySheet'
 import { MapSheet } from './MapSheet'
 
@@ -30,6 +32,9 @@ export function PlayScreen({ state, onChange, onTitle }: Props) {
   const [draft, setDraft] = useState('')
   const [kit, setKit] = useState(false)
   const [mapOpen, setMapOpen] = useState(false)
+  const [heatInfo, setHeatInfo] = useState<Faction | null>(null)
+  const [toast, setToast] = useState<string | null>(null)
+  const prevHeat = useRef(state.heat)
   const talky = scene.kind === 'talk' || scene.kind === 'place' || scene.kind === 'story'
   const showNav = !!hub && scene.kind !== 'crisis' && state.chapterId !== 'cache-run'
   const hook = hub?.hungerHook
@@ -41,6 +46,20 @@ export function PlayScreen({ state, onChange, onTitle }: Props) {
   useEffect(() => {
     storyRef.current?.scrollTo({ top: 0 })
   }, [state.sceneId, state.flash])
+
+  useEffect(() => {
+    const prev = prevHeat.current
+    const bits: string[] = []
+    for (const f of ['cartel', 'seekers', 'strays'] as const) {
+      const d = state.heat[f] - prev[f]
+      if (d > 0) bits.push(heatRiseLine(f, d))
+    }
+    prevHeat.current = state.heat
+    if (!bits.length) return
+    setToast(bits.join(' '))
+    const t = window.setTimeout(() => setToast(null), 3200)
+    return () => window.clearTimeout(t)
+  }, [state.heat, state.updatedAt])
 
   function submitIntent() {
     const t = draft.trim()
@@ -79,9 +98,15 @@ export function PlayScreen({ state, onChange, onTitle }: Props) {
         </div>
         <div className="heat-row">
           {(['cartel', 'seekers', 'strays'] as const).map((f) => (
-            <span key={f} className={`heat ${heatTone(state.heat[f])}`}>
+            <button
+              type="button"
+              key={f}
+              className={`heat ${heatTone(state.heat[f])}`}
+              onClick={() => setHeatInfo(f)}
+              aria-label={`${HEAT_FACTIONS[f].name} Heat ${state.heat[f]}. Not XP. Tap for who is watching.`}
+            >
               {f} {state.heat[f]}
-            </span>
+            </button>
           ))}
           {showNav ? (
             <button type="button" className="map-btn" onClick={() => setMapOpen(true)}>
@@ -105,6 +130,8 @@ export function PlayScreen({ state, onChange, onTitle }: Props) {
           {hub ? <span>{hub.name}</span> : scene.chapterId === 'cache-run' ? <span>The Hunger</span> : null}
         </div>
       </header>
+
+      {toast ? <p className="heat-toast">{toast}</p> : null}
 
       {art ? (
         <div className="scene-art">
@@ -233,6 +260,10 @@ export function PlayScreen({ state, onChange, onTitle }: Props) {
 
       {kit ? <InventorySheet state={state} onClose={() => setKit(false)} onChange={onChange} /> : null}
       {mapOpen ? <MapSheet state={state} onClose={() => setMapOpen(false)} onChange={onChange} /> : null}
+      {heatInfo ? <HeatExplainer faction={heatInfo} onClose={() => setHeatInfo(null)} /> : null}
+      {!state.flags.heatTaught ? (
+        <HeatTip onDismiss={() => onChange(applyEffect(state, { flag: { heatTaught: true } }))} />
+      ) : null}
     </div>
   )
 }

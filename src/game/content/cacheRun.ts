@@ -4,7 +4,7 @@ import type { Scene } from '../types'
 //   leave → trail → ossa-meet → (talk | rob | zafir)
 //   rob "give back" → talk (then cairn). Steal is blocked after a return.
 //   talk / skip / vial / wrench → zafir → sybella → (hollow) → land → maw:rim
-//   Unconditional finale: sybella "maw" / "bargain" always set chapter1Done and go to land.
+//   Unconditional finale: sybella "maw" always lands. Vessel may bargain. Prisoner/Outcast get a hunt-mark, never her help.
 const done = {
   chapter1Done: true,
   ossaAlive: true,
@@ -27,17 +27,17 @@ Three beats between you and her. Then you spend.`,
       {
         if: { door: 'prisoner' },
         mode: 'append',
-        body: `Camp-04 sirens thin. Oil-Tooth's oversized wrench still smells like Strider hull. Scrip will not buy dunes. Cartel Heat will.`,
+        body: `Camp-04 sirens thin. First Spires are days south of that wire — Cartel hinterland, farthest of the three starts. Scrip will not buy dunes. Cartel Heat will.`,
       },
       {
         if: { door: 'outcast' },
         mode: 'append',
-        body: `Noon follows. Silas's tip is a scratch in your palm. The vial is still a dry throat unless you filled it.`,
+        body: `Noon follows. First Spires are a hard day east-south — closer than Ironwood, not a doorstep. The vial is still a dry throat unless you filled it.`,
       },
       {
         if: { door: 'vessel' },
         mode: 'append',
-        body: `Oram's map is already a crime. The rusted dagger sits against your ribs. Seeker Heat is a hymn with teeth.`,
+        body: `Oram's map is already a crime. First Spires already face the paddock you stole. Shortest Hunger-road of the three doors. Seeker Heat is a hymn with teeth.`,
       },
       {
         if: { flag: 'cacheBlind' },
@@ -630,11 +630,11 @@ Sybella steps down, blindfold up like a discarded halo, kohl ruined on purpose. 
         tone: 'hunger',
         effects: {
           add: { kohl_smear: 1 },
-          flag: { ...done, climax: 'push', sybellaBargain: true },
+          flag: { ...done, climax: 'push' },
           heat: { seekers: 1 },
           goto: 'ch1:land',
           flash:
-            'You walk the last wash like a person who has already paid. She lets you. Hunting is cheaper when the battery delivers itself.',
+            'You walk the last wash. She does not grant passage. She hunts the battery that delivers itself.',
         },
       },
       {
@@ -646,9 +646,9 @@ Sybella steps down, blindfold up like a discarded halo, kohl ruined on purpose. 
         effects: {
           sap: -2,
           add: { kohl_smear: 1 },
-          flag: { ...done, climax: 'sap', sybellaBargain: true },
+          flag: { ...done, climax: 'sap' },
           goto: 'ch1:land',
-          flash: 'You burn fuel where she can see it. She thumbs kohl at your throat anyway — a softer receipt. You cost too much to crack today.',
+          flash: 'You burn fuel where she can see it. Kohl at your throat is a hunt-mark, not a kindness. You cost too much to crack today.',
         },
       },
       {
@@ -724,35 +724,63 @@ Sybella steps down, blindfold up like a discarded halo, kohl ruined on purpose. 
       {
         id: 'bargain-drop',
         label: 'Bargain. Spend a Drop so she thinks you are already a furnace.',
-        show: { item: 'vial_drop' },
+        show: { all: [{ door: 'vessel' }, { item: 'vial_drop' }] },
         effects: {
           remove: { vial_drop: 1 },
           add: { vial_empty: 1, kohl_smear: 1 },
           flag: { ...done, climax: 'bargain', sybellaBargain: true, bargainDrop: true },
           heat: { seekers: -1 },
           goto: 'ch1:land',
-          flash: 'She watches you pour. Kohl at your throat. "Useful. Do not become a hymn." The skiff peels — not far.',
+          flash:
+            'She watches you pour. Kohl at your throat. "Useful. Do not become a hymn." Seekers keep their own cups. Nobody else.',
         },
       },
       {
         id: 'bargain',
         label: 'Bargain empty-handed',
         tone: 'quiet',
+        show: { door: 'vessel' },
         effects: {
           add: { kohl_smear: 1 },
           flag: { ...done, climax: 'bargain', sybellaBargain: true },
           goto: 'ch1:land',
-          flash: 'She writes the receipt on your throat. You will fill at the Maw. She will use you. Kind is a different sentence.',
+          flash: 'She writes the receipt on your throat. You will fill at the Maw. She will use you. Kind is Seekers-only.',
+        },
+      },
+      {
+        id: 'brand',
+        label: 'Take the hunt-mark. Do not ask her for help.',
+        sub: 'Sybella is Seekers. She does not aid Cartel or Dune-Strays.',
+        show: { not: { door: 'vessel' } },
+        tone: 'quiet',
+        effects: {
+          add: { kohl_smear: 1 },
+          flag: { ...done, climax: 'push' },
+          heat: { seekers: 2 },
+          goto: 'ch1:land',
+          flash:
+            'Kohl like a warrant. She does not feed you. She does not cool. She hunts. The Approach collects what she does not catch today.',
         },
       },
     ],
     intents: [
       {
-        tags: ['bargain', 'deal', 'yes', 'useful', 'agree', 'walk', 'maw', 'approach', 'red'],
-        reply: 'You nod like an adult. She almost looks grateful. That is worse.',
+        tags: ['bargain', 'deal', 'yes', 'useful', 'agree', 'furnace'],
+        show: { door: 'vessel' },
+        reply: 'You nod like an adult. She almost looks grateful. That is worse. Seekers-only.',
         effects: {
           add: { kohl_smear: 1 },
           flag: { ...done, climax: 'bargain', sybellaBargain: true },
+          goto: 'ch1:land',
+        },
+      },
+      {
+        tags: ['walk', 'maw', 'approach', 'red', 'push'],
+        reply: 'You take the Approach. She hunts. She does not help.',
+        effects: {
+          add: { kohl_smear: 1 },
+          flag: { ...done, climax: 'push' },
+          heat: { seekers: 1 },
           goto: 'ch1:land',
         },
       },

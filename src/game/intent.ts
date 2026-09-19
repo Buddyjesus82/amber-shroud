@@ -76,8 +76,8 @@ export const GLOBAL_INTENTS: IntentRule[] = [
     effects: {},
   },
   {
-    tags: ['inventory', 'pack', 'pocket', 'items', 'gear'],
-    reply: 'You pat the pack. Whatever you have, it is listed in the kit. The desert does not care.',
+    tags: ['inventory', 'pack', 'pocket', 'items', 'gear', 'kit'],
+    reply: 'You pat the pack. Whatever you have, it is listed in Gear. Equip a weapon or armor if it has a slot. The desert does not care.',
     effects: {},
   },
   {

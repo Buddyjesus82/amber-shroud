@@ -244,11 +244,24 @@ She is here. Hunting. Reasonable.`,
       {
         id: 'hold',
         label: 'Tell her you will walk when the Maw opens',
+        show: { door: 'vessel' },
         effects: {
           ticks: 1,
           heat: { seekers: -1 },
           goto: 'maw:smoke',
-          flash: 'She accepts the delay the way a knife accepts a sheath. Temporarily.',
+          flash: 'She accepts the delay the way a knife accepts a sheath. Temporarily. Seekers keep their cups. Nobody else.',
+        },
+      },
+      {
+        id: 'off',
+        label: 'Step out of her smoke. Do not ask for help.',
+        show: { not: { door: 'vessel' } },
+        effects: {
+          ticks: 1,
+          heat: { seekers: 1 },
+          pressure: 1,
+          goto: 'maw:smoke',
+          flash: 'No delay granted. She hunts Cartel mouths and Stray empties. She does not feed them.',
         },
       },
       {
