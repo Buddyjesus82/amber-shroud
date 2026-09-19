@@ -66,7 +66,7 @@ function spendFirst(state: GameState, order: ItemId[], flagKey: string): GameSta
 function spendValued(state: GameState): GameState {
   return spendFirst(
     state,
-    ['vial_drop', 'glints', 'kallik_mark', 'strider_bit', 'ceremonial_cloth', 'rusted_dagger', 'wrench', 'shiv'],
+    ['vial_drop', 'glints', 'kallik_mark', 'strider_bit', 'ceremonial_cloth', 'rusted_dagger', 'wrench', 'silas_tip', 'shiv'],
     'buriedItem',
   )
 }

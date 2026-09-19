@@ -23,6 +23,30 @@ Thalia stands at the dais with gold on her cheeks that might be kohl and might b
     ],
     choices: [
       {
+        id: 'thalia',
+        label: 'Climb the dais. Speak to Thalia.',
+        effects: { goto: 'thresh:thalia', ticks: 1 },
+      },
+      {
+        id: 'oram',
+        label: 'Find Oram counting Striders.',
+        effects: { goto: 'thresh:oram', ticks: 1 },
+      },
+      {
+        id: 'hunger',
+        label: 'Ride the stolen Strider into Hunger',
+        sub: "Oram's map. Kallik's cache. Before the cloth fails.",
+        tone: 'hunger',
+        show: { any: [{ flag: 'hungerKnown' }, { item: 'oram_map' }] },
+        effects: {
+          startChapter: 'cache-run',
+          goto: 'ch1:leave',
+          ticks: 1,
+          heat: { seekers: 1 },
+          flash: 'The Court shrinks to a bad hymn behind you. The map is already a crime.',
+        },
+      },
+      {
         id: 'bless',
         label: 'Offer a false blessing',
         effects: {

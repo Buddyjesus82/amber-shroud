@@ -46,6 +46,12 @@ Overseer Valerius is the looming shadow. First major victory: get out from under
             'You scrape. Nobody thanks you. The Cartel heat on your name cools a degree because a working prisoner is a solved prisoner.',
         },
       },
+      {
+        id: 'wire',
+        label: 'Walk the Wire',
+        sub: 'Kaelen the Sifter sells rumors. Not rides.',
+        effects: { goto: 'camp:wire', ticks: 1 },
+      },
     ],
     intents: [
       {
@@ -161,6 +167,26 @@ Kaelen the Sifter is not here. Kaelen sells rumors at the Wire.`,
             "Under the pallet: scrap enough to interest Kaelen the Sifter. Oil-Tooth does not sell headings. He sells a ride.",
         },
       },
+      {
+        id: 'yard',
+        label: 'Walk the Bleed Yard',
+        sub: 'Vats. Steam. The camp is bigger than one cage.',
+        effects: { goto: 'camp:yard', ticks: 1, sap: -1 },
+      },
+      {
+        id: 'station',
+        label: 'Take the wrench to the guard station',
+        sub: 'West steam-vent. That was the job.',
+        tone: 'hunger',
+        show: { all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] },
+        effects: { goto: 'camp:guard', ticks: 1 },
+      },
+      {
+        id: 'bay',
+        label: 'The Strider bay. He is under a hull.',
+        show: { flag: 'guardDown' },
+        effects: { goto: 'camp:bay', ticks: 1 },
+      },
     ],
     intents: [
       {
@@ -239,7 +265,46 @@ Lifetime labor: repairing Ironclad Skiff-Striders. He has skimmed Oasis Sap the 
       {
         id: 'talk',
         label: 'Take the inside job',
-        effects: { goto: 'camp:jaxson', ticks: 1 },
+        effects: { goto: 'camp:jaxson', ticks: 1, pressure: 1 },
+      },
+      {
+        id: 'station',
+        label: 'West steam-vent. Sabotage the station.',
+        sub: 'Oil-Tooth named the bolt. The wrench knows it.',
+        tone: 'hunger',
+        show: { all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] },
+        effects: { goto: 'camp:guard', ticks: 1 },
+      },
+      {
+        id: 'bay',
+        label: 'The bay. He is under the hull.',
+        show: { all: [{ flag: 'guardDown' }, { flagUnset: 'striderHot' }] },
+        effects: { goto: 'camp:bay', ticks: 1 },
+      },
+      {
+        id: 'ride',
+        label: 'Ride the hotwired Strider into the dunes',
+        tone: 'hunger',
+        show: { all: [{ flag: 'striderHot' }, { flag: 'hungerKnown' }] },
+        effects: {
+          startChapter: 'cache-run',
+          goto: 'ch1:leave',
+          heat: { cartel: 1 },
+          flash: 'Camp-04 falls behind like a bad hymn. The wrench still smells like Oil-Tooth\'s stall.',
+        },
+      },
+      {
+        id: 'ride-blind',
+        label: 'Ride anyway — no heading',
+        tone: 'danger',
+        show: { all: [{ flag: 'striderHot' }, { flagUnset: 'hungerKnown' }] },
+        effects: {
+          flag: { hungerKnown: true, cacheBlind: true },
+          startChapter: 'cache-run',
+          goto: 'ch1:leave',
+          heat: { cartel: 1 },
+          flash: 'You have a Strider and no rumor. Kaelen would call that bad inventory. The dunes do not care.',
+        },
       },
     ],
     intents: [
@@ -295,8 +360,48 @@ Great Bleed hits, you sabotage that station. I hotwire an Ironclad Skiff-Strider
         show: { flag: 'jaxsonInside' },
         effects: {
           ticks: 1,
+          pressure: 1,
           goto: 'camp:lean',
           flash: '"Guard station. Then the bay. Valerius eats dust if we are fast. Kaelen still charges for news."',
+        },
+      },
+      {
+        id: 'vent',
+        label: 'West steam-vent. Sabotage now.',
+        sub: 'Guard station. That was the job.',
+        tone: 'hunger',
+        show: { all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] },
+        effects: { goto: 'camp:guard', ticks: 1 },
+      },
+      {
+        id: 'hull',
+        label: 'The bay. He is under the hull.',
+        show: { all: [{ flag: 'guardDown' }, { flagUnset: 'striderHot' }] },
+        effects: { goto: 'camp:bay', ticks: 1 },
+      },
+      {
+        id: 'ride',
+        label: 'Ride the Strider. Leave Valerius behind.',
+        tone: 'hunger',
+        show: { all: [{ flag: 'striderHot' }, { flag: 'hungerKnown' }] },
+        effects: {
+          startChapter: 'cache-run',
+          goto: 'ch1:leave',
+          heat: { cartel: 1 },
+          flash: 'Camp-04 falls behind like a bad hymn. The wrench still smells like Oil-Tooth\'s stall.',
+        },
+      },
+      {
+        id: 'ride-blind',
+        label: 'Ride anyway — no heading',
+        tone: 'danger',
+        show: { all: [{ flag: 'striderHot' }, { flagUnset: 'hungerKnown' }] },
+        effects: {
+          flag: { hungerKnown: true, cacheBlind: true },
+          startChapter: 'cache-run',
+          goto: 'ch1:leave',
+          heat: { cartel: 1 },
+          flash: 'You have a Strider and no rumor. The dunes do not care.',
         },
       },
       {
@@ -309,6 +414,7 @@ Great Bleed hits, you sabotage that station. I hotwire an Ironclad Skiff-Strider
         label: 'Ask how to beat Valerius',
         effects: {
           ticks: 1,
+          pressure: 1,
           goto: 'camp:jaxson',
           flash:
             '"You do not beat him in a conversation. You sabotage his station, you steal his Strider, you put dunes between his shock baton and your back. First major victory. After that he is still a shadow. Shadows follow."',
@@ -320,12 +426,18 @@ Great Bleed hits, you sabotage that station. I hotwire an Ironclad Skiff-Strider
         effects: {
           flag: { kaelenKnown: true },
           ticks: 1,
+          pressure: 1,
           goto: 'camp:jaxson',
           flash:
             '"The Wire. Jittery little Sifter. Dust-caked canvas. Pack full of vials. Glints buy intel. Scrap buys Drops. He plays all sides. He is not me."',
         },
       },
-      { id: 'leave', label: 'Leave him to the brass', tone: 'quiet', effects: { goto: 'camp:lean' } },
+      {
+        id: 'leave',
+        label: 'Leave him to the brass',
+        tone: 'quiet',
+        effects: { goto: 'camp:lean', ticks: 1, pressure: 1 },
+      },
     ],
     intents: [
       {
@@ -384,6 +496,12 @@ Great Bleed hits, you sabotage that station. I hotwire an Ironclad Skiff-Strider
         label: 'Take the inside job first',
         show: { flagUnset: 'jaxsonInside' },
         effects: { goto: 'camp:jaxson' },
+      },
+      {
+        id: 'station',
+        label: 'Fine. The station first.',
+        show: { all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] },
+        effects: { goto: 'camp:guard', ticks: 1 },
       },
       {
         id: 'paid',
@@ -806,6 +924,17 @@ You can keep playing prisoner until the Drop in you burns out. Or Oil-Tooth's St
         tone: 'hunger',
         show: { flag: 'hungerKnown' },
         effects: { startChapter: 'cache-run', goto: 'ch1:leave' },
+      },
+      {
+        id: 'blind',
+        label: 'Break the wire anyway',
+        tone: 'danger',
+        show: { flagUnset: 'hungerKnown' },
+        effects: {
+          flag: { hungerKnown: true, cacheBlind: true },
+          startChapter: 'cache-run',
+          goto: 'ch1:leave',
+        },
       },
       {
         id: 'stay',

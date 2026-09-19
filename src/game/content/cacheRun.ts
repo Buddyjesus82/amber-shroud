@@ -1,5 +1,10 @@
 import type { Scene } from '../types'
 
+// Cache Run spine (every door). Forward exits only except the authored Ossa retry:
+//   leave → trail → ossa-meet → (talk | rob | zafir)
+//   rob "give back" → talk (then cairn). Steal is blocked after a return.
+//   talk / skip / vial / wrench → zafir → sybella → (hollow) → land → maw:rim
+//   Unconditional finale: sybella "maw" / "bargain" always set chapter1Done and go to land.
 const done = {
   chapter1Done: true,
   ossaAlive: true,
@@ -362,7 +367,7 @@ She is alive. Angry. Breathing. "Walk," she says, from the ground. "If Sybella a
         id: 'back',
         label: 'Give it back. Try to be a person.',
         effects: {
-          flag: { ossaAlive: true, ossaWary: true, ossaMet: true },
+          flag: { ossaAlive: true, ossaWary: true, ossaMet: true, ossaReturned: true },
           unsetFlag: ['ossaRobbed'],
           goto: 'ch1:ossa-talk',
           flash: 'She takes the vial without thanks. Thanks would be a lie. The cairn is still ahead.',
@@ -428,7 +433,7 @@ I go to Red Maw because the stilts work better where the sand is honest about wa
     intents: [
       {
         tags: ['steal', 'rob', 'vial', 'take'],
-        show: { flagUnset: 'ossaRobbed' },
+        show: { all: [{ flagUnset: 'ossaRobbed' }, { flagUnset: 'ossaReturned' }] },
         reply: 'Second chances at theft are how graves get filled.',
         effects: { goto: 'ch1:ossa-rob' },
       },
@@ -583,8 +588,8 @@ Zafir smiles in a way that costs extra. "You look like Hunger. I sell headings t
     intents: [
       {
         tags: ['kallik', 'cache', 'map', 'heading', 'maw', 'oram'],
-        reply: 'He taps bone. Pay, show a map, name Silas, threaten, or walk.',
-        effects: { ticks: 1 },
+        reply: 'He taps bone and lets you keep walking. The heading is spent. The skiff is the next mouth.',
+        effects: { ticks: 1, flag: { zafirMet: true }, goto: 'ch1:sybella' },
       },
       {
         tags: ['sybella', 'skiff', 'blonde'],
@@ -618,6 +623,20 @@ Sybella steps down, blindfold up like a discarded halo, kohl ruined on purpose. 
       },
     ],
     choices: [
+      {
+        id: 'maw',
+        label: 'Push past her into Red Maw Approach',
+        sub: 'Chapter end. She follows. You still arrive.',
+        tone: 'hunger',
+        effects: {
+          add: { kohl_smear: 1 },
+          flag: { ...done, climax: 'push', sybellaBargain: true },
+          heat: { seekers: 1 },
+          goto: 'ch1:land',
+          flash:
+            'You walk the last wash like a person who has already paid. She lets you. Hunting is cheaper when the battery delivers itself.',
+        },
+      },
       {
         id: 'sap',
         label: 'Spend sap. Stand in the wash.',
@@ -658,9 +677,10 @@ Sybella steps down, blindfold up like a discarded halo, kohl ruined on purpose. 
             { item: 'ceremonial_cloth' },
             { item: 'rusted_dagger' },
             { item: 'wrench' },
+            { item: 'silas_tip' },
           ],
         },
-        locked: 'You must bury a valued thing — Glint, Drop, mark, bit, cloth, dagger, or wrench.',
+        locked: 'You must bury a valued thing — Glint, Drop, mark, bit, cloth, dagger, wrench, or Silas\'s tip.',
         effects: { goto: 'ch1:hollow', ticks: 1 },
       },
       {
@@ -728,7 +748,7 @@ Sybella steps down, blindfold up like a discarded halo, kohl ruined on purpose. 
     ],
     intents: [
       {
-        tags: ['bargain', 'deal', 'yes', 'useful', 'agree', 'walk'],
+        tags: ['bargain', 'deal', 'yes', 'useful', 'agree', 'walk', 'maw', 'approach', 'red'],
         reply: 'You nod like an adult. She almost looks grateful. That is worse.',
         effects: {
           add: { kohl_smear: 1 },
@@ -789,6 +809,7 @@ Sybella steps down, blindfold up like a discarded halo, kohl ruined on purpose. 
             { item: 'ceremonial_cloth' },
             { item: 'rusted_dagger' },
             { item: 'wrench' },
+            { item: 'silas_tip' },
           ],
         },
         reply: 'You put a valued thing in the listening sand.',
@@ -829,6 +850,7 @@ For a breath the skiff sinks to one runner. Sybella's head turns as if someone s
     kind: 'story',
     art: 'hunger',
     title: 'Red Maw Approach',
+    onEnter: { flag: { chapter1Done: true, ossaAlive: true, sybellaHunting: true } },
     body: `The Maw is a bite the land never closed. The cache is close enough to poison your decisions.
 
 Chapter 1 holds. What you spent is the person you are now.`,
@@ -837,6 +859,11 @@ Chapter 1 holds. What you spent is the person you are now.`,
         if: { flagEq: ['climax', 'bargain'] },
         mode: 'append',
         body: `Kohl on your throat. A bargain that thinks it is a future.`,
+      },
+      {
+        if: { flagEq: ['climax', 'push'] },
+        mode: 'append',
+        body: `You did not spend a pretty thing. You spent the last walk. Kohl anyway. She is still behind you.`,
       },
       {
         if: { flag: 'bargainDrop' },
