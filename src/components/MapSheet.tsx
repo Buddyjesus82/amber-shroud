@@ -16,15 +16,15 @@ export function MapSheet({ state, onChange, onClose }: Props) {
   const [hint, setHint] = useState<string | null>(null)
 
   return (
-    <div className="map-backdrop" role="dialog" aria-label="Map" onClick={onClose}>
-      <div className="map-sheet" onClick={(e) => e.stopPropagation()}>
+    <div className="map-backdrop scrap-map" role="dialog" aria-label="Map" onClick={onClose}>
+      <div className="map-sheet scrap-sheet" onClick={(e) => e.stopPropagation()}>
         <header className="sheet-head">
           <div>
-            <p className="kicker map-kicker">Map</p>
+            <p className="kicker map-kicker">scavenged scrap</p>
             <h2>{map ? titleFor(state, map) : 'Unmapped'}</h2>
           </div>
-          <button type="button" className="text-link" onClick={onClose}>
-            Close
+          <button type="button" className="text-link scrap-stow" onClick={onClose}>
+            Stow
           </button>
         </header>
         {!map || !map.ready ? (
@@ -91,10 +91,10 @@ function HubMapView({
 
   return (
     <>
-          <p className="map-blurb">
-            {map.blurb}
-            {hubNote ? ` ${hubNote}` : ''}
-          </p>
+      <p className="map-blurb">
+        {map.blurb}
+        {hubNote ? ` ${hubNote}` : ''}
+      </p>
       <div
         className={`hub-map hub-map-${map.hubId}`}
         style={{ aspectRatio: `${map.width} / ${map.height}` }}
@@ -104,6 +104,8 @@ function HubMapView({
           viewBox={`0 0 ${map.width} ${map.height}`}
           aria-hidden="true"
         >
+          <ScrapDefs />
+          <rect className="map-hide-wash" x="0" y="0" width={map.width} height={map.height} />
           <MapArt map={map} />
           {map.edges.map((e) => {
             const a = nodeById(map, e.a)
@@ -112,23 +114,31 @@ function HubMapView({
             const on =
               !!here &&
               ((e.a === here.id && adjIds.has(e.b)) || (e.b === here.id && adjIds.has(e.a)))
+            const long = (e.sap ?? 1) > 1
+            const d = charcoalStroke(a.x, a.y, b.x, b.y, `${e.a}-${e.b}`)
             return (
-              <line
-                key={`${e.a}-${e.b}`}
-                x1={a.x}
-                y1={a.y}
-                x2={b.x}
-                y2={b.y}
-                className={on ? 'map-edge on' : 'map-edge'}
-              />
+              <g key={`${e.a}-${e.b}`}>
+                <path d={d} className={on ? 'map-edge-smudge on' : 'map-edge-smudge'} />
+                <path d={d} className={on ? 'map-edge on' : 'map-edge'} />
+                {long ? (
+                  <path
+                    d={charcoalStroke(a.x, a.y, b.x, b.y, `${e.a}-${e.b}-long`, 0.9)}
+                    className={on ? 'map-edge-long on' : 'map-edge-long'}
+                  />
+                ) : null}
+              </g>
             )
           })}
-          <text className="map-maw-label" x={map.maw.x} y={map.maw.y} textAnchor="middle">
+          <text
+            className="map-maw-label"
+            x={map.maw.x}
+            y={map.maw.y}
+            textAnchor="middle"
+            transform={`rotate(-7 ${map.maw.x} ${map.maw.y})`}
+          >
             {map.maw.label}
           </text>
-          {here ? (
-            <circle className="map-you-ring" cx={here.x} cy={here.y} r="7.2" />
-          ) : null}
+          {here ? <YouMark x={here.x} y={here.y} /> : null}
         </svg>
         <div className="hub-map-nodes">
           {map.nodes.map((n) => {
@@ -154,7 +164,7 @@ function HubMapView({
                 onClick={() => tap(n)}
               >
                 <span>{n.short ?? n.name}</span>
-                {mine ? <small>You</small> : next && sap ? <small>−{sap} Sap</small> : <small>Far</small>}
+                {mine ? <small>you</small> : next && sap ? <small>−{sap} sap</small> : <small>far</small>}
               </button>
             )
           })}
@@ -162,6 +172,44 @@ function HubMapView({
       </div>
       <p className="map-hint">{hint ?? (state.sap <= 2 ? 'Sap is thin. Walks still cost Drops — empty is a crisis.' : `You are at ${here?.name ?? 'an unnamed scrap of ground'}. Tap a connected name.`)}</p>
     </>
+  )
+}
+
+function ScrapDefs() {
+  return (
+    <defs>
+      <filter id="charcoal-jitter" x="-12%" y="-12%" width="124%" height="124%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="4" result="n" />
+        <feDisplacementMap in="SourceGraphic" in2="n" scale="0.7" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+      <filter id="soot-grain" x="0" y="0" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="3" seed="11" result="g" />
+        <feColorMatrix
+          in="g"
+          type="matrix"
+          values="0 0 0 0 0.18  0 0 0 0 0.12  0 0 0 0 0.07  0 0 0 0.22 0"
+        />
+      </filter>
+      <pattern id="charcoal-hatch" width="3.2" height="3.2" patternUnits="userSpaceOnUse" patternTransform="rotate(26)">
+        <path d="M0 0 V3.2" stroke="#2a1c12" strokeWidth="0.28" opacity="0.42" />
+      </pattern>
+      <pattern id="charcoal-hatch-steep" width="2.6" height="2.6" patternUnits="userSpaceOnUse" patternTransform="rotate(-38)">
+        <path d="M0 0 V2.6" stroke="#1a120c" strokeWidth="0.22" opacity="0.38" />
+      </pattern>
+    </defs>
+  )
+}
+
+function YouMark({ x, y }: { x: number; y: number }) {
+  return (
+    <g className="map-you-mark" transform={`translate(${x} ${y})`} filter="url(#charcoal-jitter)">
+      <ellipse className="map-you-smudge" cx="0.5" cy="0.8" rx="10.2" ry="8.1" />
+      <path
+        className="map-you-ring"
+        d="M-7.6,-0.6 C-6.8,-7.2 6.2,-7.6 7.4,-0.4 C7.8,5.2 -2.4,8.1 -6.8,3.6 C-8.6,0.8 -8.1,1.6 -7.6,-0.6 Z"
+      />
+      <path className="map-you-x" d="M-3.6,-3.4 L4.1,3.8 M3.5,-3.8 L-3.9,3.5" />
+    </g>
   )
 }
 
@@ -174,52 +222,39 @@ function MapArt({ map }: { map: HubMapDef }) {
 
 function CampArt() {
   return (
-    <g>
-      <defs>
-        <radialGradient id="camp-glow" cx="50%" cy="18%" r="70%">
-          <stop offset="0%" stopColor="#3a220e" stopOpacity="0.9" />
-          <stop offset="100%" stopColor="#0a0604" stopOpacity="0.2" />
-        </radialGradient>
-        <linearGradient id="maw-south" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#c4451a" stopOpacity="0" />
-          <stop offset="100%" stopColor="#c4451a" stopOpacity="0.35" />
-        </linearGradient>
-      </defs>
-      <rect x="0" y="0" width="100" height="132" fill="url(#camp-glow)" />
-      <rect x="0" y="104" width="100" height="28" fill="url(#maw-south)" />
+    <g className="map-sketch" filter="url(#charcoal-jitter)">
+      <rect x="0" y="0" width="100" height="132" filter="url(#soot-grain)" opacity="0.55" />
+      <ellipse cx="18" cy="22" rx="16" ry="10" className="map-stain" />
+      <ellipse cx="86" cy="96" rx="18" ry="14" className="map-stain deep" />
       <path
-        d="M8 8 H92 V108 H8 Z"
+        d="M7 10 Q22 6 38 12 Q54 7 70 11 Q84 8 93 13 L91 106 Q74 113 52 107 Q28 112 8 108 Z"
         fill="none"
-        stroke="rgba(232,163,23,0.22)"
-        strokeWidth="0.7"
-        strokeDasharray="1.6 1.1"
+        className="map-wire"
       />
       <path
-        d="M8 108 L14 104 L20 109 L28 103 L36 110 L48 104 L58 111 L70 105 L82 112 L92 108"
+        d="M8 108 L16 103 L24 110 L33 102 L44 111 L56 104 L67 112 L78 105 L88 113 L93 108"
         fill="none"
-        stroke="#e8a317"
-        strokeWidth="0.9"
-        strokeLinejoin="round"
+        className="map-dune"
       />
-      <rect x="66" y="5" width="12" height="14" rx="0.8" fill="#1c1008" stroke="#a56b12" strokeWidth="0.5" />
-      <rect x="63" y="24" width="16" height="12" rx="0.6" fill="#22140a" stroke="#a56b12" strokeWidth="0.45" />
-      <rect x="73" y="46" width="16" height="13" rx="1" fill="#1a0e08" stroke="#e8a317" strokeWidth="0.45" />
-      <ellipse cx="80" cy="50" rx="5.5" ry="2.2" fill="#2a1a0c" stroke="#f4c15a" strokeWidth="0.4" />
-      <path d="M76 50 L74 56 M80 52 L80 58 M84 50 L86 56" stroke="#c9a27a" strokeWidth="0.45" />
-      <rect x="20" y="60" width="18" height="14" rx="0.5" fill="#24150c" stroke="#a56b12" strokeWidth="0.4" />
-      <g fill="none" stroke="#e8a317" strokeWidth="0.45" opacity="0.7">
-        <path d="M30 40 q4 -6 8 0" />
-        <path d="M33 43 q4 -5 7 1" />
-        <path d="M36 41 q3 -6 7 0" />
+      <path d="M66 5 l11 1 l1 13 l-12 1 z" fill="url(#charcoal-hatch)" className="map-block" />
+      <path d="M62 24 l17 1 l-1 11 l-16 -1 z" fill="url(#charcoal-hatch)" className="map-block" />
+      <path d="M74 46 l16 2 l-1 12 l-16 -1 z" fill="url(#charcoal-hatch)" className="map-block" />
+      <ellipse cx="80" cy="51" rx="5.8" ry="2.4" fill="none" className="map-block" />
+      <path d="M76 51 L73 58 M80 53 L80 60 M85 51 L87 58" className="map-hatch" />
+      <path d="M21 61 l17 1 l-1 13 l-16 -1 z" fill="url(#charcoal-hatch-steep)" className="map-block" />
+      <g className="map-hatch">
+        <path d="M28 38 q5 -7 10 1" />
+        <path d="M32 42 q4 -6 8 1" />
+        <path d="M36 39 q4 -7 8 0" />
       </g>
-      <g fill="#1a0e08" stroke="#a56b12" strokeWidth="0.35">
-        <rect x="8" y="84" width="6" height="8" />
-        <rect x="15" y="84" width="6" height="8" />
-        <rect x="8" y="93" width="6" height="8" />
-        <rect x="15" y="93" width="6" height="8" />
+      <g fill="url(#charcoal-hatch)" className="map-block">
+        <path d="M8 84 h6 v8 h-6 z" />
+        <path d="M15 84 h6 v8 h-6 z" />
+        <path d="M8 93 h6 v8 h-6 z" />
+        <path d="M15 93 h6 v8 h-6 z" />
       </g>
-      <rect x="38" y="82" width="14" height="10" rx="0.7" fill="#1c1008" stroke="#e8a317" strokeWidth="0.4" />
-      <text x="50" y="7" textAnchor="middle" className="map-compass">
+      <path d="M38 82 l14 1 v10 l-15 -1 z" fill="url(#charcoal-hatch)" className="map-block" />
+      <text x="49" y="8" textAnchor="middle" className="map-compass">
         N · inland
       </text>
     </g>
@@ -228,21 +263,20 @@ function CampArt() {
 
 function SpineArt() {
   return (
-    <g>
-      <defs>
-        <linearGradient id="spine-sun" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#5a3208" />
-          <stop offset="55%" stopColor="#140c07" />
-          <stop offset="100%" stopColor="#3a120c" stopOpacity="0.55" />
-        </linearGradient>
-      </defs>
-      <rect x="0" y="0" width="100" height="120" fill="url(#spine-sun)" />
-      <path d="M4 40 L28 14 L52 34 L78 22 L96 44 L96 70 L4 78 Z" fill="#1a1009" stroke="#a56b12" strokeWidth="0.5" />
-      <path d="M8 62 Q22 54 30 64 Q40 74 22 78 Z" fill="#24150c" stroke="#e8a317" strokeWidth="0.4" />
-      <circle cx="58" cy="46" r="5" fill="none" stroke="#c9a27a" strokeWidth="0.5" />
-      <circle cx="58" cy="46" r="2" fill="#0c0704" />
-      <path d="M70 70 L82 86 L88 80" fill="none" stroke="#c4451a" strokeWidth="0.7" strokeDasharray="1.4 1" />
-      <text x="50" y="10" textAnchor="middle" className="map-compass">
+    <g className="map-sketch" filter="url(#charcoal-jitter)">
+      <rect x="0" y="0" width="100" height="120" filter="url(#soot-grain)" opacity="0.5" />
+      <ellipse cx="72" cy="18" rx="22" ry="12" className="map-stain" />
+      <ellipse cx="22" cy="96" rx="16" ry="11" className="map-stain deep" />
+      <path
+        d="M5 42 L26 16 L50 36 L76 20 L96 46 L95 72 L6 80 Z"
+        fill="url(#charcoal-hatch-steep)"
+        className="map-block"
+      />
+      <path d="M9 63 Q24 54 32 65 Q41 76 22 79 Z" fill="url(#charcoal-hatch)" className="map-block" />
+      <circle cx="58" cy="46" r="5.4" fill="none" className="map-block" />
+      <circle cx="58" cy="46" r="2.1" fill="none" className="map-hatch" />
+      <path d="M70 71 L81 88 L89 79" fill="none" className="map-dune" />
+      <text x="50" y="11" textAnchor="middle" className="map-compass">
         N · noon
       </text>
     </g>
@@ -251,15 +285,16 @@ function SpineArt() {
 
 function ThreshArt() {
   return (
-    <g>
-      <rect x="0" y="0" width="100" height="120" fill="#120c08" />
-      <path d="M18 18 H82 L70 88 H30 Z" fill="#1c1008" stroke="#e8a317" strokeWidth="0.55" />
-      <rect x="42" y="28" width="16" height="18" fill="#24150c" stroke="#f4c15a" strokeWidth="0.5" />
-      <rect x="12" y="28" width="14" height="16" fill="#160e08" stroke="#a56b12" strokeWidth="0.4" />
-      <rect x="40" y="70" width="18" height="14" fill="#1a0e08" stroke="#e8a317" strokeWidth="0.45" />
-      <rect x="72" y="40" width="14" height="14" fill="#22140a" stroke="#a56b12" strokeWidth="0.4" />
-      <path d="M20 100 Q50 92 80 104" fill="none" stroke="#c4451a" strokeWidth="0.7" opacity="0.7" />
-      <text x="50" y="10" textAnchor="middle" className="map-compass">
+    <g className="map-sketch" filter="url(#charcoal-jitter)">
+      <rect x="0" y="0" width="100" height="120" filter="url(#soot-grain)" opacity="0.5" />
+      <ellipse cx="16" cy="70" rx="14" ry="18" className="map-stain" />
+      <path d="M17 19 H83 L71 89 H29 Z" fill="url(#charcoal-hatch)" className="map-block" />
+      <path d="M42 28 h16 v18 h-16 z" fill="url(#charcoal-hatch-steep)" className="map-block" />
+      <path d="M12 28 h14 v16 h-14 z" fill="url(#charcoal-hatch)" className="map-block" />
+      <path d="M40 70 h18 v14 h-18 z" fill="url(#charcoal-hatch-steep)" className="map-block" />
+      <path d="M72 40 h14 v14 h-14 z" fill="url(#charcoal-hatch)" className="map-block" />
+      <path d="M18 101 Q50 91 82 105" fill="none" className="map-dune" />
+      <text x="50" y="11" textAnchor="middle" className="map-compass">
         N · nave
       </text>
     </g>
@@ -268,22 +303,47 @@ function ThreshArt() {
 
 function MawArt() {
   return (
-    <g>
-      <defs>
-        <radialGradient id="maw-hole" cx="82%" cy="82%" r="35%">
-          <stop offset="0%" stopColor="#2a0c08" />
-          <stop offset="70%" stopColor="#c4451a" stopOpacity="0.45" />
-          <stop offset="100%" stopColor="#0c0704" stopOpacity="0" />
-        </radialGradient>
-      </defs>
-      <rect x="0" y="0" width="100" height="120" fill="#100804" />
-      <circle cx="82" cy="90" r="22" fill="url(#maw-hole)" />
-      <path d="M12 30 Q50 18 88 34 Q70 50 50 48 Q28 52 12 30 Z" fill="#1c1008" stroke="#a56b12" strokeWidth="0.45" />
-      <path d="M18 68 Q30 60 40 74 Q28 80 18 68 Z" fill="#24150c" stroke="#e8a317" strokeWidth="0.4" />
-      <path d="M66 28 Q78 22 86 36" fill="none" stroke="#c9a27a" strokeWidth="0.5" />
-      <text x="50" y="10" textAnchor="middle" className="map-compass">
+    <g className="map-sketch" filter="url(#charcoal-jitter)">
+      <rect x="0" y="0" width="100" height="120" filter="url(#soot-grain)" opacity="0.55" />
+      <ellipse cx="82" cy="90" rx="21" ry="18" className="map-stain deep maw" />
+      <ellipse cx="82" cy="90" rx="11" ry="9" className="map-stain maw-core" />
+      <path
+        d="M12 31 Q50 16 89 35 Q71 52 50 49 Q26 54 12 31 Z"
+        fill="url(#charcoal-hatch-steep)"
+        className="map-block"
+      />
+      <path d="M17 69 Q31 59 41 75 Q28 82 17 69 Z" fill="url(#charcoal-hatch)" className="map-block" />
+      <path d="M65 27 Q79 20 88 38" fill="none" className="map-hatch" />
+      <text x="48" y="11" textAnchor="middle" className="map-compass">
         N · approach
       </text>
     </g>
   )
+}
+
+function seed(key: string) {
+  let h = 2166136261
+  for (let i = 0; i < key.length; i++) {
+    h ^= key.charCodeAt(i)
+    h = Math.imul(h, 16777619)
+  }
+  return h >>> 0
+}
+
+function charcoalStroke(x1: number, y1: number, x2: number, y2: number, key: string, extra = 0) {
+  const h = seed(key)
+  const dx = x2 - x1
+  const dy = y2 - y1
+  const len = Math.hypot(dx, dy) || 1
+  const px = -dy / len
+  const py = dx / len
+  const p1 = 0.26 + ((h & 15) / 15) * 0.14
+  const p2 = 0.56 + (((h >> 4) & 15) / 15) * 0.14
+  const j1 = ((((h >> 8) & 15) / 15) - 0.5) * 2.4 + extra
+  const j2 = ((((h >> 12) & 15) / 15) - 0.5) * 2.1 - extra * 0.6
+  const xA = x1 + dx * p1 + px * j1
+  const yA = y1 + dy * p1 + py * j1
+  const xB = x1 + dx * p2 + px * j2
+  const yB = y1 + dy * p2 + py * j2
+  return `M${x1.toFixed(2)} ${y1.toFixed(2)} C${xA.toFixed(2)} ${yA.toFixed(2)}, ${xB.toFixed(2)} ${yB.toFixed(2)}, ${x2.toFixed(2)} ${y2.toFixed(2)}`
 }
