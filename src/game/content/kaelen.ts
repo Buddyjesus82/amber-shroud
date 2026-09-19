@@ -1,6 +1,6 @@
 import type { Scene } from '../types'
 
-const look = `Kaelen the Sifter jitters — a diminutive merchant in dust-caked canvas, an overstuffed pack of vials, gears, and amber jars, thick gloves on both hands. Independent scavenger. He plays all sides. Shrewd. Paranoid. Fast-talk. Everything is cost and profit. His hidden trade routes are unmatched.`
+const look = `Kaelen the Sifter jitters — a diminutive merchant in dust-caked canvas, an overstuffed pack of vials, gears, and amber jars, thick gloves on both hands. Independent scavenger. They play all sides. Shrewd. Paranoid. Fast-talk. Everything is cost and profit. Their hidden trade routes are unmatched.`
 
 const rumorHook = `"News is inventory. I don't give it away. Scrap buys a Drop of Oasis Sap. Glints buy intel. Ask. Pay. Then you get a lead — side trouble, or the Hunger, or both if your pockets are honest."`
 
@@ -13,12 +13,12 @@ export const campKaelenScenes: Scene[] = [
     speaker: 'Kaelen the Sifter',
     body: `${look}
 
-He has the Wire at his back like a second pack-strap. "You're the trench story," he says, already counting what you might be worth. "I am not Oil-Tooth. He hotwires. I sell. Drops. Intel. Rumors that open trouble. Pick a product."`,
+They have the Wire at their back like a second pack-strap. "You're the trench story," they say, already counting what you might be worth. "I am not Oil-Tooth. He hotwires. I sell. Drops. Intel. Rumors that open trouble. Pick a product."`,
     variants: [
       {
         if: { flag: 'kaelenSoldDrop' },
         mode: 'append',
-        body: `A vial-gap in the pack where your Drop used to live. He notices you noticing. Paranoid is a lifestyle.`,
+        body: `A vial-gap in the pack where your Drop used to live. They notice you noticing. Paranoid is a lifestyle.`,
       },
     ],
     choices: [
@@ -34,13 +34,13 @@ He has the Wire at his back like a second pack-strap. "You're the trench story,"
           ticks: 1,
           goto: 'camp:kaelen',
           flash:
-            '"Scrap in. Drop out. I don\'t do charity. I do arithmetic." He gloves the vial like it might bite him back.',
+            '"Scrap in. Drop out. I don\'t do charity. I do arithmetic." They glove the vial like it might bite them back.',
         },
       },
       {
         id: 'knife',
         label: 'Buy a Needle Knife — two scrap',
-        sub: 'Weapon. Equip it in Gear. No dice — it gates a cut.',
+        sub: 'Weapon · Bite 3. Equip it in Gear. No dice — numbers compare gear.',
         show: { all: [{ itemMin: ['scrap', 2] }, { flagUnset: 'kaelenSoldKnife' }] },
         effects: {
           remove: { scrap: 2 },
@@ -49,13 +49,13 @@ He has the Wire at his back like a second pack-strap. "You're the trench story,"
           ticks: 1,
           goto: 'camp:kaelen',
           flash:
-            '"Thin. Mean. Cost." He does not gift edges. Equip it or it is only inventory.',
+            '"Thin. Mean. Cost." They do not gift edges. Equip it or it is only inventory.',
         },
       },
       {
         id: 'cloak',
         label: 'Buy a Dust Cloak — one Glint',
-        sub: 'Armor. Hides a silhouette. Does not hide Heat.',
+        sub: 'Armor · Hide 3. Hides a silhouette. Does not hide Heat.',
         show: { all: [{ item: 'glints' }, { flagUnset: 'kaelenSoldCloak' }] },
         effects: {
           remove: { glints: 1 },
@@ -82,7 +82,7 @@ He has the Wire at his back like a second pack-strap. "You're the trench story,"
       {
         id: 'rumors',
         label: 'Ask for rumors. News.',
-        sub: 'He sells leads. They open trouble. They can point at the Hunger.',
+        sub: 'They sell leads. Leads open trouble. Leads can point at the Hunger.',
         effects: {
           goto: 'camp:kaelen-rumors',
           ticks: 1,
@@ -102,7 +102,7 @@ He has the Wire at his back like a second pack-strap. "You're the trench story,"
       },
       {
         id: 'oil',
-        label: 'Ask if he is the inside man',
+        label: 'Ask if they are the inside man',
         effects: {
           ticks: 1,
           goto: 'camp:kaelen',
@@ -163,7 +163,7 @@ Oil-Tooth remains your inside man. I remain the counter."`,
       {
         if: { flag: 'kaelenGlintOut' },
         mode: 'append',
-        body: `Your Glint is already in the glove. He taps the pack. "Intel is paid. Point at a lead."`,
+        body: `Your Glint is already in the glove. They tap the pack. "Intel is paid. Point at a lead."`,
       },
     ],
     choices: [
@@ -235,7 +235,7 @@ Oil-Tooth remains your inside man. I remain the counter."`,
           ticks: 1,
           goto: 'camp:wire',
           flash:
-            'He does not cut. He points. A person-sized disloyalty in Ironwood property, already priced. "Route. Not a rescue."',
+            'They do not cut. They point. A person-sized disloyalty in Ironwood property, already priced. "Route. Not a rescue."',
         },
       },
       {
@@ -247,7 +247,7 @@ Oil-Tooth remains your inside man. I remain the counter."`,
           flag: { wireCut: true, kaelenKnown: true },
           ticks: 1,
           goto: 'camp:wire',
-          flash: 'Glint for a route. He smiles with no warmth. Profit.',
+          flash: 'Glint for a route. They smile with no warmth. Profit.',
         },
       },
       {
@@ -260,7 +260,7 @@ Oil-Tooth remains your inside man. I remain the counter."`,
     intents: [
       {
         tags: ['kallik', 'cache', 'hunger', 'maw', 'heading', 'sybella'],
-        reply: 'He names a price with his eyes. Glints. Then the Maw.',
+        reply: 'They name a price with their eyes. Glints. Then the Maw.',
         effects: { ticks: 1 },
       },
       {
@@ -302,7 +302,7 @@ This is side trouble. Not the Hunger. Not a Strider. A rumor you paid for.`,
           flag: { relicSeen: true },
           goto: 'camp:yard',
           ticks: 1,
-          flash: 'You paid for a door you did not open. Kaelen would call that a lesson. He would still charge for the next one.',
+          flash: 'You paid for a door you did not open. Kaelen would call that a lesson. They would still charge for the next one.',
         },
       },
     ],
@@ -318,7 +318,7 @@ export const spineKaelenScenes: Scene[] = [
     speaker: 'Kaelen the Sifter',
     body: `${look}
 
-Dusk on the Spine. Same pack. Same gloves. Less wire, more dust. "You're the empty vial," he says. "I fill those if you pay. I also sell rumors. Silas sold you shade. I sell inventory."`,
+Dusk on the Spine. Same pack. Same gloves. Less wire, more dust. "You're the empty vial," they say. "I fill those if you pay. I also sell rumors. Silas sold you shade. I sell inventory."`,
     choices: [
       {
         id: 'drop',
@@ -330,13 +330,13 @@ Dusk on the Spine. Same pack. Same gloves. Less wire, more dust. "You're the emp
           flag: { kaelenKnown: true, kaelenSoldDrop: true, firstDrop: true },
           ticks: 1,
           goto: 'spine:well',
-          flash: '"Scrap in. Drop out." The glass stops ticking. He is already looking past you for the next customer.',
+          flash: '"Scrap in. Drop out." The glass stops ticking. They are already looking past you for the next customer.',
         },
       },
       {
         id: 'knife',
         label: 'Buy a Needle Knife — two scrap',
-        sub: 'Weapon. Equip it in Gear.',
+        sub: 'Weapon · Bite 3. Equip it in Gear.',
         show: { all: [{ itemMin: ['scrap', 2] }, { flagUnset: 'kaelenSoldKnife' }] },
         effects: {
           remove: { scrap: 2 },
@@ -378,7 +378,7 @@ Dusk on the Spine. Same pack. Same gloves. Less wire, more dust. "You're the emp
       },
       {
         id: 'go',
-        label: 'Let him pass',
+        label: 'Let them pass',
         tone: 'quiet',
         effects: { goto: 'spine:well' },
       },
@@ -391,7 +391,7 @@ Dusk on the Spine. Same pack. Same gloves. Less wire, more dust. "You're the emp
           startChapter: 'cache-run',
           goto: 'ch1:leave',
           ticks: 1,
-          flash: 'He is already counting the next customer. You spend the dusk on a road.',
+          flash: 'They are already counting the next customer. You spend the dusk on a road.',
         },
       },
     ],
@@ -428,7 +428,7 @@ Dusk on the Spine. Same pack. Same gloves. Less wire, more dust. "You're the emp
           ticks: 1,
           goto: 'spine:well',
           flash:
-            'He scratches Red Maw in the dirt with a boot-heel. "Kallik\'s bait. Sybella\'s skiff. Ossa on stilts if she is still alive. Do not make me collect you as bones."',
+            'They scratch Red Maw in the dirt with a boot-heel. "Kallik\'s bait. Sybella\'s skiff. Ossa on stilts if she is still alive. Do not make me collect you as bones."',
         },
       },
       {
@@ -474,7 +474,7 @@ Dusk on the Spine. Same pack. Same gloves. Less wire, more dust. "You're the emp
           startChapter: 'cache-run',
           goto: 'ch1:leave',
           ticks: 1,
-          flash: 'He does not walk with you. Inventory stays. You do not.',
+          flash: 'They do not walk with you. Inventory stays. You do not.',
         },
       },
     ],

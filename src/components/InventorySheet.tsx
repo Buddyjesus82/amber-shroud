@@ -1,5 +1,5 @@
 import { drinkDrop, equipItem, sapLabel, unequipSlot } from '../game/engine'
-import { listedKit } from '../game/kit'
+import { gearStat, listedKit } from '../game/kit'
 import { ITEMS } from '../game/content/catalog'
 import type { EquipSlot, GameState, ItemId } from '../game/types'
 
@@ -26,7 +26,8 @@ export function InventorySheet({ state, onClose, onChange }: Props) {
         <p className="epithet">You are {state.epithet}.</p>
         <p className="kit-sap">
           Sap {state.sap}/{state.sapMax} · {sapLabel(state.sap)}. Empty sap is a crisis, not a death. Equip
-          weapons and armor — no dice. Gear gates the verbs that keep you alive.
+          weapons (Bite) and armor (Hide) — no dice. The numbers compare gear only. They never add to a
+          roll. Gear gates the verbs that keep you alive.
         </p>
 
         <div className="equip-slots">
@@ -52,6 +53,7 @@ export function InventorySheet({ state, onClose, onChange }: Props) {
                   <strong>
                     {c.name}
                     {c.n > 1 ? ` ×${c.n}` : ''}
+                    {gearStat(c) ? ` · ${gearStat(c)}` : ''}
                     {worn(state, c.id) ? ' · on' : ''}
                   </strong>
                   <span>{c.desc}</span>
@@ -87,13 +89,17 @@ function Slot({
   onClear,
 }: {
   label: string
-  item: { name: string } | null
+  item: { name: string; bite?: number; hide?: number } | null
   onClear: () => void
 }) {
+  const stat = gearStat(item)
   return (
     <div className="equip-slot">
       <em>{label}</em>
-      <strong>{item?.name ?? 'Empty'}</strong>
+      <strong>
+        {item?.name ?? 'Empty'}
+        {stat ? <span className="gear-stat">{stat}</span> : null}
+      </strong>
       {item ? (
         <button type="button" className="text-link" onClick={onClear}>
           Unequip

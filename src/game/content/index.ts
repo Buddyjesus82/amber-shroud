@@ -38,8 +38,12 @@ export function getScene(id: string): Scene {
   return s
 }
 
-export function resolveBody(scene: Scene, check: (cond: import('../types').Cond | undefined) => boolean): string {
-  let body = scene.body
+export function resolveBody(
+  scene: Scene,
+  check: (cond: import('../types').Cond | undefined) => boolean,
+  base = scene.body,
+): string {
+  let body = base
   for (const v of scene.variants ?? []) {
     if (!check(v.if)) continue
     if (v.mode === 'append') body = `${body}\n\n${v.body}`

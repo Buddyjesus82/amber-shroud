@@ -305,6 +305,19 @@ h2 {
   padding-top: var(--safe-t);
 }
 
+.play-screen.play-split .story {
+  flex: 1 1 46%;
+  min-height: 0;
+  overflow: auto;
+}
+
+.play-screen.play-split .thumb {
+  flex: 1 1 46%;
+  min-height: 0;
+  max-height: none;
+  overflow: auto;
+}
+
 .status {
   padding: 0.55rem 0.85rem 0.5rem;
   border-bottom: 1px solid var(--line);
@@ -398,17 +411,31 @@ h2 {
   background: linear-gradient(180deg, #f4a15a, #c4451a);
 }
 
-.kit-strip {
+.hub-acts {
   display: flex;
-  gap: 0.35rem;
-  overflow-x: auto;
-  margin-top: 0.45rem;
-  padding: 0.1rem 0 0.15rem;
-  background: none;
-  border: 0;
-  width: 100%;
-  min-height: 28px;
-  -webkit-overflow-scrolling: touch;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.hub-act {
+  align-items: flex-start;
+  text-align: left;
+}
+
+.verb-hint {
+  margin: 0;
+  color: var(--dust);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+}
+
+.gear-stat {
+  display: inline-block;
+  margin-left: 0.4rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--amber);
 }
 
 .kit-empty {

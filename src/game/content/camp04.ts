@@ -67,7 +67,7 @@ Overseer Valerius is the looming shadow. First major victory: get out from under
       },
       {
         tags: ['kaelen', 'sifter', 'rumor', 'news', 'merchant', 'trade'],
-        reply: 'Kaelen the Sifter works the Wire. Rumors. Drops. He does not hotwire Striders.',
+        reply: 'Kaelen the Sifter works the Wire. Rumors. Drops. They do not hotwire Striders.',
         effects: { goto: 'camp:wire' },
       },
     ],
@@ -148,6 +148,24 @@ Oil-Tooth named a west bolt at the Guard Station. That is a different throat. Th
           sap: -1,
           flash:
             'Amber in the joints. Cartel in the rhythm. No heading. The Wire is still a walk from the bay, and the pens are a walk through the Yard.',
+        },
+      },
+      {
+        id: 'skim',
+        label: 'Skim a drip from the scream',
+        sub: 'Risky Drop. Cartel Heat. Not a crisis rescue.',
+        tone: 'danger',
+        show: { flagUnset: 'skim:camp:vents' },
+        effects: {
+          add: { vial_drop: 1 },
+          remove: { vial_empty: 1 },
+          sap: -1,
+          heat: { cartel: 1 },
+          pressure: 2,
+          ticks: 1,
+          flag: { 'skim:camp:vents': true, skimmed: true },
+          flash:
+            'You skim a Drop the pipes had not budgeted. Hands sticky. Heat ticks. Theft with a glass throat.',
         },
       },
     ],
@@ -276,7 +294,7 @@ Kaelen the Sifter is not here. Kaelen sells rumors at the Wire.`,
           flag: { shivTaken: true },
           goto: 'camp:cages',
           ticks: 1,
-          flash: 'Ugly metal for ugly trades. Kaelen the Sifter buys scrap. He sells Drops. He does not hotwire.',
+          flash: 'Ugly metal for ugly trades. Kaelen the Sifter buys scrap. They sell Drops. They do not hotwire.',
         },
       },
     ],
@@ -291,7 +309,7 @@ Kaelen the Sifter is not here. Kaelen sells rumors at the Wire.`,
 
 Lifetime labor: repairing Ironclad Skiff-Striders. He has skimmed Oasis Sap the whole time. Reckless. Charismatic. Anti-authority. Humor as a shield. He watches security weaknesses the way other men watch the sky.
 
-"Bleed-Cut," he says, like it is already your name. "Great Bleed is coming. You sabotage the guard station. I hotwire a Strider. That is the job. Kaelen the Sifter sells rumors at the Wire if you want news. He is not the inside man. I am."`,
+"Bleed-Cut," he says, like it is already your name. "Great Bleed is coming. You sabotage the guard station. I hotwire a Strider. That is the job. Kaelen the Sifter sells rumors at the Wire if you want news. They are not the inside man. I am."`,
     variants: [
       {
         if: { flag: 'striderHot' },
@@ -381,7 +399,7 @@ Lifetime labor: repairing Ironclad Skiff-Striders. He has skimmed Oasis Sap the 
     speaker: 'Jaxson "Oil-Tooth" Vance',
     body: `"Valerius is the first major victory you have to overcome," Oil-Tooth says, smirking around the brass. "Imposing. Scarred. Reinforced iron plating over dust-cloaks. Steam-hissing shock baton. Cruel. Calculating. He hunts Sap thieves and unpermitted relic hoarders. Sadistic. Arrogant. Disciplined. Looming shadow. I have watched the guard station until I could draw it in grease.
 
-Great Bleed hits, you sabotage that station. I hotwire an Ironclad Skiff-Strider. We leave the pens. You want rumors — Kallik, the Hunger, the blonde — that is Kaelen the Sifter at the Wire. He sells leads. I sell a ride."`,
+Great Bleed hits, you sabotage that station. I hotwire an Ironclad Skiff-Strider. We leave the pens. You want rumors — Kallik, the Hunger, the blonde — that is Kaelen the Sifter at the Wire. They sell leads. I sell a ride."`,
     choices: [
       {
         id: 'inside',
@@ -472,7 +490,7 @@ Great Bleed hits, you sabotage that station. I hotwire an Ironclad Skiff-Strider
           pressure: 1,
           goto: 'camp:jaxson',
           flash:
-            '"The Wire. Jittery little Sifter. Dust-caked canvas. Pack full of vials. Glints buy intel. Scrap buys Drops. He plays all sides. He is not me."',
+            '"The Wire. Jittery little Sifter. Dust-caked canvas. Pack full of vials. Glints buy intel. Scrap buys Drops. They play all sides. They are not me."',
         },
       },
       {
@@ -495,7 +513,7 @@ Great Bleed hits, you sabotage that station. I hotwire an Ironclad Skiff-Strider
       },
       {
         tags: ['kaelen', 'wire', 'sifter'],
-        reply: '"Wire. Jittery merchant. Pack of vials. He sells Drops and intel. He is not me."',
+        reply: '"Wire. Jittery merchant. Pack of vials. They sell Drops and intel. They are not me."',
         effects: { flag: { kaelenKnown: true }, goto: 'camp:wire' },
       },
       {
@@ -516,7 +534,7 @@ Great Bleed hits, you sabotage that station. I hotwire an Ironclad Skiff-Strider
     kind: 'talk',
     title: 'Wrong Counter',
     speaker: 'Jaxson "Oil-Tooth" Vance',
-    body: `"That heading is not my product," Oil-Tooth says. "Kaelen the Sifter sells rumors. Wire. Glints for intel. Scrap for Drops. I am the inside man. Guard station. Strider. Go mix your invoices with him."`,
+    body: `"That heading is not my product," Oil-Tooth says. "Kaelen the Sifter sells rumors. Wire. Glints for intel. Scrap for Drops. I am the inside man. Guard station. Strider. Go mix your invoices with them."`,
     choices: [
       {
         id: 'wire',
@@ -701,7 +719,7 @@ He waits. Sadistic. Arrogant. Disciplined. Men like him can afford waiting. You 
     title: 'The Wire',
     body: `The perimeter. Razor-wire. Steam-vents coughing. Beyond it the dunes begin to have opinions.
 
-Kaelen the Sifter is here when profit says here: jittery diminutive merchant, dust-caked canvas, overstuffed pack, thick gloves. Primary early-game merchant. Also the rumor counter — if you ask. He is not the prison-break inside man. That is Oil-Tooth.
+Kaelen the Sifter is here when profit says here: jittery diminutive merchant, dust-caked canvas, overstuffed pack, thick gloves. Primary early-game merchant. Also the rumor counter — if you ask. They are not the prison-break inside man. That is Oil-Tooth.
 
 Ironclad Skiff-Striders patrol the other side of this line. The Hunger lives past it. So do Hounds.`,
     variants: [
@@ -756,7 +774,7 @@ The Great Bleed is a clock. Sabotage here, Oil-Tooth hotwires there. Valerius wi
       {
         if: { flag: 'bleedIntel' },
         mode: 'append',
-        body: `Kaelen sold you a clock: west bolt, Bleed-hour. The Sifter does not work for Oil-Tooth. He sold a product.`,
+        body: `Kaelen sold you a clock: west bolt, Bleed-hour. The Sifter does not work for Oil-Tooth. They sold a product.`,
       },
     ],
     choices: [
@@ -808,7 +826,7 @@ Oil-Tooth named the west steam-vent. The oversized wrench knows the language.`,
           ticks: 1,
           goto: 'camp:bay',
           flash:
-            'Steam. Alarms that belong to the Bleed, not to you. Scrap in the palm. A shock-baton from a clerk who will not need it. Equip it in Gear. Oil-Tooth will be under a hull.',
+            'Steam. Alarms that belong to the Bleed, not to you. Scrap in the palm. Shock Baton · Bite 4 from a clerk who will not need it. Equip it in Gear. Oil-Tooth will be under a hull.',
         },
       },
       {
@@ -821,7 +839,7 @@ Oil-Tooth named the west steam-vent. The oversized wrench knows the language.`,
           ticks: 1,
           goto: 'camp:bay',
           flash:
-            'No extra hymn for Valerius. The Sifter sold timing. A baton from a clerk who was looking at vats. Equip it. Oil-Tooth still has to hotwire.',
+            'No extra hymn for Valerius. The Sifter sold timing. Shock Baton · Bite 4 from a clerk who was looking at vats. Equip it. Oil-Tooth still has to hotwire.',
         },
       },
     ],

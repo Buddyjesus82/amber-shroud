@@ -2,6 +2,8 @@ import { DOORS, HUBS, ITEMS, getScene, resolveBody } from './content'
 import { applyDelta, check, clamp } from './logic'
 import { GLOBAL_INTENTS, matchIntent } from './intent'
 import { travelGate } from './map'
+import { markMetOnLeave, matchPersonQuery, personAtScene, whoChoices } from './people'
+import { canScavenge, canSkim, rollScavenge, scavengeCooldown } from './scavenge'
 import { writeSave } from './save'
 import type { DoorId, Effect, EquipSlot, GameState, ItemId, Scene } from './types'
 
@@ -17,6 +19,7 @@ export function newGame(door: DoorId): GameState {
     items: { ...d.items },
     flags: { ...d.flags },
     equipped: d.id === 'vessel' ? { weapon: 'rusted_dagger', armor: 'ceremonial_cloth' } : {},
+    recentVerbs: [],
     sceneId: d.sceneId,
     hubId: null,
     chapterId: null,
@@ -39,7 +42,9 @@ export function sceneOf(state: GameState): Scene {
 
 export function bodyOf(state: GameState): string {
   const scene = sceneOf(state)
-  return resolveBody(scene, (c) => check(c, state))
+  const person = personAtScene(scene.id)
+  const base = person && state.flags[person.metFlag] && person.later[scene.id] ? person.later[scene.id] : scene.body
+  return resolveBody(scene, (c) => check(c, state), base)
 }
 
 function pickCrisis(state: GameState): string {
@@ -142,7 +147,10 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     destScene?.kind === 'crisis' ||
     recovering
 
-  if (dest) next.sceneId = dest
+  if (dest) {
+    next.flags = markMetOnLeave(state.sceneId, dest, next.flags)
+    next.sceneId = dest
+  }
 
   if (next.sceneId === 'ch1:hollow' && state.sceneId !== 'ch1:hollow') {
     next = spendValued(next)
@@ -214,32 +222,159 @@ export function drinkDrop(state: GameState): GameState {
   })
 }
 
+function withVerb(state: GameState, verb: string): GameState {
+  const prev = state.recentVerbs ?? []
+  const recentVerbs = [verb, ...prev.filter((v) => v !== verb)].slice(0, 4)
+  return persist({ ...state, recentVerbs, updatedAt: Date.now() })
+}
+
+function verbLabel(tag: string): string {
+  const t = tag.toLowerCase()
+  if (t.includes('who')) return 'who is'
+  if (t.includes('scaven')) return 'scavenge'
+  if (t === 'look around' || t === 'look' || t === 'search') return 'look'
+  return t
+}
+
+export function scavenge(state: GameState): GameState {
+  if (!canScavenge(state)) {
+    return persist({
+      ...state,
+      flash: 'Nothing here to pick. The road has already been picked clean — or this is not a roam.',
+      updatedAt: Date.now(),
+    })
+  }
+  if (scavengeCooldown(state)) {
+    return persist({
+      ...state,
+      flash: 'This patch is already in your hands. Walk, wait, or try another stretch.',
+      updatedAt: Date.now(),
+    })
+  }
+  const loot = rollScavenge(state)
+  return withVerb(
+    applyEffect(state, {
+      add: loot.add,
+      remove: loot.add.vial_drop && (state.items.vial_empty ?? 0) > 0 ? { vial_empty: 1 } : undefined,
+      ticks: 1,
+      pressure: 1,
+      flag: { [`scavenge:${state.sceneId}`]: state.ticks + 1, scavenged: true },
+      flash: loot.flash,
+    }),
+    'scavenge',
+  )
+}
+
+export function skim(state: GameState): GameState {
+  if (state.flags[`skim:${state.sceneId}`]) {
+    return persist({
+      ...state,
+      flash: 'This throat is already dry. You took what it would give. Heat remembers the taking.',
+      updatedAt: Date.now(),
+    })
+  }
+  if (!canSkim(state)) {
+    return persist({
+      ...state,
+      flash: 'No drip here worth a hand. Find a vat, a vent, a well, a lip — or buy from Kaelen.',
+      updatedAt: Date.now(),
+    })
+  }
+  const heat =
+    state.hubId === 'threshold'
+      ? { seekers: 1 }
+      : state.hubId === 'spine' || state.hubId === 'redmaw'
+        ? { strays: 1 }
+        : { cartel: 1 }
+  return withVerb(
+    applyEffect(state, {
+      add: { vial_drop: 1 },
+      remove: (state.items.vial_empty ?? 0) > 0 ? { vial_empty: 1 } : undefined,
+      sap: -1,
+      heat,
+      pressure: 2,
+      ticks: 1,
+      flag: { [`skim:${state.sceneId}`]: true, skimmed: true },
+      flash:
+        'You skim a Drop the desert had not budgeted. Hands sticky. Heat ticks. This is theft with a glass throat — not a crisis rescue.',
+    }),
+    'skim',
+  )
+}
+
 export function interpret(state: GameState, text: string): GameState {
   const scene = sceneOf(state)
+  const who = matchPersonQuery(text)
+  if (who === 'ask') {
+    return withVerb(
+      persist({
+        ...state,
+        flash:
+          'Name them. Who is Oil-Tooth. Who is Kaelen. Who is Valerius. Who is Silas. Who is Thalia. Who is Oram.',
+        updatedAt: Date.now(),
+      }),
+      'who is',
+    )
+  }
+  if (who) {
+    return withVerb(
+      applyEffect(state, { flash: who.card, flag: { [who.metFlag]: true, [`asked:${who.id}`]: true } }),
+      'who is',
+    )
+  }
+
   const local = matchIntent(text, scene.intents ?? [], state)
+  if (local) {
+    return withVerb(applyEffect(state, { ...local.effects, flash: local.reply }), verbLabel(local.tags[0]))
+  }
+
+  const hay = text.toLowerCase()
+  const wantsScavenge = /\b(scavenge|forage|rummage|scrounge|look around|search around)\b/.test(hay)
+  const wantsLook = /\b(look|search|scan)\b/.test(hay)
+  const wantsSkim = /\b(skim|tap|siphon)\b/.test(hay)
+  const wantsMap = /\bmap\b/.test(hay)
+
+  if (wantsScavenge || (wantsLook && canScavenge(state))) return scavenge(state)
+  if (wantsSkim) return skim(state)
+  if (wantsMap) {
+    return withVerb(
+      persist({
+        ...state,
+        flash: 'Map is the charcoal scrap beside Heat. Connected roads only. Each hop costs Sap.',
+        updatedAt: Date.now(),
+      }),
+      'map',
+    )
+  }
+
   const global = matchIntent(text, GLOBAL_INTENTS, state)
-  const hit = local ?? global
-  if (hit) {
-    return applyEffect(state, { ...hit.effects, flash: hit.reply })
+  if (global) {
+    return withVerb(applyEffect(state, { ...global.effects, flash: global.reply }), verbLabel(global.tags[0]))
   }
   const fallback = scene.intentFallback
   if (fallback) {
-    return applyEffect(state, {
-      ...(fallback.effects ?? {}),
-      flash: fallback.reply,
-      ticks: fallback.effects?.ticks ?? 1,
-    })
+    return withVerb(
+      applyEffect(state, {
+        ...(fallback.effects ?? {}),
+        flash: fallback.reply,
+        ticks: fallback.effects?.ticks ?? 1,
+      }),
+      'try',
+    )
   }
   return persist({
     ...state,
     ticks: state.ticks + 1,
     flash:
-      'The desert does not parse poetry. Try a plainer act — hide, take, talk, drink, bury, run — or use the buttons.',
+      'Miss. The desert did not catch that. Try ask, who is, scavenge, look, hide, trade, map — or use the buttons.',
+    updatedAt: Date.now(),
   })
 }
 
 export function visibleChoices(state: GameState) {
-  return sceneOf(state).choices.filter((c) => check(c.show, state))
+  const authored = sceneOf(state).choices.filter((c) => check(c.show, state))
+  if (sceneOf(state).kind === 'crisis' || state.chapterId === 'cache-run') return authored
+  return [...whoChoices(state), ...authored]
 }
 
 export function isChoiceOn(state: GameState, cond: import('./types').Cond | undefined) {
@@ -288,4 +423,4 @@ export function unequipSlot(state: GameState, slot: EquipSlot): GameState {
   })
 }
 
-export { HUBS, DOORS, check, clamp, travelGate }
+export { HUBS, DOORS, check, clamp, travelGate, canScavenge, canSkim }

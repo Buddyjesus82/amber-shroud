@@ -3,12 +3,16 @@ import { HUBS } from '../game/content/catalog'
 import {
   applyEffect,
   bodyOf,
+  canScavenge,
+  canSkim,
   drinkDrop,
   heatTone,
   interpret,
   isChoiceOn,
   sapLabel,
+  scavenge,
   sceneOf,
+  skim,
   visibleChoices,
 } from '../game/engine'
 import { HEAT_FACTIONS, heatRiseLine } from '../game/heat'
@@ -42,6 +46,12 @@ export function PlayScreen({ state, onChange, onTitle }: Props) {
   const closing = !state.flags.chapter1Done && state.pressure >= 10 && !state.chapterId
   const chips = listedKit(state.items)
   const sapThin = state.sap <= 2
+  const choices = visibleChoices(state)
+  const roam = canScavenge(state)
+  const skimOn = canSkim(state)
+  const optionCount = choices.length + (roam ? 1 : 0) + (skimOn ? 1 : 0) + (hookOn ? 1 : 0)
+  const split = optionCount >= 4
+  const showDo = talky || roam
 
   useEffect(() => {
     storyRef.current?.scrollTo({ top: 0 })
@@ -76,7 +86,7 @@ export function PlayScreen({ state, onChange, onTitle }: Props) {
         : null
 
   return (
-    <div className="screen play-screen">
+    <div className={`screen play-screen${split ? ' play-split' : ''}`}>
       <header className="status">
         <div className="status-row">
           <button type="button" className="brand" onClick={onTitle} title="Title">
@@ -114,17 +124,6 @@ export function PlayScreen({ state, onChange, onTitle }: Props) {
             </button>
           ) : null}
         </div>
-        <button type="button" className="kit-strip" onClick={() => setKit(true)} aria-label="Open gear">
-          {chips.length === 0 ? (
-            <span className="kit-empty">Gear empty</span>
-          ) : (
-            chips.map((c) => (
-              <span key={c.id} className={`chip ${c.kind}`}>
-                {c.n > 1 ? `${c.name} ×${c.n}` : c.name}
-              </span>
-            ))
-          )}
-        </button>
         <div className="place-line">
           <strong>{scene.title ?? hub?.name ?? 'The dunes'}</strong>
           {hub ? <span>{hub.name}</span> : scene.chapterId === 'cache-run' ? <span>The Hunger</span> : null}
@@ -198,8 +197,23 @@ export function PlayScreen({ state, onChange, onTitle }: Props) {
           </button>
         ) : null}
 
+        {roam ? (
+          <div className="hub-acts">
+            <button type="button" className="btn btn-ghost hub-act" onClick={() => onChange(scavenge(state))}>
+              Scavenge
+              <small>Scrap, trade goods. Sometimes a Drop.</small>
+            </button>
+            {skimOn ? (
+              <button type="button" className="btn btn-danger hub-act" onClick={() => onChange(skim(state))}>
+                Skim a drip
+                <small>Risky Drop. Costs Heat.</small>
+              </button>
+            ) : null}
+          </div>
+        ) : null}
+
         <div className="choices">
-          {visibleChoices(state).map((c) => {
+          {choices.map((c) => {
             const on = isChoiceOn(state, c.enable)
             const pills = effectPills(c.effects)
             return (
@@ -229,7 +243,7 @@ export function PlayScreen({ state, onChange, onTitle }: Props) {
           })}
         </div>
 
-        {talky ? (
+        {showDo ? (
           <form
             className="say"
             onSubmit={(e) => {
@@ -240,7 +254,7 @@ export function PlayScreen({ state, onChange, onTitle }: Props) {
             <input
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
-              placeholder="hide · drink · take · bury…"
+              placeholder="ask oil-tooth / scavenge / who is kaelen"
               enterKeyHint="go"
               autoComplete="off"
               aria-label="Do something"
@@ -249,6 +263,9 @@ export function PlayScreen({ state, onChange, onTitle }: Props) {
               Do
             </button>
           </form>
+        ) : null}
+        {showDo && (state.recentVerbs?.length ?? 0) > 0 ? (
+          <p className="verb-hint">Heard: {state.recentVerbs?.join(' · ')}</p>
         ) : null}
 
         {(state.items.vial_drop ?? 0) > 0 ? (

@@ -1,14 +1,19 @@
+import { readFileSync } from 'node:fs'
 import {
   applyEffect,
   bodyOf,
   equipItem,
   interpret,
   newGame,
+  scavenge,
   sceneOf,
+  skim,
   travelTo,
   visibleChoices,
 } from '../src/game/engine.ts'
-import { DOORS, HUBS } from '../src/game/content/catalog.ts'
+import { DOORS, HUBS, ITEMS } from '../src/game/content/catalog.ts'
+import { PEOPLE } from '../src/game/people.ts'
+import { rollScavenge } from '../src/game/scavenge.ts'
 import { canTravelTo, edgeSap, HUB_MAPS, nodeIdForScene, route } from '../src/game/map.ts'
 import type { DoorId, GameState } from '../src/game/types.ts'
 
@@ -79,6 +84,17 @@ assert(vessel.items.rusted_dagger === 1 && vessel.items.oram_map === 1, 'vessel 
 assert(vessel.items.ceremonial_cloth === 1 && vessel.items.vial_drop === 1, 'vessel cloth + drop')
 assert(!vessel.items.wrench && !vessel.items.silas_tip, 'vessel kit unique')
 assert(vessel.heat.seekers === 3, 'vessel seeker pressure')
+
+assert(ITEMS.wrench.bite === 3 && ITEMS.shiv.bite === 2 && ITEMS.needle_knife.bite === 3, 'weapons have Bite')
+assert(ITEMS.ironwood_baton.bite === 4 && ITEMS.rusted_dagger.bite === 2, 'baton and dagger Bite')
+assert(ITEMS.dust_cloak.hide === 3 && ITEMS.hide_wrap.hide === 4 && ITEMS.ceremonial_cloth.hide === 1, 'armor has Hide')
+assert(!ITEMS.scrap.bite && !ITEMS.vial_drop.hide, 'currency is not Bite/Hide')
+assert(!/(\bshe\b|\bher\b)/i.test(PEOPLE.kaelen.card), 'Kaelen card is not she/her')
+assert(/\bthey\b/i.test(PEOPLE.kaelen.card), 'Kaelen card uses they')
+assert(
+  !readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8').includes('kit-strip'),
+  'kit strip removed from play',
+)
 
 for (const hub of Object.values(HUBS)) {
   const map = HUB_MAPS[hub.id]
@@ -362,6 +378,64 @@ assert(s.sceneId === 'crisis:maw', 'empty sap on the Approach is authored Maw cr
 assert(!bodyOf(s).toLowerCase().includes('almost tender'), 'Sybella does not tenderly feed Cartel mouths')
 assert(ids(s).includes('up'), 'Cartel crisis stands without her hand')
 assert(!ids(s).includes('up-vessel'), 'her Drop is Seekers-only')
+
+s = newGame('prisoner')
+s = pick(s, 'pens')
+assert(bodyOf(s).includes('cybernetic brass jaw'), 'first Oil-Tooth meet is the full card')
+assert(ids(s).includes('who-oiltooth'), 'who-is choice on hub NPC')
+s = interpret(s, 'who is oil-tooth')
+assert(s.flash?.includes('cybernetic brass jaw'), 'who is Oil-Tooth returns the full card')
+assert(s.flags.metOilTooth, 'asking who marks the meet')
+assert(!bodyOf(s).includes('cybernetic brass jaw'), 'later pens show what he is doing now')
+s = interpret(s, 'xyzzy poetry please')
+assert(s.flash?.toLowerCase().includes('miss'), 'free-text miss is named a miss')
+
+s = newGame('prisoner')
+s = pick(s, 'pens')
+const beforeScrap = (s.items.scrap ?? 0) + (s.items.glints ?? 0) + (s.items.vial_drop ?? 0) + (s.items.scrip ?? 0)
+s = scavenge(s)
+const afterScrap = (s.items.scrap ?? 0) + (s.items.glints ?? 0) + (s.items.vial_drop ?? 0) + (s.items.scrip ?? 0)
+assert(afterScrap > beforeScrap, 'Scavenge yields saleable loot')
+s = scavenge(s)
+assert(s.flash?.toLowerCase().includes('already'), 'same-patch Scavenge is sticky, not infinite')
+
+s = newGame('prisoner')
+s = pick(s, 'pens')
+s = applyEffect(s, { sap: 6 })
+s = walkTo(s, 'camp:vents')
+s = skim(s)
+assert((s.items.vial_drop ?? 0) >= 1, 'risky skim yields a Drop')
+assert(s.heat.cartel >= 4, 'skim costs Cartel Heat')
+
+s = newGame('prisoner')
+s = pick(s, 'pens')
+s = applyEffect(s, { sap: 6 })
+s = walkTo(s, 'camp:wire')
+assert(bodyOf(s).includes('diminutive merchant'), 'first Kaelen sighting is the full card')
+s = interpret(s, 'who is kaelen')
+assert(s.flash?.includes('diminutive merchant'), 'who is Kaelen returns the full card')
+assert(/\bthey\b/i.test(s.flash ?? ''), 'Kaelen card uses they')
+assert(!/(\bshe\b|\bher\b)/i.test(s.flash ?? ''), 'Kaelen is not she')
+s = pick(s, 'kaelen')
+assert(sceneOf(s).speaker === 'Kaelen the Sifter', 'Kaelen talk after the card')
+assert(!bodyOf(s).includes('diminutive merchant'), 'later Kaelen is only what they are doing now')
+s = applyEffect(s, { add: { scrap: 1 } })
+assert(ids(s).includes('drop'), 'scrap→Drop still on the counter')
+s = pick(s, 'drop')
+assert((s.items.vial_drop ?? 0) >= 1, 'Kaelen still trades scrap for a Drop')
+
+let dropHunt = newGame('prisoner')
+dropHunt = pick(dropHunt, 'pens')
+let foundDrop = false
+for (let i = 0; i < 24; i++) {
+  const roll = rollScavenge(dropHunt)
+  if (roll.drop) {
+    foundDrop = true
+    break
+  }
+  dropHunt = applyEffect(dropHunt, { ticks: 1 })
+}
+assert(foundDrop, 'Scavenge can yield a Drop of Sap, not only crisis rescues')
 
 console.log('OK', {
   prisoner: Object.keys(DOORS.prisoner.items),

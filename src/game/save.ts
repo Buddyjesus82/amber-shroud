@@ -9,6 +9,7 @@ export function loadSave(): GameState | null {
     const parsed = JSON.parse(raw) as GameState
     if (parsed?.version !== 1 || !parsed.door || !parsed.sceneId) return null
     if (!parsed.equipped) parsed.equipped = {}
+    if (!parsed.recentVerbs) parsed.recentVerbs = []
     return parsed
   } catch {
     return null

@@ -54,6 +54,7 @@ export type GameState = {
   startedAt: number
   updatedAt: number
   equipped: { weapon?: ItemId; armor?: ItemId }
+  recentVerbs?: string[]
 }
 
 export type Cond = {
@@ -207,4 +208,8 @@ export type ItemDef = {
   kind: ItemKind
   desc: string
   slot?: EquipSlot
+  /** Weapon compare-number. Gear only — never added to a roll. */
+  bite?: number
+  /** Armor compare-number. Gear only — never added to a roll. */
+  hide?: number
 }

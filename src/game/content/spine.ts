@@ -191,7 +191,7 @@ The Hunger is a red bruise east-south. You could fill the empty vial with this s
           flag: { kaelenKnown: true },
           ticks: 1,
           flash:
-            '"Kaelen the Sifter passes at dusk if dusk remembers him. Jittery merchant. Pack of vials. He sells Drops for scrap and rumors for Glints. He is not shade. I am shade." Silas points his chin at the well. "He left a scratch in the stone. Read it or don\'t."',
+            '"Kaelen the Sifter passes at dusk if dusk remembers them. Jittery merchant. Pack of vials. They sell Drops for scrap and rumors for Glints. They are not shade. I am shade." Silas points his chin at the well. "They left a scratch in the stone. Read it or don\'t."',
           goto: 'spine:silas',
         },
       },
@@ -326,6 +326,24 @@ I will scratch you a heading. You take the Hunger when the noon gets honest."`,
 You can lower a hope. You cannot lower a bucket that still believes in water.`,
     choices: [
       {
+        id: 'skim',
+        label: 'Skim the well-throat anyway',
+        sub: 'Risky Drop. Heat. The well may still spit once.',
+        tone: 'danger',
+        show: { flagUnset: 'skim:spine:well' },
+        effects: {
+          add: { vial_drop: 1 },
+          remove: { vial_empty: 1 },
+          sap: -1,
+          heat: { strays: 1 },
+          pressure: 2,
+          ticks: 1,
+          flag: { 'skim:spine:well': true, skimmed: true },
+          flash:
+            'Dust, then a Drop that should not have been there. The well bills you in Heat. Not a rescue. A theft.',
+        },
+      },
+      {
         id: 'search',
         label: 'Search the brickwork',
         show: { flagUnset: 'wellScrap' },
@@ -395,7 +413,7 @@ Valerius is here in a different uniform: dust instead of cuffs, the same ledger 
       {
         id: 'cut',
         label: 'Meet the Hound with equipped steel',
-        sub: 'Weapon on. Loot the hide. No dice.',
+        sub: 'Weapon on. Loot Hound Hide · Hide 4. No dice.',
         show: { all: [{ slot: 'weapon' }, { flagUnset: 'hideWrap' }] },
         effects: {
           add: { hide_wrap: 1 },
@@ -404,7 +422,7 @@ Valerius is here in a different uniform: dust instead of cuffs, the same ledger 
           heat: { cartel: 1 },
           goto: 'spine:hound',
           flash:
-            'Resin jaw, then silence. You take hide that still smells like Cartel loyalty. Equip it in Gear. Valerius will count this.',
+            'Resin jaw, then silence. Hound Hide · Hide 4 still smells like Cartel loyalty. Equip it in Gear. Valerius will count this.',
         },
       },
       {

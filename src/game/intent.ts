@@ -71,18 +71,33 @@ export const GLOBAL_INTENTS: IntentRule[] = [
     effects: { ticks: 1, pressure: 1 },
   },
   {
-    tags: ['look', 'search', 'scan', 'watch', 'listen'],
-    reply: 'You already see what this place is willing to show. Try a door, a mouth, a pair of hands.',
+    tags: ['look', 'search', 'scan', 'watch', 'listen', 'look around'],
+    reply: 'You already see what this place is willing to show. Scavenge if you want a hand in the grit — or try a door, a mouth, a pair of hands.',
     effects: {},
   },
   {
     tags: ['inventory', 'pack', 'pocket', 'items', 'gear', 'kit'],
-    reply: 'You pat the pack. Whatever you have, it is listed in Gear. Equip a weapon or armor if it has a slot. The desert does not care.',
+    reply: 'You pat the pack. Whatever you have, it is listed in Gear — not across the screen. Equip a weapon or armor if it has a slot. Bite and Hide compare gear. No dice.',
+    effects: {},
+  },
+  {
+    tags: ['map', 'heading', 'where', 'road'],
+    reply: 'Map is the charcoal scrap beside Heat. Connected roads only. Each hop costs Sap.',
+    effects: {},
+  },
+  {
+    tags: ['trade', 'buy', 'sell', 'shop', 'merchant', 'barter'],
+    reply: 'Kaelen the Sifter trades scrap for a Drop of Oasis Sap. Glints buy intel. Find the pack. Oil-Tooth and Silas are different invoices.',
+    effects: {},
+  },
+  {
+    tags: ['ask'],
+    reply: 'Ask who? Name them — who is Kaelen, who is Oil-Tooth — or ask a mouth that is here. The desert does not guess.',
     effects: {},
   },
   {
     tags: ['run', 'flee', 'leave', 'go', 'escape', 'walk'],
-    reply: 'Running without a heading is how the Maw gets fed. Pick a place, or take the Hunger.',
+    reply: 'Running without a heading is how the Maw gets fed. Pick a place, or take the Hunger. Map if you need a road.',
     effects: { ticks: 1 },
   },
   {

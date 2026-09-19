@@ -1,5 +1,5 @@
 import { ITEMS } from './content/catalog'
-import type { Effect, EquipSlot, ItemId } from './types'
+import type { Effect, EquipSlot, ItemDef, ItemId } from './types'
 
 export type KitChip = {
   id: ItemId
@@ -8,6 +8,15 @@ export type KitChip = {
   kind: 'gear' | 'currency' | 'key' | 'weapon' | 'armor'
   desc: string
   slot?: EquipSlot
+  bite?: number
+  hide?: number
+}
+
+export function gearStat(item: Pick<ItemDef, 'bite' | 'hide'> | null | undefined): string | null {
+  if (!item) return null
+  if (item.bite != null) return `Bite ${item.bite}`
+  if (item.hide != null) return `Hide ${item.hide}`
+  return null
 }
 
 export function listedKit(items: Partial<Record<ItemId, number>>): KitChip[] {
@@ -20,13 +29,21 @@ export function listedKit(items: Partial<Record<ItemId, number>>): KitChip[] {
       kind: ITEMS[id].kind,
       desc: ITEMS[id].desc,
       slot: ITEMS[id].slot,
+      bite: ITEMS[id].bite,
+      hide: ITEMS[id].hide,
     }))
 }
 
 export function kitLine(items: Partial<Record<ItemId, number>>): string {
   const chips = listedKit(items)
   if (!chips.length) return 'Empty pockets'
-  return chips.map((c) => (c.n > 1 ? `${c.name} ×${c.n}` : c.name)).join(' · ')
+  return chips
+    .map((c) => {
+      const name = c.n > 1 ? `${c.name} ×${c.n}` : c.name
+      const stat = gearStat(c)
+      return stat ? `${name} (${stat})` : name
+    })
+    .join(' · ')
 }
 
 export type CostPill = { kind: 'sap' | 'item' | 'heat'; text: string }
@@ -34,6 +51,15 @@ export type CostPill = { kind: 'sap' | 'item' | 'heat'; text: string }
 export function effectPills(fx: Effect): CostPill[] {
   const pills: CostPill[] = []
   if (fx.sap && fx.sap < 0) pills.push({ kind: 'sap', text: `Sap ${fx.sap}` })
+  if (fx.add) {
+    for (const id of Object.keys(fx.add) as ItemId[]) {
+      const n = fx.add[id] ?? 0
+      if (n <= 0 || !ITEMS[id]) continue
+      const stat = gearStat(ITEMS[id])
+      const name = n > 1 ? `${ITEMS[id].name} ×${n}` : ITEMS[id].name
+      pills.push({ kind: 'item', text: stat ? `${name} · ${stat}` : name })
+    }
+  }
   if (fx.remove) {
     for (const id of Object.keys(fx.remove) as ItemId[]) {
       const n = fx.remove[id] ?? 0
