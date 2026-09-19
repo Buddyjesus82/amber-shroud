@@ -191,7 +191,7 @@ The Hunger is a red bruise east-south. You could fill the empty vial with this s
           flag: { kaelenKnown: true },
           ticks: 1,
           flash:
-            '"Kaelen the Sifter passes at dusk if dusk remembers him. Jittery merchant. Pack of vials. He sells Drops for scrap and rumors for Glints. He is not shade. I am shade." Silas points his chin at the well. "He left a scratch in the stone. Read it or don\'t."',
+            '"Kaelen the Sifter passes at dusk if dusk remembers him. Jittery merchant. Pack of vials. He sells Drops for scrap. Ask him for a rumor and he names a mouth — not a job. Glints buy a faster heading if you are lazy. He is not shade. I am shade." Silas points his chin at the well. "He left a scratch in the stone. Read it or don\'t."',
           goto: 'spine:silas',
         },
       },
@@ -341,7 +341,7 @@ You can lower a hope. You cannot lower a bucket that still believes in water.`,
       {
         id: 'kaelen',
         label: 'Wait for dusk and Kaelen the Sifter',
-        sub: 'Merchant. Rumors if you ask. Not Silas\'s shade.',
+        sub: 'Merchant. Ask a rumor. He names a mouth, not a job.',
         effects: { goto: 'spine:kaelen', ticks: 1, sap: -1, pressure: 1 },
       },
       {
@@ -373,6 +373,13 @@ You can lower a hope. You cannot lower a bucket that still believes in water.`,
     body: `Prints. Not dogs. Shard-Hounds — Cartel-made, resin-jawed, loyal to whoever holds the chip.
 
 Valerius is here in a different uniform: dust instead of cuffs, the same ledger behind the eyes. On the Spine they call him the Shard-Hound because he always finds the people who think ridges hide them.`,
+    variants: [
+      {
+        if: { flag: 'kaelenRumorHound' },
+        mode: 'append',
+        body: `Kaelen pointed here. The question is the woman on the skiff — not the cork, not a cache.`,
+      },
+    ],
     choices: [
       {
         id: 'talk',
@@ -414,6 +421,13 @@ Valerius is here in a different uniform: dust instead of cuffs, the same ledger 
     title: 'Shard-Hound Valerius',
     speaker: 'Valerius',
     body: `"Outcast," he says, almost kind. "Ironwood still pays for returned property. You are not property. You are a loose Drop. I can cork you or I can point you at the woman on the skiff. She pays better than bounties. She pays in not-dying."`,
+    variants: [
+      {
+        if: { flag: 'kaelenRumorHound' },
+        mode: 'append',
+        body: `He knows you were pointed. The ledger behind the eyes waits to see if you ask the bait or the woman.`,
+      },
+    ],
     choices: [
       {
         id: 'refuse',
@@ -429,12 +443,47 @@ Valerius is here in a different uniform: dust instead of cuffs, the same ledger 
       {
         id: 'ask',
         label: 'Ask about the woman on the skiff',
+        sub: 'Kaelen pointed. Not the cork.',
+        show: { all: [{ flag: 'kaelenRumorHound' }, { flagUnset: 'hungerKnown' }] },
+        effects: { goto: 'spine:valerius-skiff', ticks: 1 },
+      },
+      {
+        id: 'ask-named',
+        label: 'Ask about the woman on the skiff',
+        show: { all: [{ flag: 'kaelenRumorHound' }, { flag: 'hungerKnown' }] },
         effects: {
-          flag: { sybellaNamed: true, hungerKnown: true },
+          flag: { sybellaNamed: true },
           ticks: 1,
           goto: 'spine:hound',
           flash:
-            '"Sybella. Wants walking amber. Red Maw is her current church. If you go, go useful or go buried." He almost smiles. "I will be behind you either way."',
+            '"Sybella. You already have a heading. She still wants walking amber. I will be behind you either way."',
+        },
+      },
+      {
+        id: 'fish',
+        label: 'Ask about the woman on the skiff',
+        sub: 'He dangled a name. That is bait.',
+        show: { flagUnset: 'kaelenRumorHound' },
+        effects: {
+          heat: { cartel: 1 },
+          pressure: 1,
+          ticks: 1,
+          goto: 'spine:hound',
+          flash:
+            'He almost smiles. "You are fishing because I baited you. That is not a question. I cork fishermen. Come back when someone pointed you."',
+        },
+      },
+      {
+        id: 'cache',
+        label: 'Ask him to point you at Kallik\'s cache',
+        sub: 'Treasure. The wrong question.',
+        show: { all: [{ flag: 'kaelenRumorHound' }, { flagUnset: 'hungerKnown' }] },
+        effects: {
+          ticks: 1,
+          heat: { cartel: 1 },
+          goto: 'spine:valerius',
+          flash:
+            '"Wrong question. I hunt thieves. I do not donate holes. If the Sifter sent you, you already know which mouth to ask about."',
         },
       },
       { id: 'back', label: 'Back onto the ridge', tone: 'quiet', effects: { goto: 'spine:ridge' } },
@@ -454,9 +503,83 @@ Valerius is here in a different uniform: dust instead of cuffs, the same ledger 
     ],
     intents: [
       {
+        tags: ['woman', 'skiff', 'blonde', 'sybella', 'seeker'],
+        show: { all: [{ flag: 'kaelenRumorHound' }, { flagUnset: 'hungerKnown' }] },
+        reply: 'He files the question as the right one.',
+        effects: { goto: 'spine:valerius-skiff', ticks: 1 },
+      },
+      {
+        tags: ['woman', 'skiff', 'blonde', 'sybella'],
+        show: { flagUnset: 'kaelenRumorHound' },
+        reply: '"Fishing. I cork fishermen. Come back when someone pointed you."',
+        effects: { heat: { cartel: 1 }, pressure: 1, goto: 'spine:hound' },
+      },
+      {
+        tags: ['cache', 'kallik', 'hunger', 'maw', 'heading', 'map'],
+        show: { flag: 'kaelenRumorHound' },
+        reply: '"Wrong question. I hunt thieves. I do not donate holes."',
+        effects: { ticks: 1, heat: { cartel: 1 } },
+      },
+      {
+        tags: ['cork', 'bounty', 'return', 'property'],
+        reply: 'He weighs you like a vial.',
+        effects: { heat: { cartel: 2 }, pressure: 2, goto: 'spine:hound' },
+      },
+      {
         tags: ['attack', 'run', 'flee', 'hide'],
         reply: 'He watches you choose fear. He files it.',
         effects: { pressure: 2, heat: { cartel: 1 }, goto: 'spine:hound' },
+      },
+    ],
+  },
+  {
+    id: 'spine:valerius-skiff',
+    hubId: 'spine',
+    kind: 'talk',
+    title: 'The Woman on the Skiff',
+    speaker: 'Valerius',
+    body: `"Sybella," he says, almost kind, which is worse. "Wants walking amber. Red Maw is her current church. Kallik buried a hole under the second rib and then buried himself by standing too close. She will pay in not-dying if you arrive useful. She will pay in a grave if you arrive as bait she did not request.
+
+You asked the right question. That is the only reason this is a job and not a cork.
+
+Objective: the Maw, the cache, stay a battery that still walks. Stakes: her skiff, or mine. Reward: Kallik's tin and another noon. Cost: I will be behind you either way. First major victory is not beating me. It is leaving the wash while I am still talking."`,
+    choices: [
+      {
+        id: 'take',
+        label: 'Take the heading. Make it a job.',
+        sub: 'Objective, stakes, cost. He will be behind you.',
+        effects: {
+          flag: { hungerKnown: true, sybellaNamed: true, valeriusSkiff: true },
+          add: { kallik_mark: 1 },
+          ticks: 1,
+          heat: { cartel: 1 },
+          goto: 'spine:hound',
+          flash:
+            '"If you go, go useful or go buried." He almost smiles. "I will be behind you either way."',
+        },
+      },
+      {
+        id: 'later',
+        label: 'Step off the wash. Not yet.',
+        tone: 'quiet',
+        effects: {
+          ticks: 1,
+          goto: 'spine:hound',
+          flash: 'He does not chase. The rumor stays a rumor until you take it.',
+        },
+      },
+    ],
+    intents: [
+      {
+        tags: ['take', 'yes', 'heading', 'job', 'accept', 'go'],
+        reply: 'He files you as useful. Useful is not safe.',
+        effects: {
+          flag: { hungerKnown: true, sybellaNamed: true, valeriusSkiff: true },
+          add: { kallik_mark: 1 },
+          ticks: 1,
+          heat: { cartel: 1 },
+          goto: 'spine:hound',
+        },
       },
     ],
   },

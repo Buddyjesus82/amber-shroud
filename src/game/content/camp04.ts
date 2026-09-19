@@ -67,7 +67,7 @@ Overseer Valerius is the looming shadow. First major victory: get out from under
       },
       {
         tags: ['kaelen', 'sifter', 'rumor', 'news', 'merchant', 'trade'],
-        reply: 'Kaelen the Sifter works the Wire. Rumors. Drops. He does not hotwire Striders.',
+        reply: 'Kaelen the Sifter works the Wire. Rumors point. Drops sell. He does not hotwire Striders.',
         effects: { goto: 'camp:wire' },
       },
     ],
@@ -132,7 +132,7 @@ Bunk next to you: Jaxson "Oil-Tooth" Vance — burly, grease-stained, permanent 
 
 He is the prison-break technical inside man. Reckless. Charismatic. Anti-authority. Humor as a shield. Observant of security weaknesses. He has skimmed Oasis Sap for a lifetime of repairing Ironclad Skiff-Striders.
 
-Kaelen the Sifter is not here. Kaelen sells rumors at the Wire.`,
+Kaelen the Sifter is not here. Kaelen points rumors at the Wire — he does not sell the job.`,
     choices: [
       {
         id: 'jaxson',
@@ -248,12 +248,17 @@ Kaelen the Sifter is not here. Kaelen sells rumors at the Wire.`,
 
 Lifetime labor: repairing Ironclad Skiff-Striders. He has skimmed Oasis Sap the whole time. Reckless. Charismatic. Anti-authority. Humor as a shield. He watches security weaknesses the way other men watch the sky.
 
-"Bleed-Cut," he says, like it is already your name. "Great Bleed is coming. You sabotage the guard station. I hotwire a Strider. That is the job. Kaelen the Sifter sells rumors at the Wire if you want news. He is not the inside man. I am."`,
+"Bleed-Cut," he says, like it is already your name. "Great Bleed is coming. You sabotage the guard station. I hotwire a Strider. That is the job. Kaelen the Sifter points rumors at the Wire if you want news. He is not the inside man. I am."`,
     variants: [
+      {
+        if: { flag: 'kaelenRumorKallik' },
+        mode: 'append',
+        body: `If Kaelen sent you, he sent a question, not a shopping list. The brass jaw waits to see which one you brought.`,
+      },
       {
         if: { flag: 'striderHot' },
         mode: 'replace',
-        body: `The smirk holds. The Strider is live. "Valerius can eat the dust-cloaks. We ride, or you linger like a fool. Kaelen's rumors still cost if you have not paid for a heading."`,
+        body: `The smirk holds. The Strider is live. "Valerius can eat the dust-cloaks. We ride, or you linger like a fool. If you still need a heading, that is a rumor you ask — not a product I keep under the hull."`,
       },
       {
         if: { flag: 'jaxsonInside' },
@@ -262,6 +267,25 @@ Lifetime labor: repairing Ironclad Skiff-Striders. He has skimmed Oasis Sap the 
       },
     ],
     choices: [
+      {
+        id: 'owe',
+        label: 'Ask if Kallik still owes the bay',
+        sub: 'Kaelen pointed. The question is a debt, not a map.',
+        show: { all: [{ flag: 'kaelenRumorKallik' }, { flagUnset: 'hungerKnown' }] },
+        effects: { goto: 'camp:jaxson-owe', ticks: 1 },
+      },
+      {
+        id: 'map',
+        label: "Ask him for Kallik's cache map",
+        sub: 'Treasure. The wrong question.',
+        show: { all: [{ flag: 'kaelenRumorKallik' }, { flagUnset: 'hungerKnown' }] },
+        effects: {
+          ticks: 1,
+          goto: 'camp:jaxson',
+          flash:
+            '"Wrong question. I don\'t sell maps. If the Sifter sent you, you already know what to ask. Kallik. The bay. What he still owes."',
+        },
+      },
       {
         id: 'talk',
         label: 'Take the inside job',
@@ -314,8 +338,21 @@ Lifetime labor: repairing Ironclad Skiff-Striders. He has skimmed Oasis Sap the 
         effects: { goto: 'camp:jaxson', ticks: 1 },
       },
       {
+        tags: ['owe', 'owes', 'debt', 'bay', 'still'],
+        show: { all: [{ flag: 'kaelenRumorKallik' }, { flagUnset: 'hungerKnown' }] },
+        reply: 'The smirk thins. That is not a map question.',
+        effects: { goto: 'camp:jaxson-owe', ticks: 1 },
+      },
+      {
+        tags: ['cache', 'kallik', 'maw', 'hunger', 'map', 'heading', 'rumor', 'news'],
+        show: { flag: 'kaelenRumorKallik' },
+        reply: '"Wrong question. I don\'t sell maps. If the Sifter sent you, you already know what to ask. A debt. Not a treasure."',
+        effects: { goto: 'camp:jaxson', ticks: 1 },
+      },
+      {
         tags: ['cache', 'kallik', 'maw', 'hunger', 'rumor', 'news'],
-        reply: '"That is Kaelen the Sifter. Wire. Rumors for Glints. I hotwire. Do not mix the invoices."',
+        show: { flagUnset: 'kaelenRumorKallik' },
+        reply: '"That is Kaelen the Sifter. Wire. He points. He does not sell me. I hotwire. Do not mix the invoices."',
         effects: { flag: { kaelenKnown: true }, goto: 'camp:wire' },
       },
       {
@@ -338,8 +375,34 @@ Lifetime labor: repairing Ironclad Skiff-Striders. He has skimmed Oasis Sap the 
     speaker: 'Jaxson "Oil-Tooth" Vance',
     body: `"Valerius is the first major victory you have to overcome," Oil-Tooth says, smirking around the brass. "Imposing. Scarred. Reinforced iron plating over dust-cloaks. Steam-hissing shock baton. Cruel. Calculating. He hunts Sap thieves and unpermitted relic hoarders. Sadistic. Arrogant. Disciplined. Looming shadow. I have watched the guard station until I could draw it in grease.
 
-Great Bleed hits, you sabotage that station. I hotwire an Ironclad Skiff-Strider. We leave the pens. You want rumors — Kallik, the Hunger, the blonde — that is Kaelen the Sifter at the Wire. He sells leads. I sell a ride."`,
+Great Bleed hits, you sabotage that station. I hotwire an Ironclad Skiff-Strider. We leave the pens. You want rumors — Kallik, the Hunger, the blonde — that is Kaelen the Sifter at the Wire. He points at mouths. He does not sell me a job to hand you. I sell a ride."`,
+    variants: [
+      {
+        if: { flag: 'kaelenRumorKallik' },
+        mode: 'append',
+        body: `He watches your mouth. "If the Sifter sent you, ask the debt. Ask a map and I will send you back."`,
+      },
+    ],
     choices: [
+      {
+        id: 'owe',
+        label: 'Ask if Kallik still owes the bay',
+        sub: 'Kaelen pointed. The question is a debt, not a map.',
+        show: { all: [{ flag: 'kaelenRumorKallik' }, { flagUnset: 'hungerKnown' }] },
+        effects: { goto: 'camp:jaxson-owe', ticks: 1 },
+      },
+      {
+        id: 'map',
+        label: "Ask him for Kallik's cache map",
+        sub: 'Treasure. The wrong question.',
+        show: { all: [{ flag: 'kaelenRumorKallik' }, { flagUnset: 'hungerKnown' }] },
+        effects: {
+          ticks: 1,
+          goto: 'camp:jaxson',
+          flash:
+            '"Wrong question. I don\'t sell maps. If the Sifter sent you, you already know what to ask. Kallik. The bay. What he still owes."',
+        },
+      },
       {
         id: 'inside',
         label: 'Take the inside job. Take the oversized wrench.',
@@ -362,7 +425,7 @@ Great Bleed hits, you sabotage that station. I hotwire an Ironclad Skiff-Strider
           ticks: 1,
           pressure: 1,
           goto: 'camp:lean',
-          flash: '"Guard station. Then the bay. Valerius eats dust if we are fast. Kaelen still charges for news."',
+          flash: '"Guard station. Then the bay. Valerius eats dust if we are fast. Kaelen still points. He does not hotwire."',
         },
       },
       {
@@ -422,14 +485,14 @@ Great Bleed hits, you sabotage that station. I hotwire an Ironclad Skiff-Strider
       },
       {
         id: 'kaelen',
-        label: 'Ask where Kaelen sells rumors',
+        label: 'Ask where Kaelen points rumors',
         effects: {
           flag: { kaelenKnown: true },
           ticks: 1,
           pressure: 1,
           goto: 'camp:jaxson',
           flash:
-            '"The Wire. Jittery little Sifter. Dust-caked canvas. Pack full of vials. Glints buy intel. Scrap buys Drops. He plays all sides. He is not me."',
+            '"The Wire. Jittery little Sifter. Dust-caked canvas. Pack full of vials. Ask him and he names a mouth. Glints buy a faster heading if you want to skip walking. Scrap buys Drops. He plays all sides. He is not me."',
         },
       },
       {
@@ -446,13 +509,26 @@ Great Bleed hits, you sabotage that station. I hotwire an Ironclad Skiff-Strider
         effects: { goto: 'camp:jaxson' },
       },
       {
+        tags: ['owe', 'owes', 'debt', 'bay', 'still'],
+        show: { all: [{ flag: 'kaelenRumorKallik' }, { flagUnset: 'hungerKnown' }] },
+        reply: 'The brass jaw ticks. That is the question Kaelen sold you for free.',
+        effects: { goto: 'camp:jaxson-owe', ticks: 1 },
+      },
+      {
+        tags: ['cache', 'kallik', 'maw', 'hunger', 'map', 'heading', 'red', 'rumor', 'news'],
+        show: { flag: 'kaelenRumorKallik' },
+        reply: '"Wrong question. I don\'t sell maps. If the Sifter sent you, you already know what to ask. A debt. Not a treasure."',
+        effects: { ticks: 1 },
+      },
+      {
         tags: ['cache', 'kallik', 'maw', 'hunger', 'red', 'rumor', 'news'],
-        reply: '"Kaelen the Sifter. Wire. Rumors for Glints. I hotwire. Do not mix the invoices."',
+        show: { flagUnset: 'kaelenRumorKallik' },
+        reply: '"Kaelen the Sifter. Wire. He points. I hotwire. Do not mix the invoices."',
         effects: { flag: { kaelenKnown: true }, goto: 'camp:wire' },
       },
       {
         tags: ['kaelen', 'wire', 'sifter'],
-        reply: '"Wire. Jittery merchant. Pack of vials. He sells Drops and intel. He is not me."',
+        reply: '"Wire. Jittery merchant. Pack of vials. He points rumors. He sells Drops. He is not me."',
         effects: { flag: { kaelenKnown: true }, goto: 'camp:wire' },
       },
       {
@@ -473,7 +549,7 @@ Great Bleed hits, you sabotage that station. I hotwire an Ironclad Skiff-Strider
     kind: 'talk',
     title: 'Wrong Counter',
     speaker: 'Jaxson "Oil-Tooth" Vance',
-    body: `"That heading is not my product," Oil-Tooth says. "Kaelen the Sifter sells rumors. Wire. Glints for intel. Scrap for Drops. I am the inside man. Guard station. Strider. Go mix your invoices with him."`,
+    body: `"That heading is not my product," Oil-Tooth says. "Kaelen the Sifter points rumors. Wire. Ask him. Then ask me the question he told you to ask — if he told you. Glints still buy a skip if you are impatient. I am the inside man. Guard station. Strider. Go mix your invoices with him."`,
     choices: [
       {
         id: 'wire',
@@ -481,6 +557,59 @@ Great Bleed hits, you sabotage that station. I hotwire an Ironclad Skiff-Strider
         effects: { flag: { kaelenKnown: true }, goto: 'camp:wire' },
       },
       { id: 'later', label: 'Back to the stall', tone: 'quiet', effects: { goto: 'camp:jaxson' } },
+    ],
+  },
+  {
+    id: 'camp:jaxson-owe',
+    hubId: 'camp04',
+    kind: 'talk',
+    title: 'A Debt, Not a Map',
+    speaker: 'Jaxson "Oil-Tooth" Vance',
+    body: `Oil-Tooth's smirk thins. The brass jaw ticks once, like a bolt cooling.
+
+"Kallik still owes the bay. He skimmed Oasis Sap same as me, then he ran east with a tin mark and a hole where a plan should be. Cache under Red Maw. Second rib. Sybella's skiff is already sniffing it.
+
+That is not my Strider job. That is a different invoice, and you asked the right question, so I will open it.
+
+Objective: get out from under Valerius, then take the Maw. Stakes: the Hunger, or the Overseer's baton. Reward: Kallik's hole, if you live. Cost: you stop being a prisoner with a wrench and start being bait.
+
+I still sabotage nothing until you walk the guard station. I still hotwire. This heading is not a map I sell. Kaelen sells those if you want to pay to skip talking."`,
+    choices: [
+      {
+        id: 'take',
+        label: 'Take the heading. Make it a job.',
+        sub: 'Objective, stakes, cost. No map — a debt.',
+        effects: {
+          flag: { hungerKnown: true, sybellaNamed: true, kallikDebt: true },
+          add: { kallik_mark: 1 },
+          ticks: 1,
+          goto: 'camp:lean',
+          flash:
+            'Red Maw. Second rib. A blonde on a skiff. The stall suddenly has a direction besides the Bleed. Guard station is still the first victory.',
+        },
+      },
+      {
+        id: 'later',
+        label: 'Keep the inside job first',
+        tone: 'quiet',
+        effects: {
+          ticks: 1,
+          goto: 'camp:lean',
+          flash: 'He shrugs the brass. "The debt keeps. The Bleed does not."',
+        },
+      },
+    ],
+    intents: [
+      {
+        tags: ['take', 'yes', 'heading', 'job', 'hunger', 'maw', 'accept'],
+        reply: 'He does not write it down. He does not have to.',
+        effects: {
+          flag: { hungerKnown: true, sybellaNamed: true, kallikDebt: true },
+          add: { kallik_mark: 1 },
+          ticks: 1,
+          goto: 'camp:lean',
+        },
+      },
     ],
   },
   {
@@ -658,7 +787,7 @@ He waits. Sadistic. Arrogant. Disciplined. Men like him can afford waiting. You 
     title: 'The Wire',
     body: `The perimeter. Razor-wire. Steam-vents coughing. Beyond it the dunes begin to have opinions.
 
-Kaelen the Sifter is here when profit says here: jittery diminutive merchant, dust-caked canvas, overstuffed pack, thick gloves. Primary early-game merchant. Also the rumor counter — if you ask. He is not the prison-break inside man. That is Oil-Tooth.
+Kaelen the Sifter is here when profit says here: jittery diminutive merchant, dust-caked canvas, overstuffed pack, thick gloves. Primary early-game merchant. Also the rumor counter — if you ask, he names a mouth, not a job. He is not the prison-break inside man. That is Oil-Tooth.
 
 Ironclad Skiff-Striders patrol the other side of this line. The Hunger lives past it. So do Hounds.`,
     variants: [
@@ -683,7 +812,7 @@ Ironclad Skiff-Striders patrol the other side of this line. The Hunger lives pas
           ticks: 1,
           sap: -1,
           flash:
-            'Red in the far haze. Maw-country. If Kaelen sold you the heading, a dead smuggler\'s fortune is sitting in it like bait. If not, it is only weather.',
+            'Red in the far haze. Maw-country. If someone opened a heading for you, a dead smuggler\'s fortune is sitting in it like bait. If not, it is only weather.',
           flag: { sawMawHaze: true },
         },
       },
@@ -817,7 +946,7 @@ If he is your inside man, he is already under a hull with a smirk the brass jaw 
           ticks: 1,
           goto: 'camp:bay',
           flash:
-            'Welding leather. Oversized wrench. A Strider that believes it is still inventory. Oil-Tooth laughs once, a shield. "Ride, or linger, or go pay Kaelen for a heading. I did my half."',
+            'Welding leather. Oversized wrench. A Strider that believes it is still inventory. Oil-Tooth laughs once, a shield. "Ride, or linger, or go ask Kaelen which mouth still owes you a heading. I did my half."',
         },
       },
       {
@@ -843,7 +972,7 @@ If he is your inside man, he is already under a hull with a smirk the brass jaw 
           goto: 'ch1:leave',
           heat: { cartel: 1 },
           flash:
-            'You have a Strider and no rumor. Kaelen would call that bad inventory. The dunes do not care.',
+            'You have a Strider and no rumor. Kaelen would call that a walk you skipped. The dunes do not care.',
         },
       },
     ],
@@ -916,7 +1045,7 @@ He hunts Sap thieves and unpermitted relic hoarders. You look like both. First m
     title: 'The Camp Closes',
     body: `Pressure has a sound. It is the vats, the whistles, the way nobody meets your eye.
 
-You can keep playing prisoner until the Drop in you burns out. Or Oil-Tooth's Strider. Or Kaelen's heading. Do not mix the invoices — just spend them.`,
+You can keep playing prisoner until the Drop in you burns out. Or Oil-Tooth's Strider. Or a heading someone opened. Do not mix the invoices — just spend them.`,
     choices: [
       {
         id: 'go',
