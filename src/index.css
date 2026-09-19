@@ -855,11 +855,11 @@ h2 {
 
 .scrap-sheet .map-node {
   border: 0;
-  background: transparent;
+  background: radial-gradient(ellipse at 50% 48%, rgba(232, 212, 176, 0.88) 0%, rgba(232, 212, 176, 0.25) 62%, transparent 78%);
   border-radius: 0;
   color: #1c140c;
   font-family: Kalam, Caveat, cursive;
-  font-size: 0.84rem;
+  font-size: 0.88rem;
   font-weight: 700;
   letter-spacing: 0;
   line-height: 1.05;
@@ -950,8 +950,8 @@ h2 {
 }
 
 .scrap-sheet .map-node.far {
-  opacity: 0.58;
-  color: #4a3828;
+  opacity: 0.78;
+  color: #3a2818;
 }
 
 .map-edge,
