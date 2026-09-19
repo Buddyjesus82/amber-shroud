@@ -2,7 +2,7 @@ import { DOORS, HUBS, ITEMS, getScene, resolveBody } from './content'
 import { applyDelta, check, clamp } from './logic'
 import { GLOBAL_INTENTS, matchIntent } from './intent'
 import { travelGate } from './map'
-import { markMetOnLeave, matchPersonQuery, personAtScene, whoChoices } from './people'
+import { markMetOnLeave, matchPersonQuery, personAtScene } from './people'
 import { canScavenge, canSkim, rollScavenge, scavengeCooldown } from './scavenge'
 import { writeSave } from './save'
 import type { DoorId, Effect, EquipSlot, GameState, ItemId, Scene } from './types'
@@ -372,9 +372,7 @@ export function interpret(state: GameState, text: string): GameState {
 }
 
 export function visibleChoices(state: GameState) {
-  const authored = sceneOf(state).choices.filter((c) => check(c.show, state))
-  if (sceneOf(state).kind === 'crisis' || state.chapterId === 'cache-run') return authored
-  return [...whoChoices(state), ...authored]
+  return sceneOf(state).choices.filter((c) => check(c.show, state))
 }
 
 export function isChoiceOn(state: GameState, cond: import('./types').Cond | undefined) {

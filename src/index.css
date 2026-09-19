@@ -423,27 +423,6 @@ h2 {
   background: linear-gradient(180deg, #f4a15a, #c4451a);
 }
 
-.scavenge-chip,
-.skim-chip {
-  flex: 0 0 auto;
-  white-space: nowrap;
-  min-height: 32px;
-  padding: 0.1rem 0.55rem;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  background: #24150c;
-  color: var(--dust);
-  font-size: 0.68rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.skim-chip {
-  color: #ffb199;
-  border-color: rgba(196, 69, 26, 0.55);
-  background: rgba(196, 69, 26, 0.12);
-}
-
 .verb-hint {
   margin: 0;
   color: var(--dust);

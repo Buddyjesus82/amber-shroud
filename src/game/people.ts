@@ -1,4 +1,4 @@
-import type { Choice, GameState } from './types'
+import type { GameState } from './types'
 
 export type PersonId = 'oiltooth' | 'kaelen' | 'valerius' | 'silas' | 'thalia' | 'oram'
 
@@ -155,10 +155,6 @@ export function personAtScene(sceneId: string): Person | undefined {
   return Object.values(PEOPLE).find((p) => p.scenes.includes(sceneId))
 }
 
-export function peopleAtScene(sceneId: string): Person[] {
-  return Object.values(PEOPLE).filter((p) => p.scenes.includes(sceneId))
-}
-
 function normalize(text: string): string {
   return text
     .toLowerCase()
@@ -188,19 +184,6 @@ export function matchPersonQuery(text: string): Person | 'ask' | null {
   }
   if (asking) return 'ask'
   return null
-}
-
-export function whoChoices(state: GameState): Choice[] {
-  return peopleAtScene(state.sceneId).map((p) => ({
-    id: `who-${p.id}`,
-    label: `Who is ${p.name}?`,
-    sub: 'Full card. Later scenes only show what they are doing now.',
-    tone: 'quiet',
-    effects: {
-      flash: p.card,
-      flag: { [p.metFlag]: true, [`asked:${p.id}`]: true },
-    },
-  }))
 }
 
 export function markMetOnLeave(fromScene: string, _toScene: string, flags: GameState['flags']): GameState['flags'] {

@@ -100,8 +100,16 @@ assert(
   'Scavenge is not a fat pinned hub button',
 )
 assert(
-  readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8').includes('scavenge-chip'),
-  'Scavenge is a compact hub chip',
+  !readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8').includes('scavenge-chip'),
+  'Scavenge is not a Heat-row chip',
+)
+assert(
+  !readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8').includes('Who is'),
+  'no dedicated Who is button',
+)
+assert(
+  readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8').includes('who is kaelen'),
+  'Do placeholder still teaches who is',
 )
 
 for (const hub of Object.values(HUBS)) {
@@ -390,7 +398,7 @@ assert(!ids(s).includes('up-vessel'), 'her Drop is Seekers-only')
 s = newGame('prisoner')
 s = pick(s, 'pens')
 assert(bodyOf(s).includes('cybernetic brass jaw'), 'first Oil-Tooth meet is the full card')
-assert(ids(s).includes('who-oiltooth'), 'who-is choice on hub NPC')
+assert(!ids(s).some((id) => id.startsWith('who-')), 'no dedicated Who is button')
 s = interpret(s, 'who is oil-tooth')
 assert(s.flash?.includes('cybernetic brass jaw'), 'who is Oil-Tooth returns the full card')
 assert(s.flags.metOilTooth, 'asking who marks the meet')
