@@ -315,7 +315,20 @@ h2 {
   flex: 1 1 46%;
   min-height: 0;
   max-height: none;
+  overflow: hidden;
+}
+
+.play-screen.play-split .choices {
+  flex: 1 1 auto;
+  min-height: 0;
   overflow: auto;
+}
+
+.play-screen.play-split .hub-acts,
+.play-screen.play-split .say,
+.play-screen.play-split .verb-hint,
+.play-screen.play-split .drink {
+  flex-shrink: 0;
 }
 
 .status {
