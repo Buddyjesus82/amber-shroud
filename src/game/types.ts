@@ -143,6 +143,36 @@ export type HubDef = {
   }
 }
 
+export type HubMapNode = {
+  id: string
+  name: string
+  short?: string
+  sceneId: string
+  x: number
+  y: number
+  mawExit?: boolean
+}
+
+export type HubMapEdge = {
+  a: string
+  b: string
+  sap?: number
+}
+
+export type HubMapDef = {
+  hubId: string
+  ready: boolean
+  blurb: string
+  coming?: string
+  width: number
+  height: number
+  defaultNode: string
+  maw: { x: number; y: number; label: string }
+  nodes: HubMapNode[]
+  edges: HubMapEdge[]
+  sceneNode: Record<string, string>
+}
+
 export type DoorDef = {
   id: DoorId
   title: string

@@ -15,7 +15,7 @@ Bunk next to you: Jaxson "Oil-Tooth" Vance. Overseer Valerius is the looming sha
       {
         id: 'pens',
         label: 'Sit the pens. Hear Oil-Tooth.',
-        sub: 'Kit: Cartel Scrip only. He is the inside man. Kaelen sells rumors elsewhere.',
+        sub: 'Gear: Cartel Scrip only. He is the inside man. Kaelen sells rumors elsewhere.',
         effects: {
           enterHub: 'camp04',
           goto: 'camp:cages',
@@ -40,7 +40,7 @@ You came here because the Cartel would brand you and the Seekers would fill you.
       {
         id: 'stand',
         label: 'Stand up into the noon',
-        sub: 'Kit: empty vial, Silas\'s tip. Sap is already thin.',
+        sub: 'Gear: empty vial, Silas\'s tip. Sap is already thin.',
         effects: {
           enterHub: 'spine',
           goto: 'spine:ridge',
@@ -64,7 +64,7 @@ The sacrament on your tongue is a real Drop. The rest is theater. Seeker Heat is
       {
         id: 'keep',
         label: 'Keep the cloth on. Walk the Court.',
-        sub: 'Kit: Drop, dagger, Oram\'s map, cloth. Thalia is already watching.',
+        sub: 'Gear: Drop, dagger, Oram\'s map, cloth. Thalia is already watching.',
         effects: {
           enterHub: 'threshold',
           goto: 'thresh:court',

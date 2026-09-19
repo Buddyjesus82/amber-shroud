@@ -7,7 +7,8 @@ import {
   travelTo,
   visibleChoices,
 } from '../src/game/engine.ts'
-import { DOORS } from '../src/game/content/catalog.ts'
+import { DOORS, HUBS } from '../src/game/content/catalog.ts'
+import { canTravelTo, edgeSap, HUB_MAPS, nodeIdForScene, route } from '../src/game/map.ts'
 import type { DoorId, GameState } from '../src/game/types.ts'
 
 function assert(cond: unknown, msg: string): asserts cond {
@@ -30,6 +31,36 @@ function ids(s: GameState) {
   return visibleChoices(s).map((x) => x.id)
 }
 
+function walkTo(s: GameState, destScene: string): GameState {
+  const hubId = s.hubId
+  assert(hubId, `walkTo ${destScene} needs a hub`)
+  const map = HUB_MAPS[hubId]
+  assert(map, `missing map ${hubId}`)
+  const from = nodeIdForScene(map, s.sceneId, true)
+  const to = nodeIdForScene(map, destScene, false)
+  assert(from && to, `no map nodes for ${s.sceneId} → ${destScene}`)
+  const path = route(map, from, to)
+  assert(path, `no route ${from} → ${to}`)
+  let cur = s
+  if (from === to) {
+    return cur.sceneId === destScene ? cur : travelTo(cur, destScene)
+  }
+  for (let i = 1; i < path.length; i++) {
+    const nodeId = path[i]
+    const node = map.nodes.find((n) => n.id === nodeId)
+    assert(node, `missing node ${nodeId}`)
+    const dest = i === path.length - 1 ? destScene : node.sceneId
+    const cost = edgeSap(map, path[i - 1], nodeId) ?? 1
+    if (cur.sap <= cost) cur = applyEffect(cur, { sap: cost + 1 - cur.sap })
+    cur = travelTo(cur, dest)
+    if (cur.sceneId !== dest && String(cur.sceneId).includes('hunter')) {
+      cur = applyEffect(cur, { goto: dest, pressure: -4 })
+    }
+    assert(cur.sceneId === dest, `walk ${path[i - 1]}→${nodeId} wanted ${dest} got ${cur.sceneId}`)
+  }
+  return cur
+}
+
 const prisoner = DOORS.prisoner
 const outcast = DOORS.outcast
 const vessel = DOORS.vessel
@@ -48,10 +79,42 @@ assert(vessel.items.ceremonial_cloth === 1 && vessel.items.vial_drop === 1, 'ves
 assert(!vessel.items.wrench && !vessel.items.silas_tip, 'vessel kit unique')
 assert(vessel.heat.seekers === 3, 'vessel seeker pressure')
 
+for (const hub of Object.values(HUBS)) {
+  const map = HUB_MAPS[hub.id]
+  assert(map?.ready, `hub ${hub.id} has a ready map`)
+  const ids = new Set(map.nodes.map((n) => n.id))
+  assert(ids.has(map.defaultNode), `${hub.id} default node exists`)
+  for (const p of hub.places) {
+    assert(
+      map.nodes.some((n) => n.id === p.id && n.sceneId === p.sceneId),
+      `${hub.id} place ${p.id} is a map node`,
+    )
+  }
+  for (const e of map.edges) {
+    assert(ids.has(e.a) && ids.has(e.b), `${hub.id} edge ${e.a}–${e.b}`)
+  }
+  for (const n of map.nodes) {
+    assert(route(map, map.defaultNode, n.id), `${hub.id} ${n.id} reachable from default`)
+  }
+}
+
+const camp = HUB_MAPS.camp04
+assert(edgeSap(camp, 'pens', 'wire') == null, 'pens have no road to the Wire')
+assert(edgeSap(camp, 'pens', 'bay') == null, 'pens have no road to the bay')
+assert(edgeSap(camp, 'pens', 'yard') === 1, 'pens connect to the Yard')
+assert(edgeSap(camp, 'pens', 'lean') === 1, 'pens connect to the stall')
+assert(route(camp, 'pens', 'wire')?.join('→') === 'pens→lean→bay→wire', 'mechanic corridor is the short Wire path')
+assert(HUB_MAPS.spine.edges.some((e) => e.sap === 2), 'Spine has a long 2-Sap road')
+
 let s = newGame('prisoner')
 assert(s.items.scrip === 2 && !s.items.wrench, 'newGame copies penniless prisoner kit')
 s = pick(s, 'pens')
 assert(s.hubId === 'camp04' && s.sceneId === 'camp:cages', 'prisoner holding pens')
+assert(!canTravelTo(s, 'camp:wire'), 'Map refuses pens→Wire teleport')
+assert(!canTravelTo(s, 'camp:bay'), 'Map refuses pens→bay teleport')
+const blocked = travelTo(s, 'camp:wire')
+assert(blocked.sceneId === 'camp:cages', 'illegal travel stays in the pens')
+assert(blocked.flash?.toLowerCase().includes('no road'), 'illegal travel explains the missing road')
 s = pick(s, 'jaxson')
 s = pick(s, 'inside')
 assert(s.items.wrench === 1 && s.flags.jaxsonInside, 'Oil-Tooth is the inside man — wrench for hotwire')
@@ -76,7 +139,7 @@ s = pick(s, 'inside')
 s = travelTo(s, 'camp:cages')
 s = pick(s, 'wrench-bar')
 s = pick(s, 'scrap')
-s = travelTo(s, 'camp:wire')
+s = walkTo(s, 'camp:wire')
 s = pick(s, 'kaelen')
 assert(sceneOf(s).speaker === 'Kaelen the Sifter', 'Kaelen card')
 assert(ids(s).includes('rumors'), 'rumor menu exists')
@@ -88,13 +151,13 @@ assert((s.items.vial_drop ?? 0) >= 1, 'scrap buys a Drop of Oasis Sap')
 s = pick(s, 'rumors')
 s = pick(s, 'relic')
 s = pick(s, 'take')
-s = travelTo(s, 'camp:wire')
+s = walkTo(s, 'camp:wire')
 s = pick(s, 'kaelen')
 s = pick(s, 'glint')
 s = pick(s, 'hunger-paid')
 assert(s.flags.hungerKnown, 'paid Glint intel')
-s = applyEffect(s, { sap: 3 })
-s = travelTo(s, 'camp:guard')
+s = applyEffect(s, { sap: 3, pressure: -20 })
+s = walkTo(s, 'camp:guard')
 s = pick(s, 'sabotage')
 s = pick(s, 'do')
 assert(s.flags.guardDown, 'sabotage guard station')

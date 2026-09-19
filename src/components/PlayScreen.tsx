@@ -9,12 +9,13 @@ import {
   isChoiceOn,
   sapLabel,
   sceneOf,
-  travelTo,
   visibleChoices,
 } from '../game/engine'
 import { effectPills, listedKit } from '../game/kit'
+import { isMawExit } from '../game/map'
 import type { GameState } from '../game/types'
 import { InventorySheet } from './InventorySheet'
+import { MapSheet } from './MapSheet'
 
 type Props = {
   state: GameState
@@ -28,10 +29,11 @@ export function PlayScreen({ state, onChange, onTitle }: Props) {
   const storyRef = useRef<HTMLDivElement>(null)
   const [draft, setDraft] = useState('')
   const [kit, setKit] = useState(false)
+  const [mapOpen, setMapOpen] = useState(false)
   const talky = scene.kind === 'talk' || scene.kind === 'place' || scene.kind === 'story'
   const showNav = !!hub && scene.kind !== 'crisis' && state.chapterId !== 'cache-run'
   const hook = hub?.hungerHook
-  const hookOn = hook && isChoiceOn(state, hook.show)
+  const hookOn = hook && isChoiceOn(state, hook.show) && isMawExit(state)
   const closing = !state.flags.chapter1Done && state.pressure >= 10 && !state.chapterId
   const chips = listedKit(state.items)
   const sapThin = state.sap <= 2
@@ -71,7 +73,7 @@ export function PlayScreen({ state, onChange, onTitle }: Props) {
             <em>{sapLabel(state.sap)}</em>
           </div>
           <button type="button" className="kit-btn" onClick={() => setKit(true)}>
-            Kit
+            Gear
             {chips.length ? <span className="kit-count">{chips.length}</span> : null}
           </button>
         </div>
@@ -81,10 +83,15 @@ export function PlayScreen({ state, onChange, onTitle }: Props) {
               {f} {state.heat[f]}
             </span>
           ))}
+          {showNav ? (
+            <button type="button" className="map-btn" onClick={() => setMapOpen(true)}>
+              Map
+            </button>
+          ) : null}
         </div>
-        <button type="button" className="kit-strip" onClick={() => setKit(true)} aria-label="Open kit">
+        <button type="button" className="kit-strip" onClick={() => setKit(true)} aria-label="Open gear">
           {chips.length === 0 ? (
-            <span className="kit-empty">Kit empty</span>
+            <span className="kit-empty">Gear empty</span>
           ) : (
             chips.map((c) => (
               <span key={c.id} className={`chip ${c.kind}`}>
@@ -126,23 +133,6 @@ export function PlayScreen({ state, onChange, onTitle }: Props) {
       </div>
 
       <div className="thumb">
-        {hub && showNav ? (
-          <div className="places" role="navigation" aria-label="Places">
-            {hub.places.map((p) => (
-              <button
-                type="button"
-                key={p.id}
-                className={p.sceneId === state.sceneId ? 'place on' : 'place'}
-                onClick={() => onChange(travelTo(state, p.sceneId))}
-                disabled={p.sceneId === state.sceneId}
-              >
-                {p.name}
-                {p.sceneId !== state.sceneId ? <small>−1 Sap</small> : null}
-              </button>
-            ))}
-          </div>
-        ) : null}
-
         {hub && hookOn && hook && showNav ? (
           <button
             type="button"
@@ -242,6 +232,7 @@ export function PlayScreen({ state, onChange, onTitle }: Props) {
       </div>
 
       {kit ? <InventorySheet state={state} onClose={() => setKit(false)} onChange={onChange} /> : null}
+      {mapOpen ? <MapSheet state={state} onClose={() => setMapOpen(false)} onChange={onChange} /> : null}
     </div>
   )
 }

@@ -17,7 +17,7 @@ export function DoorSelect({ onPick, onBack }: Props) {
           ← Title
         </button>
         <h2>Choose a start door</h2>
-        <p>Same Hunger. Different kit. No dice — only what you carry.</p>
+        <p>Same Hunger. Different gear. No dice — only what you carry.</p>
       </header>
       <div className="door-list">
         {order.map((id) => {
@@ -30,7 +30,7 @@ export function DoorSelect({ onPick, onBack }: Props) {
               <span className="door-stats">
                 Sap {d.sap} · Cartel {d.heat.cartel} · Seekers {d.heat.seekers} · Strays {d.heat.strays}
               </span>
-              <span className="door-kit">Kit: {kitLine(d.items)}</span>
+              <span className="door-kit">Gear: {kitLine(d.items)}</span>
               <span className="door-blurb">{d.blurb}</span>
             </button>
           )

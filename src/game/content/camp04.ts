@@ -122,6 +122,49 @@ Take it and you are a thief twice. Leave it and noon will take it anyway.`,
     ],
   },
   {
+    id: 'camp:vents',
+    hubId: 'camp04',
+    kind: 'place',
+    title: 'Steam Vents',
+    body: `West corridor. Pipes scream like a factory finding religion. The Great Bleed lives in these throats of iron.
+
+One door back to the Yard. The other coughs toward the Skiff Bay. You cannot see the pens from here. You cannot see the dunes. Steam is a country with two roads, and Map is how you pick one.
+
+Oil-Tooth named a west bolt at the Guard Station. That is a different throat. This one is only weather made of rust.`,
+    variants: [
+      {
+        if: { flag: 'guardDown' },
+        mode: 'append',
+        body: `The station's scream leaks into this corridor. Patrol is late. The pipes know.`,
+      },
+    ],
+    choices: [
+      {
+        id: 'listen',
+        label: 'Listen to the pipes',
+        tone: 'quiet',
+        effects: {
+          ticks: 1,
+          sap: -1,
+          flash:
+            'Amber in the joints. Cartel in the rhythm. No heading. The Wire is still a walk from the bay, and the pens are a walk through the Yard.',
+        },
+      },
+    ],
+    intents: [
+      {
+        tags: ['bay', 'skiff', 'strider', 'south'],
+        reply: 'The bay is the next throat south-east. Open Map. Steam is not a teleport.',
+        effects: { ticks: 1 },
+      },
+      {
+        tags: ['yard', 'vat', 'pens'],
+        reply: 'The Yard sits west-south of this scream. Map knows the road. The pens do not.',
+        effects: { ticks: 1 },
+      },
+    ],
+  },
+  {
     id: 'camp:cages',
     hubId: 'camp04',
     kind: 'place',
@@ -787,7 +830,7 @@ Oil-Tooth named the west steam-vent. The oversized wrench knows the language.`,
     id: 'camp:bay',
     hubId: 'camp04',
     kind: 'place',
-    title: 'Strider Bay',
+    title: 'Skiff Bay',
     body: `Ironclad Skiff-Striders stand like bad architecture — resin-sheen, too many joints, corporate inventory tags slapped on hulls Oil-Tooth has repaired until he could steal one in his sleep.
 
 If he is your inside man, he is already under a hull with a smirk the brass jaw cannot hide.`,

@@ -1,6 +1,7 @@
 import { DOORS, HUBS, getScene, resolveBody } from './content'
 import { applyDelta, check, clamp } from './logic'
 import { GLOBAL_INTENTS, matchIntent } from './intent'
+import { travelGate } from './map'
 import { writeSave } from './save'
 import type { DoorId, Effect, GameState, ItemId, Scene } from './types'
 
@@ -178,12 +179,24 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
 
 export function travelTo(state: GameState, sceneId: string): GameState {
   if (state.sceneId === sceneId) return state
+  const gate = travelGate(state, sceneId)
+  if (!gate.ok) {
+    return persist({ ...state, flash: gate.reason })
+  }
+  if (gate.sap <= 0) {
+    return applyEffect(state, { goto: sceneId })
+  }
   return applyEffect(state, {
     goto: sceneId,
-    sap: -1,
+    sap: -gate.sap,
     ticks: 1,
     pressure: 1,
-    flash: state.sap <= 2 ? 'The walk takes a Drop you do not have to spare.' : undefined,
+    flash:
+      state.sap <= 2 || state.sap <= gate.sap
+        ? 'The walk takes a Drop you do not have to spare.'
+        : gate.sap >= 2
+          ? 'The long way around. The ground charges you in Drops.'
+          : undefined,
   })
 }
 
@@ -246,4 +259,4 @@ export function sapLabel(n: number): string {
   return 'Full'
 }
 
-export { HUBS, DOORS, check, clamp }
+export { HUBS, DOORS, check, clamp, travelGate }

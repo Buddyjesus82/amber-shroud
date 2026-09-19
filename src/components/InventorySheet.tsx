@@ -11,10 +11,10 @@ type Props = {
 export function InventorySheet({ state, onClose, onChange }: Props) {
   const chips = listedKit(state.items)
   return (
-    <div className="sheet-backdrop" role="dialog" aria-label="Kit" onClick={onClose}>
+    <div className="sheet-backdrop" role="dialog" aria-label="Gear" onClick={onClose}>
       <div className="sheet" onClick={(e) => e.stopPropagation()}>
         <header className="sheet-head">
-          <h2>Kit</h2>
+          <h2>Gear</h2>
           <button type="button" className="text-link" onClick={onClose}>
             Close
           </button>

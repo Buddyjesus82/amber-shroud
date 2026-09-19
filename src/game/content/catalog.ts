@@ -176,8 +176,9 @@ export const HUBS: Record<string, HubDef> = {
     places: [
       { id: 'pens', name: 'Holding Pens', sceneId: 'camp:cages' },
       { id: 'yard', name: 'Bleed Yard', sceneId: 'camp:yard' },
+      { id: 'vents', name: 'Steam Vents', sceneId: 'camp:vents' },
       { id: 'guard', name: 'Guard Station', sceneId: 'camp:guard' },
-      { id: 'bay', name: 'Strider Bay', sceneId: 'camp:bay' },
+      { id: 'bay', name: 'Skiff Bay', sceneId: 'camp:bay' },
       { id: 'lean', name: "Oil-Tooth's Stall", sceneId: 'camp:lean' },
       { id: 'tower', name: 'Overseer', sceneId: 'camp:tower' },
       { id: 'wire', name: 'The Wire', sceneId: 'camp:wire' },
