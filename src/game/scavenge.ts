@@ -92,26 +92,34 @@ export function applyScavenge(state: GameState): GameState {
   if (!canScavenge(state)) {
     return {
       ...state,
+      sceneId: state.sceneId,
+      hubId: state.hubId,
       flash: 'Nothing here to pick. The road has already been picked clean — or this is not a roam.',
     }
   }
   if (scavengeCooldown(state)) {
     return {
       ...state,
+      sceneId: state.sceneId,
+      hubId: state.hubId,
       flash: 'This patch is already in your hands. Walk, wait, or try another stretch.',
     }
   }
+  const here = state.sceneId
+  const hub = state.hubId
   const loot = rollScavenge(state)
   let next = applyDelta(state, {
     add: loot.add,
     ticks: 1,
     pressure: 1,
-    flag: { [`scavenge:${state.sceneId}`]: state.ticks + 1, scavenged: true },
+    flag: { [`scavenge:${here}`]: state.ticks + 1, scavenged: true },
   })
   if (loot.add.vial_drop && (state.items.vial_empty ?? 0) > 0) {
     next = applyDelta(next, { remove: { vial_empty: 1 } })
   }
   next.flash = loot.flash
+  next.sceneId = here
+  next.hubId = hub
   return next
 }
 

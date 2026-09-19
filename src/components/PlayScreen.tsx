@@ -259,7 +259,7 @@ export function PlayScreen({ state, onChange, onTitle }: Props) {
             <input
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
-              placeholder="ask oil-tooth / scavenge / who is kaelen"
+              placeholder="sabotage vent pipes / scavenge / who is kaelen"
               enterKeyHint="go"
               autoComplete="off"
               aria-label="Do something"

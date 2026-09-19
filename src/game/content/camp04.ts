@@ -1,3 +1,4 @@
+import { TAKE_INSIDE_JOB } from '../campJob'
 import type { Scene } from '../types'
 
 export const campScenes: Scene[] = [
@@ -52,6 +53,21 @@ Overseer Valerius is the looming shadow. First major victory: get out from under
         sub: 'Kaelen the Sifter sells rumors. Not rides.',
         effects: { goto: 'camp:wire', ticks: 1 },
       },
+      {
+        id: 'job',
+        label: "Oil-Tooth's inside job is still open",
+        sub: 'Stall. Wrench. West steam-vent. Kaelen can wait, or come first.',
+        show: { flagUnset: 'jaxsonInside' },
+        effects: { goto: 'camp:lean', ticks: 1 },
+      },
+      {
+        id: 'station',
+        label: 'West steam-vent. Sabotage the guard station.',
+        sub: 'Oil-Tooth named the bolt.',
+        tone: 'hunger',
+        show: { all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] },
+        effects: { goto: 'camp:guard', ticks: 1 },
+      },
     ],
     intents: [
       {
@@ -69,6 +85,18 @@ Overseer Valerius is the looming shadow. First major victory: get out from under
         tags: ['kaelen', 'sifter', 'rumor', 'news', 'merchant', 'trade'],
         reply: 'Kaelen the Sifter works the Wire. Rumors. Drops. They do not hotwire Striders.',
         effects: { goto: 'camp:wire' },
+      },
+      {
+        tags: ['sabotage', 'inside', 'wrench', 'job'],
+        show: { flagUnset: 'jaxsonInside' },
+        reply: TAKE_INSIDE_JOB.flash ?? '',
+        effects: { ...TAKE_INSIDE_JOB, goto: 'camp:lean' },
+      },
+      {
+        tags: ['sabotage', 'guard', 'station', 'vent', 'bolt'],
+        show: { all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] },
+        reply: 'The job is the west steam-vent on the guard station. You walk it.',
+        effects: { goto: 'camp:guard', ticks: 1 },
       },
     ],
   },
@@ -168,6 +196,21 @@ Oil-Tooth named a west bolt at the Guard Station. That is a different throat. Th
             'You skim a Drop the pipes had not budgeted. Hands sticky. Heat ticks. Theft with a glass throat.',
         },
       },
+      {
+        id: 'job',
+        label: "Oil-Tooth's inside job is still open",
+        sub: 'This scream is weather. The west bolt is at the station.',
+        show: { flagUnset: 'jaxsonInside' },
+        effects: { goto: 'camp:lean', ticks: 1 },
+      },
+      {
+        id: 'station',
+        label: 'The west bolt. Guard station.',
+        sub: 'That is the job throat, not this weather.',
+        tone: 'hunger',
+        show: { all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] },
+        effects: { goto: 'camp:guard', ticks: 1 },
+      },
     ],
     intents: [
       {
@@ -179,6 +222,18 @@ Oil-Tooth named a west bolt at the Guard Station. That is a different throat. Th
         tags: ['yard', 'vat', 'pens'],
         reply: 'The Yard sits west-south of this scream. Map knows the road. The pens do not.',
         effects: { ticks: 1 },
+      },
+      {
+        tags: ['sabotage', 'inside', 'wrench', 'job'],
+        show: { flagUnset: 'jaxsonInside' },
+        reply: TAKE_INSIDE_JOB.flash ?? '',
+        effects: { ...TAKE_INSIDE_JOB, goto: 'camp:lean' },
+      },
+      {
+        tags: ['sabotage', 'guard', 'station', 'bolt'],
+        show: { all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] },
+        reply: 'The west bolt lives on the guard station, not in this corridor.',
+        effects: { goto: 'camp:guard', ticks: 1 },
       },
     ],
   },
@@ -200,6 +255,13 @@ Kaelen the Sifter is not here. Kaelen sells rumors at the Wire.`,
         label: 'Talk to Oil-Tooth in the next bunk',
         sub: 'Inside man. Hotwire. Not the rumor counter.',
         effects: { goto: 'camp:jaxson', ticks: 1 },
+      },
+      {
+        id: 'inside',
+        label: 'Take the inside job. Take the oversized wrench.',
+        sub: 'Sabotage the west steam-vent. He hotwires. Kaelen can still come first.',
+        show: { flagUnset: 'jaxsonInside' },
+        effects: { ...TAKE_INSIDE_JOB, goto: 'camp:cages' },
       },
       {
         id: 'bar',
@@ -266,6 +328,18 @@ Kaelen the Sifter is not here. Kaelen sells rumors at the Wire.`,
         reply: 'The bar complains, then agrees.',
         effects: { goto: 'camp:shiv', ticks: 1, sap: -1 },
       },
+      {
+        tags: ['sabotage', 'inside', 'wrench', 'job'],
+        show: { flagUnset: 'jaxsonInside' },
+        reply: TAKE_INSIDE_JOB.flash ?? '',
+        effects: { ...TAKE_INSIDE_JOB, goto: 'camp:cages' },
+      },
+      {
+        tags: ['sabotage', 'guard', 'station', 'vent', 'bolt'],
+        show: { all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] },
+        reply: 'West steam-vent. The wrench knows the walk.',
+        effects: { goto: 'camp:guard', ticks: 1 },
+      },
     ],
   },
   {
@@ -324,8 +398,16 @@ Lifetime labor: repairing Ironclad Skiff-Striders. He has skimmed Oasis Sap the 
     ],
     choices: [
       {
+        id: 'inside',
+        label: 'Take the inside job. Take the oversized wrench.',
+        sub: 'Sabotage the guard station. He hotwires. You can still see Kaelen first.',
+        show: { flagUnset: 'jaxsonInside' },
+        effects: { ...TAKE_INSIDE_JOB, goto: 'camp:lean' },
+      },
+      {
         id: 'talk',
-        label: 'Take the inside job',
+        label: 'Talk to Oil-Tooth',
+        sub: 'The pitch. Valerius. The ride.',
         effects: { goto: 'camp:jaxson', ticks: 1, pressure: 1 },
       },
       {
@@ -370,7 +452,20 @@ Lifetime labor: repairing Ironclad Skiff-Striders. He has skimmed Oasis Sap the 
     ],
     intents: [
       {
-        tags: ['hotwire', 'strider', 'sabotage', 'guard', 'escape', 'break'],
+        tags: ['hotwire', 'strider', 'inside', 'wrench', 'job'],
+        show: { flagUnset: 'jaxsonInside' },
+        reply: TAKE_INSIDE_JOB.flash ?? '',
+        effects: { ...TAKE_INSIDE_JOB, goto: 'camp:lean' },
+      },
+      {
+        tags: ['sabotage', 'guard', 'station', 'vent', 'bolt', 'escape', 'break'],
+        show: { all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] },
+        reply: 'The brass jaw grins. West steam-vent. Then the bay.',
+        effects: { goto: 'camp:guard', ticks: 1 },
+      },
+      {
+        tags: ['hotwire', 'strider', 'talk'],
+        show: { flag: 'jaxsonInside' },
         reply: 'The brass jaw grins. He has been waiting to spend this job.',
         effects: { goto: 'camp:jaxson', ticks: 1 },
       },
@@ -385,7 +480,7 @@ Lifetime labor: repairing Ironclad Skiff-Striders. He has skimmed Oasis Sap the 
         effects: { goto: 'camp:jaxson', ticks: 1 },
       },
       {
-        tags: ['talk', 'ask', 'speak'],
+        tags: ['ask', 'speak'],
         reply: 'He makes a space that is not quite hospitality.',
         effects: { goto: 'camp:jaxson', ticks: 1 },
       },
@@ -404,16 +499,9 @@ Great Bleed hits, you sabotage that station. I hotwire an Ironclad Skiff-Strider
       {
         id: 'inside',
         label: 'Take the inside job. Take the oversized wrench.',
-        sub: 'Sabotage the guard station. He hotwires.',
+        sub: 'Sabotage the guard station. He hotwires. Kaelen can still come first.',
         show: { flagUnset: 'jaxsonInside' },
-        effects: {
-          add: { wrench: 1 },
-          flag: { jaxsonInside: true, wrenchPath: true, jaxsonFavor: true },
-          ticks: 1,
-          goto: 'camp:lean',
-          flash:
-            'The oversized wrench is heavier than pride. "West steam-vent. Bleed-hour. I will be under the hull. Do not make me wait. Humor is a shield. It is not a plan."',
-        },
+        effects: { ...TAKE_INSIDE_JOB, goto: 'camp:lean' },
       },
       {
         id: 'have',
@@ -502,9 +590,16 @@ Great Bleed hits, you sabotage that station. I hotwire an Ironclad Skiff-Strider
     ],
     intents: [
       {
-        tags: ['hotwire', 'strider', 'sabotage', 'guard', 'inside', 'wrench'],
+        tags: ['hotwire', 'strider', 'inside', 'wrench', 'job'],
+        show: { flagUnset: 'jaxsonInside' },
+        reply: TAKE_INSIDE_JOB.flash ?? '',
+        effects: { ...TAKE_INSIDE_JOB, goto: 'camp:lean' },
+      },
+      {
+        tags: ['sabotage', 'guard', 'station', 'vent', 'bolt'],
+        show: { all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] },
         reply: 'The brass jaw grins. Guard station. Then the bay.',
-        effects: { goto: 'camp:jaxson' },
+        effects: { goto: 'camp:guard', ticks: 1 },
       },
       {
         tags: ['cache', 'kallik', 'maw', 'hunger', 'red', 'rumor', 'news'],
@@ -556,7 +651,7 @@ Great Bleed hits, you sabotage that station. I hotwire an Ironclad Skiff-Strider
         id: 'agree',
         label: 'Take the inside job first',
         show: { flagUnset: 'jaxsonInside' },
-        effects: { goto: 'camp:jaxson' },
+        effects: { ...TAKE_INSIDE_JOB, goto: 'camp:lean' },
       },
       {
         id: 'station',
@@ -779,6 +874,13 @@ The Great Bleed is a clock. Sabotage here, Oil-Tooth hotwires there. Valerius wi
     ],
     choices: [
       {
+        id: 'inside',
+        label: 'Take Oil-Tooth\'s inside job',
+        sub: 'The wrench. The west steam-vent. He still hotwires.',
+        show: { flagUnset: 'jaxsonInside' },
+        effects: { ...TAKE_INSIDE_JOB, goto: 'camp:guard' },
+      },
+      {
         id: 'sabotage',
         label: 'Sabotage the west steam-vent',
         sub: 'Oil-Tooth\'s inside job. Wrench on a bolt Valerius loves.',
@@ -793,8 +895,22 @@ The Great Bleed is a clock. Sabotage here, Oil-Tooth hotwires there. Valerius wi
           ticks: 1,
           sap: -1,
           flash:
-            'Security weaknesses are Oil-Tooth\'s religion. Without the inside man you are only a penniless laborer staring at steam.',
+            'Security weaknesses are Oil-Tooth\'s religion. Take the job — here, or back at the stall — and the west bolt opens.',
         },
+      },
+    ],
+    intents: [
+      {
+        tags: ['inside', 'wrench', 'job', 'oil', 'tooth'],
+        show: { flagUnset: 'jaxsonInside' },
+        reply: TAKE_INSIDE_JOB.flash ?? '',
+        effects: { ...TAKE_INSIDE_JOB, goto: 'camp:guard' },
+      },
+      {
+        tags: ['sabotage', 'vent', 'bolt', 'crack', 'bleed'],
+        show: { all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] },
+        reply: 'West steam-vent. The wrench knows the bolt.',
+        effects: { goto: 'camp:sabotage', ticks: 1, sap: -1 },
       },
     ],
   },

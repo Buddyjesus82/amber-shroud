@@ -2,8 +2,16 @@ import { DOORS, HUBS, ITEMS, getScene, resolveBody } from './content'
 import { applyDelta, check, clamp } from './logic'
 import { GLOBAL_INTENTS, matchIntent } from './intent'
 import { travelGate } from './map'
+import {
+  atGuardStation,
+  atKaelenInvoice,
+  campJobOpen,
+  TAKE_INSIDE_JOB,
+  wantsCampSabotage,
+  wantsDoSabotage,
+} from './campJob'
 import { markMetOnLeave, matchPersonQuery, personAtScene } from './people'
-import { canScavenge, canSkim, rollScavenge, scavengeCooldown } from './scavenge'
+import { applyScavenge, canScavenge, canSkim } from './scavenge'
 import { writeSave } from './save'
 import type { DoorId, Effect, EquipSlot, GameState, ItemId, Scene } from './types'
 
@@ -237,29 +245,13 @@ function verbLabel(tag: string): string {
 }
 
 export function scavenge(state: GameState): GameState {
-  if (!canScavenge(state)) {
-    return persist({
-      ...state,
-      flash: 'Nothing here to pick. The road has already been picked clean — or this is not a roam.',
-      updatedAt: Date.now(),
-    })
-  }
-  if (scavengeCooldown(state)) {
-    return persist({
-      ...state,
-      flash: 'This patch is already in your hands. Walk, wait, or try another stretch.',
-      updatedAt: Date.now(),
-    })
-  }
-  const loot = rollScavenge(state)
+  const pinned = { sceneId: state.sceneId, hubId: state.hubId, chapterId: state.chapterId }
+  const next = applyScavenge(state)
   return withVerb(
-    applyEffect(state, {
-      add: loot.add,
-      remove: loot.add.vial_drop && (state.items.vial_empty ?? 0) > 0 ? { vial_empty: 1 } : undefined,
-      ticks: 1,
-      pressure: 1,
-      flag: { [`scavenge:${state.sceneId}`]: state.ticks + 1, scavenged: true },
-      flash: loot.flash,
+    persist({
+      ...next,
+      ...pinned,
+      updatedAt: Date.now(),
     }),
     'scavenge',
   )
@@ -302,6 +294,54 @@ export function skim(state: GameState): GameState {
   )
 }
 
+function tryCampSabotageJob(state: GameState, text: string): GameState | null {
+  if (!campJobOpen(state) || !wantsCampSabotage(text)) return null
+  if (sceneOf(state).kind === 'crisis') return null
+  const stayWithKaelen = atKaelenInvoice(state)
+  const atStation = atGuardStation(state)
+  const going = wantsDoSabotage(text)
+  if (state.flags.guardDown) {
+    return withVerb(
+      persist({
+        ...state,
+        flash: 'The station is already coughing. Bay. Hull. That was the job.',
+        updatedAt: Date.now(),
+      }),
+      'sabotage',
+    )
+  }
+  if (!state.flags.jaxsonInside) {
+    let goto: string | undefined
+    if (stayWithKaelen) goto = undefined
+    else if (atStation && going) goto = 'camp:sabotage'
+    else if (going) goto = 'camp:guard'
+    else if (state.sceneId === 'camp:jaxson') goto = 'camp:lean'
+    return withVerb(applyEffect(state, { ...TAKE_INSIDE_JOB, goto }), 'sabotage')
+  }
+  if (stayWithKaelen && !going) {
+    return withVerb(
+      persist({
+        ...state,
+        flash: 'The wrench is already yours. West steam-vent. Guard station. Map when you want the bolt.',
+        updatedAt: Date.now(),
+      }),
+      'sabotage',
+    )
+  }
+  const dest = atStation ? 'camp:sabotage' : 'camp:guard'
+  return withVerb(
+    applyEffect(state, {
+      goto: dest,
+      ticks: 1,
+      flash:
+        dest === 'camp:sabotage'
+          ? 'West steam-vent. The wrench knows the bolt.'
+          : 'The job is the west steam-vent on the guard station. You walk it.',
+    }),
+    'sabotage',
+  )
+}
+
 export function interpret(state: GameState, text: string): GameState {
   const scene = sceneOf(state)
   const who = matchPersonQuery(text)
@@ -322,6 +362,9 @@ export function interpret(state: GameState, text: string): GameState {
       'who is',
     )
   }
+
+  const job = tryCampSabotageJob(state, text)
+  if (job) return job
 
   const local = matchIntent(text, scene.intents ?? [], state)
   if (local) {
