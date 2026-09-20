@@ -18,6 +18,8 @@ import {
 import { HEAT_FACTIONS, heatRiseLine } from '../game/heat'
 import { effectPills, listedKit } from '../game/kit'
 import { isMawExit } from '../game/map'
+import { encounterSpeaker } from '../game/encounter'
+import { isSybellaOverlay } from '../game/hunter'
 import type { Faction, GameState } from '../game/types'
 import { HeatExplainer, HeatTip } from './HeatGuide'
 import { InventorySheet } from './InventorySheet'
@@ -217,7 +219,15 @@ export function PlayScreen({ state, onChange, onTitle }: Props) {
       ) : null}
 
       <div className="story" ref={storyRef}>
-        {scene.speaker ? <p className="speaker">{scene.speaker}</p> : null}
+        {scene.speaker || isSybellaOverlay(state) || state.flags.encounterHere ? (
+          <p className="speaker">
+            {isSybellaOverlay(state)
+              ? 'Sybella'
+              : state.flags.encounterHere
+                ? encounterSpeaker(state)
+                : scene.speaker}
+          </p>
+        ) : null}
         {bodyOf(state)
           .split('\n\n')
           .map((p, i) => (

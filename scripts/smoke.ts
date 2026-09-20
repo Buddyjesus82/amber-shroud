@@ -22,6 +22,12 @@ function assert(cond: unknown, msg: string): asserts cond {
 }
 
 function pick(s: GameState, id: string) {
+  if (s.flags.encounterHere && id !== 'enc-fight' && id !== 'enc-skip' && id !== 'enc-cloak') {
+    s = applyEffect(s, { resolveEncounter: 'skip' })
+  }
+  if (s.flags.hunterHere && (s.hubId === 'redmaw' || s.sceneId.startsWith('maw:')) && !id.startsWith('sybella-')) {
+    s = applyEffect(s, { returnHunterFrom: true, unsetFlag: ['hunterHere', 'hunterFrom'] })
+  }
   const c = visibleChoices(s).find((x) => x.id === id)
   if (!c) {
     throw new Error(
@@ -58,7 +64,12 @@ function walkTo(s: GameState, destScene: string): GameState {
     const dest = i === path.length - 1 ? destScene : node.sceneId
     const cost = edgeSap(map, path[i - 1], nodeId) ?? 1
     if (cur.sap <= cost) cur = applyEffect(cur, { sap: cost + 1 - cur.sap })
+    if (cur.flags.encounterHere) cur = applyEffect(cur, { resolveEncounter: 'skip' })
+    if (cur.flags.hunterHere && (cur.hubId === 'redmaw' || cur.sceneId.startsWith('maw:'))) {
+      cur = applyEffect(cur, { returnHunterFrom: true, unsetFlag: ['hunterHere', 'hunterFrom'] })
+    }
     cur = travelTo(cur, dest)
+    if (cur.flags.encounterHere) cur = applyEffect(cur, { resolveEncounter: 'skip' })
     if (cur.sceneId !== dest && String(cur.sceneId).includes('hunter')) {
       cur = applyEffect(cur, { goto: dest, pressure: -4 })
     }
@@ -591,6 +602,130 @@ assert(s.sceneId === 'crisis:camp', 'empty sap on the Wire is camp crisis')
 assert(s.flags.crisisFrom === 'camp:wire', 'crisisFrom remembers the Wire')
 s = pick(s, 'up')
 assert(s.sceneId === 'camp:wire', 'crisis rescue returns to the Wire, not the stall or Yard')
+
+s = newGame('prisoner')
+s = applyEffect(s, { startChapter: 'cache-run', goto: 'ch1:leave', ticks: 1 })
+assert(!/carrying sap like a signal fire/i.test(bodyOf(s)), 'prisoner Cache Run title does not claim a signal fire at holding sap')
+assert(bodyOf(s).includes('Not a lantern') || bodyOf(s).includes('holding'), 'holding sap is named honestly')
+assert(bodyOf(s).includes('trail') && bodyOf(s).includes('climax'), 'three beats are the spine, not a Sap charge')
+s = newGame('outcast')
+s = applyEffect(s, { startChapter: 'cache-run', goto: 'ch1:leave', ticks: 1 })
+assert(!/carrying sap like a signal fire/i.test(bodyOf(s)), 'thin sap is not a signal fire')
+assert(bodyOf(s).includes('thin') || bodyOf(s).includes('wick'), 'thin sap says thin')
+s = newGame('vessel')
+s = applyEffect(s, { startChapter: 'cache-run', goto: 'ch1:leave', ticks: 1 })
+assert(bodyOf(s).includes('signal fire'), 'warm sap may read as a signal fire')
+s = newGame('prisoner')
+s = applyEffect(s, { startChapter: 'cache-run', goto: 'ch1:leave', sap: -8 })
+assert(bodyOf(s).includes('empty') || bodyOf(s).includes('not lit') || bodyOf(s).includes('dry'), 'empty sap does not claim you are lit')
+assert(!/carrying sap like a signal fire/i.test(bodyOf(s)), 'empty sap is not a signal fire')
+
+s = newGame('prisoner')
+s = pick(s, 'pens')
+s = interpret(s, 'hello')
+assert(s.flash && !s.flash.toLowerCase().includes('miss'), 'hello to Oil-Tooth is authored')
+s = interpret(s, 'trade')
+assert(s.flash?.toLowerCase().includes('kaelen'), 'Oil-Tooth points trade at Kaelen')
+s = interpret(s, 'threaten')
+assert(s.flash && !s.flash.toLowerCase().includes('miss'), 'threaten Oil-Tooth is authored')
+s = interpret(s, 'help')
+assert(s.flash && !s.flash.toLowerCase().includes('miss'), 'help Oil-Tooth is authored')
+s = applyEffect(s, { sap: 6, goto: 'camp:kaelen', enterHub: 'camp04' })
+s = interpret(s, 'help')
+assert(s.flash && !s.flash.toLowerCase().includes('miss'), 'help Kaelen is authored')
+s = interpret(s, 'threaten')
+assert(s.flash && !s.flash.toLowerCase().includes('miss'), 'threaten Kaelen is authored')
+s = interpret(s, 'who is zafir')
+assert(s.flash?.toLowerCase().includes('zafir') || s.flash?.toLowerCase().includes('heading'), 'who is Zafir returns a card')
+s = interpret(s, 'who is ossa')
+assert(s.flash?.toLowerCase().includes('stilt'), 'who is Ossa returns a card')
+s = interpret(s, 'who is sybella')
+assert(s.flash?.toLowerCase().includes('kohl') || s.flash?.toLowerCase().includes('skiff'), 'who is Sybella returns a card')
+
+s = newGame('prisoner')
+s = applyEffect(s, {
+  sap: 6,
+  enterHub: 'redmaw',
+  goto: 'maw:zafir',
+  add: { glints: 4, scrap: 2 },
+  flag: { zafirMet: true, chapter1Done: true },
+})
+assert(ids(s).includes('buy'), 'Zafir sells Drops')
+assert(ids(s).includes('hide'), 'Zafir sells Hound Hide')
+assert(ids(s).includes('baton'), 'Zafir sells a shock baton')
+assert(ids(s).includes('sell-scrap'), 'Zafir buys scrap')
+s = pick(s, 'buy')
+assert(s.sceneId === 'maw:zafir', 'buying a Drop keeps you at the stall')
+assert((s.items.vial_drop ?? 0) >= 1, 'Drop purchase lands')
+s = interpret(s, 'trade')
+assert(s.flash && !s.flash.toLowerCase().includes('miss'), 'Zafir trade talk is authored')
+s = pick(s, 'sell-scrap')
+assert((s.items.glints ?? 0) >= 3, 'selling scrap yields a Glint')
+
+s = newGame('prisoner')
+s = applyEffect(s, {
+  sap: 6,
+  enterHub: 'redmaw',
+  goto: 'maw:market',
+  flag: { chapter1Done: true },
+  pressure: 8,
+  ticks: 5,
+})
+assert(s.sceneId === 'maw:market', `Sybella interrupt stays on the market (got ${s.sceneId})`)
+assert(s.sceneId !== 'maw:sybella-shadow' && s.sceneId !== 'maw:rim', 'Sybella interrupt does not yank to Rim')
+assert(s.flags.hunterHere, 'Sybella interrupt is in-place like Valerius')
+assert(ids(s).includes('sybella-hold'), 'dismiss stays put')
+assert(ids(s).includes('sybella-smoke'), 'facing her is the travel choice')
+assert(bodyOf(s).includes('Tick') || bodyOf(s).includes('skiff-shadow') || bodyOf(s).includes('shadow'), 'her card plays on this ground')
+const syHeld = pick(s, 'sybella-hold')
+assert(syHeld.sceneId === 'maw:market', 'dismiss Sybella returns to the market')
+assert(!syHeld.flags.hunterHere, 'dismiss clears the overlay')
+s = newGame('prisoner')
+s = applyEffect(s, {
+  sap: 6,
+  enterHub: 'redmaw',
+  goto: 'maw:lip',
+  flag: { chapter1Done: true },
+  pressure: 8,
+  ticks: 5,
+})
+assert(s.sceneId === 'maw:lip', 'Sybella overlay can land on the Lip')
+s = pick(s, 'sybella-smoke')
+assert(s.sceneId === 'maw:sybella', 'choosing her smoke is the travel')
+
+s = newGame('prisoner')
+s = pick(s, 'pens')
+s = applyEffect(s, { sap: 6, goto: 'camp:yard', enterHub: 'camp04' })
+s = {
+  ...s,
+  flags: { ...s.flags, encounterHere: true, encounterKind: 'jackal', encounterAt: s.ticks },
+}
+assert(s.sceneId === 'camp:yard', 'forced encounter stays in the Yard')
+assert(ids(s).includes('enc-fight') && ids(s).includes('enc-skip'), 'fight or skip, no dice')
+const skipped = pick(s, 'enc-skip')
+assert(skipped.sceneId === 'camp:yard', 'skip stays put')
+assert(!skipped.flags.encounterHere, 'skip clears the encounter')
+assert((skipped.items.scrap ?? 0) === (s.items.scrap ?? 0), 'skip pays no loot')
+s = {
+  ...skipped,
+  flags: { ...skipped.flags, encounterHere: true, encounterKind: 'jackal', encounterAt: skipped.ticks },
+  items: { ...skipped.items, shiv: 1 },
+  equipped: { weapon: 'shiv' },
+  sap: 6,
+}
+const fought = pick(s, 'enc-fight')
+assert(fought.sceneId === 'camp:yard', 'fight stays in the Yard')
+assert(!fought.flags.encounterHere, 'fight clears the encounter')
+assert((fought.items.scrap ?? 0) >= 2, 'winning a jackal yields saleable scrap')
+s = newGame('prisoner')
+s = applyEffect(s, { startChapter: 'cache-run', goto: 'ch1:trail', sap: 4 })
+s = {
+  ...s,
+  flags: { ...s.flags, encounterHere: true, encounterKind: 'tick', encounterAt: s.ticks },
+}
+assert(ids(s).includes('enc-skip'), 'trail encounters can be declined')
+s = pick(s, 'enc-skip')
+assert(s.sceneId === 'ch1:trail', 'skipping a trail encounter keeps the trail')
 
 console.log('OK', {
   prisoner: Object.keys(DOORS.prisoner.items),

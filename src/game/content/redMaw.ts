@@ -54,7 +54,7 @@ This is harder country than your start door. Sap goes faster. Hunters know the r
     title: 'Bone Market',
     body: `A few stalls that pretend this is a town. Dried strider, spent Glints, maps that have killed people.
 
-Zafir is here if the cairn did not keep him. He looks like a man who sold the same heading twice and is waiting to see which buyer lives.`,
+Zafir is here if the cairn did not keep him. He looks like a man who sold the same heading twice and is waiting to see which buyer lives. The stall behind him is stocked: Drops, Hide, a pawned baton, a tray that buys scrap.`,
     choices: [
       {
         id: 'zafir',
@@ -82,7 +82,7 @@ Zafir is here if the cairn did not keep him. He looks like a man who sold the sa
     kind: 'talk',
     title: 'Zafir',
     speaker: 'Zafir',
-    body: `"You lived. How rude." Zafir's smile is thinner. "Sybella circled twice. Cache is still there. Chapter's not over just because you found a rim to stand on. When the Maw opens a stair, don't take my maps with you. They get embarrassed."`,
+    body: `"You lived. How rude." Zafir's smile is thinner. "Sybella circled twice. Cache is still there. This stall is a shop now — Drops, Hide, a baton somebody pawned, scrap for Glints — not only headings. When the Maw opens a stair, don't take my maps with you. They get embarrassed."`,
     variants: [
       {
         if: { flag: 'zafirSore' },
@@ -94,13 +94,67 @@ Zafir is here if the cairn did not keep him. He looks like a man who sold the sa
       {
         id: 'buy',
         label: 'Buy a Drop at Approach prices',
+        sub: 'Two Glints. Highway robbery. Repeatable.',
         show: { itemMin: ['glints', 2] },
         effects: {
           remove: { glints: 2 },
           add: { vial_drop: 1 },
           ticks: 1,
-          goto: 'maw:market',
-          flash: 'Highway robbery. You pay it. Living costs more here.',
+          goto: 'maw:zafir',
+          flash: 'Highway robbery. You pay it. The stall is still open. Living costs more here.',
+        },
+      },
+      {
+        id: 'hide',
+        label: 'Buy Hound Hide — three Glints',
+        sub: 'Armor · Hide 4. Maw specialty. Equip it in Gear.',
+        show: { all: [{ itemMin: ['glints', 3] }, { flagUnset: 'zafirSoldHide' }] },
+        effects: {
+          remove: { glints: 3 },
+          add: { hide_wrap: 1 },
+          flag: { zafirSoldHide: true },
+          ticks: 1,
+          goto: 'maw:zafir',
+          flash: '"Resin-jawed scrap from a Hound that lost. Wear it. The next glance slides. Heat does not."',
+        },
+      },
+      {
+        id: 'baton',
+        label: 'Buy a Shock Baton — four Glints',
+        sub: 'Weapon · Bite 4. Pawned Ironwood. Equip it in Gear.',
+        show: { all: [{ itemMin: ['glints', 4] }, { flagUnset: 'zafirSoldBaton' }] },
+        effects: {
+          remove: { glints: 4 },
+          add: { ironwood_baton: 1 },
+          flag: { zafirSoldBaton: true },
+          ticks: 1,
+          goto: 'maw:zafir',
+          flash: '"Still warm from a clerk who loved a ledger more than a throat. Swing it or it is only inventory."',
+        },
+      },
+      {
+        id: 'sell-scrap',
+        label: 'Sell two scrap for a Glint',
+        show: { itemMin: ['scrap', 2] },
+        effects: {
+          remove: { scrap: 2 },
+          add: { glints: 1 },
+          ticks: 1,
+          goto: 'maw:zafir',
+          flash: 'He weighs the wire like a language he still speaks. A Glint ticks into your palm.',
+        },
+      },
+      {
+        id: 'sell-scrip',
+        label: 'Pawn Cartel scrip for scrap',
+        show: { item: 'scrip' },
+        effects: {
+          remove: { scrip: 1 },
+          add: { scrap: 1 },
+          ticks: 1,
+          heat: { cartel: 1 },
+          goto: 'maw:zafir',
+          flash: '"Ironwood lullabies." He gives you scrap like a dare. Cartel Heat notices paper moving.',
         },
       },
       {
@@ -114,6 +168,42 @@ Zafir is here if the cairn did not keep him. He looks like a man who sold the sa
         },
       },
       { id: 'back', label: 'Leave his stall', tone: 'quiet', effects: { goto: 'maw:market' } },
+    ],
+    intents: [
+      {
+        tags: ['drop', 'vial', 'sap', 'buy'],
+        show: { itemMin: ['glints', 2] },
+        reply: 'Highway robbery. He counts two Glints. Glass kisses your kit.',
+        effects: { remove: { glints: 2 }, add: { vial_drop: 1 }, ticks: 1 },
+      },
+      {
+        tags: ['sell', 'scrap', 'glint'],
+        show: { itemMin: ['scrap', 2] },
+        reply: 'Two twists of scrap leave. A Glint arrives. Arithmetic he likes.',
+        effects: { remove: { scrap: 2 }, add: { glints: 1 }, ticks: 1 },
+      },
+      {
+        tags: ['hide', 'armor', 'cloak', 'hound'],
+        show: { all: [{ itemMin: ['glints', 3] }, { flagUnset: 'zafirSoldHide' }] },
+        reply: 'Hound Hide. Three Glints. Wear it or it is only a pelt.',
+        effects: {
+          remove: { glints: 3 },
+          add: { hide_wrap: 1 },
+          flag: { zafirSoldHide: true },
+          ticks: 1,
+        },
+      },
+      {
+        tags: ['baton', 'weapon', 'shock'],
+        show: { all: [{ itemMin: ['glints', 4] }, { flagUnset: 'zafirSoldBaton' }] },
+        reply: 'Ironwood issue. Bite 4. He does not ask who you plan to correct.',
+        effects: {
+          remove: { glints: 4 },
+          add: { ironwood_baton: 1 },
+          flag: { zafirSoldBaton: true },
+          ticks: 1,
+        },
+      },
     ],
   },
   {
@@ -302,14 +392,25 @@ She is here. Hunting. Reasonable.`,
 "Tick. Tick. The Maw does not wait on hub-roaming. Drink or be drunk."`,
     choices: [
       {
-        id: 'rim',
-        label: 'Back to the Rim',
-        effects: { goto: 'maw:rim', sap: -1, pressure: 1, ticks: 1 },
+        id: 'sybella-hold',
+        label: 'Stay. Let the shadow pass.',
+        tone: 'quiet',
+        effects: {
+          returnHunterFrom: true,
+          goto: 'maw:rim',
+          unsetFlag: ['hunterHere', 'hunterFrom'],
+          ticks: 1,
+          flash: 'The shadow lifts. You are still on the ground you were on — Rim only if that was already home.',
+        },
       },
       {
-        id: 'smoke',
+        id: 'sybella-smoke',
         label: 'Go to her smoke and face it',
-        effects: { goto: 'maw:sybella', ticks: 1 },
+        effects: {
+          goto: 'maw:sybella',
+          ticks: 1,
+          unsetFlag: ['hunterHere', 'hunterFrom'],
+        },
       },
     ],
   },

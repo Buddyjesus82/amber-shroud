@@ -1,7 +1,20 @@
-import type { Choice } from './types'
+import type { Choice, GameState } from './types'
 
 export function isWireSide(sceneId: string): boolean {
   return sceneId === 'camp:wire' || sceneId.startsWith('camp:kaelen') || sceneId === 'camp:relic'
+}
+
+export function isMawGround(sceneId: string): boolean {
+  return sceneId.startsWith('maw:') || sceneId === 'ch2:stub'
+}
+
+export function isSybellaOverlay(state: Pick<GameState, 'flags' | 'sceneId' | 'hubId'>): boolean {
+  return (
+    !!state.flags.hunterHere &&
+    (state.hubId === 'redmaw' || isMawGround(state.sceneId)) &&
+    state.sceneId !== 'maw:sybella' &&
+    state.sceneId !== 'maw:sybella-shadow'
+  )
 }
 
 export const WIRE_HUNTER_APPEND = `Whistles reach the Wire. Valerius brought a Yard sweep with him — boots, baton, a Hound that is not for dogs. The place line is still the Wire. You are not in the Yard unless you run the scrape-line.`
@@ -81,6 +94,50 @@ export function wireHunterChoices(): Choice[] {
         goto: 'ch1:leave',
         heat: { cartel: 2 },
         unsetFlag: ['hunterHere', 'hunterFrom'],
+      },
+    },
+  ]
+}
+
+export const SYBELLA_SHADOW_APPEND = `The skiff-shadow slides over this ground without moving you. Sybella's voice, almost kind:
+
+"Tick. Tick. The Maw does not wait on hub-roaming. Drink or be drunk."
+
+You are still here. She is not a teleport. Face her smoke only if you walk it.`
+
+export function sybellaShadowChoices(): Choice[] {
+  return [
+    {
+      id: 'sybella-hold',
+      label: 'Stay. Let the shadow pass.',
+      tone: 'quiet',
+      effects: {
+        returnHunterFrom: true,
+        unsetFlag: ['hunterHere', 'hunterFrom'],
+        ticks: 1,
+        flash: 'The shadow lifts. You did not walk. She still knows the hour.',
+      },
+    },
+    {
+      id: 'sybella-smoke',
+      label: 'Go to her smoke and face it',
+      effects: {
+        goto: 'maw:sybella',
+        ticks: 1,
+        unsetFlag: ['hunterHere', 'hunterFrom'],
+        flash: 'You spend the walk. The stall, the lip, the rim — whichever you left — waits without you.',
+      },
+    },
+    {
+      id: 'sybella-cloak',
+      label: 'Let the cloak eat the glance',
+      sub: 'Armor on. Stay where you are.',
+      show: { slot: 'armor' },
+      effects: {
+        returnHunterFrom: true,
+        unsetFlag: ['hunterHere', 'hunterFrom'],
+        ticks: 1,
+        flash: 'Dust-cloth or hide. The skiff-shadow slides. You never left this ground.',
       },
     },
   ]
