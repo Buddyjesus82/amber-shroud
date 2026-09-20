@@ -89,6 +89,8 @@ export type Effect = {
   flag?: FlagMap
   unsetFlag?: string[]
   goto?: string
+  /** Map-gated walk. Uses travelGate / travelTo — never a silent hop. */
+  travel?: string
   startChapter?: string
   enterHub?: string
   pressure?: number

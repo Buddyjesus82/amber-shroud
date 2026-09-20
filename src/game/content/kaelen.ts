@@ -142,15 +142,23 @@ Oil-Tooth remains your inside man. I remain the counter."`,
       {
         id: 'relic',
         label: 'Buy a side-trouble lead — relics Valerius hunts',
-        sub: 'One scrap. Opens trouble in the Yard.',
+        sub: 'One scrap. A heading. The Yard is still a walk.',
         show: { all: [{ item: 'scrap' }, { flagUnset: 'relicRumor' }] },
         effects: {
           remove: { scrap: 1 },
           flag: { relicRumor: true, kaelenKnown: true },
           ticks: 1,
-          goto: 'camp:relic',
           flash:
-            '"Unpermitted relic hoard. Yard seam, third vat\'s shadow. Valerius hunts Sap thieves and relic hoarders. That is his joy. Cost is yours."',
+            '"Unpermitted relic hoard. Yard seam, third vat\'s shadow. Valerius hunts Sap thieves and relic hoarders. That is his joy. I sold a heading. I do not sell a door. Map the Yard."',
+        },
+      },
+      {
+        id: 'relic-walk',
+        label: 'Walk the Yard for the hoard',
+        sub: 'Connected roads only. The Wire is not a door into the vats.',
+        show: { all: [{ flag: 'relicRumor' }, { flagUnset: 'relicTaken' }, { flagUnset: 'relicSeen' }] },
+        effects: {
+          travel: 'camp:yard',
         },
       },
       {
@@ -220,7 +228,7 @@ Oil-Tooth remains your inside man. I remain the counter."`,
     title: 'Unpermitted Hoard',
     body: `Kaelen's lead is a crate in vat-shadow, tagged with a clerk mark that is not a permit. Relics. Spent amber. Things Valerius calls unpermitted because he has not finished hurting the person who held them.
 
-This is side trouble. Not the Hunger. Not a Strider. A rumor you paid for.`,
+You walked here. The Wire did not dump you. This is side trouble. Not the Hunger. Not a Strider. A rumor you paid for, then spent roads to touch.`,
     choices: [
       {
         id: 'take',
@@ -234,7 +242,7 @@ This is side trouble. Not the Hunger. Not a Strider. A rumor you paid for.`,
           ticks: 1,
           goto: 'camp:yard',
           flash:
-            'Profit. Also a smell Valerius is trained to love. He hunts Sap thieves and unpermitted relic hoarders. You have volunteered.',
+            'Profit. Also a smell Valerius is trained to love. He hunts Sap thieves and unpermitted relic hoarders. You have volunteered. You are still in the Yard. The Wire is a walk.',
         },
       },
       {
@@ -245,7 +253,7 @@ This is side trouble. Not the Hunger. Not a Strider. A rumor you paid for.`,
           flag: { relicSeen: true },
           goto: 'camp:yard',
           ticks: 1,
-          flash: 'You paid for a door you did not open. Kaelen would call that a lesson. They would still charge for the next one.',
+          flash: 'You paid for a door you did not open. You are still in the Yard. Kaelen would call that a lesson. They would still charge for the next one.',
         },
       },
     ],
@@ -350,16 +358,24 @@ Dusk on the Spine. Same pack. Same gloves. Less wire, more dust. "You're the emp
       {
         id: 'hound',
         label: 'Buy side trouble — Hound on the east wash',
-        sub: 'One scrap.',
+        sub: 'One scrap. A heading. The wash is still a walk.',
         show: { all: [{ item: 'scrap' }, { flagUnset: 'kaelenHoundRumor' }] },
         effects: {
           remove: { scrap: 1 },
           flag: { kaelenHoundRumor: true, kaelenKnown: true },
           heat: { cartel: 1 },
           ticks: 1,
-          goto: 'spine:hound',
           flash:
-            '"Valerius. Shard-Hound. He hunts Sap thieves and unpermitted relic hoarders even out here. You paid to know he is close. Congratulations."',
+            '"Valerius. Shard-Hound. He hunts Sap thieves and unpermitted relic hoarders even out here. You paid to know he is close. Congratulations. I sold a heading. Map the wash."',
+        },
+      },
+      {
+        id: 'hound-walk',
+        label: 'Walk the east wash for the Hound',
+        sub: 'Connected roads. Kaelen does not teleport you.',
+        show: { flag: 'kaelenHoundRumor' },
+        effects: {
+          travel: 'spine:hound',
         },
       },
       {

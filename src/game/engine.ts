@@ -186,6 +186,13 @@ function resolveDest(state: GameState, fx: Effect): string | undefined {
 }
 
 export function applyEffect(state: GameState, fx: Effect): GameState {
+  if (fx.travel) {
+    const rest = { ...fx }
+    delete rest.travel
+    delete rest.goto
+    const paid = applyEffect(state, rest)
+    return travelTo(paid, fx.travel)
+  }
   const dest = resolveDest(state, fx)
   let next = applyDelta(state, fx)
   next.flash = fx.flash

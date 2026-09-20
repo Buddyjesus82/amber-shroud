@@ -291,7 +291,32 @@ assert((s.items.vial_drop ?? 0) >= 1, 'scrap buys a Drop of Oasis Sap')
 s = pick(s, 'shop-back')
 s = pick(s, 'rumors')
 s = pick(s, 'relic')
+assert(
+  s.sceneId === 'camp:kaelen-rumors' || s.sceneId === 'camp:kaelen' || s.sceneId === 'camp:wire',
+  `relic rumor stays on the Wire (got ${s.sceneId})`,
+)
+assert(s.flags.relicRumor, 'paid scrap for the Valerius relic heading')
+assert(s.sceneId !== 'camp:yard' && s.sceneId !== 'camp:relic', 'buying the relic rumor does not dump you in the Yard')
+assert(!canTravelTo(s, 'camp:yard'), 'Map still refuses Wire→Yard')
+{
+  const blockedYard = travelTo(s, 'camp:yard')
+  assert(blockedYard.sceneId === s.sceneId, 'travelGate keeps you on the Wire after the relic lead')
+  assert(blockedYard.flash?.toLowerCase().includes('no road'), 'Wire→Yard explains the missing road')
+}
+assert(ids(s).includes('relic-walk'), 'Walk the Yard is an explicit gated choice')
+{
+  const tried = pick(s, 'relic-walk')
+  assert(tried.sceneId === s.sceneId, 'walk-the-Yard uses the gate — no silent teleport')
+  s = tried
+}
+s = walkTo(s, 'camp:yard')
+assert(s.sceneId === 'camp:yard', 'Yard for the hoard is Map-connected travel')
+assert(ids(s).includes('relic'), 'hoard is a Yard choice after the rumor')
+s = pick(s, 'relic')
+assert(s.sceneId === 'camp:relic', 'hoard beat is local to the Yard')
 s = pick(s, 'take')
+assert(s.flags.relicTaken, 'looting the hoard')
+assert(s.sceneId === 'camp:yard', 'leaving the hoard stays in the Yard')
 s = walkTo(s, 'camp:wire')
 s = pick(s, 'kaelen')
 s = pick(s, 'glint')
@@ -1198,7 +1223,7 @@ assert(html.includes('favicon.png?v=13'), 'tab favicon is the cover PNG')
 assert(html.includes('icon-192.png?v=13') && html.includes('icon-512.png?v=13'), 'html ships cache-busted cover PNGs')
 assert(html.includes('apple-touch.png?v=13'), 'apple-touch-icon is cache-busted cover crop')
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v14'"), 'SW bumped so Chrome drops the crushed shop rows')
+assert(sw.includes("CACHE = 'amber-shroud-v15'"), 'SW bumped so the relic rumor stays on the Wire')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
 try {
   readFileSync(new URL('../public/favicon.svg', import.meta.url))

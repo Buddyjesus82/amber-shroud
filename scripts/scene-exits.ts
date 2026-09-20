@@ -17,7 +17,8 @@ import type { DoorId, GameState } from '../src/game/types.ts'
 
 const END = new Set(['ch1:land', 'maw:rim'])
 
-function destOf(goto: string | undefined) {
+function destOf(goto: string | undefined, travel?: string) {
+  if (travel) return `travel:${travel}`
   return goto ?? '(stay)'
 }
 
@@ -32,7 +33,7 @@ function printMap() {
       ]
         .filter(Boolean)
         .join(',')
-      return `${c.id}→${destOf(c.effects.goto)}${extra ? `[${extra}]` : ''}`
+      return `${c.id}→${destOf(c.effects.goto, c.effects.travel)}${extra ? `[${extra}]` : ''}`
     })
     console.log(`${scene.id}: ${bits.join(' | ') || '(no choices)'}`)
   }
@@ -43,7 +44,7 @@ function missingTargets(): string[] {
   const bad: string[] = []
   for (const scene of ALL_SCENES) {
     for (const c of scene.choices) {
-      const g = c.effects.goto
+      const g = c.effects.goto ?? c.effects.travel
       if (g && !ids.has(g) && getScene(g).id === 'missing') bad.push(`${scene.id}:${c.id}→${g}`)
     }
     for (const i of scene.intents ?? []) {

@@ -1,7 +1,7 @@
 import type { Choice, GameState } from './types'
 
 export function isWireSide(sceneId: string): boolean {
-  return sceneId === 'camp:wire' || sceneId.startsWith('camp:kaelen') || sceneId === 'camp:relic'
+  return sceneId === 'camp:wire' || sceneId.startsWith('camp:kaelen')
 }
 
 export function isMawGround(sceneId: string): boolean {

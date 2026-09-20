@@ -25,8 +25,20 @@ Overseer Valerius is the looming shadow. First major victory: get out from under
         mode: 'append',
         body: `Valerius has walked the Yard twice this hour. The camp is closing like a fist.`,
       },
+      {
+        if: { all: [{ flag: 'relicRumor' }, { flagUnset: 'relicTaken' }, { flagUnset: 'relicSeen' }] },
+        mode: 'append',
+        body: `Kaelen sold you a seam: third vat's shadow. Unpermitted relics. The hoard is here, not at the Wire.`,
+      },
     ],
     choices: [
+      {
+        id: 'relic',
+        label: "Hunt Kaelen's vat-shadow hoard",
+        sub: 'Third vat. You walked here.',
+        show: { all: [{ flag: 'relicRumor' }, { flagUnset: 'relicTaken' }, { flagUnset: 'relicSeen' }] },
+        effects: { goto: 'camp:relic', ticks: 1 },
+      },
       {
         id: 'vats',
         label: 'Search the cooling vats',
@@ -71,6 +83,12 @@ Overseer Valerius is the looming shadow. First major victory: get out from under
     ],
     intents: [
       {
+        tags: ['relic', 'hoard', 'kaelen', 'vat-shadow', 'unpermitted'],
+        show: { all: [{ flag: 'relicRumor' }, { flagUnset: 'relicTaken' }, { flagUnset: 'relicSeen' }] },
+        reply: 'Third vat. Clerk mark that is not a permit. You walked the roads for this.',
+        effects: { goto: 'camp:relic', ticks: 1 },
+      },
+      {
         tags: ['steal', 'take', 'grab', 'drip', 'vat', 'sap'],
         show: { flagUnset: 'vatDripTaken' },
         reply: 'You angle toward the quiet vat. Hands remember how to be guilty.',
@@ -108,7 +126,21 @@ Overseer Valerius is the looming shadow. First major victory: get out from under
     body: `The third vat leaks at a bolt the Cartel has not budgeted to replace. A Drop hangs there like a gold tooth.
 
 Take it and you are a thief twice. Leave it and noon will take it anyway.`,
+    variants: [
+      {
+        if: { all: [{ flag: 'relicRumor' }, { flagUnset: 'relicTaken' }, { flagUnset: 'relicSeen' }] },
+        mode: 'append',
+        body: `Kaelen's clerk-mark crate sits in this same shadow. The hoard is a different invoice from the drip.`,
+      },
+    ],
     choices: [
+      {
+        id: 'relic',
+        label: "Hunt Kaelen's vat-shadow hoard",
+        sub: 'The crate, not the drip.',
+        show: { all: [{ flag: 'relicRumor' }, { flagUnset: 'relicTaken' }, { flagUnset: 'relicSeen' }] },
+        effects: { goto: 'camp:relic', ticks: 1 },
+      },
       {
         id: 'take',
         label: 'Pocket the Drop',

@@ -49,7 +49,7 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
       'camp:wire': 'wire',
       'camp:kaelen': 'wire',
       'camp:kaelen-rumors': 'wire',
-      'camp:relic': 'wire',
+      'camp:relic': 'yard',
       'camp:hunter': 'yard',
       'camp:forced': 'yard',
     },
