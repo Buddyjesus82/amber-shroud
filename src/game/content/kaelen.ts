@@ -361,6 +361,19 @@ Dusk on the Spine. Same pack. Same gloves. Less wire, more dust. "You're the emp
         },
       },
       {
+        id: 'cloak-scrap',
+        label: 'Buy a Dust Cloak — two scrap',
+        show: { all: [{ itemMin: ['scrap', 2] }, { flagUnset: 'kaelenSoldCloak' }] },
+        effects: {
+          remove: { scrap: 2 },
+          add: { dust_cloak: 1 },
+          flag: { kaelenKnown: true, kaelenSoldCloak: true },
+          ticks: 1,
+          goto: 'spine:kaelen',
+          flash: '"Scrap for a hide. Arithmetic. Spine-prices are Wire-prices."',
+        },
+      },
+      {
         id: 'rumors',
         label: 'Ask for rumors. News.',
         effects: { goto: 'spine:kaelen-rumors', ticks: 1, flag: { kaelenKnown: true } },

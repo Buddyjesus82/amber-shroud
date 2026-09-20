@@ -1,3 +1,4 @@
+import { personAtScene, type PersonId } from './people'
 import type { IntentRule } from './types'
 
 const TALK = ['ask', 'talk', 'hello', 'hi', 'hey', 'say', 'tell', 'speak', 'greet']
@@ -280,13 +281,27 @@ function match(sceneId: string, tests: (string | ((id: string) => boolean))[]): 
   return tests.some((t) => (typeof t === 'string' ? sceneId === t || sceneId.startsWith(t) : t(sceneId)))
 }
 
+const BY_PERSON: Record<PersonId, IntentRule[]> = {
+  oiltooth,
+  kaelen,
+  valerius,
+  silas,
+  zafir,
+  ossa,
+  sybella,
+  thalia,
+  oram,
+}
+
 export function talkIntentsFor(sceneId: string): IntentRule[] {
+  const here = personAtScene(sceneId)
+  if (here) return BY_PERSON[here.id]
   if (match(sceneId, ['camp:jaxson', 'camp:lean', 'camp:bay', 'camp:cages'])) return oiltooth
-  if (match(sceneId, ['camp:kaelen', 'spine:kaelen'])) return kaelen
+  if (match(sceneId, ['camp:kaelen', 'spine:kaelen', 'camp:wire', 'spine:well'])) return kaelen
   if (match(sceneId, ['camp:valerius', 'camp:tower', 'camp:hunter', 'spine:valerius', 'spine:hound', 'spine:hunter'])) {
     return valerius
   }
-  if (match(sceneId, ['spine:silas', 'spine:shade', 'spine:tip'])) return silas
+  if (match(sceneId, ['spine:silas', 'spine:shade', 'spine:tip', 'spine:ridge'])) return silas
   if (match(sceneId, ['maw:zafir', 'ch1:zafir', 'maw:market'])) return zafir
   if (match(sceneId, ['maw:ossa', 'maw:stilt', 'ch1:ossa'])) return ossa
   if (match(sceneId, ['maw:sybella', 'maw:smoke', 'ch1:sybella'])) return sybella
