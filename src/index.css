@@ -402,6 +402,14 @@ h2 {
   gap: 0.5rem;
 }
 
+.vitals {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+  min-width: 0;
+}
+
 .brand {
   background: none;
   border: 0;
@@ -481,6 +489,14 @@ h2 {
 
 .sap.thin .pips i.on {
   background: linear-gradient(180deg, #f4a15a, #c4451a);
+}
+
+.hp .pips i.on {
+  background: linear-gradient(180deg, #e07a6a, #9a2f28);
+}
+
+.hp em {
+  color: #d9a39a;
 }
 
 .verb-hint {

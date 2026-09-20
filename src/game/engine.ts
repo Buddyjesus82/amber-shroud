@@ -21,8 +21,10 @@ import {
 } from './hunter'
 import {
   canEncounter,
-  encounterAppend,
+  encounterCard,
   encounterChoices,
+  enemyHealth,
+  HEALTH_MAX,
   pickEncounterKind,
   resolveEncounter,
   wantsEncounterFight,
@@ -41,6 +43,8 @@ export function newGame(door: DoorId): GameState {
     epithet: d.epithet,
     sap: d.sap,
     sapMax: 8,
+    health: HEALTH_MAX,
+    healthMax: HEALTH_MAX,
     heat: { ...d.heat },
     items: { ...d.items },
     flags: { ...d.flags },
@@ -78,7 +82,7 @@ export function bodyOf(state: GameState): string {
     return `${resolved}\n\n${SYBELLA_SHADOW_APPEND}`
   }
   if (state.flags.encounterHere) {
-    return `${resolved}\n\n${encounterAppend(state)}`
+    return encounterCard(state)
   }
   return resolved
 }
@@ -233,6 +237,8 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
       const flags = { ...next.flags }
       delete flags.encounterHere
       delete flags.encounterKind
+      delete flags.encounterHp
+      delete flags.encounterClash
       next.flags = flags
     }
   }
@@ -281,12 +287,16 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     getScene(next.sceneId).kind !== 'crisis' &&
     canEncounter(next)
   ) {
+    const kind = pickEncounterKind(next)
+    next.flash = undefined
     next.flags = {
       ...next.flags,
       encounterHere: true,
-      encounterKind: pickEncounterKind(next),
+      encounterKind: kind,
       encounterAt: next.ticks,
+      encounterHp: enemyHealth(kind),
     }
+    delete next.flags.encounterClash
   }
 
   if (arrived.onEnter && next.sceneId === arrived.id && state.sceneId !== arrived.id) {
@@ -587,6 +597,8 @@ export function sapLabel(n: number): string {
   if (n <= 6) return 'Warm'
   return 'Full'
 }
+
+export { healthLabel } from './encounter'
 
 export function equipItem(state: GameState, id: ItemId): GameState {
   const def = ITEMS[id]

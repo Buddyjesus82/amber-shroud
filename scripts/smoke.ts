@@ -714,25 +714,86 @@ s = pick(s, 'pens')
 s = applyEffect(s, { sap: 6, goto: 'camp:yard', enterHub: 'camp04' })
 s = {
   ...s,
-  flags: { ...s.flags, encounterHere: true, encounterKind: 'jackal', encounterAt: s.ticks },
+  flags: { ...s.flags, encounterHere: true, encounterKind: 'jackal', encounterAt: s.ticks, encounterHp: 1 },
 }
 assert(s.sceneId === 'camp:yard', 'forced encounter stays in the Yard')
 assert(ids(s).includes('enc-fight') && ids(s).includes('enc-skip'), 'fight or skip, no dice')
+assert(!bodyOf(s).includes('cooked resin'), 'encounter card does not bleed Yard prose')
+assert(/Bite has to beat Hide/i.test(bodyOf(s)), 'first encounter teaches Bite/Hide/Health')
 const skipped = pick(s, 'enc-skip')
 assert(skipped.sceneId === 'camp:yard', 'skip stays put')
 assert(!skipped.flags.encounterHere, 'skip clears the encounter')
 assert((skipped.items.scrap ?? 0) === (s.items.scrap ?? 0), 'skip pays no loot')
+assert(skipped.flags.fightTaught, 'seeing the first card counts as taught')
 s = {
   ...skipped,
-  flags: { ...skipped.flags, encounterHere: true, encounterKind: 'jackal', encounterAt: skipped.ticks },
+  flags: { ...skipped.flags, encounterHere: true, encounterKind: 'jackal', encounterAt: skipped.ticks, encounterHp: 1 },
   items: { ...skipped.items, shiv: 1 },
   equipped: { weapon: 'shiv' },
   sap: 6,
+  health: 6,
+  healthMax: 6,
 }
+assert(!/Bite has to beat Hide/i.test(bodyOf(s)), 'later fights skip the lecture')
+assert(bodyOf(s).includes('You Bite'), 'compact card still shows compares')
 const fought = pick(s, 'enc-fight')
 assert(fought.sceneId === 'camp:yard', 'fight stays in the Yard')
-assert(!fought.flags.encounterHere, 'fight clears the encounter')
+assert(!fought.flags.encounterHere, 'dropping them clears the encounter')
 assert((fought.items.scrap ?? 0) >= 2, 'winning a jackal yields saleable scrap')
+assert(fought.health < 6, 'Health takes the incoming hit, not Sap')
+assert(fought.sap === 6, 'Sap is unchanged by a win')
+assert(/You Bite 2 vs their Hide 1/.test(fought.flash ?? ''), 'fight result shows your compare line')
+assert(/Their Bite 2 vs your Hide 0/.test(fought.flash ?? ''), 'fight result shows their compare line')
+
+s = newGame('vessel')
+s = pick(s, 'keep')
+s = applyEffect(s, { goto: 'thresh:paddock', enterHub: 'threshold' })
+s = {
+  ...s,
+  flags: { ...s.flags, encounterHere: true, encounterKind: 'jackal', encounterAt: s.ticks, encounterHp: 1 },
+}
+assert(!/bad architecture/i.test(bodyOf(s)), 'Vessel paddock fight does not bleed Oram/strider prose')
+assert(!/Oram/i.test(bodyOf(s)), 'Vessel paddock encounter card has no Oram')
+assert(/Dust-jackal|dust-jackal/i.test(bodyOf(s)), 'paddock card is the enemy')
+
+s = newGame('vessel')
+s = pick(s, 'keep')
+const beforeGlints = s.items.glints ?? 0
+s = {
+  ...s,
+  flags: { ...s.flags, encounterHere: true, encounterKind: 'pup', encounterAt: s.ticks, encounterHp: 2 },
+  health: 6,
+  healthMax: 6,
+}
+assert(/You Bite 2 vs their Hide 2/.test(bodyOf(s)), 'Vessel dagger vs pup Hide is on the card')
+const loss = pick(s, 'enc-fight')
+assert((loss.items.glints ?? 0) === beforeGlints, 'lose compare does not pay Glints')
+assert((loss.items.scrap ?? 0) === (s.items.scrap ?? 0), 'lose compare does not pay scrap')
+assert(loss.health === 3, 'Shard-pup Bite 4 vs Hide 1 deals 3 Health')
+assert(loss.flags.encounterHere, 'they still stand after a scratch')
+assert(/You Bite 2 vs their Hide 2 → 0/.test(bodyOf(loss)), 'Fight body is the compare, not a prose wall')
+assert(/Their Bite 4 vs your Hide 1 → 3/.test(bodyOf(loss)), 'incoming compare is on the card')
+const drop = pick(loss, 'enc-fight')
+assert(!drop.flags.encounterHere, 'dropping to 0 Health ends the fight')
+assert(drop.health === 1, 'empty Health is a stagger, not a lock')
+assert((drop.items.glints ?? 0) === beforeGlints, 'a clear loss still pays no win loot')
+
+for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
+  let g = newGame(door)
+  assert(g.health === 6 && g.healthMax === 6, `${door} starts with full Health`)
+  g = {
+    ...g,
+    flags: { ...g.flags, encounterHere: true, encounterKind: 'jackal', encounterHp: 1, fightTaught: true },
+    equipped: { weapon: 'shiv', armor: 'dust_cloak' },
+    items: { ...g.items, shiv: 1, dust_cloak: 1 },
+    health: 6,
+    healthMax: 6,
+  }
+  const won = pick(g, 'enc-fight')
+  assert((won.items.scrap ?? 0) >= (g.items.scrap ?? 0) + 2, `${door} jackal drop pays scrap`)
+  assert(!won.flags.encounterHere, `${door} win clears the interrupt`)
+}
+
 s = newGame('prisoner')
 s = applyEffect(s, { startChapter: 'cache-run', goto: 'ch1:trail', sap: 4 })
 s = {

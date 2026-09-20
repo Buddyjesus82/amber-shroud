@@ -47,6 +47,10 @@ export function applyDelta(s: GameState, fx: Effect): GameState {
 
   if (fx.flash !== undefined) next.flash = fx.flash
   if (fx.sap) next.sap = clamp(next.sap + fx.sap, 0, next.sapMax)
+  if (fx.health) {
+    const cap = next.healthMax || next.sapMax
+    next.health = clamp((next.health ?? cap) + fx.health, 0, cap)
+  }
   if (fx.heat) {
     ;(Object.keys(fx.heat) as (keyof typeof fx.heat)[]).forEach((k) => {
       const d = fx.heat?.[k]
