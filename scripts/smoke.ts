@@ -1186,11 +1186,26 @@ function pngSize(rel: string) {
 assert(pngSize('../public/icons/icon-192.png').w === 192 && pngSize('../public/icons/icon-192.png').h === 192, 'home-screen 192 is square PNG')
 assert(pngSize('../public/icons/icon-512.png').w === 512 && pngSize('../public/icons/icon-512.png').h === 512, 'home-screen 512 is square PNG')
 assert(pngSize('../public/icons/apple-touch.png').w === 180 && pngSize('../public/icons/apple-touch.png').h === 180, 'apple-touch is 180 PNG from the cover')
+assert(pngSize('../public/favicon.png').w === 32 && pngSize('../public/favicon.png').h === 32, 'tab favicon is 32 PNG from the cover')
+assert(pngSize('../public/favicon-48.png').w === 48 && pngSize('../public/favicon-48.png').h === 48, 'tab favicon 48 is square PNG from the cover')
 const man = readFileSync(new URL('../public/manifest.webmanifest', import.meta.url), 'utf8')
-assert(man.includes('icon-192.png') && man.includes('icon-512.png'), 'manifest ships cover-crop PNGs')
+assert(man.includes('icon-192.png?v=13') && man.includes('icon-512.png?v=13'), 'manifest ships cache-busted cover-crop PNGs')
 assert(!man.includes('favicon.svg'), 'manifest does not install the gold Drop SVG')
-assert(readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8').includes("CACHE = 'amber-shroud-v12'"), 'SW bumped for new icons')
-assert(readFileSync(new URL('../index.html', import.meta.url), 'utf8').includes('apple-touch.png'), 'apple-touch-icon points at the cover crop')
+const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8')
+assert(!html.includes('favicon.svg'), 'html does not link the gold Drop SVG')
+assert(!html.includes('image/svg+xml'), 'html has no SVG icon link')
+assert(html.includes('favicon.png?v=13'), 'tab favicon is the cover PNG')
+assert(html.includes('icon-192.png?v=13') && html.includes('icon-512.png?v=13'), 'html ships cache-busted cover PNGs')
+assert(html.includes('apple-touch.png?v=13'), 'apple-touch-icon is cache-busted cover crop')
+const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
+assert(sw.includes("CACHE = 'amber-shroud-v13'"), 'SW bumped so Chrome drops the cached Drop')
+assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
+try {
+  readFileSync(new URL('../public/favicon.svg', import.meta.url))
+  throw new Error('public/favicon.svg still exists — Drop must not be in the icon chain')
+} catch (e) {
+  if ((e as NodeJS.ErrnoException).code !== 'ENOENT') throw e
+}
 
 console.log('OK', {
   prisoner: Object.keys(DOORS.prisoner.items),

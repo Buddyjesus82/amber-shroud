@@ -1,4 +1,4 @@
-const CACHE = 'amber-shroud-v12'
+const CACHE = 'amber-shroud-v13'
 const SCOPE = self.location.pathname.replace(/sw\.js$/, '')
 
 self.addEventListener('install', (event) => {
@@ -6,7 +6,8 @@ self.addEventListener('install', (event) => {
     caches.open(CACHE).then((cache) =>
       cache.addAll([
         `${SCOPE}manifest.webmanifest`,
-        `${SCOPE}favicon.svg`,
+        `${SCOPE}favicon.png`,
+        `${SCOPE}favicon-48.png`,
         `${SCOPE}icons/icon-192.png`,
         `${SCOPE}icons/icon-512.png`,
         `${SCOPE}icons/apple-touch.png`,
