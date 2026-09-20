@@ -1220,10 +1220,13 @@ h2 {
 .choice.hunger {
   border-color: var(--amber);
   color: var(--hunger);
+  background: linear-gradient(180deg, #3a220c, #241408);
 }
 
 .choice.danger {
   border-color: rgba(196, 69, 26, 0.7);
+  background: #3a120c;
+  color: #ffb199;
 }
 
 .choice.quiet {

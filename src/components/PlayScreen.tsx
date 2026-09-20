@@ -49,7 +49,9 @@ export function PlayScreen({ state, onChange, onTitle }: Props) {
   const choices = visibleChoices(state)
   const roam = canScavenge(state)
   const skimOn = canSkim(state)
-  const optionCount = choices.length + (roam ? 1 : 0) + (skimOn ? 1 : 0) + (hookOn ? 1 : 0)
+  const hookRow = !!(hub && hookOn && hook && showNav)
+  const closeRow = !!(closing && showNav)
+  const optionCount = choices.length + (roam ? 1 : 0) + (skimOn ? 1 : 0) + (hookRow ? 1 : 0) + (closeRow ? 1 : 0)
   const split = optionCount >= 4
   const showDo = talky || roam
 
@@ -159,44 +161,6 @@ export function PlayScreen({ state, onChange, onTitle }: Props) {
       </div>
 
       <div className="thumb">
-        {hub && hookOn && hook && showNav ? (
-          <button
-            type="button"
-            className={state.flags.chapter1Done ? 'btn btn-ghost' : 'btn btn-hunger'}
-            onClick={() =>
-              onChange(
-                applyEffect(state, {
-                  goto: hook.sceneId,
-                  startChapter: state.flags.chapter1Done ? undefined : 'cache-run',
-                  ticks: 1,
-                }),
-              )
-            }
-          >
-            {hook.label}
-            <small>{hook.sub}</small>
-          </button>
-        ) : null}
-
-        {closing && showNav ? (
-          <button
-            type="button"
-            className="btn btn-danger"
-            onClick={() =>
-              onChange(
-                applyEffect(state, {
-                  startChapter: 'cache-run',
-                  goto: 'ch1:leave',
-                  ticks: 1,
-                  flag: state.flags.hungerKnown ? undefined : { cacheBlind: true },
-                }),
-              )
-            }
-          >
-            The desert is closing. Take the Hunger.
-          </button>
-        ) : null}
-
         <div className="choices">
           {roam ? (
             <button
@@ -215,6 +179,47 @@ export function PlayScreen({ state, onChange, onTitle }: Props) {
               <span className="choice-copy">
                 Skim a drip
                 <small>Risky Drop. Costs Heat.</small>
+              </span>
+            </button>
+          ) : null}
+          {hookRow && hook ? (
+            <button
+              type="button"
+              className={state.flags.chapter1Done ? 'choice quiet' : 'choice hunger'}
+              onClick={() =>
+                onChange(
+                  applyEffect(state, {
+                    goto: hook.sceneId,
+                    startChapter: state.flags.chapter1Done ? undefined : 'cache-run',
+                    ticks: 1,
+                  }),
+                )
+              }
+            >
+              <span className="choice-copy">
+                {hook.label}
+                {hook.sub ? <small>{hook.sub}</small> : null}
+              </span>
+            </button>
+          ) : null}
+          {closeRow ? (
+            <button
+              type="button"
+              className="choice danger"
+              onClick={() =>
+                onChange(
+                  applyEffect(state, {
+                    startChapter: 'cache-run',
+                    goto: 'ch1:leave',
+                    ticks: 1,
+                    flag: state.flags.hungerKnown ? undefined : { cacheBlind: true },
+                  }),
+                )
+              }
+            >
+              <span className="choice-copy">
+                The desert is closing. Take the Hunger.
+                <small>Pressure. The camp will not hold the hour.</small>
               </span>
             </button>
           ) : null}
