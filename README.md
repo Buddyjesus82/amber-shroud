@@ -19,7 +19,7 @@ This is not a tabletop clone. There are no dice, no skill checks, and no rolls. 
 8. **Chapter 1 — Cache Run** is the same spine for every door: want → trail → Ossa → Zafir → Sybella poker → Red Maw. Verbs and spends depend on kit, Heat, and flags. Climax is resource poker: spend Sap, burn a Glint, bait Hollows, flee+Heat, or lay a false trail.
 9. Land in **Red Maw Approach** with what you spent. Chapter 2, *The Walking Amber*, is stubbed on purpose.
 
-Progress saves to `localStorage` on every action. **Continue** from the title screen.
+Progress auto-saves to `localStorage` on every action — **one slot per door** (Prisoner, Outcast, Vessel). **Continue** resumes the last door you touched. Starting a door that already has a save asks Resume vs Overwrite; the other doors stay. An old single `amber-shroud.save.v1` migrates into that door’s slot once.
 
 ## Run locally
 

@@ -15,7 +15,17 @@ import { DOORS, HUBS, ITEMS } from '../src/game/content/catalog.ts'
 import { PEOPLE } from '../src/game/people.ts'
 import { rollScavenge } from '../src/game/scavenge.ts'
 import { canTravelTo, edgeSap, HUB_MAPS, nodeIdForScene, route } from '../src/game/map.ts'
-import type { DoorId, GameState } from '../src/game/types.ts'
+import {
+  clearAllSaves,
+  clearSave,
+  hasDoorSave,
+  lastSavedDoor,
+  listSaves,
+  loadDoor,
+  loadSave,
+  peekLegacySave,
+  plantLegacySave,
+} from '../src/game/save.ts'
 
 function assert(cond: unknown, msg: string): asserts cond {
   if (!cond) throw new Error(msg)
@@ -726,6 +736,36 @@ s = {
 assert(ids(s).includes('enc-skip'), 'trail encounters can be declined')
 s = pick(s, 'enc-skip')
 assert(s.sceneId === 'ch1:trail', 'skipping a trail encounter keeps the trail')
+
+clearAllSaves()
+let prisonerRun = newGame('prisoner')
+prisonerRun = pick(prisonerRun, 'pens')
+assert(prisonerRun.sceneId === 'camp:cages', 'prisoner slot at pens')
+const outcastRun = newGame('outcast')
+assert(outcastRun.door === 'outcast', 'outcast New Game starts Outcast')
+assert(loadDoor('prisoner')?.sceneId === 'camp:cages', 'Prisoner save survives Outcast New Game')
+assert(loadDoor('outcast')?.door === 'outcast', 'Outcast has its own slot')
+assert(lastSavedDoor() === 'outcast', 'lastDoor tracks the last write')
+assert(listSaves().includes('prisoner') && listSaves().includes('outcast'), 'title can list both doors')
+assert(loadSave()?.door === 'outcast', 'Continue resumes the last door touched')
+clearSave('outcast')
+assert(!hasDoorSave('outcast'), 'erase Outcast only')
+assert(hasDoorSave('prisoner'), 'Prisoner slot stays after Outcast erase')
+assert(lastSavedDoor() === 'prisoner', 'lastDoor falls back to a remaining slot')
+newGame('vessel')
+assert(hasDoorSave('prisoner') && hasDoorSave('vessel') && !hasDoorSave('outcast'), 'Vessel New Game does not wipe Prisoner')
+assert(loadSave()?.door === 'vessel', 'Continue follows Vessel after that write')
+clearAllSaves()
+assert(!loadSave() && listSaves().length === 0, 'erase all clears every door')
+plantLegacySave(prisonerRun)
+assert(peekLegacySave(), 'old v1 blob is planted')
+const migrated = loadSave()
+assert(migrated?.door === 'prisoner' && migrated.sceneId === 'camp:cages', 'v1 migrates into that door slot')
+assert(!peekLegacySave(), 'legacy key is dropped after one migrate')
+const afterMigrate = newGame('outcast')
+assert(loadDoor('prisoner')?.sceneId === 'camp:cages', 'migrated Prisoner survives a later Outcast start')
+assert(afterMigrate.door === 'outcast' && loadDoor('outcast')?.door === 'outcast', 'Outcast is a second slot')
+clearAllSaves()
 
 console.log('OK', {
   prisoner: Object.keys(DOORS.prisoner.items),
