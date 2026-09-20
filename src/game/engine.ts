@@ -464,7 +464,7 @@ export function interpret(state: GameState, text: string): GameState {
       persist({
         ...state,
         flash:
-          'Name them. Who is Oil-Tooth. Who is Kaelen. Who is Valerius. Who is Silas. Who is Thalia. Who is Oram. Who is Zafir. Who is Ossa. Who is Sybella.',
+          'Name them. Who is Oil-Tooth. Who is Kaelen. Who is Valerius. Who is Clerk Rell. Who is Silas. Who is Nim. Who is Thalia. Who is Oram. Who is Brin. Who is Zafir. Who is Ossa. Who is Sybella.',
         updatedAt: Date.now(),
       }),
       'who is',

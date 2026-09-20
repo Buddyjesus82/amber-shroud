@@ -55,19 +55,26 @@ function missingTargets(): string[] {
 }
 
 function cacheRunOpenExits(): string[] {
+  const doors: DoorId[] = ['prisoner', 'outcast', 'vessel']
   const bad: string[] = []
   for (const scene of ALL_SCENES.filter((s) => s.chapterId === 'cache-run' || s.id.startsWith('ch1:'))) {
     const open = scene.choices.filter((c) => !c.show && !c.enable)
-    if (open.length === 0) {
-      bad.push(`${scene.id} has no unconditional choice`)
-      continue
-    }
     const forward = open.filter((c) => {
       const g = c.effects.goto
       return g && g !== scene.id
     })
-    if (forward.length === 0 && scene.id !== 'ch1:land') {
-      bad.push(`${scene.id} unconditional choices only stay/self`)
+    const doorForward = new Set<DoorId>()
+    for (const c of scene.choices) {
+      const d = c.show?.door
+      if (d && !c.enable && c.effects.goto && c.effects.goto !== scene.id) doorForward.add(d)
+    }
+    const allDoorsCovered = doors.every((d) => doorForward.has(d))
+    if (forward.length === 0 && scene.id !== 'ch1:land' && !allDoorsCovered) {
+      bad.push(
+        open.length === 0
+          ? `${scene.id} has no unconditional choice and does not cover every door`
+          : `${scene.id} unconditional choices only stay/self`,
+      )
     }
     for (const c of scene.choices) {
       const g = c.effects.goto ?? ''

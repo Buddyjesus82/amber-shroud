@@ -14,6 +14,7 @@ import {
 import { DOORS, HUBS, ITEMS } from '../src/game/content/catalog.ts'
 import { PEOPLE } from '../src/game/people.ts'
 import { rollScavenge } from '../src/game/scavenge.ts'
+import type { GameState } from '../src/game/types.ts'
 import { canTravelTo, edgeSap, HUB_MAPS, nodeIdForScene, route } from '../src/game/map.ts'
 import {
   clearAllSaves,
@@ -57,6 +58,49 @@ function pick(s: GameState, id: string) {
 
 function ids(s: GameState) {
   return visibleChoices(s).map((x) => x.id)
+}
+
+function prisonerToSybella(s: GameState): GameState {
+  s = pick(s, 'go')
+  assert(s.sceneId === 'ch1:p-pipe', `prisoner Hunger is the Cartel fence (got ${s.sceneId})`)
+  s = pick(s, ids(s).includes('wrench') ? 'wrench' : 'crawl')
+  assert(s.sceneId === 'ch1:p-clerk', `prisoner meets Clerk Rell (got ${s.sceneId})`)
+  s = pick(s, ids(s).includes('scrip') ? 'scrip' : 'bolt')
+  assert(s.sceneId === 'ch1:p-oil', `prisoner meets Oil-Tooth on the stolen hull (got ${s.sceneId})`)
+  s = pick(s, ids(s).includes('walk') ? 'walk' : 'ride')
+  assert(s.sceneId === 'ch1:p-ossa', `prisoner meets Ossa as escaped property (got ${s.sceneId})`)
+  s = pick(s, ids(s).includes('wrench') ? 'wrench' : 'skip')
+  if (s.sceneId === 'ch1:ossa-talk') s = pick(s, 'on')
+  if (s.sceneId === 'ch1:ossa-rob') s = pick(s, 'go')
+  if (s.sceneId === 'crisis:dunes') s = pick(s, 'up')
+  return s
+}
+
+function outcastToSybella(s: GameState): GameState {
+  s = pick(s, 'go')
+  assert(s.sceneId === 'ch1:o-noon', `outcast Hunger is noon country (got ${s.sceneId})`)
+  s = pick(s, ids(s).includes('silas') ? 'silas' : 'noon')
+  if (s.sceneId === 'ch1:o-silas') s = pick(s, 'on')
+  assert(s.sceneId === 'ch1:o-tax', `outcast meets Nim the Cut-Fee (got ${s.sceneId})`)
+  s = pick(s, ids(s).includes('tip') ? 'tip' : 'run')
+  assert(s.sceneId === 'ch1:o-ossa', `outcast meets Ossa as kin (got ${s.sceneId})`)
+  s = pick(s, 'skip')
+  if (s.sceneId === 'ch1:ossa-talk') s = pick(s, 'on')
+  if (s.sceneId === 'ch1:ossa-rob') s = pick(s, 'go')
+  if (s.sceneId === 'crisis:dunes') s = pick(s, 'up')
+  return s
+}
+
+function vesselToSybella(s: GameState): GameState {
+  s = pick(s, 'go')
+  assert(s.sceneId === 'ch1:v-hymn', `vessel Hunger is the hymn-road (got ${s.sceneId})`)
+  s = pick(s, ids(s).includes('oram') ? 'oram' : 'hymn')
+  assert(s.sceneId === 'ch1:v-runners', `vessel meets Seeker runners (got ${s.sceneId})`)
+  s = pick(s, ids(s).includes('bolt') ? 'bolt' : ids(s).includes('cloth') ? 'cloth' : 'map')
+  assert(s.sceneId === 'ch1:v-zafir', `vessel meets Zafir who will not shop a cup (got ${s.sceneId})`)
+  s = pick(s, ids(s).includes('oram') ? 'oram' : 'news')
+  if (s.sceneId === 'crisis:dunes') s = pick(s, 'up')
+  return s
 }
 
 function walkTo(s: GameState, destScene: string): GameState {
@@ -133,6 +177,18 @@ assert(
 assert(
   !readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8').includes('Who is'),
   'no dedicated Who is button',
+)
+assert(
+  readFileSync(new URL('../src/components/TitleScreen.tsx', import.meta.url), 'utf8').includes('Jeramie Algieri'),
+  'title credit names Jeramie Algieri',
+)
+assert(
+  readFileSync(new URL('../src/components/TitleScreen.tsx', import.meta.url), 'utf8').includes("Gamer NERD"),
+  'title credit carries Gamer NERD\'s Human',
+)
+assert(
+  !readFileSync(new URL('../src/components/TitleScreen.tsx', import.meta.url), 'utf8').includes('bigjerm21'),
+  'title credit is not the handle',
 )
 assert(
   readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8').includes('who is kaelen'),
@@ -231,18 +287,22 @@ assert(s.flags.striderHot, 'Oil-Tooth hotwires the Strider')
 s = applyEffect(s, { sap: 4 })
 s = applyEffect(s, { startChapter: 'cache-run', goto: 'ch1:leave', ticks: 1 })
 s = pick(s, 'go')
-assert(s.sceneId === 'ch1:trail', 'beat 1 trail')
+assert(s.sceneId === 'ch1:p-pipe', 'prisoner beat 1 is the last Cartel fence')
 assert(ids(s).includes('wrench'), 'cache run wrench branch from Oil-Tooth kit')
-assert(!ids(s).includes('silas'), 'prisoner has no silas cut')
+assert(!ids(s).includes('silas'), 'prisoner fence has no Silas cut')
+assert(!ids(s).includes('oram'), 'prisoner fence has no Oram heading')
 s = pick(s, 'wrench')
 assert(s.flags.wrenchCut, 'wrench cut flag')
-assert(ids(s).includes('wrench'), 'ossa wrench lash')
+assert(s.sceneId === 'ch1:p-clerk', 'prisoner meets Clerk Rell, not Ossa yet')
+assert(ids(s).includes('scrip'), 'Rell takes scrip as fake papers')
+s = pick(s, 'scrip')
+assert(s.sceneId === 'ch1:p-oil', 'Oil-Tooth is on the stolen hull, not a cairn shop')
+s = pick(s, 'walk')
+assert(s.sceneId === 'ch1:p-ossa', 'Ossa on escape terms')
+assert(ids(s).includes('wrench'), 'ossa wrench lash still a tool')
 s = pick(s, 'wrench')
 assert(s.flags.ossaAlly, 'wrench lash allies Ossa')
-assert(s.sceneId === 'ch1:zafir', 'beat 3 zafir')
-assert(ids(s).includes('scrip'), 'zafir takes scrip')
-s = pick(s, 'scrip')
-assert(s.sceneId === 'ch1:sybella', 'hard choice')
+assert(s.sceneId === 'ch1:sybella', 'prisoner skips Zafir and still spends at Sybella')
 assert(ids(s).includes('false'), 'false trail available')
 s = pick(s, 'false')
 assert(s.flags.climax === 'false', 'climax is spend')
@@ -264,15 +324,21 @@ assert(s.items.vial_drop === 1 && !s.items.vial_empty, 'empty vial filled from t
 assert(s.sap >= 3, 'smear sap bite reversed a little')
 s = applyEffect(s, { startChapter: 'cache-run', goto: 'ch1:leave', ticks: 1 })
 s = pick(s, 'go')
+assert(s.sceneId === 'ch1:o-noon', 'outcast beat 1 is noon country')
 assert(ids(s).includes('silas'), 'cache run silas branch')
-assert(!ids(s).includes('wrench'), 'outcast cannot wrench')
+assert(!ids(s).includes('wrench'), 'outcast cannot wrench the noon slope')
+assert(!ids(s).includes('oram'), 'outcast noon has no Oram heading')
 const sapBeforeCut = s.sap
 s = pick(s, 'silas')
 assert(s.sap === sapBeforeCut, 'silas cut does not spend sap')
+assert(s.sceneId === 'ch1:o-silas', 'Silas is on the cut, tent packed')
+s = pick(s, 'on')
+assert(s.sceneId === 'ch1:o-tax', 'Nim collects the shade-road')
+assert(ids(s).includes('tip'), 'Nim reads Silas scratch as a password — tip stays a tool')
+s = pick(s, 'tip')
+assert(s.items.silas_tip === 1, 'showing the scratch does not spend the tip')
+assert(s.sceneId === 'ch1:o-ossa', 'Ossa as kin, not a stranger on sticks')
 s = pick(s, 'skip')
-assert(s.sceneId === 'ch1:zafir')
-assert(ids(s).includes('silas'), 'zafir can spend the tip')
-s = pick(s, 'news')
 assert(s.sceneId === 'ch1:sybella')
 assert(ids(s).includes('false'), 'tip or ossa still gates false trail')
 s = pick(s, 'false')
@@ -283,10 +349,7 @@ s = newGame('outcast')
 s = pick(s, 'stand')
 s = pick(s, 'hunger')
 assert(s.chapterId === 'cache-run' && s.sceneId === 'ch1:leave', 'ridge Hunger button starts Cache Run')
-s = pick(s, 'go')
-s = pick(s, 'silas')
-s = pick(s, 'skip')
-s = pick(s, 'news')
+s = outcastToSybella(s)
 assert(s.sceneId === 'ch1:sybella', 'outcast reaches Sybella poker')
 assert(ids(s).includes('maw'), 'Approach is a first-class Sybella exit')
 assert(ids(s).includes('brand'), 'outcast gets a hunt-mark, not a bargain')
@@ -309,28 +372,23 @@ s = pick(s, 'cache')
 assert(ids(s).includes('now'), 'Silas Maw talk can start Cache Run without returning to shade')
 s = pick(s, 'now')
 assert(s.chapterId === 'cache-run' && s.sceneId === 'ch1:leave', 'Kallik heading walks now')
-s = pick(s, 'go')
-s = pick(s, ids(s).includes('silas') ? 'silas' : 'stilts')
-if (s.sceneId === 'ch1:ossa-meet') s = pick(s, 'skip')
-if (s.sceneId === 'crisis:dunes') s = pick(s, 'up')
-if (s.sceneId === 'ch1:zafir') {
-  s = interpret(s, 'walk the red maw heading')
-  assert(s.sceneId === 'ch1:sybella', 'Zafir maw-talk advances to Sybella, does not sit the cairn')
-}
-if (s.sceneId === 'ch1:sybella') {
-  s = interpret(s, 'take the maw approach')
-  assert(s.sceneId === 'ch1:land' && s.flags.chapter1Done, 'typing maw at Sybella lands the chapter')
-}
+s = outcastToSybella(s)
+assert(s.sceneId === 'ch1:sybella', 'outcast spoke still lands at Sybella')
+s = interpret(s, 'take the maw approach')
+assert(s.sceneId === 'ch1:land' && s.flags.chapter1Done, 'typing maw at Sybella lands the chapter')
 assert(s.hubId !== 'spine', 'climax does not bounce to the Spine')
 
 s = newGame('outcast')
 s = pick(s, 'stand')
-s = applyEffect(s, { startChapter: 'cache-run', goto: 'ch1:leave', ticks: 1 })
+s = applyEffect(s, { startChapter: 'cache-run', goto: 'ch1:leave', ticks: 1, sap: 4 })
 s = pick(s, 'go')
-s = pick(s, 'silas')
+s = pick(s, 'noon')
+assert(s.sceneId === 'ch1:o-tax', 'unfilled vial still walks Nim')
+s = pick(s, 'run')
 assert(ids(s).includes('vial'), 'empty vial still a verb if unfilled')
 s = pick(s, 'vial')
 assert(s.flags.ossaAlly && s.flags.emptyShown, 'empty-vial honesty allies Ossa')
+assert(s.flags.ossaKin, 'Outcast Ossa is kin-height, not a cage-smell meet')
 
 s = newGame('vessel')
 s = pick(s, 'keep')
@@ -343,15 +401,20 @@ s = pick(s, 'talk')
 assert(ids(s).includes('dagger'), 'guard dagger verb')
 s = applyEffect(s, { startChapter: 'cache-run', goto: 'ch1:leave', ticks: 1 })
 s = pick(s, 'go')
+assert(s.sceneId === 'ch1:v-hymn', 'vessel beat 1 is the hymn-road')
 assert(ids(s).includes('oram'), 'cache run oram heading')
+assert(!ids(s).includes('wrench'), 'vessel hymn-road has no Cartel grate')
+assert(!ids(s).includes('silas'), 'vessel hymn-road has no Silas cut')
 s = pick(s, 'oram')
 assert(s.flags.oramHeading, 'oram heading flag')
-s = pick(s, 'skip')
-assert(s.sceneId === 'ch1:zafir')
-assert(ids(s).includes('oram'), 'zafir oram map skip fee')
+assert(s.sceneId === 'ch1:v-runners', 'Seeker runners, not Ossa')
+s = pick(s, 'bolt')
+assert(s.sceneId === 'ch1:v-zafir')
+assert(ids(s).includes('oram'), 'Zafir still sees Oram map — will not shop a cup')
 assert(ids(s).includes('dagger'), 'zafir dagger threaten')
+assert(ids(s).includes('news'), 'free news is the walk when he will not sell a heading')
 s = pick(s, 'oram')
-assert(s.flags.zafirPaid, 'map shown counts as paid')
+assert(s.flags.zafirCup, 'cup-hostile cairn, not a paid shop beat')
 assert(s.items.oram_map === 1, 'oram map kept')
 assert(s.sceneId === 'ch1:sybella')
 assert(ids(s).includes('bargain'), 'Vessel may bargain — Seekers-only')
@@ -395,15 +458,7 @@ s = pick(s, 'hotwire')
 assert(ids(s).includes('ride-blind') || ids(s).includes('ride'), 'bay ride after hotwire')
 s = ids(s).includes('ride-blind') ? pick(s, 'ride-blind') : pick(s, 'ride')
 assert(s.chapterId === 'cache-run' && s.sceneId === 'ch1:leave', 'button-only prisoner starts Cache Run')
-s = pick(s, 'go')
-s = pick(s, ids(s).includes('wrench') ? 'wrench' : 'stilts')
-if (s.sceneId === 'ch1:ossa-meet') {
-  s = pick(s, ids(s).includes('wrench') ? 'wrench' : 'skip')
-}
-if (s.sceneId === 'ch1:ossa-talk') s = pick(s, 'on')
-if (s.sceneId === 'ch1:ossa-rob') s = pick(s, 'go')
-if (s.sceneId === 'crisis:dunes') s = pick(s, 'up')
-if (s.sceneId === 'ch1:zafir') s = pick(s, ids(s).includes('scrip') ? 'scrip' : 'news')
+s = prisonerToSybella(s)
 if (s.sceneId === 'ch1:sybella') {
   assert(!ids(s).includes('bargain'), 'prisoner has no Sybella bargain')
   s = pick(s, ids(s).includes('maw') ? 'maw' : 'brand')
@@ -623,7 +678,7 @@ s = newGame('prisoner')
 s = applyEffect(s, { startChapter: 'cache-run', goto: 'ch1:leave', ticks: 1 })
 assert(!/carrying sap like a signal fire/i.test(bodyOf(s)), 'prisoner Cache Run title does not claim a signal fire at holding sap')
 assert(bodyOf(s).includes('Not a lantern') || bodyOf(s).includes('holding'), 'holding sap is named honestly')
-assert(bodyOf(s).includes('trail') && bodyOf(s).includes('climax'), 'three beats are the spine, not a Sap charge')
+assert(bodyOf(s).includes('road is not shared') && bodyOf(s).includes('climax'), 'destination is shared; the road is not a Sap charge')
 s = newGame('outcast')
 s = applyEffect(s, { startChapter: 'cache-run', goto: 'ch1:leave', ticks: 1 })
 assert(!/carrying sap like a signal fire/i.test(bodyOf(s)), 'thin sap is not a signal fire')
@@ -795,14 +850,14 @@ for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
 }
 
 s = newGame('prisoner')
-s = applyEffect(s, { startChapter: 'cache-run', goto: 'ch1:trail', sap: 4 })
+s = applyEffect(s, { startChapter: 'cache-run', goto: 'ch1:p-pipe', sap: 4 })
 s = {
   ...s,
   flags: { ...s.flags, encounterHere: true, encounterKind: 'tick', encounterAt: s.ticks },
 }
-assert(ids(s).includes('enc-skip'), 'trail encounters can be declined')
+assert(ids(s).includes('enc-skip'), 'Hunger-road encounters can be declined')
 s = pick(s, 'enc-skip')
-assert(s.sceneId === 'ch1:trail', 'skipping a trail encounter keeps the trail')
+assert(s.sceneId === 'ch1:p-pipe', 'skipping a fence encounter keeps the fence')
 
 clearAllSaves()
 let prisonerRun = newGame('prisoner')
@@ -842,7 +897,9 @@ assert(encSrc.includes("'spine:ridge'"), 'Outcast ridge can roll encounters')
 assert(encSrc.includes("'spine:hound'"), 'Outcast maw-exit can roll encounters')
 assert(encSrc.includes("'thresh:court'"), 'Vessel court can roll encounters')
 assert(encSrc.includes("'thresh:paddock'"), 'Vessel paddock can roll encounters')
-assert(encSrc.includes("'ch1:trail'"), 'Cache Run trail can roll encounters')
+assert(encSrc.includes("'ch1:p-pipe'"), 'Prisoner fence can roll encounters')
+assert(encSrc.includes("'ch1:o-noon'"), 'Outcast noon can roll encounters')
+assert(encSrc.includes("'ch1:v-hymn'"), 'Vessel hymn-road can roll encounters')
 assert(
   readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8').includes('hasSceneSkim'),
   'shared Skim row does not double a scene skim',

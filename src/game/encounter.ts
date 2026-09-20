@@ -93,7 +93,9 @@ const ENCOUNTER_SCENES = new Set([
   'maw:rim',
   'maw:market',
   'maw:lip',
-  'ch1:trail',
+  'ch1:p-pipe',
+  'ch1:o-noon',
+  'ch1:v-hymn',
 ])
 
 export function canEncounter(state: GameState): boolean {
