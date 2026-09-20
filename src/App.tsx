@@ -129,7 +129,13 @@ export default function App() {
         }}
         onResume={(door: DoorId) => {
           const s = loadDoor(door)
-          if (s) onChange(s)
+          if (s) {
+            onChange(s)
+            return
+          }
+          refreshSaves()
+          const retry = loadDoor(door)
+          if (retry) onChange(retry)
         }}
         onStart={(door: DoorId) => {
           onChange(newGame(door))

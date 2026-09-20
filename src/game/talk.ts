@@ -98,6 +98,29 @@ const valerius: IntentRule[] = [
   },
 ]
 
+const rell: IntentRule[] = [
+  {
+    tags: TALK,
+    reply: '"Laborer 04-bleed is the whole conversation. Papers. Scrip. Or a Hound. Pick which line I write."',
+    effects: { ticks: 1, pressure: 1 },
+  },
+  {
+    tags: HELP,
+    reply: 'Help from a clerk is a filing that walks. "Clock in. That is mercy."',
+    effects: { ticks: 1, heat: { cartel: 1 } },
+  },
+  {
+    tags: TRADE,
+    reply: '"Ironwood does not haggle on the wash. Scrip is a lullaby. A chip is a door. Neither is a heading."',
+    effects: { ticks: 1 },
+  },
+  {
+    tags: THREAT,
+    reply: 'The tablet does not flinch. "Steel is a language. Hounds are fluent. I only write."',
+    effects: { heat: { cartel: 2 }, pressure: 1, ticks: 1 },
+  },
+]
+
 const silas: IntentRule[] = [
   {
     tags: TALK,
@@ -124,6 +147,104 @@ const silas: IntentRule[] = [
     tags: THREAT,
     reply: '"I have buried men for less, and I am tired. Do not make me less tired."',
     effects: { heat: { strays: 1 }, pressure: 1, ticks: 1 },
+  },
+]
+
+const nim: IntentRule[] = [
+  {
+    tags: TALK,
+    reply: '"Shade-road is not free. Silas sells the minute. I collect it. Pay or run noon."',
+    effects: { ticks: 1 },
+  },
+  {
+    tags: HELP,
+    reply: '"Help is a Glint, a scratch, or empty glass. I do not pour. I tax."',
+    effects: { ticks: 1 },
+  },
+  {
+    tags: TRADE,
+    reply: '"Glint for the cut. Scratch as a password. Empty vial if you are honest. I do not take Cartel scrip."',
+    effects: { ticks: 1 },
+  },
+  {
+    tags: THREAT,
+    reply: 'The minute-knife stays a minute-knife. "Run noon. I will name you. Stilts hear names."',
+    effects: { heat: { strays: 1 }, pressure: 1, ticks: 1 },
+  },
+]
+
+const brin: IntentRule[] = [
+  {
+    tags: TALK,
+    reply: '"Thalia\'s love made you loud. Pour. Show the cloth. Or we take you to the blonde already."',
+    effects: { ticks: 1, pressure: 1 },
+  },
+  {
+    tags: HELP,
+    reply: '"Help is the blonde. We are the net. Cups that hide are already cracked."',
+    effects: { ticks: 1, heat: { seekers: 1 } },
+  },
+  {
+    tags: TRADE,
+    reply: '"The Court does not sell on the hymn-road. Pour or walk. Zafir will not shop a furnace either."',
+    effects: { ticks: 1 },
+  },
+  {
+    tags: THREAT,
+    reply: 'Spears do not flinch. "No. We are past that kind of childish."',
+    effects: { heat: { seekers: 2 }, pressure: 1, ticks: 1 },
+  },
+]
+
+const oiltoothRoad: IntentRule[] = [
+  {
+    tags: TALK,
+    reply:
+      'Brass ticks. "I hotwired. I will not tour. Ride the last mile, walk the Heat, or I rip the tag in your cuff. Red Maw is south of my cowardice."',
+    effects: { ticks: 1 },
+  },
+  {
+    tags: HELP,
+    reply: '"Help is a dump at stilts or a quieter cuff. I do not sell headings. Kaelen still charges. I go west."',
+    effects: { ticks: 1 },
+  },
+  {
+    tags: TRADE,
+    reply: '"I do not sell Drops on a stolen hull. I sell a mile you might survive. Stilts south. I go west."',
+    effects: { ticks: 1 },
+  },
+  {
+    tags: THREAT,
+    reply: 'The smirk holds. The wrench does not. "Humor is a shield. Do not make me put it down on my own ride."',
+    effects: { heat: { cartel: 1 }, pressure: 1, ticks: 1 },
+  },
+]
+
+const zafirCup: IntentRule[] = [
+  {
+    tags: TALK,
+    reply: '"I don\'t sell headings to walking batteries. I sell the news that she already knows. Walk or buy a curse."',
+    effects: { ticks: 1 },
+  },
+  {
+    tags: HELP,
+    reply: '"Help is the blonde\'s word. I sell delays to people who are not lanterns."',
+    effects: { ticks: 1 },
+  },
+  {
+    tags: TRADE,
+    reply: '"This cairn does not shop walking batteries. News is free and worse. Pay for a curse if you like ink."',
+    effects: { ticks: 1, flag: { zafirMet: true, zafirCup: true } },
+  },
+  {
+    tags: THREAT,
+    reply: 'The smile costs extra. "Crowd a man who will not shop a cup and the map grows a lie."',
+    effects: { heat: { strays: 1 }, flag: { zafirSore: true }, ticks: 1 },
+  },
+  {
+    tags: ['sybella', 'skiff', 'blonde', 'shadow'],
+    reply: '"Blindfold up. Kohl ruined. She will collect. I sold that news already."',
+    effects: { flag: { sybellaNamed: true }, ticks: 1 },
   },
 ]
 
@@ -285,15 +406,20 @@ const BY_PERSON: Record<PersonId, IntentRule[]> = {
   oiltooth,
   kaelen,
   valerius,
+  rell,
   silas,
+  nim,
   zafir,
   ossa,
   sybella,
   thalia,
   oram,
+  brin,
 }
 
 export function talkIntentsFor(sceneId: string): IntentRule[] {
+  if (sceneId === 'ch1:p-oil') return oiltoothRoad
+  if (sceneId === 'ch1:v-zafir') return zafirCup
   const here = personAtScene(sceneId)
   if (here) return BY_PERSON[here.id]
   if (match(sceneId, ['camp:jaxson', 'camp:lean', 'camp:bay', 'camp:cages'])) return oiltooth
@@ -301,9 +427,12 @@ export function talkIntentsFor(sceneId: string): IntentRule[] {
   if (match(sceneId, ['camp:valerius', 'camp:tower', 'camp:hunter', 'spine:valerius', 'spine:hound', 'spine:hunter'])) {
     return valerius
   }
-  if (match(sceneId, ['spine:silas', 'spine:shade', 'spine:tip', 'spine:ridge'])) return silas
-  if (match(sceneId, ['maw:zafir', 'ch1:zafir', 'maw:market'])) return zafir
-  if (match(sceneId, ['maw:ossa', 'maw:stilt', 'ch1:ossa'])) return ossa
+  if (match(sceneId, ['spine:silas', 'spine:shade', 'spine:tip', 'spine:ridge', 'ch1:o-silas'])) return silas
+  if (match(sceneId, ['ch1:p-clerk'])) return rell
+  if (match(sceneId, ['ch1:o-tax'])) return nim
+  if (match(sceneId, ['ch1:v-runners'])) return brin
+  if (match(sceneId, ['maw:zafir', 'ch1:v-zafir', 'maw:market'])) return zafir
+  if (match(sceneId, ['maw:ossa', 'maw:stilt', 'ch1:ossa', 'ch1:p-ossa', 'ch1:o-ossa'])) return ossa
   if (match(sceneId, ['maw:sybella', 'maw:smoke', 'ch1:sybella'])) return sybella
   if (match(sceneId, ['thresh:thalia', 'thresh:court'])) return thalia
   if (match(sceneId, ['thresh:oram', 'thresh:paddock'])) return oram

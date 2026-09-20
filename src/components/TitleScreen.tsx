@@ -75,7 +75,10 @@ export function TitleScreen({
             Erase all saves
           </button>
         ) : null}
-        <p className="credit">A story of the Amber Shroud · bigjerm21</p>
+        <p className="credit">
+          <strong>Jeramie Algieri</strong>
+          <span className="credit-with">Gamer NERD&apos;s Human</span>
+        </p>
       </div>
     </div>
   )

@@ -1,12 +1,12 @@
 # The Amber Shroud
 
-Mobile-first narrative PWA by **bigjerm21**. Flagship path: **The Hunger in the Amber**.
+Mobile-first narrative PWA by **Jeramie Algieri** (Gamer NERD's Human · handle bigjerm21). Flagship path: **The Hunger in the Amber**.
 
 This is not a tabletop clone. There are no dice, no skill checks, and no rolls. You survive on **Sap (Drops)**, **Heat** with three factions, what you carry, and the doors you pick. Hub roam between authored Hunger chapters.
 
 ## Play
 
-1. **New game** and pick a start door — kits are distinct and they bruise the same Cache Run:
+1. **New game** and pick a start door — kits are distinct and each door walks its own Hunger road to the same Maw:
    - **Ironwood Break** (Prisoner) — Cartel Scrip only in the holding pens. Oil-Tooth Jaxson is the inside man (sabotage + hotwire). **Kaelen the Sifter** is the rumor counter + merchant (scrap → Drops of Oasis Sap; Glints → intel).
    - **First Drop** (Outcast) — empty vial, Silas's tip. Sap is thin. Stray lean. Kaelen still sells Drops and rumors at dusk.
    - **Vessel** (Cult) — Drop, rusted dagger, Oram's map, cloth. Seeker / Thalia pressure.
@@ -16,7 +16,7 @@ This is not a tabletop clone. There are no dice, no skill checks, and no rolls. 
 5. **Sybella is Seekers-only.** Prisoner / First Drop get hunt, skiff, capture pressure. She never feeds or bargains with Cartel or Dune-Strays.
 6. Optional free-text **Do**: try `ask oil-tooth`, `scavenge`, `who is kaelen`. Keyword map — no live LLM, no dice. Misses say so. First meet on a hub NPC is a full card; later scenes show only what they are doing now. Type **who is [name]** to get the card back.
 7. **Scavenge** is a sticky hub verb — scrap and trade goods, sometimes a Drop of Oasis Sap. Kaelen still trades scrap → Drop. Risky **skim** at vents/wells costs Heat. Ask **Kaelen the Sifter** for rumors/news (they sell or trade leads). Door facilitators (Oil-Tooth, Silas, Oram) run the first starting quest only — they are not the full cast. When you have a heading (Kaelen intel, Silas's tip, or Oram's map), the Hunger hook unlocks.
-8. **Chapter 1 — Cache Run** is the same spine for every door: want → trail → Ossa → Zafir → Sybella poker → Red Maw. Verbs and spends depend on kit, Heat, and flags. Climax is resource poker: spend Sap, burn a Glint, bait Hollows, flee+Heat, or lay a false trail.
+8. **Chapter 1 — Cache Run** shares a destination, not a movie. **Prisoner** crawls Cartel fence / Clerk Rell / Oil-Tooth on a stolen hull / Ossa as escaped property. **Outcast** walks noon / Silas on the cut / Nim the Cut-Fee / Ossa as kin. **Vessel** takes the hymn-road / Seeker runners / Zafir who will not shop a cup. All three still spend at **Sybella** (Seekers-only bargain) and land in **Red Maw Approach**. Kit tools (wrench, Silas's tip, Oram's map) remain verbs on those roads — they are not the only difference. Climax is resource poker: spend Sap, burn a Glint, bait Hollows, flee+Heat, or lay a false trail.
 9. Land in **Red Maw Approach** with what you spent. Chapter 2, *The Walking Amber*, is stubbed on purpose.
 
 Progress auto-saves on every action to **localStorage and IndexedDB** — **one slot per door** (Prisoner, Outcast, Vessel). **Continue** resumes the last door you touched. Starting a door that already has a save asks Resume vs Overwrite; the other doors stay. An old single `amber-shroud.save.v1` migrates into that door’s slot once. On iPhone, **Add to Home Screen** keeps those saves from being swept overnight.
