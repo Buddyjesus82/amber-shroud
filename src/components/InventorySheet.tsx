@@ -25,9 +25,10 @@ export function InventorySheet({ state, onClose, onChange }: Props) {
         </header>
         <p className="epithet">You are {state.epithet}.</p>
         <p className="kit-sap">
-          Sap {state.sap}/{state.sapMax} · {sapLabel(state.sap)}. Empty sap is a crisis, not a death. Equip
-          weapons (Bite) and armor (Hide) — no dice. The numbers compare gear only. They never add to a
-          roll. Gear gates the verbs that keep you alive.
+          Sap {state.sap}/{state.sapMax} · {sapLabel(state.sap)}. Health {state.health}/{state.healthMax}.
+          Sap is thirst and walking. Health takes fight hits. Empty sap is a crisis, not a death. Empty
+          health is a stagger — you crawl, you do not end. Equip weapons (Bite) and armor (Hide) — no
+          dice. The numbers compare gear only. They never add to a roll.
         </p>
 
         <div className="equip-slots">

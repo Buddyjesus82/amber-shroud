@@ -7,6 +7,7 @@ import {
   canSkim,
   drinkDrop,
   heatTone,
+  healthLabel,
   interpret,
   isChoiceOn,
   sapLabel,
@@ -19,7 +20,7 @@ import { HEAT_FACTIONS, heatRiseLine } from '../game/heat'
 import { effectPills, listedKit } from '../game/kit'
 import { isMawExit } from '../game/map'
 import { encounterSpeaker } from '../game/encounter'
-import { isSybellaOverlay } from '../game/hunter'
+import { isSybellaOverlay, isWireSide } from '../game/hunter'
 import type { Faction, GameState } from '../game/types'
 import { HeatExplainer, HeatTip } from './HeatGuide'
 import { InventorySheet } from './InventorySheet'
@@ -61,14 +62,19 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
   const closing = !state.flags.chapter1Done && state.pressure >= 10 && !state.chapterId
   const chips = listedKit(state.items)
   const sapThin = state.sap <= 2
+  const hpHurt = state.health <= 2
   const choices = visibleChoices(state)
   const roam = canScavenge(state)
   const skimOn = canSkim(state)
-  const hookRow = !!(hub && hookOn && hook && showNav)
-  const closeRow = !!(closing && showNav)
+  const overlay =
+    !!state.flags.encounterHere ||
+    isSybellaOverlay(state) ||
+    (!!state.flags.hunterHere && isWireSide(state.sceneId))
+  const hookRow = !!(!overlay && hub && hookOn && hook && showNav)
+  const closeRow = !!(!overlay && closing && showNav)
   // Every selectable quest/story/hub action belongs in this list — never pinned above .choices.
   const optionRows: OptionRow[] = []
-  if (roam) {
+  if (!overlay && roam) {
     optionRows.push({
       key: 'scavenge',
       tone: 'quiet',
@@ -78,7 +84,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     })
   }
   const hasSceneSkim = choices.some((c) => c.id === 'skim')
-  if (skimOn && !hasSceneSkim) {
+  if (!overlay && skimOn && !hasSceneSkim) {
     optionRows.push({
       key: 'skim',
       tone: 'danger',
@@ -175,14 +181,25 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
           <button type="button" className="brand" onClick={onTitle} title="Title">
             Amber
           </button>
-          <div className={`sap ${sapThin ? 'thin' : ''}`} title="Sap — Drops of life">
-            <span className="sap-label">Sap</span>
-            <div className="pips" aria-label={`${state.sap} of ${state.sapMax} sap`}>
-              {Array.from({ length: state.sapMax }, (_, i) => (
-                <i key={i} className={i < state.sap ? 'on' : ''} />
-              ))}
+          <div className="vitals">
+            <div className={`sap ${sapThin ? 'thin' : ''}`} title="Sap — thirst, walks, crisis fuel">
+              <span className="sap-label">Sap</span>
+              <div className="pips" aria-label={`${state.sap} of ${state.sapMax} sap`}>
+                {Array.from({ length: state.sapMax }, (_, i) => (
+                  <i key={i} className={i < state.sap ? 'on' : ''} />
+                ))}
+              </div>
+              <em>{sapLabel(state.sap)}</em>
             </div>
-            <em>{sapLabel(state.sap)}</em>
+            <div className={`sap hp ${hpHurt ? 'thin' : ''}`} title="Health — fight hits">
+              <span className="sap-label">Health</span>
+              <div className="pips" aria-label={`${state.health} of ${state.healthMax} health`}>
+                {Array.from({ length: state.healthMax }, (_, i) => (
+                  <i key={i} className={i < state.health ? 'on' : ''} />
+                ))}
+              </div>
+              <em>{healthLabel(state.health)}</em>
+            </div>
           </div>
           <button type="button" className="kit-btn" onClick={() => setKit(true)}>
             Gear
@@ -208,7 +225,9 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
           ) : null}
         </div>
         <div className="place-line">
-          <strong>{scene.title ?? hub?.name ?? 'The dunes'}</strong>
+          <strong>
+            {state.flags.encounterHere ? encounterSpeaker(state) : (scene.title ?? hub?.name ?? 'The dunes')}
+          </strong>
           <span className="place-meta">
             {hub ? hub.name : scene.chapterId === 'cache-run' ? 'The Hunger' : null}
             {savedCue ? <em className="saved-cue">Saved</em> : null}
@@ -219,7 +238,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
       {saveToast ? <p className="heat-toast">{saveToast}</p> : null}
       {toast ? <p className="heat-toast">{toast}</p> : null}
 
-      {art ? (
+      {art && !state.flags.encounterHere ? (
         <div className="scene-art">
           <img src={art} alt="" />
         </div>
@@ -241,14 +260,14 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
             <p key={i}>{p}</p>
           ))}
         {state.flash ? <p className="flash">{state.flash}</p> : null}
-        {sapThin && scene.kind !== 'crisis' ? (
+        {sapThin && scene.kind !== 'crisis' && !state.flags.encounterHere ? (
           <p className="pressure-note">
             {state.sap <= 0
               ? 'Sap is empty. The next act that costs sap will be a crisis, not a death.'
               : 'Sap is thin. Walks and work will empty you.'}
           </p>
         ) : null}
-        {state.pressure >= 8 && !state.flags.chapter1Done && !state.chapterId ? (
+        {state.pressure >= 8 && !state.flags.chapter1Done && !state.chapterId && !state.flags.encounterHere ? (
           <p className="pressure-note">Pressure is mounting. Hunters use the hours you spend lingering.</p>
         ) : null}
       </div>
@@ -292,7 +311,9 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
             <input
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
-              placeholder="sabotage vent pipes / scavenge / who is kaelen"
+              placeholder={
+                state.flags.encounterHere ? 'fight / skip' : 'sabotage vent pipes / scavenge / who is kaelen'
+              }
               enterKeyHint="go"
               autoComplete="off"
               aria-label="Do something"

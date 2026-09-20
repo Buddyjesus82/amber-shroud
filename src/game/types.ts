@@ -42,6 +42,9 @@ export type GameState = {
   epithet: string
   sap: number
   sapMax: number
+  /** Fight hits. Empty is a stagger, not a death. */
+  health: number
+  healthMax: number
   heat: Heat
   items: Partial<Record<ItemId, number>>
   flags: FlagMap
@@ -79,6 +82,7 @@ export type Cond = {
 
 export type Effect = {
   sap?: number
+  health?: number
   heat?: Partial<Heat>
   add?: Partial<Record<ItemId, number>>
   remove?: Partial<Record<ItemId, number>>

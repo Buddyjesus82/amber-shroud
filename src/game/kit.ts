@@ -64,6 +64,7 @@ export type CostPill = { kind: 'sap' | 'item' | 'heat'; text: string }
 export function effectPills(fx: Effect): CostPill[] {
   const pills: CostPill[] = []
   if (fx.sap && fx.sap < 0) pills.push({ kind: 'sap', text: `Sap ${fx.sap}` })
+  if (fx.health && fx.health < 0) pills.push({ kind: 'sap', text: `Health ${fx.health}` })
   if (fx.add) {
     for (const id of Object.keys(fx.add) as ItemId[]) {
       const n = fx.add[id] ?? 0

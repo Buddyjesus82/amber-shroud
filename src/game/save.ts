@@ -81,6 +81,10 @@ function hydrate(parsed: GameState): GameState | null {
   if (parsed?.version !== 1 || !isDoor(parsed.door) || !parsed.sceneId) return null
   if (!parsed.equipped) parsed.equipped = {}
   if (!parsed.recentVerbs) parsed.recentVerbs = []
+  if (typeof parsed.healthMax !== 'number' || parsed.healthMax < 1) parsed.healthMax = 6
+  if (typeof parsed.health !== 'number') parsed.health = parsed.healthMax
+  if (parsed.health > parsed.healthMax) parsed.health = parsed.healthMax
+  if (parsed.health < 0) parsed.health = 0
   return parsed
 }
 
