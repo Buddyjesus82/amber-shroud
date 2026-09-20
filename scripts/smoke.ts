@@ -19,12 +19,18 @@ import {
   clearAllSaves,
   clearSave,
   hasDoorSave,
+  lastSavedAt,
   lastSavedDoor,
+  lastWriteStatus,
   listSaves,
   loadDoor,
   loadSave,
   peekLegacySave,
   plantLegacySave,
+  clearSessionCache,
+  clearLocalDiskOnly,
+  flushSave,
+  hydrateSaves,
 } from '../src/game/save.ts'
 
 function assert(cond: unknown, msg: string): asserts cond {
@@ -767,10 +773,31 @@ assert(loadDoor('prisoner')?.sceneId === 'camp:cages', 'migrated Prisoner surviv
 assert(afterMigrate.door === 'outcast' && loadDoor('outcast')?.door === 'outcast', 'Outcast is a second slot')
 clearAllSaves()
 
+clearAllSaves()
+let diskRun = newGame('prisoner')
+diskRun = pick(diskRun, 'pens')
+await flushSave(diskRun)
+assert(lastWriteStatus()?.ok, 'verified disk write reports ok')
+assert(lastWriteStatus()?.disk === 'both' || lastWriteStatus()?.disk === 'ls' || lastWriteStatus()?.disk === 'idb', 'write landed on at least one disk')
+assert((lastSavedAt() ?? 0) > 0, 'saves have a clock, not a TTL')
+assert(Date.now() - (lastSavedAt() ?? 0) < 60_000, 'no overnight expiry on a fresh save')
+assert(
+  !/maxAge|expiresAt|ttl\s*[:=]/i.test(readFileSync(new URL('../src/game/save.ts', import.meta.url), 'utf8')),
+  'save bank has no coded TTL',
+)
+clearSessionCache()
+assert(loadDoor('prisoner')?.sceneId === 'camp:cages', 'RAM drop still loads from localStorage')
+clearSessionCache()
+clearLocalDiskOnly()
+assert(!loadDoor('prisoner'), 'localStorage wipe looks empty until IDB hydrate')
+await hydrateSaves()
+assert(loadDoor('prisoner')?.sceneId === 'camp:cages', 'IndexedDB restores the Prisoner slot after localStorage wipe')
+assert(lastSavedDoor() === 'prisoner', 'Continue lastDoor returns with the IDB bank')
+clearAllSaves()
+
 console.log('OK', {
   prisoner: Object.keys(DOORS.prisoner.items),
   outcast: Object.keys(DOORS.outcast.items),
   vessel: Object.keys(DOORS.vessel.items),
 })
 
-void (['prisoner', 'outcast', 'vessel'] as DoorId[])

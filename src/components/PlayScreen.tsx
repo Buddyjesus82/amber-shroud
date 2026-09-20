@@ -40,9 +40,11 @@ type Props = {
   state: GameState
   onChange: (s: GameState) => void
   onTitle: () => void
+  savedCue?: boolean
+  saveToast?: string | null
 }
 
-export function PlayScreen({ state, onChange, onTitle }: Props) {
+export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Props) {
   const scene = sceneOf(state)
   const hub = state.hubId ? HUBS[state.hubId] : null
   const storyRef = useRef<HTMLDivElement>(null)
@@ -206,10 +208,14 @@ export function PlayScreen({ state, onChange, onTitle }: Props) {
         </div>
         <div className="place-line">
           <strong>{scene.title ?? hub?.name ?? 'The dunes'}</strong>
-          {hub ? <span>{hub.name}</span> : scene.chapterId === 'cache-run' ? <span>The Hunger</span> : null}
+          <span className="place-meta">
+            {hub ? hub.name : scene.chapterId === 'cache-run' ? 'The Hunger' : null}
+            {savedCue ? <em className="saved-cue">Saved</em> : null}
+          </span>
         </div>
       </header>
 
+      {saveToast ? <p className="heat-toast">{saveToast}</p> : null}
       {toast ? <p className="heat-toast">{toast}</p> : null}
 
       {art ? (
