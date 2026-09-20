@@ -10,9 +10,24 @@ createRoot(document.getElementById('root')!).render(
 )
 
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  let refreshing = false
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (refreshing) return
+    refreshing = true
+    window.location.reload()
+  })
+  navigator.serviceWorker.addEventListener('message', (event) => {
+    if (event.data?.type === 'SW_UPDATED' && navigator.serviceWorker.controller && !refreshing) {
+      refreshing = true
+      window.location.reload()
+    }
+  })
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(() => {
-      /* install still works without SW */
-    })
+    navigator.serviceWorker
+      .register(`${import.meta.env.BASE_URL}sw.js`)
+      .then((reg) => reg.update())
+      .catch(() => {
+        /* install still works without SW */
+      })
   })
 }

@@ -11,6 +11,7 @@ import {
   wantsDoSabotage,
 } from './campJob'
 import { markMetOnLeave, matchPersonQuery, personAtScene } from './people'
+import { isWireSide, WIRE_HUNTER_APPEND, wireHunterChoices } from './hunter'
 import { applyScavenge, canScavenge, canSkim } from './scavenge'
 import { writeSave } from './save'
 import type { DoorId, Effect, EquipSlot, GameState, ItemId, Scene } from './types'
@@ -52,7 +53,11 @@ export function bodyOf(state: GameState): string {
   const scene = sceneOf(state)
   const person = personAtScene(scene.id)
   const base = person && state.flags[person.metFlag] && person.later[scene.id] ? person.later[scene.id] : scene.body
-  return resolveBody(scene, (c) => check(c, state), base)
+  const resolved = resolveBody(scene, (c) => check(c, state), base)
+  if (state.flags.hunterHere && isWireSide(state.sceneId)) {
+    return `${resolved}\n\n${WIRE_HUNTER_APPEND}`
+  }
+  return resolved
 }
 
 function pickCrisis(state: GameState): string {
@@ -97,6 +102,9 @@ function spendFalse(state: GameState): GameState {
 }
 
 function hunterScene(state: GameState): string | null {
+  if (state.flags.hunterHere) return null
+  const last = Number(state.flags.hunterAt ?? -99)
+  if (last >= 0 && state.ticks - last < 4) return null
   if (state.flags.chapter1Done) {
     if (state.hubId === 'redmaw' && state.pressure >= 8 && state.ticks > 0 && state.ticks % 5 === 0) {
       if (state.sceneId !== 'maw:sybella-shadow' && state.sceneId !== 'maw:sybella') {
@@ -118,7 +126,23 @@ function hunterScene(state: GameState): string | null {
   return id
 }
 
+function resolveDest(state: GameState, fx: Effect): string | undefined {
+  let dest = fx.goto
+  if (fx.returnHunterFrom) {
+    const from = state.flags.hunterFrom
+    dest = typeof from === 'string' && from && getScene(from).id !== 'missing' ? from : dest ?? 'camp:yard'
+  }
+  if (fx.returnCrisisFrom) {
+    const from = state.flags.crisisFrom
+    if (typeof from === 'string' && from && !from.startsWith('crisis:') && getScene(from).id !== 'missing') {
+      dest = from
+    }
+  }
+  return dest
+}
+
 export function applyEffect(state: GameState, fx: Effect): GameState {
+  const dest = resolveDest(state, fx)
   let next = applyDelta(state, fx)
   next.flash = fx.flash
 
@@ -134,17 +158,16 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     const hub = HUBS[fx.enterHub]
     if (hub) {
       next.hubId = hub.id
-      if (!fx.startChapter && fx.goto !== 'ch2:stub') next.chapterId = null
+      if (!fx.startChapter && dest !== 'ch2:stub') next.chapterId = null
     }
   }
 
   const arrivingLand =
-    fx.goto === 'ch1:land' ||
-    fx.goto === 'ch1:bargain' ||
-    fx.goto === 'ch1:flee' ||
-    fx.goto === 'ch1:false' ||
-    fx.goto === 'ch1:hollow'
-  const dest = fx.goto
+    dest === 'ch1:land' ||
+    dest === 'ch1:bargain' ||
+    dest === 'ch1:flee' ||
+    dest === 'ch1:false' ||
+    dest === 'ch1:hollow'
   const destScene = dest ? getScene(dest) : null
   const recovering = sceneOf(state).kind === 'crisis' && next.sap > 0
   const sapCollapsed = next.sap <= 0
@@ -158,6 +181,11 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   if (dest) {
     next.flags = markMetOnLeave(state.sceneId, dest, next.flags)
     next.sceneId = dest
+    if (next.flags.hunterHere && !isWireSide(dest)) {
+      const flags = { ...next.flags }
+      delete flags.hunterHere
+      next.flags = flags
+    }
   }
 
   if (next.sceneId === 'ch1:hollow' && state.sceneId !== 'ch1:hollow') {
@@ -179,11 +207,18 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     if (c.hubId) next.hubId = c.hubId
   }
 
-  const interrupt = hunterScene(next)
+  const lingered = (fx.ticks ?? 0) > 0 || (fx.pressure ?? 0) > 0 || !!dest
+  const interrupt = lingered ? hunterScene(next) : null
   if (interrupt && getScene(next.sceneId).kind !== 'crisis') {
-    next.sceneId = interrupt
-    const h = getScene(interrupt)
-    if (h.hubId) next.hubId = h.hubId
+    const from = next.sceneId
+    next.flags = { ...next.flags, hunterFrom: from, hunterAt: next.ticks }
+    if (interrupt === 'camp:hunter' && isWireSide(from)) {
+      next.flags = { ...next.flags, hunterHere: true }
+    } else {
+      next.sceneId = interrupt
+      const h = getScene(interrupt)
+      if (h.hubId) next.hubId = h.hubId
+    }
   }
 
   if (arrived.onEnter && next.sceneId === arrived.id && state.sceneId !== arrived.id) {
@@ -245,6 +280,7 @@ function verbLabel(tag: string): string {
 }
 
 export function scavenge(state: GameState): GameState {
+  // applyDelta only — never applyEffect, never goto, never hunter/crisis relocate.
   const pinned = { sceneId: state.sceneId, hubId: state.hubId, chapterId: state.chapterId }
   const next = applyScavenge(state)
   return withVerb(
@@ -415,6 +451,9 @@ export function interpret(state: GameState, text: string): GameState {
 }
 
 export function visibleChoices(state: GameState) {
+  if (state.flags.hunterHere && isWireSide(state.sceneId)) {
+    return wireHunterChoices().filter((c) => check(c.show, state))
+  }
   return sceneOf(state).choices.filter((c) => check(c.show, state))
 }
 

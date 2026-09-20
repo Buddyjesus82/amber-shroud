@@ -22,7 +22,12 @@ export function nodeIdForScene(map: HubMapDef, sceneId: string, fallback = false
 export function currentNode(state: GameState): HubMapNode | null {
   const map = hubMapOf(state)
   if (!map) return null
-  const id = nodeIdForScene(map, state.sceneId, true)
+  const from = state.flags.hunterFrom
+  const prefer =
+    (state.sceneId === 'camp:hunter' || state.flags.hunterHere) && typeof from === 'string' && from
+      ? from
+      : state.sceneId
+  const id = nodeIdForScene(map, prefer, true)
   return id ? (nodeById(map, id) ?? null) : null
 }
 

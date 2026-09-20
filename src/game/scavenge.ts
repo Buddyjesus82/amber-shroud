@@ -88,6 +88,7 @@ export function rollScavenge(state: GameState): ScavengeResult {
   }
 }
 
+/** Loot only. Never goto, never applyEffect, never hunter/crisis relocate. */
 export function applyScavenge(state: GameState): GameState {
   if (!canScavenge(state)) {
     return {

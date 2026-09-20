@@ -1,11 +1,10 @@
-const CACHE = 'amber-shroud-v2'
+const CACHE = 'amber-shroud-v3'
 const SCOPE = self.location.pathname.replace(/sw\.js$/, '')
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE).then((cache) =>
       cache.addAll([
-        SCOPE,
         `${SCOPE}manifest.webmanifest`,
         `${SCOPE}favicon.svg`,
         `${SCOPE}covers/world.png`,
@@ -18,14 +17,38 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))),
+    caches
+      .keys()
+      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+      .then(() => self.clients.claim())
+      .then(() => self.clients.matchAll({ type: 'window' }))
+      .then((clients) => {
+        for (const client of clients) client.postMessage({ type: 'SW_UPDATED', cache: CACHE })
+      }),
   )
-  self.clients.claim()
 })
+
+function preferNetwork(req) {
+  const dest = req.destination
+  if (req.mode === 'navigate' || dest === 'document') return true
+  if (dest === 'script' || dest === 'style' || dest === 'worker') return true
+  try {
+    const path = new URL(req.url).pathname
+    return /\.(js|mjs|css|html|map)$/.test(path) || path.endsWith('/amber-shroud') || path.endsWith('/amber-shroud/')
+  } catch {
+    return false
+  }
+}
 
 self.addEventListener('fetch', (event) => {
   const req = event.request
   if (req.method !== 'GET') return
+  if (preferNetwork(req)) {
+    event.respondWith(
+      fetch(req, { cache: 'no-store' }).catch(() => caches.match(req).then((hit) => hit || caches.match(SCOPE))),
+    )
+    return
+  }
   event.respondWith(
     fetch(req)
       .then((res) => {

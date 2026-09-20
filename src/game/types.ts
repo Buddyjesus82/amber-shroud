@@ -91,6 +91,8 @@ export type Effect = {
   ticks?: number
   flash?: string
   equip?: ItemId
+  returnHunterFrom?: boolean
+  returnCrisisFrom?: boolean
 }
 
 export type Choice = {

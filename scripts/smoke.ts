@@ -194,7 +194,7 @@ s = pick(s, 'kaelen')
 s = pick(s, 'glint')
 s = pick(s, 'hunger-paid')
 assert(s.flags.hungerKnown, 'paid Glint intel')
-s = applyEffect(s, { sap: 3, pressure: -20 })
+s = applyEffect(s, { sap: 6, pressure: -20 })
 s = walkTo(s, 'camp:guard')
 s = pick(s, 'sabotage')
 s = pick(s, 'do')
@@ -537,6 +537,60 @@ assert(s.sceneId === kaelenId, 'Kaelen Scavenge stays at Kaelen')
 s = { ...s, sap: 0, pressure: 12, ticks: 8 }
 s = scavenge(s)
 assert(s.sceneId === kaelenId, 'Scavenge never relocates even when sap is empty and hunters are close')
+
+function stressScavenge(sceneId: string) {
+  let cur = newGame('prisoner')
+  cur = pick(cur, 'pens')
+  cur = applyEffect(cur, { sap: 6, goto: sceneId, enterHub: 'camp04' })
+  assert(cur.sceneId === sceneId, `stress starts on ${sceneId}`)
+  for (const ticks of [3, 4, 7, 8, 11, 12]) {
+    cur = {
+      ...cur,
+      sceneId,
+      hubId: 'camp04',
+      chapterId: null,
+      sap: 0,
+      pressure: 12,
+      ticks,
+      flags: { ...cur.flags, [`scavenge:${sceneId}`]: -99 },
+    }
+    const after = scavenge(cur)
+    assert(after.sceneId === sceneId, `Scavenge at ${sceneId} ticks=${ticks} stayed put (got ${after.sceneId})`)
+    assert(after.sceneId !== 'camp:yard' && after.sceneId !== 'camp:hunter', `Scavenge at ${sceneId} did not hunter/Yard`)
+  }
+  return cur
+}
+stressScavenge('camp:wire')
+stressScavenge('camp:kaelen')
+
+s = newGame('prisoner')
+s = pick(s, 'pens')
+s = applyEffect(s, { sap: 6, goto: 'camp:wire', enterHub: 'camp04' })
+s = { ...s, pressure: 8, ticks: 7, flags: { ...s.flags, 'scavenge:camp:wire': -99 } }
+s = scavenge(s)
+assert(s.sceneId === 'camp:wire', 'threshold Scavenge stays Wire')
+assert(!s.flags.hunterHere, 'Scavenge itself does not start a hunter')
+const afterKaelen = applyEffect(s, { goto: 'camp:kaelen', ticks: 1, pressure: 1 })
+assert(
+  afterKaelen.sceneId === 'camp:kaelen' || afterKaelen.sceneId === 'camp:wire',
+  `applyEffect after Wire Scavenge stayed Wire-side (got ${afterKaelen.sceneId})`,
+)
+assert(afterKaelen.sceneId !== 'camp:yard' && afterKaelen.sceneId !== 'camp:hunter', 'applyEffect after Scavenge is not Yard Sweep')
+if (afterKaelen.flags.hunterHere) {
+  assert(ids(afterKaelen).includes('hunter-hold'), 'Wire-side hunter is an in-place sweep')
+  const held = pick(afterKaelen, 'hunter-hold')
+  assert(held.sceneId === 'camp:kaelen' || held.sceneId === 'camp:wire', 'dismiss hunter returns Wire-side')
+  assert(held.sceneId !== 'camp:yard', 'dismiss hunter is not a Yard dump')
+}
+
+s = newGame('prisoner')
+s = pick(s, 'pens')
+s = applyEffect(s, { sap: 6, goto: 'camp:wire', enterHub: 'camp04' })
+s = applyEffect(s, { sap: -8 })
+assert(s.sceneId === 'crisis:camp', 'empty sap on the Wire is camp crisis')
+assert(s.flags.crisisFrom === 'camp:wire', 'crisisFrom remembers the Wire')
+s = pick(s, 'up')
+assert(s.sceneId === 'camp:wire', 'crisis rescue returns to the Wire, not the stall or Yard')
 
 console.log('OK', {
   prisoner: Object.keys(DOORS.prisoner.items),
