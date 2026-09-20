@@ -30,7 +30,7 @@ export function DoorSelect({ savedDoors, onResume, onStart, onBack }: Props) {
           ← Title
         </button>
         <h2>Choose a start door</h2>
-        <p>Same Hunger. Different gear. No dice — only what you carry. Each door keeps its own save.</p>
+        <p>Same Hunger. Different gear. No dice — only what you carry. Each door keeps its own save. Add to Home Screen for stronger saves on iPhone.</p>
       </header>
       <div className="door-list">
         {DOOR_ORDER.map((id) => {

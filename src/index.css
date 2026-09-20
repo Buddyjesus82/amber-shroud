@@ -213,9 +213,18 @@ h2 {
   font-size: 0.82rem;
 }
 
-.save-slots strong {
+.save-slots strong,
+.save-when {
   color: var(--amber-2);
   font-weight: 600;
+}
+
+.save-hint {
+  text-align: center;
+  color: var(--amber-dim);
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.35;
 }
 
 .flagship {
@@ -1115,6 +1124,20 @@ h2 {
 .place-line strong {
   color: var(--amber-2);
   font-weight: 600;
+}
+
+.place-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.saved-cue {
+  color: var(--amber-2);
+  font-style: normal;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
 .scene-art {

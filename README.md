@@ -19,7 +19,13 @@ This is not a tabletop clone. There are no dice, no skill checks, and no rolls. 
 8. **Chapter 1 — Cache Run** is the same spine for every door: want → trail → Ossa → Zafir → Sybella poker → Red Maw. Verbs and spends depend on kit, Heat, and flags. Climax is resource poker: spend Sap, burn a Glint, bait Hollows, flee+Heat, or lay a false trail.
 9. Land in **Red Maw Approach** with what you spent. Chapter 2, *The Walking Amber*, is stubbed on purpose.
 
-Progress auto-saves to `localStorage` on every action — **one slot per door** (Prisoner, Outcast, Vessel). **Continue** resumes the last door you touched. Starting a door that already has a save asks Resume vs Overwrite; the other doors stay. An old single `amber-shroud.save.v1` migrates into that door’s slot once.
+Progress auto-saves on every action to **localStorage and IndexedDB** — **one slot per door** (Prisoner, Outcast, Vessel). **Continue** resumes the last door you touched. Starting a door that already has a save asks Resume vs Overwrite; the other doors stay. An old single `amber-shroud.save.v1` migrates into that door’s slot once. On iPhone, **Add to Home Screen** keeps those saves from being swept overnight.
+
+### Tester FAQ — overnight save gone
+
+The game does **not** time out a save. If Continue worked after you closed the tab, then was dead the next morning, Safari threw the site’s data away overnight. That happens on iPhone when Amber Shroud is only a Safari tab (especially on github.io) and you have not **Add to Home Screen**. Reopening soon still works; a cold start after hours does not.
+
+Fix on the phone: Share → **Add to Home Screen**, then open from that icon. The app now writes every save to two places, checks the write stuck, and asks the phone to keep the data. If both writes fail you will see **Could not save on this phone.**
 
 ## Run locally
 

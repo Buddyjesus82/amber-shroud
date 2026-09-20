@@ -4,16 +4,34 @@ import type { DoorId } from '../game/types'
 type Props = {
   savedDoors: DoorId[]
   lastDoor: DoorId | null
+  lastWhen: string | null
+  booting: boolean
   onNew: () => void
   onContinue: () => void
   onEraseLast: () => void
   onEraseAll: () => void
 }
 
-export function TitleScreen({ savedDoors, lastDoor, onNew, onContinue, onEraseLast, onEraseAll }: Props) {
+export function TitleScreen({
+  savedDoors,
+  lastDoor,
+  lastWhen,
+  booting,
+  onNew,
+  onContinue,
+  onEraseLast,
+  onEraseAll,
+}: Props) {
   const hasSave = savedDoors.length > 0
   const lastLabel = lastDoor ? DOOR_SLOT_LABEL[lastDoor] : null
   const slotLine = hasSave ? savedDoors.map((id) => DOOR_SLOT_LABEL[id]).join(' · ') : 'None yet'
+  const continueSub = booting && !hasSave
+    ? 'Looking for a save on this phone…'
+    : hasSave
+      ? lastWhen
+        ? `Last saved ${lastWhen}`
+        : 'Last door you touched'
+      : 'No save yet'
 
   return (
     <div className="screen title-screen">
@@ -36,14 +54,16 @@ export function TitleScreen({ savedDoors, lastDoor, onNew, onContinue, onEraseLa
         </p>
         <p className="save-slots">
           Saves on this phone: <strong>{slotLine}</strong>
+          {hasSave && lastWhen ? <span className="save-when"> · saved {lastWhen}</span> : null}
         </p>
+        <p className="save-hint">Add to Home Screen for stronger saves on iPhone.</p>
         <button type="button" className="btn btn-gold" onClick={onNew}>
           New game
           <small>Pick Prisoner, Outcast, or Vessel</small>
         </button>
         <button type="button" className="btn btn-ghost" onClick={onContinue} disabled={!hasSave}>
           Continue{lastLabel ? ` ${lastLabel}` : ''}
-          <small>{hasSave ? 'Last door you touched' : 'No save yet'}</small>
+          <small>{continueSub}</small>
         </button>
         {hasSave && lastDoor ? (
           <button type="button" className="text-link" onClick={onEraseLast}>
