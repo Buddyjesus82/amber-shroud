@@ -1,4 +1,4 @@
-import { DOORS, HUBS, ITEMS, getScene, resolveBody } from './content'
+import { DOORS, HUBS, ITEMS, getScene, hasScene, resolveBody } from './content'
 import { applyDelta, check, clamp } from './logic'
 import { GLOBAL_INTENTS, matchIntent } from './intent'
 import { travelGate } from './map'
@@ -33,6 +33,8 @@ import {
 import { talkFallback, talkIntentsFor } from './talk'
 import { applyScavenge, canScavenge, canSkim } from './scavenge'
 import { writeSave } from './save'
+import { repairSceneId } from './repair'
+import { matchShopText, shopChoices, vendorFor } from './trade'
 import type { DoorId, Effect, EquipSlot, GameState, ItemId, Scene } from './types'
 
 export function newGame(door: DoorId): GameState {
@@ -67,7 +69,7 @@ export function persist(state: GameState): GameState {
 }
 
 export function sceneOf(state: GameState): Scene {
-  return getScene(state.sceneId)
+  return getScene(state.sceneId, state.door)
 }
 
 export function bodyOf(state: GameState): string {
@@ -167,15 +169,18 @@ function resolveDest(state: GameState, fx: Effect): string | undefined {
   if (fx.returnHunterFrom) {
     const from = state.flags.hunterFrom
     dest =
-      typeof from === 'string' && from && getScene(from).id !== 'missing'
+      typeof from === 'string' && from && getScene(from, state.door).id !== 'missing'
         ? from
         : hunterReturnFallback(state, dest)
   }
   if (fx.returnCrisisFrom) {
     const from = state.flags.crisisFrom
-    if (typeof from === 'string' && from && !from.startsWith('crisis:') && getScene(from).id !== 'missing') {
+    if (typeof from === 'string' && from && !from.startsWith('crisis:') && getScene(from, state.door).id !== 'missing') {
       dest = from
     }
+  }
+  if (dest && !hasScene(dest)) {
+    dest = repairSceneId({ ...state, sceneId: dest })
   }
   return dest
 }
@@ -228,6 +233,11 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   if (dest) {
     next.flags = markMetOnLeave(state.sceneId, dest, next.flags)
     next.sceneId = dest
+    if (dest !== state.sceneId && next.flags.shopShelf) {
+      const flags = { ...next.flags }
+      delete flags.shopShelf
+      next.flags = flags
+    }
     if (next.flags.hunterHere && !isWireSide(dest)) {
       const flags = { ...next.flags }
       delete flags.hunterHere
@@ -519,6 +529,11 @@ export function interpret(state: GameState, text: string): GameState {
     }
   }
 
+  const shopHit = matchShopText(state, text)
+  if (shopHit) {
+    return withVerb(applyEffect(state, shopHit.effects), shopHit.verb)
+  }
+
   const local = matchIntent(text, [...(scene.intents ?? []), ...talkIntentsFor(scene.id)], state)
   if (local) {
     return withVerb(applyEffect(state, { ...local.effects, flash: local.reply }), verbLabel(local.tags[0]))
@@ -577,7 +592,11 @@ export function visibleChoices(state: GameState) {
   if (state.flags.encounterHere) {
     return encounterChoices(state)
   }
-  return sceneOf(state).choices.filter((c) => check(c.show, state))
+  const authored = sceneOf(state).choices.filter((c) => check(c.show, state))
+  if (vendorFor(state.sceneId)) {
+    return shopChoices(state, authored).filter((c) => check(c.show, state))
+  }
+  return authored
 }
 
 export function isChoiceOn(state: GameState, cond: import('./types').Cond | undefined) {

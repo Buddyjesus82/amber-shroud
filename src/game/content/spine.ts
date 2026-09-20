@@ -175,9 +175,18 @@ The Hunger is a red bruise east-south. You could fill the empty vial with this s
 "Cartel Hounds on the east wash. Seeker skiff on the south wind — blonde, kohl like a bruise, blindfold up, hunting batteries that walk. And you, with a vial that sounds empty even when you don't shake it."`,
     choices: [
       {
-        id: 'drop',
-        label: 'Buy a Drop with whatever you have',
-        effects: { goto: 'spine:silas-drop', ticks: 1 },
+        id: 'mercy',
+        label: 'Tell him you will die at noon',
+        show: { all: [{ flagUnset: 'silasMercy' }, { sapMax: 3 }] },
+        effects: {
+          add: { vial_drop: 1 },
+          flag: { firstDrop: true, silasMercy: true, silasGave: true },
+          heat: { strays: 1 },
+          ticks: 1,
+          goto: 'spine:shade',
+          flash:
+            '"Once," Silas says. "Because the Spine is uglier when it is a graveyard. You owe the rumor. Kallik. Red Maw. Go be a problem somewhere else."',
+        },
       },
       {
         id: 'cache',
@@ -233,34 +242,8 @@ The Hunger is a red bruise east-south. You could fill the empty vial with this s
     kind: 'talk',
     speaker: 'Silas Vane',
     title: 'First Drop',
-    body: `"A Drop for a Glint. Or for scrap enough to patch a tent. Or for a story I don't already own. I do not take Cartel scrip. Scrip tastes like a leash."`,
+    body: `"A Drop for a Glint. Or for scrap enough to patch a tent. Or for a story I don't already own. Buy. Sell. I do not take Cartel scrip. Scrip tastes like a leash."`,
     choices: [
-      {
-        id: 'glint',
-        label: 'Pay a Glint',
-        show: { item: 'glints' },
-        effects: {
-          remove: { glints: 1, vial_empty: 1 },
-          add: { vial_drop: 1 },
-          flag: { firstDrop: true, silasGave: true },
-          ticks: 1,
-          goto: 'spine:shade',
-          flash: 'He sets a Drop in your vial. It looks like a captured noon. Your hands remember hope, which is irritating.',
-        },
-      },
-      {
-        id: 'scrap',
-        label: 'Pay two scrap',
-        show: { itemMin: ['scrap', 2] },
-        effects: {
-          remove: { scrap: 2 },
-          add: { vial_drop: 1 },
-          flag: { firstDrop: true, silasGave: true },
-          ticks: 1,
-          goto: 'spine:shade',
-          flash: 'First Drop. It sits in the glass like a dare you already lost.',
-        },
-      },
       {
         id: 'mercy',
         label: 'Tell him you will die at noon',

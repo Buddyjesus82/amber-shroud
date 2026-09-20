@@ -1,4 +1,5 @@
 import type { DoorId, GameState } from './types'
+import { repairLoadedState, repairedSlotChanged } from './repair'
 
 export const LEGACY_SAVE_KEY = 'amber-shroud.save.v1'
 export const SAVE_BANK_KEY = 'amber-shroud.save.v2'
@@ -85,7 +86,7 @@ function hydrate(parsed: GameState): GameState | null {
   if (typeof parsed.health !== 'number') parsed.health = parsed.healthMax
   if (parsed.health > parsed.healthMax) parsed.health = parsed.healthMax
   if (parsed.health < 0) parsed.health = 0
-  return parsed
+  return repairLoadedState(parsed)
 }
 
 function parseBank(raw: string | null): SaveBank | null {
@@ -382,11 +383,13 @@ export function loadDoor(door: DoorId): GameState | null {
   const bank = readBank()
   const state = bank.slots[door]
   if (!state) return null
-  if (bank.lastDoor !== door) {
+  const fixed = repairLoadedState(state)
+  if (repairedSlotChanged(state, fixed) || bank.lastDoor !== door) {
+    bank.slots[door] = fixed
     bank.lastDoor = door
     commitBank(stamp(bank))
   }
-  return state
+  return fixed
 }
 
 export function loadSave(): GameState | null {

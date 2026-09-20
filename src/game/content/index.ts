@@ -1,4 +1,4 @@
-import type { Scene } from '../types'
+import type { DoorId, Scene } from '../types'
 import { campScenes } from './camp04'
 import { cacheRunScenes } from './cacheRun'
 import { crisisScenes } from './crises'
@@ -24,15 +24,33 @@ const all: Scene[] = [
 
 const byId = new Map(all.map((s) => [s.id, s]))
 
-export function getScene(id: string): Scene {
+export function hasScene(id: string): boolean {
+  return byId.has(id)
+}
+
+function lostHome(door?: DoorId): { goto: string; enterHub?: string; label: string } {
+  if (door === 'outcast') return { goto: 'spine:ridge', enterHub: 'spine', label: 'Back to the Spine' }
+  if (door === 'vessel') return { goto: 'thresh:court', enterHub: 'threshold', label: 'Back to the Court' }
+  return { goto: 'camp:cages', enterHub: 'camp04', label: 'Back to the pens' }
+}
+
+export function getScene(id: string, door?: DoorId): Scene {
   const s = byId.get(id)
   if (!s) {
+    const home = lostHome(door)
     return {
       id: 'missing',
       kind: 'story',
       title: 'Lost Heading',
-      body: 'The desert misplaced this beat. Step back to somewhere that still has a name.',
-      choices: [{ id: 'title', label: 'Find shade', effects: { goto: 'camp:yard' } }],
+      body: 'The desert misplaced this beat. Step back to somewhere that still has your name on it.',
+      choices: [
+        {
+          id: 'home',
+          label: home.label,
+          tone: 'quiet',
+          effects: { goto: home.goto, enterHub: home.enterHub },
+        },
+      ],
     }
   }
   return s

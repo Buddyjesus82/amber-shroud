@@ -12,7 +12,7 @@ This is not a tabletop clone. There are no dice, no skill checks, and no rolls. 
    - **Vessel** (Cult) — Drop, rusted dagger, Oram's map, cloth. Seeker / Thalia pressure.
 2. Roam the hub: open **Map** (next to Heat / Gear). Walk **connected routes** only — no teleport. Each hop costs **Sap**; Camp-04 is farthest from Red Maw / First Spires (4 legs), Bleached Spine closer (2), Outer Threshold closest (1). Longer roads cost more hops (a few edges cost 2). At 0 Sap you get an authored crisis, not a random death.
 3. **Heat** is faction attention, not XP. A first-game tip explains it; tap a Heat number anytime; a toast fires when Heat rises.
-4. **Gear** is inventory (Gear sheet only — no kit strip under Heat): equip a **weapon** (**Bite**) and **armor** (**Hide**). Integers compare gear. They never add to a roll. **Health** (next to Sap) takes fight hits; Sap stays thirst and walking. Loot only if you drop them. Buy a Needle Knife or Dust Cloak from **Kaelen the Sifter**. Gear gates verbs — still no dice.
+4. **Gear** is inventory (Gear sheet only — no kit strip under Heat): equip a **weapon** (**Bite**) and **armor** (**Hide**). Integers compare gear. They never add to a roll. **Health** (next to Sap) takes fight hits; Sap stays thirst and walking. Loot only if you drop them. Traders (Kaelen on the Wire/Spine, Zafir at the Maw stall, Silas in the shade) open **Buy** and **Sell** shelves — unequipped junk only; equipped gear stays off Sell until you unequip in Gear. Buy a Needle Knife or Dust Cloak from **Kaelen the Sifter**. Gear gates verbs — still no dice.
 5. **Sybella is Seekers-only.** Prisoner / First Drop get hunt, skiff, capture pressure. She never feeds or bargains with Cartel or Dune-Strays.
 6. Optional free-text **Do**: try `ask oil-tooth`, `scavenge`, `who is kaelen`. Keyword map — no live LLM, no dice. Misses say so. First meet on a hub NPC is a full card; later scenes show only what they are doing now. Type **who is [name]** to get the card back.
 7. **Scavenge** is a sticky hub verb — scrap and trade goods, sometimes a Drop of Oasis Sap. Kaelen still trades scrap → Drop. Risky **skim** at vents/wells costs Heat. Ask **Kaelen the Sifter** for rumors/news (they sell or trade leads). Door facilitators (Oil-Tooth, Silas, Oram) run the first starting quest only — they are not the full cast. When you have a heading (Kaelen intel, Silas's tip, or Oram's map), the Hunger hook unlocks.
@@ -20,6 +20,10 @@ This is not a tabletop clone. There are no dice, no skill checks, and no rolls. 
 9. Land in **Red Maw Approach** with what you spent. Chapter 2, *The Walking Amber*, is stubbed on purpose.
 
 Progress auto-saves on every action to **localStorage and IndexedDB** — **one slot per door** (Prisoner, Outcast, Vessel). **Continue** resumes the last door you touched. Starting a door that already has a save asks Resume vs Overwrite; the other doors stay. An old single `amber-shroud.save.v1` migrates into that door’s slot once. On iPhone, **Add to Home Screen** keeps those saves from being swept overnight.
+
+### Tester FAQ — Continue landed on Lost Heading / Find shade
+
+Hunger spokes renamed old Cache Run beats (`ch1:trail`, `ch1:zafir`, `ch1:ossa-meet`). A Vessel save sitting on one of those ids hit a missing-scene card whose only button was **Find shade**, which dumped every door into the Prisoner Bleed Yard (`camp:yard`) while the character stayed Vessel. Continue now migrates those saves onto that door’s live beat (Vessel hymn-road / Court, never Spine shade or Ironwood pens). Reloading is enough; you do not start over.
 
 ### Tester FAQ — overnight save gone
 

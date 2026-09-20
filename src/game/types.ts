@@ -106,6 +106,7 @@ export type Choice = {
   label: string
   sub?: string
   tone?: 'default' | 'hunger' | 'danger' | 'quiet'
+  group?: 'buy' | 'sell' | 'talk'
   show?: Cond
   enable?: Cond
   locked?: string

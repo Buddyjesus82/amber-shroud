@@ -65,7 +65,7 @@ const kaelen: IntentRule[] = [
   },
   {
     tags: TRADE,
-    reply: '"Scrap buys a Drop of Oasis Sap. Glints buy intel. I also sell a thin knife and a dust cloak when the pack has them. Cost. Profit."',
+    reply: '"Scrap buys a Drop of Oasis Sap. Glints buy intel. Buy and Sell are shelves — knife and cloak when the pack has them. Cost. Profit."',
     effects: { ticks: 1 },
   },
   {
@@ -262,7 +262,7 @@ const zafir: IntentRule[] = [
   {
     tags: TRADE,
     reply:
-      '"Glints buy a Drop. Two scrap I will call a Glint. Hound Hide if you have not worn one. A shock baton if Ironwood dropped it. I also buy what the dunes spat out. That is a shop. News is still free and worse."',
+      '"Glints buy a Drop. Two scrap I will call a Glint. Hound Hide if you have not worn one. A shock baton if Ironwood dropped it. Buy is one shelf. Sell is the other. News is still free and worse."',
     effects: { ticks: 1 },
   },
   {

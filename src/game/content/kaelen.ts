@@ -13,7 +13,7 @@ export const campKaelenScenes: Scene[] = [
     speaker: 'Kaelen the Sifter',
     body: `${look}
 
-They have the Wire at their back like a second pack-strap. "You're the trench story," they say, already counting what you might be worth. "I am not Oil-Tooth. He hotwires. I sell. Drops. Intel. Rumors that open trouble. Pick a product."`,
+They have the Wire at their back like a second pack-strap. "You're the trench story," they say, already counting what you might be worth. "I am not Oil-Tooth. He hotwires. I sell. Buy. Sell. Rumors that open trouble. Pick a shelf."`,
     variants: [
       {
         if: { flag: 'kaelenSoldDrop' },
@@ -22,63 +22,6 @@ They have the Wire at their back like a second pack-strap. "You're the trench st
       },
     ],
     choices: [
-      {
-        id: 'drop',
-        label: 'Trade scrap for a Drop of Oasis Sap',
-        sub: 'Merchant. Arithmetic. Not charity.',
-        show: { item: 'scrap' },
-        effects: {
-          remove: { scrap: 1 },
-          add: { vial_drop: 1 },
-          flag: { kaelenKnown: true, kaelenSoldDrop: true },
-          ticks: 1,
-          goto: 'camp:kaelen',
-          flash:
-            '"Scrap in. Drop out. I don\'t do charity. I do arithmetic." They glove the vial like it might bite them back.',
-        },
-      },
-      {
-        id: 'knife',
-        label: 'Buy a Needle Knife — two scrap',
-        sub: 'Weapon · Bite 3. Equip it in Gear. No dice — numbers compare gear.',
-        show: { all: [{ itemMin: ['scrap', 2] }, { flagUnset: 'kaelenSoldKnife' }] },
-        effects: {
-          remove: { scrap: 2 },
-          add: { needle_knife: 1 },
-          flag: { kaelenKnown: true, kaelenSoldKnife: true },
-          ticks: 1,
-          goto: 'camp:kaelen',
-          flash:
-            '"Thin. Mean. Cost." They do not gift edges. Equip it or it is only inventory.',
-        },
-      },
-      {
-        id: 'cloak',
-        label: 'Buy a Dust Cloak — one Glint',
-        sub: 'Armor · Hide 3. Hides a silhouette. Does not hide Heat.',
-        show: { all: [{ item: 'glints' }, { flagUnset: 'kaelenSoldCloak' }] },
-        effects: {
-          remove: { glints: 1 },
-          add: { dust_cloak: 1 },
-          flag: { kaelenKnown: true, kaelenSoldCloak: true },
-          ticks: 1,
-          goto: 'camp:kaelen',
-          flash: '"Canvas that outlived three owners. Wear it. I already counted the Glint."',
-        },
-      },
-      {
-        id: 'cloak-scrap',
-        label: 'Buy a Dust Cloak — two scrap',
-        show: { all: [{ itemMin: ['scrap', 2] }, { flagUnset: 'kaelenSoldCloak' }] },
-        effects: {
-          remove: { scrap: 2 },
-          add: { dust_cloak: 1 },
-          flag: { kaelenKnown: true, kaelenSoldCloak: true },
-          ticks: 1,
-          goto: 'camp:kaelen',
-          flash: '"Scrap for a hide. Arithmetic."',
-        },
-      },
       {
         id: 'rumors',
         label: 'Ask for rumors. News.',
@@ -130,8 +73,8 @@ They have the Wire at their back like a second pack-strap. "You're the trench st
         effects: { goto: 'camp:kaelen-rumors', flag: { kaelenKnown: true } },
       },
       {
-        tags: ['drop', 'sap', 'oasis', 'trade', 'buy', 'sell', 'scrap'],
-        reply: '"Scrap buys a Drop of Oasis Sap. That is the shop. Rumors are a different shelf."',
+        tags: ['drop', 'sap', 'oasis'],
+        reply: '"Scrap buys a Drop of Oasis Sap. That is Buy. Rumors are a different shelf."',
         effects: { ticks: 1 },
       },
       {
@@ -318,61 +261,8 @@ export const spineKaelenScenes: Scene[] = [
     speaker: 'Kaelen the Sifter',
     body: `${look}
 
-Dusk on the Spine. Same pack. Same gloves. Less wire, more dust. "You're the empty vial," they say. "I fill those if you pay. I also sell rumors. Silas sold you shade. I sell inventory."`,
+Dusk on the Spine. Same pack. Same gloves. Less wire, more dust. "You're the empty vial," they say. "I fill those if you pay. Buy. Sell. I also sell rumors. Silas sold you shade. I sell inventory."`,
     choices: [
-      {
-        id: 'drop',
-        label: 'Trade scrap for a Drop of Oasis Sap',
-        show: { item: 'scrap' },
-        effects: {
-          remove: { scrap: 1 },
-          add: { vial_drop: 1 },
-          flag: { kaelenKnown: true, kaelenSoldDrop: true, firstDrop: true },
-          ticks: 1,
-          goto: 'spine:well',
-          flash: '"Scrap in. Drop out." The glass stops ticking. They are already looking past you for the next customer.',
-        },
-      },
-      {
-        id: 'knife',
-        label: 'Buy a Needle Knife — two scrap',
-        sub: 'Weapon · Bite 3. Equip it in Gear.',
-        show: { all: [{ itemMin: ['scrap', 2] }, { flagUnset: 'kaelenSoldKnife' }] },
-        effects: {
-          remove: { scrap: 2 },
-          add: { needle_knife: 1 },
-          flag: { kaelenKnown: true, kaelenSoldKnife: true },
-          ticks: 1,
-          goto: 'spine:kaelen',
-          flash: '"Thin. Mean. Spine-prices are the same as Wire-prices. I do not do regional charity."',
-        },
-      },
-      {
-        id: 'cloak',
-        label: 'Buy a Dust Cloak — one Glint',
-        show: { all: [{ item: 'glints' }, { flagUnset: 'kaelenSoldCloak' }] },
-        effects: {
-          remove: { glints: 1 },
-          add: { dust_cloak: 1 },
-          flag: { kaelenKnown: true, kaelenSoldCloak: true },
-          ticks: 1,
-          goto: 'spine:kaelen',
-          flash: '"Wear it. Noon still bills. The cloak only hides a silhouette."',
-        },
-      },
-      {
-        id: 'cloak-scrap',
-        label: 'Buy a Dust Cloak — two scrap',
-        show: { all: [{ itemMin: ['scrap', 2] }, { flagUnset: 'kaelenSoldCloak' }] },
-        effects: {
-          remove: { scrap: 2 },
-          add: { dust_cloak: 1 },
-          flag: { kaelenKnown: true, kaelenSoldCloak: true },
-          ticks: 1,
-          goto: 'spine:kaelen',
-          flash: '"Scrap for a hide. Arithmetic. Spine-prices are Wire-prices."',
-        },
-      },
       {
         id: 'rumors',
         label: 'Ask for rumors. News.',
@@ -415,8 +305,8 @@ Dusk on the Spine. Same pack. Same gloves. Less wire, more dust. "You're the emp
         effects: { goto: 'spine:kaelen-rumors', flag: { kaelenKnown: true } },
       },
       {
-        tags: ['drop', 'sap', 'trade', 'buy', 'scrap'],
-        reply: '"Scrap buys a Drop of Oasis Sap. Rumors are Glints, or cheaper trouble for scrap."',
+        tags: ['drop', 'sap'],
+        reply: '"Scrap buys a Drop of Oasis Sap. That is Buy. Rumors are Glints, or cheaper trouble for scrap."',
         effects: { ticks: 1 },
       },
     ],

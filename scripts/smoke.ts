@@ -9,9 +9,11 @@ import {
   sceneOf,
   skim,
   travelTo,
+  unequipSlot,
   visibleChoices,
 } from '../src/game/engine.ts'
 import { DOORS, HUBS, ITEMS } from '../src/game/content/catalog.ts'
+import { getScene } from '../src/game/content/index.ts'
 import { PEOPLE } from '../src/game/people.ts'
 import { rollScavenge } from '../src/game/scavenge.ts'
 import {
@@ -39,6 +41,7 @@ import {
   clearLocalDiskOnly,
   flushSave,
   hydrateSaves,
+  writeSave,
 } from '../src/game/save.ts'
 
 function assert(cond: unknown, msg: string): asserts cond {
@@ -65,6 +68,14 @@ function pick(s: GameState, id: string) {
 
 function ids(s: GameState) {
   return visibleChoices(s).map((x) => x.id)
+}
+
+function openShop(s: GameState, shelf: 'buy' | 'sell') {
+  const id = shelf === 'buy' ? 'shop-buy' : 'shop-sell'
+  if (ids(s).includes(id)) return pick(s, id)
+  if (s.flags.shopShelf === shelf) return s
+  if (ids(s).includes('shop-back')) s = pick(s, 'shop-back')
+  return pick(s, id)
 }
 
 function prisonerToSybella(s: GameState): GameState {
@@ -274,8 +285,10 @@ assert(ids(s).includes('rumors'), 'rumor menu exists')
 s = interpret(s, 'ask for rumors news')
 assert(s.sceneId === 'camp:kaelen-rumors', 'asking opens the rumor counter')
 s = pick(s, 'back')
+s = openShop(s, 'buy')
 s = pick(s, 'drop')
 assert((s.items.vial_drop ?? 0) >= 1, 'scrap buys a Drop of Oasis Sap')
+s = pick(s, 'shop-back')
 s = pick(s, 'rumors')
 s = pick(s, 'relic')
 s = pick(s, 'take')
@@ -531,7 +544,9 @@ s = pick(s, 'kaelen')
 assert(sceneOf(s).speaker === 'Kaelen the Sifter', 'Kaelen talk after the card')
 assert(!bodyOf(s).includes('diminutive merchant'), 'later Kaelen is only what they are doing now')
 s = applyEffect(s, { add: { scrap: 1 } })
-assert(ids(s).includes('drop'), 'scrap→Drop still on the counter')
+assert(ids(s).includes('shop-buy'), 'Kaelen counter offers Buy')
+s = openShop(s, 'buy')
+assert(ids(s).includes('drop'), 'scrap→Drop is on the Buy shelf')
 s = pick(s, 'drop')
 assert((s.items.vial_drop ?? 0) >= 1, 'Kaelen still trades scrap for a Drop')
 
@@ -734,15 +749,20 @@ s = applyEffect(s, {
   add: { glints: 4, scrap: 2 },
   flag: { zafirMet: true, chapter1Done: true },
 })
+assert(ids(s).includes('shop-buy'), 'Zafir counter offers Buy')
+assert(ids(s).includes('shop-sell'), 'Zafir counter offers Sell')
+s = openShop(s, 'buy')
 assert(ids(s).includes('buy'), 'Zafir sells Drops')
 assert(ids(s).includes('hide'), 'Zafir sells Hound Hide')
 assert(ids(s).includes('baton'), 'Zafir sells a shock baton')
-assert(ids(s).includes('sell-scrap'), 'Zafir buys scrap')
 s = pick(s, 'buy')
 assert(s.sceneId === 'maw:zafir', 'buying a Drop keeps you at the stall')
 assert((s.items.vial_drop ?? 0) >= 1, 'Drop purchase lands')
 s = interpret(s, 'trade')
 assert(s.flash && !s.flash.toLowerCase().includes('miss'), 'Zafir trade talk is authored')
+s = pick(s, 'shop-back')
+s = openShop(s, 'sell')
+assert(ids(s).includes('sell-scrap'), 'Zafir buys scrap on Sell')
 s = pick(s, 'sell-scrap')
 assert((s.items.glints ?? 0) >= 3, 'selling scrap yields a Glint')
 
@@ -985,6 +1005,8 @@ assert(
 s = newGame('prisoner')
 s = pick(s, 'pens')
 s = applyEffect(s, { goto: 'camp:kaelen', add: { scrap: 2 } })
+assert(ids(s).includes('shop-buy') && ids(s).includes('shop-sell'), 'Prisoner Kaelen has Buy/Sell')
+s = openShop(s, 'buy')
 assert(ids(s).includes('cloak-scrap'), 'Prisoner Kaelen sells cloak for scrap')
 s = applyEffect(s, { goto: 'camp:wire' })
 s = interpret(s, 'talk')
@@ -993,6 +1015,8 @@ assert(/gloves|product|shelf/i.test(s.flash ?? ''), 'Do talk on the Wire hits Ka
 s = newGame('outcast')
 s = pick(s, 'stand')
 s = applyEffect(s, { goto: 'spine:kaelen', add: { scrap: 2 } })
+assert(ids(s).includes('shop-buy') && ids(s).includes('shop-sell'), 'Outcast Kaelen has Buy/Sell like Prisoner')
+s = openShop(s, 'buy')
 assert(ids(s).includes('cloak-scrap'), 'Outcast Kaelen sells cloak for scrap like Prisoner')
 s = applyEffect(s, { goto: 'spine:well' })
 s = interpret(s, 'talk')
@@ -1002,6 +1026,126 @@ s = newGame('vessel')
 s = pick(s, 'keep')
 s = interpret(s, 'hello')
 assert(/Vessel|cup|poured/i.test(s.flash ?? ''), 'Do hello at Court hits Thalia who is there')
+
+s = applyEffect(s, { goto: 'ch1:v-zafir', startChapter: 'cache-run' })
+assert(!ids(s).includes('shop-buy') && !ids(s).includes('shop-sell'), 'Hunger cairn Zafir is not a shop')
+
+for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
+  let shop = newGame(door)
+  shop = applyEffect(shop, { goto: 'camp:kaelen', enterHub: 'camp04', add: { scrap: 2 } })
+  assert(ids(shop).includes('shop-buy') && ids(shop).includes('shop-sell'), `${door} Kaelen Wire shop is shared`)
+  shop = applyEffect(shop, { goto: 'maw:zafir', enterHub: 'redmaw', add: { glints: 4, scrap: 2 } })
+  assert(ids(shop).includes('shop-buy') && ids(shop).includes('shop-sell'), `${door} Maw Zafir shop is shared`)
+}
+
+s = newGame('prisoner')
+s = applyEffect(s, {
+  goto: 'maw:zafir',
+  enterHub: 'redmaw',
+  add: { dust_cloak: 1, hide_wrap: 1, cache_map: 1, glints: 2, scrap: 2 },
+  flag: { zafirSoldHide: true },
+})
+s = equipItem(s, 'hide_wrap')
+s = openShop(s, 'sell')
+assert(ids(s).includes('sell-dust_cloak'), 'unequipped Dust Cloak can be sold')
+assert(!ids(s).includes('sell-hide_wrap'), 'equipped Hound Hide stays off Sell until unequipped')
+assert(!ids(s).includes('sell-cache_map'), 'quest maps are not saleable')
+s = unequipSlot(s, 'armor')
+assert(ids(s).includes('sell-hide_wrap'), 'unequipped Hide returns to Sell')
+const glintsBefore = s.items.glints ?? 0
+s = pick(s, 'sell-dust_cloak')
+assert((s.items.scrap ?? 0) >= 3, 'selling a cloak pays scrap, less than buy')
+assert((s.items.dust_cloak ?? 0) === 0, 'sold cloak leaves the pack')
+assert((s.items.glints ?? 0) === glintsBefore, 'cloak sale pays scrap not extra Glints')
+
+const lostVessel = getScene('ch1:trail', 'vessel')
+assert(lostVessel.id === 'missing', 'unknown Hunger id still has a fallback card')
+assert(!lostVessel.choices.some((c) => c.effects.goto === 'camp:yard' || c.effects.goto === 'spine:shade' || c.effects.goto === 'spine:ridge'), 'lost heading does not dump Vessel into Prisoner yard or Outcast shade')
+assert(lostVessel.choices[0]?.effects.goto === 'thresh:court', 'Vessel lost heading sends them to the Court')
+assert(!/find shade/i.test(lostVessel.choices[0]?.label ?? ''), 'Find shade is gone')
+assert(getScene('nope:gone', 'outcast').choices[0]?.effects.goto === 'spine:ridge', 'Outcast lost heading stays on the Spine')
+assert(getScene('nope:gone', 'prisoner').choices[0]?.effects.goto === 'camp:cages', 'Prisoner lost heading stays in the pens')
+
+function reloadSlot(state: GameState) {
+  writeSave(state)
+  clearSessionCache()
+  const loaded = loadDoor(state.door)
+  assert(loaded, `${state.door} slot reloads`)
+  return loaded
+}
+
+s = newGame('vessel')
+s = pick(s, 'keep')
+assert(s.sceneId === 'thresh:court', 'Vessel mid-hub is the Court')
+s = reloadSlot(s)
+assert(s.door === 'vessel' && s.sceneId === 'thresh:court', 'Vessel Continue mid-hub stays Vessel at Court')
+
+s = applyEffect(s, { startChapter: 'cache-run', goto: 'ch1:v-hymn', sap: 4 })
+assert(s.sceneId === 'ch1:v-hymn', 'Vessel mid-Hunger is the hymn-road')
+s = reloadSlot(s)
+assert(s.door === 'vessel' && s.sceneId === 'ch1:v-hymn', 'Vessel Continue mid-Hunger stays on the hymn-road')
+
+s = newGame('vessel')
+writeSave({
+  ...s,
+  sceneId: 'ch1:trail',
+  chapterId: 'cache-run',
+  hubId: null,
+  flags: { ...s.flags, hungerLocked: true, hungerKnown: true },
+})
+clearSessionCache()
+s = loadDoor('vessel')!
+assert(s.door === 'vessel', 'old trail save keeps Vessel door')
+assert(s.sceneId === 'ch1:v-hymn', 'old ch1:trail migrates Vessel onto the hymn-road, not Spine shade')
+assert(s.chapterId === 'cache-run', 'migrated Vessel Hunger stays in Cache Run')
+
+s = newGame('vessel')
+writeSave({
+  ...s,
+  sceneId: 'ch1:zafir',
+  chapterId: 'cache-run',
+  hubId: null,
+  flags: { ...s.flags, hungerLocked: true },
+})
+clearSessionCache()
+s = loadDoor('vessel')!
+assert(s.sceneId === 'ch1:v-zafir', 'old ch1:zafir migrates Vessel to the cup-hostile stall')
+
+s = newGame('vessel')
+s = applyEffect(s, { goto: 'spine:shade', enterHub: 'spine' })
+assert(s.sceneId === 'spine:shade', 'runtime can still land on an existing Spine beat')
+s = reloadSlot(s)
+assert(s.door === 'vessel' && s.sceneId === 'thresh:court', 'Vessel parked on Silas shade migrates to the Court')
+assert(s.hubId === 'threshold', 'migrated Vessel hub is Threshold, not Spine')
+
+s = newGame('vessel')
+s = applyEffect(s, { goto: 'camp:yard', enterHub: 'camp04' })
+s = reloadSlot(s)
+assert(s.door === 'vessel' && s.sceneId === 'thresh:court', 'Vessel dumped in the Prisoner yard migrates to the Court')
+
+s = newGame('prisoner')
+s = pick(s, 'pens')
+s = reloadSlot(s)
+assert(s.door === 'prisoner' && s.sceneId === 'camp:cages', 'Prisoner Continue mid-hub stays in the pens')
+s = applyEffect(s, { startChapter: 'cache-run', goto: 'ch1:p-pipe', sap: 4 })
+s = reloadSlot(s)
+assert(s.door === 'prisoner' && s.sceneId === 'ch1:p-pipe', 'Prisoner Continue mid-Hunger stays on the fence')
+writeSave({ ...s, sceneId: 'ch1:trail' })
+clearSessionCache()
+s = loadDoor('prisoner')!
+assert(s.sceneId === 'ch1:p-pipe', 'old ch1:trail migrates Prisoner onto the fence')
+
+s = newGame('outcast')
+s = pick(s, 'stand')
+s = reloadSlot(s)
+assert(s.door === 'outcast' && s.sceneId === 'spine:ridge', 'Outcast Continue mid-hub stays on the ridge')
+s = applyEffect(s, { startChapter: 'cache-run', goto: 'ch1:o-noon', sap: 4 })
+s = reloadSlot(s)
+assert(s.door === 'outcast' && s.sceneId === 'ch1:o-noon', 'Outcast Continue mid-Hunger stays in noon country')
+writeSave({ ...s, sceneId: 'ch1:zafir' })
+clearSessionCache()
+s = loadDoor('outcast')!
+assert(s.sceneId === 'ch1:sybella', 'old shared Zafir stall migrates Outcast to Sybella, not Vessel cup-shop')
 
 clearAllSaves()
 for (const door of ['prisoner', 'outcast', 'vessel'] as const) {

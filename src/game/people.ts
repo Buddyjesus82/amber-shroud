@@ -79,7 +79,7 @@ They sell Drops of Oasis Sap for scrap, intel for Glints, and rumors that open t
 Kaelen the Sifter is here when profit says here — pack, gloves, already counting. Rumors if you ask. Drops if you pay. Oil-Tooth remains the inside man.
 
 Ironclad Skiff-Striders patrol the other side of this line. The Hunger lives past it. So do Hounds.`,
-      'camp:kaelen': `Kaelen works the pack with both gloves. The Wire at their back like a second strap. "Pick a product," they say. "Drops. Intel. Rumors that open trouble. I am not Oil-Tooth."`,
+      'camp:kaelen': `Kaelen works the pack with both gloves. The Wire at their back like a second strap. "Pick a shelf," they say. "Buy. Sell. Rumors that open trouble. I am not Oil-Tooth."`,
       'spine:kaelen': `Dusk on the Spine. Same pack. Same gloves. Less wire, more dust. "You're the empty vial," they say. "I fill those if you pay. I also sell rumors. Silas sold you shade. I sell inventory."`,
     },
   },

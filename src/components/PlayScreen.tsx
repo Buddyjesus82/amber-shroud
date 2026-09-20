@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import { HUBS } from '../game/content/catalog'
 import {
   applyEffect,
@@ -21,6 +21,7 @@ import { effectPills, listedKit } from '../game/kit'
 import { isMawExit } from '../game/map'
 import { encounterSpeaker } from '../game/encounter'
 import { isSybellaOverlay, isWireSide } from '../game/hunter'
+import { isShopOpen } from '../game/trade'
 import type { Faction, GameState } from '../game/types'
 import { HeatExplainer, HeatTip } from './HeatGuide'
 import { InventorySheet } from './InventorySheet'
@@ -31,6 +32,7 @@ type OptionRow = {
   tone: string
   label: string
   sub?: string
+  group?: 'buy' | 'sell' | 'talk'
   locked?: boolean
   lockedNote?: string
   pills?: { kind: string; text: string }[]
@@ -70,11 +72,12 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     !!state.flags.encounterHere ||
     isSybellaOverlay(state) ||
     (!!state.flags.hunterHere && isWireSide(state.sceneId))
-  const hookRow = !!(!overlay && hub && hookOn && hook && showNav)
-  const closeRow = !!(!overlay && closing && showNav)
+  const shopOpen = isShopOpen(state)
+  const hookRow = !!(!overlay && !shopOpen && hub && hookOn && hook && showNav)
+  const closeRow = !!(!overlay && !shopOpen && closing && showNav)
   // Every selectable quest/story/hub action belongs in this list — never pinned above .choices.
   const optionRows: OptionRow[] = []
-  if (!overlay && roam) {
+  if (!overlay && !shopOpen && roam) {
     optionRows.push({
       key: 'scavenge',
       tone: 'quiet',
@@ -84,7 +87,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     })
   }
   const hasSceneSkim = choices.some((c) => c.id === 'skim')
-  if (!overlay && skimOn && !hasSceneSkim) {
+  if (!overlay && !shopOpen && skimOn && !hasSceneSkim) {
     optionRows.push({
       key: 'skim',
       tone: 'danger',
@@ -133,6 +136,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
       tone: `${c.tone ?? 'default'}${on ? '' : ' locked'}`,
       label: c.label,
       sub: c.sub,
+      group: c.group,
       locked: !on,
       lockedNote: !on ? c.locked : undefined,
       pills: effectPills(c.effects),
@@ -274,30 +278,36 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
 
       <div className="thumb">
         <div className="choices">
-          {optionRows.map((row) => (
-            <button
-              type="button"
-              key={row.key}
-              className={`choice ${row.tone}`}
-              disabled={row.locked}
-              onClick={row.onClick}
-            >
-              <span className="choice-copy">
-                {row.label}
-                {row.sub ? <small>{row.sub}</small> : null}
-                {row.lockedNote ? <small>{row.lockedNote}</small> : null}
-              </span>
-              {row.pills?.length ? (
-                <span className="pills">
-                  {row.pills.map((p) => (
-                    <i key={`${row.key}-${p.kind}-${p.text}`} className={p.kind}>
-                      {p.text}
-                    </i>
-                  ))}
-                </span>
-              ) : null}
-            </button>
-          ))}
+          {optionRows.map((row, i) => {
+            const prev = optionRows[i - 1]
+            const head = row.group && row.group !== prev?.group ? row.group : null
+            return (
+              <Fragment key={row.key}>
+                {head ? <p className="choice-group">{head === 'buy' ? 'Buy' : head === 'sell' ? 'Sell' : 'Talk'}</p> : null}
+                <button
+                  type="button"
+                  className={`choice ${row.tone}`}
+                  disabled={row.locked}
+                  onClick={row.onClick}
+                >
+                  <span className="choice-copy">
+                    {row.label}
+                    {row.sub ? <small>{row.sub}</small> : null}
+                    {row.lockedNote ? <small>{row.lockedNote}</small> : null}
+                  </span>
+                  {row.pills?.length ? (
+                    <span className="pills">
+                      {row.pills.map((p) => (
+                        <i key={`${row.key}-${p.kind}-${p.text}`} className={p.kind}>
+                          {p.text}
+                        </i>
+                      ))}
+                    </span>
+                  ) : null}
+                </button>
+              </Fragment>
+            )
+          })}
         </div>
 
         {showDo ? (
