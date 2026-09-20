@@ -774,6 +774,50 @@ assert(afterMigrate.door === 'outcast' && loadDoor('outcast')?.door === 'outcast
 clearAllSaves()
 
 clearAllSaves()
+
+const encSrc = readFileSync(new URL('../src/game/encounter.ts', import.meta.url), 'utf8')
+assert(encSrc.includes("'camp:yard'"), 'Prisoner yard can roll encounters')
+assert(encSrc.includes("'spine:ridge'"), 'Outcast ridge can roll encounters')
+assert(encSrc.includes("'spine:hound'"), 'Outcast maw-exit can roll encounters')
+assert(encSrc.includes("'thresh:court'"), 'Vessel court can roll encounters')
+assert(encSrc.includes("'thresh:paddock'"), 'Vessel paddock can roll encounters')
+assert(encSrc.includes("'ch1:trail'"), 'Cache Run trail can roll encounters')
+assert(
+  readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8').includes('hasSceneSkim'),
+  'shared Skim row does not double a scene skim',
+)
+
+s = newGame('prisoner')
+s = pick(s, 'pens')
+s = applyEffect(s, { goto: 'camp:kaelen', add: { scrap: 2 } })
+assert(ids(s).includes('cloak-scrap'), 'Prisoner Kaelen sells cloak for scrap')
+s = applyEffect(s, { goto: 'camp:wire' })
+s = interpret(s, 'talk')
+assert(/gloves|product|shelf/i.test(s.flash ?? ''), 'Do talk on the Wire hits Kaelen who is there')
+
+s = newGame('outcast')
+s = pick(s, 'stand')
+s = applyEffect(s, { goto: 'spine:kaelen', add: { scrap: 2 } })
+assert(ids(s).includes('cloak-scrap'), 'Outcast Kaelen sells cloak for scrap like Prisoner')
+s = applyEffect(s, { goto: 'spine:well' })
+s = interpret(s, 'talk')
+assert(/gloves|product|shelf/i.test(s.flash ?? ''), 'Do talk at the well hits Kaelen who is there')
+
+s = newGame('vessel')
+s = pick(s, 'keep')
+s = interpret(s, 'hello')
+assert(/Vessel|cup|poured/i.test(s.flash ?? ''), 'Do hello at Court hits Thalia who is there')
+
+clearAllSaves()
+for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
+  const run = newGame(door)
+  await flushSave(run)
+  clearSessionCache()
+  assert(loadDoor(door)?.door === door, `${door} slot survives a RAM drop`)
+}
+clearAllSaves()
+
+clearAllSaves()
 let diskRun = newGame('prisoner')
 diskRun = pick(diskRun, 'pens')
 await flushSave(diskRun)

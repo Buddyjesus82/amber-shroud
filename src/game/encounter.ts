@@ -71,6 +71,8 @@ const ENCOUNTER_SCENES = new Set([
   'camp:bay',
   'spine:ridge',
   'spine:well',
+  'spine:hound',
+  'thresh:court',
   'thresh:paddock',
   'thresh:guard',
   'maw:rim',

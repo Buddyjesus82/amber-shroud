@@ -479,6 +479,19 @@ export function interpret(state: GameState, text: string): GameState {
     }
   }
 
+  if (state.flags.hunterHere && isWireSide(state.sceneId)) {
+    const hay = text.toLowerCase()
+    if (/\b(stay|hold|wait|here|dismiss|pass)\b/.test(hay)) {
+      return withVerb(applyEffect(state, wireHunterChoices()[0].effects), 'hold')
+    }
+    if (/\b(line|yard|scrape|dive)\b/.test(hay)) {
+      return withVerb(applyEffect(state, wireHunterChoices()[1].effects), 'line')
+    }
+    if (/\b(cloak|hide|cover)\b/.test(hay) && state.equipped?.armor) {
+      return withVerb(applyEffect(state, wireHunterChoices()[2].effects), 'cloak')
+    }
+  }
+
   if (isSybellaOverlay(state)) {
     const hay = text.toLowerCase()
     if (/\b(stay|hold|wait|dismiss|pass|here)\b/.test(hay)) {

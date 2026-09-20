@@ -77,7 +77,8 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
       onClick: () => onChange(scavenge(state)),
     })
   }
-  if (skimOn) {
+  const hasSceneSkim = choices.some((c) => c.id === 'skim')
+  if (skimOn && !hasSceneSkim) {
     optionRows.push({
       key: 'skim',
       tone: 'danger',
