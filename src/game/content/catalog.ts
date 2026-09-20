@@ -262,6 +262,7 @@ export const HUBS: Record<string, HubDef> = {
     places: [
       { id: 'court', name: 'Threshold Court', sceneId: 'thresh:court' },
       { id: 'cell', name: 'False Vessel Cell', sceneId: 'thresh:cell' },
+      { id: 'sift', name: 'Cup-Shadow', sceneId: 'thresh:sift' },
       { id: 'paddock', name: 'Strider Paddock', sceneId: 'thresh:paddock' },
       { id: 'guard', name: 'Guard Post', sceneId: 'thresh:guard' },
     ],

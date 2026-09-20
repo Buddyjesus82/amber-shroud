@@ -33,6 +33,12 @@ Thalia stands at the dais with gold on her cheeks that might be kohl and might b
         effects: { goto: 'thresh:oram', ticks: 1 },
       },
       {
+        id: 'kaelen',
+        label: 'Walk the cup-shadow — a pack that is not a hymn',
+        sub: 'Kaelen the Sifter. Map road. They play all sides.',
+        effects: { travel: 'thresh:sift' },
+      },
+      {
         id: 'hunger',
         label: 'Ride the stolen Strider into Hunger',
         sub: "Oram's map. Kallik's cache. Before the cloth fails.",
@@ -67,6 +73,11 @@ Thalia stands at the dais with gold on her cheeks that might be kohl and might b
         tags: ['oram', 'count', 'strider'],
         reply: 'Oram\'s ledger is the only honest scripture in the Court.',
         effects: { goto: 'thresh:oram', ticks: 1 },
+      },
+      {
+        tags: ['kaelen', 'sifter', 'merchant', 'pack', 'shadow', 'cup-shadow'],
+        reply: 'Hymn-shade off the paddock. A pack, not a stall. You walk it.',
+        effects: { travel: 'thresh:sift' },
       },
       {
         tags: ['confess', 'truth', 'fake', 'lie'],
@@ -205,6 +216,12 @@ Oram is here more than the Court. He prefers animals to hymns. Animals do not as
         effects: { goto: 'thresh:oram', ticks: 1 },
       },
       {
+        id: 'kaelen',
+        label: 'The hymn-shade off the paddock',
+        sub: 'Kaelen buys false routes. They do not ride.',
+        effects: { travel: 'thresh:sift' },
+      },
+      {
         id: 'ready',
         label: 'Ready the stolen Strider',
         show: { item: 'strider_bit' },
@@ -221,6 +238,11 @@ Oram is here more than the Court. He prefers animals to hymns. Animals do not as
         tags: ['ride', 'steal', 'mount', 'go'],
         reply: 'Not past the guard in daylight unless you want a hymn of knives. Ready it. Then pick your hour.',
         effects: { flag: { striderReady: true } },
+      },
+      {
+        tags: ['kaelen', 'sifter', 'merchant', 'pack', 'shadow'],
+        reply: 'Cup-shadow. Same pack. You walk the fence-shade. They do not come to the bits.',
+        effects: { travel: 'thresh:sift' },
       },
     ],
   },

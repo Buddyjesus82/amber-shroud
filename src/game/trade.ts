@@ -118,7 +118,7 @@ const KAELEN_STOCK: StockOffer[] = [
 const VENDORS: Vendor[] = [
   {
     id: 'kaelen',
-    scenes: ['camp:kaelen', 'spine:kaelen'],
+    scenes: ['camp:kaelen', 'spine:kaelen', 'thresh:kaelen'],
     knownFlag: 'kaelenKnown',
     stock: KAELEN_STOCK,
     changeScrap: true,

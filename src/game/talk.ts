@@ -60,7 +60,19 @@ const kaelen: IntentRule[] = [
   },
   {
     tags: HELP,
+    show: { door: 'vessel' },
+    reply: '"Help is a church word. I do arithmetic. Scrap in, Drop out. Glints in, heading out. Oram still counts Striders. I do not ride them."',
+    effects: { ticks: 1 },
+  },
+  {
+    tags: HELP,
     reply: '"Help is a church word. I do arithmetic. Scrap in, Drop out. Glints in, heading out. Oil-Tooth still hotwires."',
+    effects: { ticks: 1 },
+  },
+  {
+    tags: TRADE,
+    show: { door: 'vessel' },
+    reply: '"Scrap buys a Drop. Glints buy a heading that is not a hymn. Buy and Sell are shelves. I do not take blessing as coin."',
     effects: { ticks: 1 },
   },
   {
@@ -423,7 +435,9 @@ export function talkIntentsFor(sceneId: string): IntentRule[] {
   const here = personAtScene(sceneId)
   if (here) return BY_PERSON[here.id]
   if (match(sceneId, ['camp:jaxson', 'camp:lean', 'camp:bay', 'camp:cages'])) return oiltooth
-  if (match(sceneId, ['camp:kaelen', 'spine:kaelen', 'camp:wire', 'spine:well'])) return kaelen
+  if (match(sceneId, ['camp:kaelen', 'spine:kaelen', 'camp:wire', 'spine:well', 'thresh:kaelen', 'thresh:sift'])) {
+    return kaelen
+  }
   if (match(sceneId, ['camp:valerius', 'camp:tower', 'camp:hunter', 'spine:valerius', 'spine:hound', 'spine:hunter'])) {
     return valerius
   }

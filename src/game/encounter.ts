@@ -90,6 +90,7 @@ const ENCOUNTER_SCENES = new Set([
   'thresh:court',
   'thresh:paddock',
   'thresh:guard',
+  'thresh:sift',
   'maw:rim',
   'maw:market',
   'maw:lip',

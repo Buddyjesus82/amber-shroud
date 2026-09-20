@@ -72,6 +72,9 @@ They sell Drops of Oasis Sap for scrap, intel for Glints, and rumors that open t
       'spine:kaelen',
       'spine:kaelen-rumors',
       'spine:well',
+      'thresh:sift',
+      'thresh:kaelen',
+      'thresh:kaelen-rumors',
     ],
     later: {
       'camp:wire': `The perimeter. Razor-wire. Steam-vents coughing. Beyond it the dunes begin to have opinions.
@@ -81,6 +84,10 @@ Kaelen the Sifter is here when profit says here — pack, gloves, already counti
 Ironclad Skiff-Striders patrol the other side of this line. The Hunger lives past it. So do Hounds.`,
       'camp:kaelen': `Kaelen works the pack with both gloves. The Wire at their back like a second strap. "Pick a shelf," they say. "Buy. Sell. Rumors that open trouble. I am not Oil-Tooth."`,
       'spine:kaelen': `Dusk on the Spine. Same pack. Same gloves. Less wire, more dust. "You're the empty vial," they say. "I fill those if you pay. I also sell rumors. Silas sold you shade. I sell inventory."`,
+      'thresh:sift': `Hymn-shade off the paddock. Not a stall. A pack on a false-route wall.
+
+Kaelen the Sifter is here when profit says here — gloves, already counting the cloth like it might fetch if they were crueler. They buy false routes. They sell inventory. Thalia remains the church. Oram remains the ledger.`,
+      'thresh:kaelen': `Kaelen works the pack with both gloves. Hymn-dust on the canvas. "Pick a shelf," they say. "Buy. Sell. Rumors that open trouble. I am not a cup. I do not ride."`,
     },
   },
   valerius: {
