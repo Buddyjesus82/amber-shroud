@@ -14,6 +14,13 @@ import {
 import { DOORS, HUBS, ITEMS } from '../src/game/content/catalog.ts'
 import { PEOPLE } from '../src/game/people.ts'
 import { rollScavenge } from '../src/game/scavenge.ts'
+import {
+  IDLE_DOOR,
+  tapDoor,
+  tapOverwriteAsk,
+  tapOverwriteConfirm,
+  tapResume,
+} from '../src/game/doorPick.ts'
 import type { GameState } from '../src/game/types.ts'
 import { canTravelTo, edgeSap, HUB_MAPS, nodeIdForScene, route } from '../src/game/map.ts'
 import {
@@ -67,7 +74,7 @@ function prisonerToSybella(s: GameState): GameState {
   assert(s.sceneId === 'ch1:p-clerk', `prisoner meets Clerk Rell (got ${s.sceneId})`)
   s = pick(s, ids(s).includes('scrip') ? 'scrip' : 'bolt')
   assert(s.sceneId === 'ch1:p-oil', `prisoner meets Oil-Tooth on the stolen hull (got ${s.sceneId})`)
-  s = pick(s, ids(s).includes('walk') ? 'walk' : 'ride')
+  s = pick(s, ids(s).includes('ride') ? 'ride' : ids(s).includes('tag') ? 'tag' : 'walk')
   assert(s.sceneId === 'ch1:p-ossa', `prisoner meets Ossa as escaped property (got ${s.sceneId})`)
   s = pick(s, ids(s).includes('wrench') ? 'wrench' : 'skip')
   if (s.sceneId === 'ch1:ossa-talk') s = pick(s, 'on')
@@ -96,7 +103,7 @@ function vesselToSybella(s: GameState): GameState {
   assert(s.sceneId === 'ch1:v-hymn', `vessel Hunger is the hymn-road (got ${s.sceneId})`)
   s = pick(s, ids(s).includes('oram') ? 'oram' : 'hymn')
   assert(s.sceneId === 'ch1:v-runners', `vessel meets Seeker runners (got ${s.sceneId})`)
-  s = pick(s, ids(s).includes('bolt') ? 'bolt' : ids(s).includes('cloth') ? 'cloth' : 'map')
+  s = pick(s, ids(s).includes('cloth') ? 'cloth' : ids(s).includes('bolt') ? 'bolt' : 'map')
   assert(s.sceneId === 'ch1:v-zafir', `vessel meets Zafir who will not shop a cup (got ${s.sceneId})`)
   s = pick(s, ids(s).includes('oram') ? 'oram' : 'news')
   if (s.sceneId === 'crisis:dunes') s = pick(s, 'up')
@@ -408,7 +415,7 @@ assert(!ids(s).includes('silas'), 'vessel hymn-road has no Silas cut')
 s = pick(s, 'oram')
 assert(s.flags.oramHeading, 'oram heading flag')
 assert(s.sceneId === 'ch1:v-runners', 'Seeker runners, not Ossa')
-s = pick(s, 'bolt')
+s = pick(s, ids(s).includes('cloth') ? 'cloth' : 'bolt')
 assert(s.sceneId === 'ch1:v-zafir')
 assert(ids(s).includes('oram'), 'Zafir still sees Oram map — will not shop a cup')
 assert(ids(s).includes('dagger'), 'zafir dagger threaten')
@@ -425,6 +432,12 @@ assert(s.flags.climax === 'flee', 'flee is spend+heat climax')
 assert(s.heat.seekers >= 6, 'flee bruises seeker heat')
 assert(s.sceneId === 'ch1:land')
 assert(bodyOf(s).includes('lungs') || bodyOf(s).includes('weather'), 'flee consequence on land')
+
+s = newGame('vessel')
+s = pick(s, 'keep')
+s = applyEffect(s, { sap: 6, startChapter: 'cache-run', goto: 'ch1:leave', ticks: 1 })
+s = vesselToSybella(s)
+assert(s.sceneId === 'ch1:sybella' && ids(s).includes('bargain'), 'vessel helper still lands Seekers-only bargain')
 
 s = newGame('outcast')
 s = pick(s, 'stand')
@@ -888,6 +901,70 @@ const afterMigrate = newGame('outcast')
 assert(loadDoor('prisoner')?.sceneId === 'camp:cages', 'migrated Prisoner survives a later Outcast start')
 assert(afterMigrate.door === 'outcast' && loadDoor('outcast')?.door === 'outcast', 'Outcast is a second slot')
 clearAllSaves()
+
+clearAllSaves()
+
+const doorUi = readFileSync(new URL('../src/components/DoorSelect.tsx', import.meta.url), 'utf8')
+assert(doorUi.includes('data-door-resume'), 'saved door shows a Resume control')
+assert(doorUi.includes('data-door-overwrite'), 'saved door shows New / Overwrite')
+assert(doorUi.includes('data-door-start'), 'overwrite confirm starts a new run')
+assert(!doorUi.includes('window.confirm'), 'overwrite confirm is in-card, not a blocking dialog')
+assert(DOORS.prisoner.title === 'Ironwood Break', 'Prisoner door is labeled Ironwood Break')
+
+function fireDoor(next: ReturnType<typeof tapDoor>, onResume: (d: typeof next.door) => void, onStart: (d: typeof next.door) => void) {
+  if (next.action === 'resume' && next.door) onResume(next.door)
+  if (next.action === 'start' && next.door) onStart(next.door)
+  return next.phase
+}
+
+for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
+  const emptyTap = tapDoor(IDLE_DOOR, [], door)
+  assert(emptyTap.action === 'start' && emptyTap.door === door, `${door} empty slot starts immediately`)
+  const firstTap = tapDoor(IDLE_DOOR, [door], door)
+  assert(firstTap.action === undefined && firstTap.phase.kind === 'choose', `${door} saved tap asks, does not start`)
+  const resumeTap = tapResume(door)
+  assert(resumeTap.action === 'resume' && resumeTap.door === door, `${door} Resume fires resume`)
+  const askWipe = tapOverwriteAsk(door)
+  assert(askWipe.phase.kind === 'overwrite' && askWipe.action === undefined, `${door} Overwrite asks first`)
+  const wipe = tapOverwriteConfirm(door)
+  assert(wipe.action === 'start' && wipe.door === door, `${door} Overwrite confirm starts new`)
+}
+
+clearAllSaves()
+let titleView: 'title' | 'doors' | 'play' = 'title'
+titleView = 'doors'
+let started: string | null = null
+const emptyIronwood = tapDoor(IDLE_DOOR, listSaves(), 'prisoner')
+fireDoor(emptyIronwood, () => {}, (d) => {
+  started = newGame(d).sceneId
+})
+assert(emptyIronwood.action === 'start', 'title → New Game → Ironwood Break with no save starts')
+assert(started === 'open:prisoner', 'empty Ironwood Break starts a new Prisoner run')
+
+clearAllSaves()
+let ironwood = newGame('prisoner')
+ironwood = pick(ironwood, 'pens')
+assert(ironwood.sceneId === 'camp:cages' && listSaves().includes('prisoner'), 'Ironwood Break now has a save')
+titleView = 'title'
+titleView = 'doors'
+const savedTap = tapDoor(IDLE_DOOR, listSaves(), 'prisoner')
+assert(savedTap.action === undefined && savedTap.phase.kind === 'choose', 'saved Ironwood Break expands; does not auto-start')
+let resumedScene: string | null = null
+fireDoor(tapResume('prisoner'), (d) => {
+  resumedScene = loadDoor(d)?.sceneId ?? null
+}, () => {})
+assert(resumedScene === 'camp:cages', 'Resume Ironwood Break returns to the Prisoner save')
+assert(listSaves().includes('prisoner'), 'Resume does not wipe the slot')
+
+let overwriteStarted: string | null = null
+const ask = tapOverwriteAsk('prisoner')
+assert(ask.phase.kind === 'overwrite' && !ask.action, 'Overwrite requires a confirm step')
+fireDoor(tapOverwriteConfirm('prisoner'), () => {}, (d) => {
+  overwriteStarted = newGame(d).sceneId
+})
+assert(overwriteStarted === 'open:prisoner', 'Overwrite confirm starts a fresh Prisoner run')
+assert(loadDoor('prisoner')?.sceneId === 'open:prisoner', 'overwrite replaces only the Prisoner slot')
+assert(titleView === 'doors', 'door pick stays on the door screen until an action fires')
 
 clearAllSaves()
 
