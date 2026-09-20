@@ -1,5 +1,5 @@
 import { ITEMS } from './content/catalog'
-import type { Effect, EquipSlot, ItemDef, ItemId } from './types'
+import type { Effect, EquipSlot, GameState, ItemDef, ItemId } from './types'
 
 export type KitChip = {
   id: ItemId
@@ -17,6 +17,19 @@ export function gearStat(item: Pick<ItemDef, 'bite' | 'hide'> | null | undefined
   if (item.bite != null) return `Bite ${item.bite}`
   if (item.hide != null) return `Hide ${item.hide}`
   return null
+}
+
+/** Empty hand still has a number. Never a roll. */
+export function equippedBite(state: GameState): number {
+  const id = state.equipped?.weapon
+  if (id && ITEMS[id]?.bite != null) return ITEMS[id].bite as number
+  return 1
+}
+
+export function equippedHide(state: GameState): number {
+  const id = state.equipped?.armor
+  if (id && ITEMS[id]?.hide != null) return ITEMS[id].hide as number
+  return 0
 }
 
 export function listedKit(items: Partial<Record<ItemId, number>>): KitChip[] {

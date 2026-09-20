@@ -20,10 +20,30 @@ export const cacheRunScenes: Scene[] = [
     title: 'Cache Run',
     body: `Want is simple: Kallik's cache at Red Maw. A pile of Drops next to a mouth.
 
-The problem is also simple: a blonde on a sand-skiff who needs a lantern that can walk. You are carrying sap like a signal fire.
+The problem is also simple: a blonde on a sand-skiff who needs a lantern that can walk.
 
-Three beats between you and her. Then you spend.`,
+Three beats between you and her — trail, Ossa, Zafir's cairn. Then you spend: the climax, not a Drop from your throat.`,
     variants: [
+      {
+        if: { sapMin: 5 },
+        mode: 'append',
+        body: `Your sap is warm. You are carrying it like a signal fire.`,
+      },
+      {
+        if: { all: [{ sapMin: 3 }, { sapMax: 4 }] },
+        mode: 'append',
+        body: `Your sap is holding. Not a lantern. Not empty. Enough to walk.`,
+      },
+      {
+        if: { all: [{ sapMin: 1 }, { sapMax: 2 }] },
+        mode: 'append',
+        body: `Your sap is thin. No lantern. A wick, maybe. She will still smell the glass.`,
+      },
+      {
+        if: { sapMax: 0 },
+        mode: 'append',
+        body: `Your sap is empty. You are not lit. The blonde wants a lantern that can walk — you are dry wood until you drink.`,
+      },
       {
         if: { door: 'prisoner' },
         mode: 'append',
@@ -442,6 +462,27 @@ I go to Red Maw because the stilts work better where the sand is honest about wa
         reply: 'She nods once. Stilts and sand. A procession of two.',
         effects: { flag: { ossaAlly: true, ossaAlive: true }, add: { ossa_token: 1 }, goto: 'ch1:zafir' },
       },
+      {
+        tags: ['ask', 'talk', 'hello', 'say', 'tell'],
+        reply: '"Zafir sells maps at the cairn. Sybella wants a battery. If that\'s you, don\'t tell her. I go because the sand is honest."',
+        effects: { ticks: 1, flag: { ossaMet: true } },
+      },
+      {
+        tags: ['help', 'share', 'drop', 'offer'],
+        show: { all: [{ item: 'vial_drop' }, { flagUnset: 'ossaRobbed' }] },
+        reply: 'She pockets it for a worse hour. A twice-tied knot lands in your palm.',
+        effects: {
+          remove: { vial_drop: 1 },
+          add: { vial_empty: 1, ossa_token: 1 },
+          flag: { ossaAlly: true, ossaAlive: true },
+          goto: 'ch1:zafir',
+        },
+      },
+      {
+        tags: ['threaten', 'attack', 'fight', 'stab'],
+        reply: 'Stilts plant. "I fall funny. The cairn does not need another ghost with a knife."',
+        effects: { heat: { strays: 1 }, pressure: 1, ticks: 1 },
+      },
     ],
   },
   {
@@ -595,6 +636,28 @@ Zafir smiles in a way that costs extra. "You look like Hunger. I sell headings t
         tags: ['sybella', 'skiff', 'blonde'],
         reply: '"Blindfold up. Kohl ruined. Voice like a lullaby that learned law. Do not be interesting."',
         effects: { flag: { sybellaNamed: true } },
+      },
+      {
+        tags: ['trade', 'buy', 'sell', 'shop', 'goods', 'inventory'],
+        reply:
+          '"This cairn sells headings and news. The Bone Market — after you live — is where I keep Hide, Drops, a pawned baton. Pay for a heading or walk on the free rumor."',
+        effects: { ticks: 1, flag: { zafirMet: true } },
+      },
+      {
+        tags: ['help', 'please', 'aid'],
+        reply: '"Help is a heading. Glints, scrap, scrip, or a crowd. I do not walk you to the skiff."',
+        effects: { ticks: 1 },
+      },
+      {
+        tags: ['threaten', 'threat', 'crowd', 'dagger'],
+        reply: 'He hands you a worse map with a better smile.',
+        effects: {
+          flag: { zafirMet: true, zafirSore: true },
+          add: { cache_map: 1 },
+          heat: { strays: 1 },
+          ticks: 1,
+          goto: 'ch1:sybella',
+        },
       },
     ],
   },

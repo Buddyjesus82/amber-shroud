@@ -93,6 +93,8 @@ export type Effect = {
   equip?: ItemId
   returnHunterFrom?: boolean
   returnCrisisFrom?: boolean
+  /** Optional roam fight. Bite/Hide compare — no dice. */
+  resolveEncounter?: 'fight' | 'skip'
 }
 
 export type Choice = {

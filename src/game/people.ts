@@ -1,6 +1,6 @@
 import type { GameState } from './types'
 
-export type PersonId = 'oiltooth' | 'kaelen' | 'valerius' | 'silas' | 'thalia' | 'oram'
+export type PersonId = 'oiltooth' | 'kaelen' | 'valerius' | 'silas' | 'thalia' | 'oram' | 'zafir' | 'ossa' | 'sybella'
 
 export type Person = {
   id: PersonId
@@ -143,6 +143,51 @@ He already tore a heading from that ledger because cups crack and thieves reach 
     later: {
       'thresh:oram': `Oram does not look up from the feed-weights. "You're a better thief than a cup. Good. Cups crack. Thieves reach Red Maw. I want the Striders alive."`,
       'thresh:paddock': `Striders stand like bad architecture. Oram is here more than the Court, counting joints instead of hymns. Yours stamps when it smells the bit.`,
+    },
+  },
+  zafir: {
+    id: 'zafir',
+    name: 'Zafir',
+    aliases: ['zafir'],
+    metFlag: 'metZafir',
+    card: `Zafir smiles in a way that costs extra. Bone-cairn merchant. Approach stall. He sells headings to Kallik's hole, news that Sybella already knows you're coming, and a small Maw shop: Drops at highway prices, Hound Hide, a shock baton somebody pawned, scrap for Glints.
+
+He is not Kaelen. Kaelen is inventory with gloves. Zafir is a man who sold the same heading twice and is waiting to see which buyer lives.`,
+    scenes: ['ch1:zafir', 'maw:zafir', 'maw:market'],
+    later: {
+      'ch1:zafir': `Beat 3 is a shop made of other people's mistakes. Zafir is still the smile. Headings. News. He will sell you the Maw if you pay like you mean it.`,
+      'maw:zafir': `"You lived. How rude." The stall actually stocks things now — Hide, a baton, Drops, a tray that buys scrap. Sybella circled twice. He is waiting to see which product you pick.`,
+      'maw:market': `A few stalls that pretend this is a town. Zafir is here if the cairn did not keep him. Same smile. A real tray of goods, not only news.`,
+    },
+  },
+  ossa: {
+    id: 'ossa',
+    name: 'Ossa',
+    aliases: ['ossa', 'stilts', 'stilt'],
+    metFlag: 'metOssa',
+    card: `Ossa stands three feet above hungry sand on stilts lashed with cord repaired more times than made. A vial rides her hip, half-full, honest. She sees kit before faces.
+
+She is a living person on purpose. She falls funny. She does not die easy. A twice-tied knot means she can find you — not a marriage. A refusal to die separately if dying together is stupider.`,
+    scenes: ['ch1:ossa-meet', 'ch1:ossa-talk', 'ch1:ossa-rob', 'maw:stilt', 'maw:ossa'],
+    later: {
+      'ch1:ossa-meet': `Stilts. Cord. Honest glass. "If you came to rob a woman on sticks," she says, "you should have eaten first."`,
+      'maw:stilt': `Ossa is here, stilts unstrapped or not, repairing a lash or refusing shade. Alive is still the headline.`,
+      'maw:ossa': `"I'm alive," she says, which is both greeting and warning. The Maw wants the cache. She wants stilts that keep working.`,
+    },
+  },
+  sybella: {
+    id: 'sybella',
+    name: 'Sybella',
+    aliases: ['sybella', 'blonde', 'skiff'],
+    metFlag: 'metSybella',
+    card: `Sybella — blonde, kohl ruined on purpose, blindfold up like a discarded halo. A sand-skiff. A voice like a lullaby that learned law.
+
+She needs a lantern that can walk. A furnace. A battery. Seekers-only kindness. Cartel mouths and Stray empties get hunted, not fed. She will bargain. She is very good at remaining the most reasonable person in a murder.`,
+    scenes: ['ch1:sybella', 'maw:smoke', 'maw:sybella', 'maw:sybella-shadow'],
+    later: {
+      'ch1:sybella': `The sky goes brass. The skiff comes in low. Hard choice. Resource poker. No dice.`,
+      'maw:smoke': `The skiff is parked like a threat that learned manners. Incense or resin-smoke. She is here. Hunting. Reasonable.`,
+      'maw:sybella': `"The Approach is a waiting room," she says. "The Walking Amber is the appointment. Fill, walk, don't crack."`,
     },
   },
 }

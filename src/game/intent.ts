@@ -87,7 +87,8 @@ export const GLOBAL_INTENTS: IntentRule[] = [
   },
   {
     tags: ['trade', 'buy', 'sell', 'shop', 'merchant', 'barter'],
-    reply: 'Kaelen the Sifter trades scrap for a Drop of Oasis Sap. Glints buy intel. Find the pack. Oil-Tooth and Silas are different invoices.',
+    reply:
+      'Kaelen the Sifter trades scrap for a Drop of Oasis Sap. Glints buy intel. Zafir keeps a stall at the Bone Market — Hide, Drops, a pawned baton. Oil-Tooth and Silas are different invoices.',
     effects: {},
   },
   {

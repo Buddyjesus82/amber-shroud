@@ -11,7 +11,24 @@ import {
   wantsDoSabotage,
 } from './campJob'
 import { markMetOnLeave, matchPersonQuery, personAtScene } from './people'
-import { isWireSide, WIRE_HUNTER_APPEND, wireHunterChoices } from './hunter'
+import {
+  isSybellaOverlay,
+  isWireSide,
+  SYBELLA_SHADOW_APPEND,
+  sybellaShadowChoices,
+  WIRE_HUNTER_APPEND,
+  wireHunterChoices,
+} from './hunter'
+import {
+  canEncounter,
+  encounterAppend,
+  encounterChoices,
+  pickEncounterKind,
+  resolveEncounter,
+  wantsEncounterFight,
+  wantsEncounterSkip,
+} from './encounter'
+import { talkFallback, talkIntentsFor } from './talk'
 import { applyScavenge, canScavenge, canSkim } from './scavenge'
 import { writeSave } from './save'
 import type { DoorId, Effect, EquipSlot, GameState, ItemId, Scene } from './types'
@@ -56,6 +73,12 @@ export function bodyOf(state: GameState): string {
   const resolved = resolveBody(scene, (c) => check(c, state), base)
   if (state.flags.hunterHere && isWireSide(state.sceneId)) {
     return `${resolved}\n\n${WIRE_HUNTER_APPEND}`
+  }
+  if (isSybellaOverlay(state)) {
+    return `${resolved}\n\n${SYBELLA_SHADOW_APPEND}`
+  }
+  if (state.flags.encounterHere) {
+    return `${resolved}\n\n${encounterAppend(state)}`
   }
   return resolved
 }
@@ -126,11 +149,23 @@ function hunterScene(state: GameState): string | null {
   return id
 }
 
+function hunterReturnFallback(state: GameState, dest: string | undefined): string {
+  if (dest) return dest
+  if (state.hubId === 'redmaw') return 'maw:rim'
+  if (state.hubId === 'spine') return 'spine:ridge'
+  if (state.hubId === 'threshold') return 'thresh:court'
+  if (state.chapterId === 'cache-run') return state.sceneId
+  return 'camp:yard'
+}
+
 function resolveDest(state: GameState, fx: Effect): string | undefined {
   let dest = fx.goto
   if (fx.returnHunterFrom) {
     const from = state.flags.hunterFrom
-    dest = typeof from === 'string' && from && getScene(from).id !== 'missing' ? from : dest ?? 'camp:yard'
+    dest =
+      typeof from === 'string' && from && getScene(from).id !== 'missing'
+        ? from
+        : hunterReturnFallback(state, dest)
   }
   if (fx.returnCrisisFrom) {
     const from = state.flags.crisisFrom
@@ -145,6 +180,14 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   const dest = resolveDest(state, fx)
   let next = applyDelta(state, fx)
   next.flash = fx.flash
+  if (fx.resolveEncounter) {
+    const result = resolveEncounter(state, fx.resolveEncounter)
+    next = applyDelta(next, result.fx)
+    next.flash = result.flash
+    if (result.fx.add?.vial_drop && (state.items.vial_empty ?? 0) > 0) {
+      next = applyDelta(next, { remove: { vial_empty: 1 } })
+    }
+  }
 
   if (fx.startChapter) {
     next.chapterId = fx.startChapter
@@ -186,6 +229,12 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
       delete flags.hunterHere
       next.flags = flags
     }
+    if (next.flags.encounterHere) {
+      const flags = { ...next.flags }
+      delete flags.encounterHere
+      delete flags.encounterKind
+      next.flags = flags
+    }
   }
 
   if (next.sceneId === 'ch1:hollow' && state.sceneId !== 'ch1:hollow') {
@@ -214,10 +263,29 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     next.flags = { ...next.flags, hunterFrom: from, hunterAt: next.ticks }
     if (interrupt === 'camp:hunter' && isWireSide(from)) {
       next.flags = { ...next.flags, hunterHere: true }
+    } else if (interrupt === 'maw:sybella-shadow') {
+      next.flags = { ...next.flags, hunterHere: true }
     } else {
       next.sceneId = interrupt
       const h = getScene(interrupt)
       if (h.hubId) next.hubId = h.hubId
+    }
+  }
+
+  if (
+    lingered &&
+    next.sceneId === state.sceneId &&
+    !fx.resolveEncounter &&
+    !next.flags.hunterHere &&
+    next.sceneId !== 'maw:sybella-shadow' &&
+    getScene(next.sceneId).kind !== 'crisis' &&
+    canEncounter(next)
+  ) {
+    next.flags = {
+      ...next.flags,
+      encounterHere: true,
+      encounterKind: pickEncounterKind(next),
+      encounterAt: next.ticks,
     }
   }
 
@@ -386,7 +454,7 @@ export function interpret(state: GameState, text: string): GameState {
       persist({
         ...state,
         flash:
-          'Name them. Who is Oil-Tooth. Who is Kaelen. Who is Valerius. Who is Silas. Who is Thalia. Who is Oram.',
+          'Name them. Who is Oil-Tooth. Who is Kaelen. Who is Valerius. Who is Silas. Who is Thalia. Who is Oram. Who is Zafir. Who is Ossa. Who is Sybella.',
         updatedAt: Date.now(),
       }),
       'who is',
@@ -402,7 +470,33 @@ export function interpret(state: GameState, text: string): GameState {
   const job = tryCampSabotageJob(state, text)
   if (job) return job
 
-  const local = matchIntent(text, scene.intents ?? [], state)
+  if (state.flags.encounterHere) {
+    if (wantsEncounterFight(text)) {
+      return withVerb(applyEffect(state, { resolveEncounter: 'fight', ticks: 1 }), 'fight')
+    }
+    if (wantsEncounterSkip(text)) {
+      return withVerb(applyEffect(state, { resolveEncounter: 'skip' }), 'skip')
+    }
+  }
+
+  if (isSybellaOverlay(state)) {
+    const hay = text.toLowerCase()
+    if (/\b(stay|hold|wait|dismiss|pass|here)\b/.test(hay)) {
+      return withVerb(applyEffect(state, sybellaShadowChoices()[0].effects), 'stay')
+    }
+    if (/\b(smoke|face|approach|sybella)\b/.test(hay)) {
+      return withVerb(
+        applyEffect(state, {
+          goto: 'maw:sybella',
+          ticks: 1,
+          unsetFlag: ['hunterHere', 'hunterFrom'],
+        }),
+        'sybella',
+      )
+    }
+  }
+
+  const local = matchIntent(text, [...(scene.intents ?? []), ...talkIntentsFor(scene.id)], state)
   if (local) {
     return withVerb(applyEffect(state, { ...local.effects, flash: local.reply }), verbLabel(local.tags[0]))
   }
@@ -430,7 +524,7 @@ export function interpret(state: GameState, text: string): GameState {
   if (global) {
     return withVerb(applyEffect(state, { ...global.effects, flash: global.reply }), verbLabel(global.tags[0]))
   }
-  const fallback = scene.intentFallback
+  const fallback = scene.intentFallback ?? (scene.kind === 'talk' || scene.speaker ? talkFallback(scene.id, scene.speaker) : null)
   if (fallback) {
     return withVerb(
       applyEffect(state, {
@@ -453,6 +547,12 @@ export function interpret(state: GameState, text: string): GameState {
 export function visibleChoices(state: GameState) {
   if (state.flags.hunterHere && isWireSide(state.sceneId)) {
     return wireHunterChoices().filter((c) => check(c.show, state))
+  }
+  if (isSybellaOverlay(state)) {
+    return sybellaShadowChoices().filter((c) => check(c.show, state))
+  }
+  if (state.flags.encounterHere) {
+    return encounterChoices(state)
   }
   return sceneOf(state).choices.filter((c) => check(c.show, state))
 }
