@@ -286,7 +286,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
                 {head ? <p className="choice-group">{head === 'buy' ? 'Buy' : head === 'sell' ? 'Sell' : 'Talk'}</p> : null}
                 <button
                   type="button"
-                  className={`choice ${row.tone}`}
+                  className={`choice ${row.tone}${row.group ? ` shop-row` : ''}`}
                   disabled={row.locked}
                   onClick={row.onClick}
                 >

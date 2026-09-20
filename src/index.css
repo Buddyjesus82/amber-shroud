@@ -418,6 +418,12 @@ h2 {
   flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.play-screen.play-split .choice,
+.play-screen.play-split .choice-group {
+  flex: 0 0 auto;
 }
 
 .play-screen.play-split .say,
@@ -1294,6 +1300,7 @@ h2 {
 }
 
 .choice-group {
+  flex: 0 0 auto;
   margin: 0.2rem 0 0;
   padding: 0.1rem 0.2rem;
   font-size: 0.68rem;
@@ -1310,6 +1317,8 @@ h2 {
 .choice {
   width: 100%;
   text-align: left;
+  flex: 0 0 auto;
+  height: auto;
   min-height: var(--thumb);
   border-radius: 14px;
   padding: 0.75rem 0.85rem;
@@ -1319,16 +1328,24 @@ h2 {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  justify-content: flex-start;
   gap: 0.35rem;
+  overflow: visible;
+  white-space: normal;
 }
 
 .choice-copy {
   display: block;
+  width: 100%;
+  white-space: normal;
+  overflow-wrap: break-word;
 }
 
 .pills {
   display: flex;
   flex-wrap: wrap;
+  flex: 0 0 auto;
+  width: 100%;
   gap: 0.3rem;
 }
 
@@ -1375,6 +1392,12 @@ h2 {
 
 .choice.locked {
   opacity: 0.45;
+}
+
+.choice.shop-row {
+  flex: 0 0 auto;
+  height: auto;
+  min-height: min-content;
 }
 
 .say {

@@ -1198,7 +1198,7 @@ assert(html.includes('favicon.png?v=13'), 'tab favicon is the cover PNG')
 assert(html.includes('icon-192.png?v=13') && html.includes('icon-512.png?v=13'), 'html ships cache-busted cover PNGs')
 assert(html.includes('apple-touch.png?v=13'), 'apple-touch-icon is cache-busted cover crop')
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v13'"), 'SW bumped so Chrome drops the cached Drop')
+assert(sw.includes("CACHE = 'amber-shroud-v14'"), 'SW bumped so Chrome drops the crushed shop rows')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
 try {
   readFileSync(new URL('../public/favicon.svg', import.meta.url))
@@ -1206,6 +1206,9 @@ try {
 } catch (e) {
   if ((e as NodeJS.ErrnoException).code !== 'ENOENT') throw e
 }
+const css = readFileSync(new URL('../src/index.css', import.meta.url), 'utf8')
+assert(/\.choice \{[\s\S]*?flex:\s*0\s+0\s+auto/.test(css), 'choice rows do not shrink under split')
+assert(css.includes('.choice.shop-row'), 'shop Buy/Sell rows keep their own height')
 
 console.log('OK', {
   prisoner: Object.keys(DOORS.prisoner.items),
