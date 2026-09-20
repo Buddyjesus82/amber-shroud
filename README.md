@@ -48,7 +48,7 @@ npm run preview
 
 GitHub Pages (project site): **https://buddyjesus82.github.io/amber-shroud/**
 
-Open that URL in Safari (iPhone) or Chrome (Android) → Share / menu → **Add to Home Screen**.
+Open that URL in Safari (iPhone) or Chrome (Android) → Share / menu → **Add to Home Screen**. The home-screen icon is the desert cover (wanderer + amber sky), not the gold Drop. **iOS caches icons hard** — if you already installed, delete the old icon and Add to Home Screen again. Chrome / Android may need uninstall + reinstall too. The tab favicon can stay the Drop.
 
 CI: `.github/workflows/pages.yml` runs `npm ci && npm run build` with `GITHUB_PAGES=true` (Vite `base` is `/amber-shroud/`) and deploys `dist/`.
 

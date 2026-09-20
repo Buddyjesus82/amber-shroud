@@ -1178,6 +1178,20 @@ assert(loadDoor('prisoner')?.sceneId === 'camp:cages', 'IndexedDB restores the P
 assert(lastSavedDoor() === 'prisoner', 'Continue lastDoor returns with the IDB bank')
 clearAllSaves()
 
+function pngSize(rel: string) {
+  const buf = readFileSync(new URL(rel, import.meta.url))
+  assert(buf.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])), `${rel} is a real PNG, not a JPEG cover copy`)
+  return { w: buf.readUInt32BE(16), h: buf.readUInt32BE(20) }
+}
+assert(pngSize('../public/icons/icon-192.png').w === 192 && pngSize('../public/icons/icon-192.png').h === 192, 'home-screen 192 is square PNG')
+assert(pngSize('../public/icons/icon-512.png').w === 512 && pngSize('../public/icons/icon-512.png').h === 512, 'home-screen 512 is square PNG')
+assert(pngSize('../public/icons/apple-touch.png').w === 180 && pngSize('../public/icons/apple-touch.png').h === 180, 'apple-touch is 180 PNG from the cover')
+const man = readFileSync(new URL('../public/manifest.webmanifest', import.meta.url), 'utf8')
+assert(man.includes('icon-192.png') && man.includes('icon-512.png'), 'manifest ships cover-crop PNGs')
+assert(!man.includes('favicon.svg'), 'manifest does not install the gold Drop SVG')
+assert(readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8').includes("CACHE = 'amber-shroud-v12'"), 'SW bumped for new icons')
+assert(readFileSync(new URL('../index.html', import.meta.url), 'utf8').includes('apple-touch.png'), 'apple-touch-icon points at the cover crop')
+
 console.log('OK', {
   prisoner: Object.keys(DOORS.prisoner.items),
   outcast: Object.keys(DOORS.outcast.items),
