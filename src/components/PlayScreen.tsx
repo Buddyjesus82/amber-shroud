@@ -23,6 +23,17 @@ import { HeatExplainer, HeatTip } from './HeatGuide'
 import { InventorySheet } from './InventorySheet'
 import { MapSheet } from './MapSheet'
 
+type OptionRow = {
+  key: string
+  tone: string
+  label: string
+  sub?: string
+  locked?: boolean
+  lockedNote?: string
+  pills?: { kind: string; text: string }[]
+  onClick: () => void
+}
+
 type Props = {
   state: GameState
   onChange: (s: GameState) => void
@@ -51,8 +62,73 @@ export function PlayScreen({ state, onChange, onTitle }: Props) {
   const skimOn = canSkim(state)
   const hookRow = !!(hub && hookOn && hook && showNav)
   const closeRow = !!(closing && showNav)
-  const optionCount = choices.length + (roam ? 1 : 0) + (skimOn ? 1 : 0) + (hookRow ? 1 : 0) + (closeRow ? 1 : 0)
-  const split = optionCount >= 4
+  // Every selectable quest/story/hub action belongs in this list — never pinned above .choices.
+  const optionRows: OptionRow[] = []
+  if (roam) {
+    optionRows.push({
+      key: 'scavenge',
+      tone: 'quiet',
+      label: 'Scavenge',
+      sub: 'Scrap, trade goods. Sometimes a Drop.',
+      onClick: () => onChange(scavenge(state)),
+    })
+  }
+  if (skimOn) {
+    optionRows.push({
+      key: 'skim',
+      tone: 'danger',
+      label: 'Skim a drip',
+      sub: 'Risky Drop. Costs Heat.',
+      onClick: () => onChange(skim(state)),
+    })
+  }
+  if (hookRow && hook) {
+    optionRows.push({
+      key: 'hunger-hook',
+      tone: state.flags.chapter1Done ? 'quiet' : 'hunger',
+      label: hook.label,
+      sub: hook.sub,
+      onClick: () =>
+        onChange(
+          applyEffect(state, {
+            goto: hook.sceneId,
+            startChapter: state.flags.chapter1Done ? undefined : 'cache-run',
+            ticks: 1,
+          }),
+        ),
+    })
+  }
+  if (closeRow) {
+    optionRows.push({
+      key: 'closing',
+      tone: 'danger',
+      label: 'The desert is closing. Take the Hunger.',
+      sub: 'Pressure. The camp will not hold the hour.',
+      onClick: () =>
+        onChange(
+          applyEffect(state, {
+            startChapter: 'cache-run',
+            goto: 'ch1:leave',
+            ticks: 1,
+            flag: state.flags.hungerKnown ? undefined : { cacheBlind: true },
+          }),
+        ),
+    })
+  }
+  for (const c of choices) {
+    const on = isChoiceOn(state, c.enable)
+    optionRows.push({
+      key: c.id,
+      tone: `${c.tone ?? 'default'}${on ? '' : ' locked'}`,
+      label: c.label,
+      sub: c.sub,
+      locked: !on,
+      lockedNote: !on ? c.locked : undefined,
+      pills: effectPills(c.effects),
+      onClick: () => on && onChange(applyEffect(state, c.effects)),
+    })
+  }
+  const split = optionRows.length >= 4
   const showDo = talky || roam
 
   useEffect(() => {
@@ -162,95 +238,30 @@ export function PlayScreen({ state, onChange, onTitle }: Props) {
 
       <div className="thumb">
         <div className="choices">
-          {roam ? (
+          {optionRows.map((row) => (
             <button
               type="button"
-              className="choice quiet"
-              onClick={() => onChange(scavenge(state))}
+              key={row.key}
+              className={`choice ${row.tone}`}
+              disabled={row.locked}
+              onClick={row.onClick}
             >
               <span className="choice-copy">
-                Scavenge
-                <small>Scrap, trade goods. Sometimes a Drop.</small>
+                {row.label}
+                {row.sub ? <small>{row.sub}</small> : null}
+                {row.lockedNote ? <small>{row.lockedNote}</small> : null}
               </span>
-            </button>
-          ) : null}
-          {skimOn ? (
-            <button type="button" className="choice danger" onClick={() => onChange(skim(state))}>
-              <span className="choice-copy">
-                Skim a drip
-                <small>Risky Drop. Costs Heat.</small>
-              </span>
-            </button>
-          ) : null}
-          {hookRow && hook ? (
-            <button
-              type="button"
-              className={state.flags.chapter1Done ? 'choice quiet' : 'choice hunger'}
-              onClick={() =>
-                onChange(
-                  applyEffect(state, {
-                    goto: hook.sceneId,
-                    startChapter: state.flags.chapter1Done ? undefined : 'cache-run',
-                    ticks: 1,
-                  }),
-                )
-              }
-            >
-              <span className="choice-copy">
-                {hook.label}
-                {hook.sub ? <small>{hook.sub}</small> : null}
-              </span>
-            </button>
-          ) : null}
-          {closeRow ? (
-            <button
-              type="button"
-              className="choice danger"
-              onClick={() =>
-                onChange(
-                  applyEffect(state, {
-                    startChapter: 'cache-run',
-                    goto: 'ch1:leave',
-                    ticks: 1,
-                    flag: state.flags.hungerKnown ? undefined : { cacheBlind: true },
-                  }),
-                )
-              }
-            >
-              <span className="choice-copy">
-                The desert is closing. Take the Hunger.
-                <small>Pressure. The camp will not hold the hour.</small>
-              </span>
-            </button>
-          ) : null}
-          {choices.map((c) => {
-            const on = isChoiceOn(state, c.enable)
-            const pills = effectPills(c.effects)
-            return (
-              <button
-                type="button"
-                key={c.id}
-                className={`choice ${c.tone ?? 'default'} ${on ? '' : 'locked'}`}
-                disabled={!on}
-                onClick={() => on && onChange(applyEffect(state, c.effects))}
-              >
-                <span className="choice-copy">
-                  {c.label}
-                  {c.sub ? <small>{c.sub}</small> : null}
-                  {!on && c.locked ? <small>{c.locked}</small> : null}
+              {row.pills?.length ? (
+                <span className="pills">
+                  {row.pills.map((p) => (
+                    <i key={`${row.key}-${p.kind}-${p.text}`} className={p.kind}>
+                      {p.text}
+                    </i>
+                  ))}
                 </span>
-                {pills.length ? (
-                  <span className="pills">
-                    {pills.map((p) => (
-                      <i key={`${c.id}-${p.kind}-${p.text}`} className={p.kind}>
-                        {p.text}
-                      </i>
-                    ))}
-                  </span>
-                ) : null}
-              </button>
-            )
-          })}
+              ) : null}
+            </button>
+          ))}
         </div>
 
         {showDo ? (
