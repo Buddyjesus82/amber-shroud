@@ -167,6 +167,16 @@ export function encounterAppend(state: GameState): string {
 }
 
 export function encounterChoices(state: GameState): Choice[] {
+  if (isEncounterResult(state)) {
+    return [
+      {
+        id: 'enc-continue',
+        label: 'On.',
+        tone: 'quiet',
+        effects: dismissEncounter(state),
+      },
+    ]
+  }
   const spec = encounterSpec(state)
   const rows: Choice[] = [
     {
@@ -212,24 +222,52 @@ function lootLine(add: Partial<Record<ItemId, number>>): string {
   return bits.join(', ')
 }
 
-const CLEAR = ['encounterHere', 'encounterKind', 'encounterHp', 'encounterClash'] as const
+export const ENCOUNTER_FLAGS = [
+  'encounterHere',
+  'encounterKind',
+  'encounterHp',
+  'encounterClash',
+  'encounterDone',
+  'encounterFlash',
+] as const
 
-function clearFx(state: GameState, extra: FlagMap = {}): Pick<Effect, 'unsetFlag' | 'flag'> {
+export function isEncounterResult(state: Pick<GameState, 'flags'>): boolean {
+  return !!state.flags.encounterHere && !!state.flags.encounterDone
+}
+
+export function dismissEncounter(state: GameState): Effect {
+  const short = typeof state.flags.encounterFlash === 'string' ? state.flags.encounterFlash : undefined
   return {
-    unsetFlag: [...CLEAR],
-    flag: { encounterAt: state.ticks, fightTaught: true, ...extra },
+    unsetFlag: [...ENCOUNTER_FLAGS],
+    flag: { encounterAt: state.ticks, fightTaught: true },
+    flash: short,
   }
 }
 
-type FlagMap = GameState['flags']
+function holdCard(state: GameState, spec: Spec, card: string, short: string, extra: Effect = {}): { fx: Effect; flash: string } {
+  return {
+    fx: {
+      ...extra,
+      flag: {
+        ...(extra.flag ?? {}),
+        encounterHere: true,
+        encounterKind: spec.kind,
+        encounterDone: true,
+        encounterClash: card,
+        encounterFlash: short,
+        fightTaught: true,
+        encounterAt: state.ticks,
+      },
+    },
+    flash: '',
+  }
+}
 
 export function resolveEncounter(state: GameState, how: 'fight' | 'skip'): { fx: Effect; flash: string } {
   const spec = encounterSpec(state)
   if (how === 'skip') {
-    return {
-      fx: { ...clearFx(state) },
-      flash: `You give the ${spec.name} the road. No loot. No bill.`,
-    }
+    const line = `You give the ${spec.name} the road. No loot. No bill.`
+    return holdCard(state, spec, line, line)
   }
 
   const c = clashOf(state)
@@ -246,27 +284,20 @@ export function resolveEncounter(state: GameState, how: 'fight' | 'skip'): { fx:
     const outcome = stagger
       ? `They drop. You drop with them. ${loot}. Health 1/${max}. You crawl.`
       : `They drop. ${loot}.`
-    return {
-      fx: {
-        ...clearFx(state),
-        health: stagger ? 1 - c.yourHp : healthDelta,
-        add,
-        pressure: c.dmgIn > 0 ? 1 : undefined,
-      },
-      flash: `${hitCard}\n\n${outcome}`,
-    }
+    return holdCard(state, spec, `${hitCard}\n\n${outcome}`, outcome, {
+      health: stagger ? 1 - c.yourHp : healthDelta,
+      add,
+      pressure: c.dmgIn > 0 ? 1 : undefined,
+    })
   }
 
   if (yourHp <= 0) {
-    return {
-      fx: {
-        ...clearFx(state),
-        health: 1 - c.yourHp,
-        sap: state.sap > 0 ? -1 : undefined,
-        pressure: 2,
-      },
-      flash: `${hitCard}\n\nYou drop. No loot. Health 1/${max}. The road is theirs.`,
-    }
+    const outcome = `You drop. No loot. Health 1/${max}. The road is theirs.`
+    return holdCard(state, spec, `${hitCard}\n\n${outcome}`, outcome, {
+      health: 1 - c.yourHp,
+      sap: state.sap > 0 ? -1 : undefined,
+      pressure: 2,
+    })
   }
 
   const standing = `${hitCard}\n\nThey still stand. Their Health ${theirHp}/${spec.hp}. Yours ${yourHp}/${max}. No loot yet.`

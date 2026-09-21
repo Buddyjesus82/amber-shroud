@@ -19,7 +19,7 @@ import {
 import { HEAT_FACTIONS, heatRiseLine } from '../game/heat'
 import { effectPills, listedKit } from '../game/kit'
 import { isMawExit } from '../game/map'
-import { encounterSpeaker } from '../game/encounter'
+import { encounterSpeaker, isEncounterResult } from '../game/encounter'
 import { isSybellaOverlay, isWireSide } from '../game/hunter'
 import { isShopOpen } from '../game/trade'
 import type { Faction, GameState } from '../game/types'
@@ -251,10 +251,10 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
       <div className="story" ref={storyRef}>
         {scene.speaker || isSybellaOverlay(state) || state.flags.encounterHere ? (
           <p className="speaker">
-            {isSybellaOverlay(state)
-              ? 'Sybella'
-              : state.flags.encounterHere
-                ? encounterSpeaker(state)
+            {state.flags.encounterHere
+              ? encounterSpeaker(state)
+              : isSybellaOverlay(state)
+                ? 'Sybella'
                 : scene.speaker}
           </p>
         ) : null}
@@ -263,7 +263,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
           .map((p, i) => (
             <p key={i}>{p}</p>
           ))}
-        {state.flash ? <p className="flash">{state.flash}</p> : null}
+        {state.flash && !state.flags.encounterHere ? <p className="flash">{state.flash}</p> : null}
         {sapThin && scene.kind !== 'crisis' && !state.flags.encounterHere ? (
           <p className="pressure-note">
             {state.sap <= 0
@@ -322,7 +322,11 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               placeholder={
-                state.flags.encounterHere ? 'fight / skip' : 'sabotage vent pipes / scavenge / who is kaelen'
+                isEncounterResult(state)
+                  ? 'on'
+                  : state.flags.encounterHere
+                    ? 'fight / skip'
+                    : 'sabotage vent pipes / scavenge / who is kaelen'
               }
               enterKeyHint="go"
               autoComplete="off"

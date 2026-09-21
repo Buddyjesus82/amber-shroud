@@ -21,10 +21,13 @@ import {
 } from './hunter'
 import {
   canEncounter,
+  dismissEncounter,
   encounterCard,
   encounterChoices,
   enemyHealth,
+  ENCOUNTER_FLAGS,
   HEALTH_MAX,
+  isEncounterResult,
   pickEncounterKind,
   resolveEncounter,
   wantsEncounterFight,
@@ -73,6 +76,9 @@ export function sceneOf(state: GameState): Scene {
 }
 
 export function bodyOf(state: GameState): string {
+  if (state.flags.encounterHere) {
+    return encounterCard(state)
+  }
   const scene = sceneOf(state)
   const person = personAtScene(scene.id)
   const base = person && state.flags[person.metFlag] && person.later[scene.id] ? person.later[scene.id] : scene.body
@@ -82,9 +88,6 @@ export function bodyOf(state: GameState): string {
   }
   if (isSybellaOverlay(state)) {
     return `${resolved}\n\n${SYBELLA_SHADOW_APPEND}`
-  }
-  if (state.flags.encounterHere) {
-    return encounterCard(state)
   }
   return resolved
 }
@@ -131,7 +134,7 @@ function spendFalse(state: GameState): GameState {
 }
 
 function hunterScene(state: GameState): string | null {
-  if (state.flags.hunterHere) return null
+  if (state.flags.hunterHere || state.flags.encounterHere) return null
   const last = Number(state.flags.hunterAt ?? -99)
   if (last >= 0 && state.ticks - last < 4) return null
   if (state.flags.chapter1Done) {
@@ -267,10 +270,7 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     }
     if (next.flags.encounterHere) {
       const flags = { ...next.flags }
-      delete flags.encounterHere
-      delete flags.encounterKind
-      delete flags.encounterHp
-      delete flags.encounterClash
+      for (const k of ENCOUNTER_FLAGS) delete flags[k]
       next.flags = flags
     }
   }
@@ -294,9 +294,18 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     if (c.hubId) next.hubId = c.hubId
   }
 
+  if (getScene(next.sceneId).kind === 'crisis' && next.flags.encounterHere) {
+    const flags = { ...next.flags }
+    const short = typeof flags.encounterFlash === 'string' ? flags.encounterFlash : next.flash
+    for (const k of ENCOUNTER_FLAGS) delete flags[k]
+    next.flags = flags
+    if (short) next.flash = short
+  }
+
   const lingered = (fx.ticks ?? 0) > 0 || (fx.pressure ?? 0) > 0 || !!dest
   const interrupt = lingered ? hunterScene(next) : null
-  if (interrupt && getScene(next.sceneId).kind !== 'crisis') {
+  const fightBeat = !!fx.resolveEncounter || !!next.flags.encounterHere || !!fx.unsetFlag?.includes('encounterHere')
+  if (interrupt && !fightBeat && getScene(next.sceneId).kind !== 'crisis') {
     const from = next.sceneId
     next.flags = { ...next.flags, hunterFrom: from, hunterAt: next.ticks }
     if (interrupt === 'camp:hunter' && isWireSide(from)) {
@@ -513,6 +522,9 @@ export function interpret(state: GameState, text: string): GameState {
   if (job) return job
 
   if (state.flags.encounterHere) {
+    if (isEncounterResult(state)) {
+      return withVerb(applyEffect(state, dismissEncounter(state)), 'on')
+    }
     if (wantsEncounterFight(text)) {
       return withVerb(applyEffect(state, { resolveEncounter: 'fight', ticks: 1 }), 'fight')
     }
@@ -605,14 +617,14 @@ export function interpret(state: GameState, text: string): GameState {
 }
 
 export function visibleChoices(state: GameState) {
+  if (state.flags.encounterHere) {
+    return encounterChoices(state)
+  }
   if (state.flags.hunterHere && isWireSide(state.sceneId)) {
     return wireHunterChoices().filter((c) => check(c.show, state))
   }
   if (isSybellaOverlay(state)) {
     return sybellaShadowChoices().filter((c) => check(c.show, state))
-  }
-  if (state.flags.encounterHere) {
-    return encounterChoices(state)
   }
   const authored = sceneOf(state).choices.filter((c) => check(c.show, state))
   if (vendorFor(state.sceneId)) {

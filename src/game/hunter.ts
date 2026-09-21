@@ -10,6 +10,7 @@ export function isMawGround(sceneId: string): boolean {
 
 export function isSybellaOverlay(state: Pick<GameState, 'flags' | 'sceneId' | 'hubId'>): boolean {
   return (
+    !state.flags.encounterHere &&
     !!state.flags.hunterHere &&
     (state.hubId === 'redmaw' || isMawGround(state.sceneId)) &&
     state.sceneId !== 'maw:sybella' &&

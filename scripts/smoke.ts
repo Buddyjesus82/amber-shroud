@@ -49,9 +49,19 @@ function assert(cond: unknown, msg: string): asserts cond {
   if (!cond) throw new Error(msg)
 }
 
+function dismissFight(s: GameState): GameState {
+  if (!s.flags.encounterHere) return s
+  if (!s.flags.encounterDone) s = applyEffect(s, { resolveEncounter: 'skip' })
+  if (s.flags.encounterDone) {
+    const row = visibleChoices(s).find((x) => x.id === 'enc-continue')
+    if (row) s = applyEffect(s, row.effects)
+  }
+  return s
+}
+
 function pick(s: GameState, id: string) {
-  if (s.flags.encounterHere && id !== 'enc-fight' && id !== 'enc-skip' && id !== 'enc-cloak') {
-    s = applyEffect(s, { resolveEncounter: 'skip' })
+  if (s.flags.encounterHere && id !== 'enc-fight' && id !== 'enc-skip' && id !== 'enc-cloak' && id !== 'enc-continue') {
+    s = dismissFight(s)
   }
   if (s.flags.hunterHere && (s.hubId === 'redmaw' || s.sceneId.startsWith('maw:')) && !id.startsWith('sybella-')) {
     s = applyEffect(s, { returnHunterFrom: true, unsetFlag: ['hunterHere', 'hunterFrom'] })
@@ -143,12 +153,12 @@ function walkTo(s: GameState, destScene: string): GameState {
     const dest = i === path.length - 1 ? destScene : node.sceneId
     const cost = edgeSap(map, path[i - 1], nodeId) ?? 1
     if (cur.sap <= cost) cur = applyEffect(cur, { sap: cost + 1 - cur.sap })
-    if (cur.flags.encounterHere) cur = applyEffect(cur, { resolveEncounter: 'skip' })
+    if (cur.flags.encounterHere) cur = dismissFight(cur)
     if (cur.flags.hunterHere && (cur.hubId === 'redmaw' || cur.sceneId.startsWith('maw:'))) {
       cur = applyEffect(cur, { returnHunterFrom: true, unsetFlag: ['hunterHere', 'hunterFrom'] })
     }
     cur = travelTo(cur, dest)
-    if (cur.flags.encounterHere) cur = applyEffect(cur, { resolveEncounter: 'skip' })
+    if (cur.flags.encounterHere) cur = dismissFight(cur)
     if (cur.sceneId !== dest && String(cur.sceneId).includes('hunter')) {
       cur = applyEffect(cur, { goto: dest, pressure: -4 })
     }
@@ -838,13 +848,18 @@ assert(!bodyOf(s).includes('cooked resin'), 'encounter card does not bleed Yard 
 assert(/Bite has to beat Hide/i.test(bodyOf(s)), 'first encounter teaches Bite/Hide/Health')
 const skipped = pick(s, 'enc-skip')
 assert(skipped.sceneId === 'camp:yard', 'skip stays put')
-assert(!skipped.flags.encounterHere, 'skip clears the encounter')
+assert(skipped.flags.encounterHere && skipped.flags.encounterDone, 'skip holds the outcome card')
+assert(/give the .* road/i.test(bodyOf(skipped)), 'skip card is the outcome, not the Yard')
+assert(!bodyOf(skipped).includes('cooked resin'), 'skip outcome does not bleed Yard prose')
 assert((skipped.items.scrap ?? 0) === (s.items.scrap ?? 0), 'skip pays no loot')
 assert(skipped.flags.fightTaught, 'seeing the first card counts as taught')
+const skippedOn = pick(skipped, 'enc-continue')
+assert(!skippedOn.flags.encounterHere, 'On. clears the skip card')
+assert(skippedOn.sceneId === 'camp:yard', 'On. returns to the Yard')
 s = {
-  ...skipped,
-  flags: { ...skipped.flags, encounterHere: true, encounterKind: 'jackal', encounterAt: skipped.ticks, encounterHp: 1 },
-  items: { ...skipped.items, shiv: 1 },
+  ...skippedOn,
+  flags: { ...skippedOn.flags, encounterHere: true, encounterKind: 'jackal', encounterAt: skippedOn.ticks, encounterHp: 1 },
+  items: { ...skippedOn.items, shiv: 1 },
   equipped: { weapon: 'shiv' },
   sap: 6,
   health: 6,
@@ -854,12 +869,19 @@ assert(!/Bite has to beat Hide/i.test(bodyOf(s)), 'later fights skip the lecture
 assert(bodyOf(s).includes('You Bite'), 'compact card still shows compares')
 const fought = pick(s, 'enc-fight')
 assert(fought.sceneId === 'camp:yard', 'fight stays in the Yard')
-assert(!fought.flags.encounterHere, 'dropping them clears the encounter')
+assert(fought.flags.encounterHere && fought.flags.encounterDone, 'win holds the outcome card')
 assert((fought.items.scrap ?? 0) >= 2, 'winning a jackal yields saleable scrap')
 assert(fought.health < 6, 'Health takes the incoming hit, not Sap')
 assert(fought.sap === 6, 'Sap is unchanged by a win')
-assert(/You Bite 2 vs their Hide 1/.test(fought.flash ?? ''), 'fight result shows your compare line')
-assert(/Their Bite 2 vs your Hide 0/.test(fought.flash ?? ''), 'fight result shows their compare line')
+assert(/You Bite 2 vs their Hide 1/.test(bodyOf(fought)), 'fight result shows your compare line')
+assert(/Their Bite 2 vs your Hide 0/.test(bodyOf(fought)), 'fight result shows their compare line')
+assert(!bodyOf(fought).includes('cooked resin'), 'outcome card does not bleed Yard prose')
+assert(!(fought.flash ?? '').includes('Bite'), 'compares live on the card, not a stacked flash')
+const foughtOn = pick(fought, 'enc-continue')
+assert(!foughtOn.flags.encounterHere, 'On. returns to the place')
+assert(/They drop/.test(foughtOn.flash ?? ''), 'hub flash is the compact loot line')
+assert(!/Bite/.test(foughtOn.flash ?? ''), 'hub flash is not the full compare block')
+assert(bodyOf(foughtOn).includes('cooked resin'), 'Yard prose returns after On.')
 
 s = newGame('vessel')
 s = pick(s, 'keep')
@@ -890,9 +912,11 @@ assert(loss.flags.encounterHere, 'they still stand after a scratch')
 assert(/You Bite 2 vs their Hide 2 → 0/.test(bodyOf(loss)), 'Fight body is the compare, not a prose wall')
 assert(/Their Bite 4 vs your Hide 1 → 3/.test(bodyOf(loss)), 'incoming compare is on the card')
 const drop = pick(loss, 'enc-fight')
-assert(!drop.flags.encounterHere, 'dropping to 0 Health ends the fight')
+assert(drop.flags.encounterHere && drop.flags.encounterDone, 'dropping to 0 Health holds the outcome card')
 assert(drop.health === 1, 'empty Health is a stagger, not a lock')
 assert((drop.items.glints ?? 0) === beforeGlints, 'a clear loss still pays no win loot')
+const dropOn = pick(drop, 'enc-continue')
+assert(!dropOn.flags.encounterHere, 'On. clears a lost fight')
 
 for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
   let g = newGame(door)
@@ -907,7 +931,9 @@ for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
   }
   const won = pick(g, 'enc-fight')
   assert((won.items.scrap ?? 0) >= (g.items.scrap ?? 0) + 2, `${door} jackal drop pays scrap`)
-  assert(!won.flags.encounterHere, `${door} win clears the interrupt`)
+  assert(won.flags.encounterDone, `${door} win holds the outcome card`)
+  const wonOn = pick(won, 'enc-continue')
+  assert(!wonOn.flags.encounterHere, `${door} On. clears the interrupt`)
 }
 
 s = newGame('prisoner')
@@ -919,6 +945,76 @@ s = {
 assert(ids(s).includes('enc-skip'), 'Hunger-road encounters can be declined')
 s = pick(s, 'enc-skip')
 assert(s.sceneId === 'ch1:p-pipe', 'skipping a fence encounter keeps the fence')
+s = pick(s, 'enc-continue')
+assert(s.sceneId === 'ch1:p-pipe', 'On. after a fence skip still keeps the fence')
+
+s = newGame('vessel')
+s = pick(s, 'keep')
+s = applyEffect(s, {
+  sap: 6,
+  enterHub: 'redmaw',
+  goto: 'maw:rim',
+  flag: { chapter1Done: true, climax: 'bargain', sybellaHunting: true },
+  pressure: 8,
+})
+{
+  const flags = { ...s.flags, encounterHere: true, encounterKind: 'jackal', encounterHp: 1, fightTaught: true }
+  delete flags.hunterHere
+  delete flags.hunterFrom
+  delete flags.encounterDone
+  delete flags.encounterClash
+  s = {
+    ...s,
+    ticks: 4,
+    flags,
+    items: { ...s.items, shiv: 1 },
+    equipped: { ...s.equipped, weapon: 'shiv' },
+    health: 6,
+    healthMax: 6,
+  }
+}
+const rimFight = pick(s, 'enc-fight')
+assert(rimFight.sceneId === 'maw:rim', 'Maw Rim fight stays on the rim')
+assert(rimFight.flags.encounterDone, 'Rim win is an outcome card')
+assert(!rimFight.flags.hunterHere, 'Sybella does not land on the fight beat')
+assert(!/Tick\. Tick/.test(bodyOf(rimFight)), 'outcome card is not the skiff whisper')
+assert(!bodyOf(rimFight).includes('lip of rock'), 'outcome card is not the Approach intro')
+assert(/They drop/.test(bodyOf(rimFight)), 'Rim outcome names the drop')
+assert(ids(rimFight).includes('enc-continue') && !ids(rimFight).includes('sybella-hold'), 'only On. after the fight')
+const rimOn = pick(rimFight, 'enc-continue')
+assert(!rimOn.flags.encounterHere, 'On. returns to Maw Rim')
+assert(!rimOn.flags.hunterHere, 'Sybella still waits for the next linger')
+assert(/They drop/.test(rimOn.flash ?? ''), 'Rim hub flash is the compact loot line')
+assert(!/Bite/.test(rimOn.flash ?? ''), 'Rim hub flash is not the compare block')
+assert(bodyOf(rimOn).includes('lip of rock'), 'Approach body returns after On.')
+assert(!bodyOf(rimOn).includes('You Bite'), 'Approach body does not keep the fight log')
+assert(!/Tick\. Tick/.test(bodyOf(rimOn)), 'Sybella whisper is not stacked under the hub')
+
+s = newGame('prisoner')
+s = pick(s, 'pens')
+s = applyEffect(s, { sap: 6, goto: 'camp:wire', enterHub: 'camp04', pressure: 9 })
+{
+  const flags = { ...s.flags, encounterHere: true, encounterKind: 'jackal', encounterHp: 1, fightTaught: true }
+  delete flags.hunterHere
+  delete flags.hunterFrom
+  delete flags.encounterDone
+  delete flags.encounterClash
+  s = {
+    ...s,
+    ticks: 3,
+    flags,
+    items: { ...s.items, shiv: 1 },
+    equipped: { weapon: 'shiv' },
+    health: 6,
+    healthMax: 6,
+  }
+}
+const wireFight = pick(s, 'enc-fight')
+assert(!wireFight.flags.hunterHere, 'Valerius does not land on the fight beat')
+assert(!bodyOf(wireFight).includes('Whistles reach the Wire'), 'outcome card is not the sweep overlay')
+const wireOn = pick(wireFight, 'enc-continue')
+assert(!wireOn.flags.hunterHere, 'Valerius waits for the next linger')
+assert(!bodyOf(wireOn).includes('Whistles reach the Wire'), 'Wire after On. is the place, not the sweep')
 
 clearAllSaves()
 let prisonerRun = newGame('prisoner')
@@ -1337,7 +1433,7 @@ assert(html.includes('favicon.png?v=13'), 'tab favicon is the cover PNG')
 assert(html.includes('icon-192.png?v=13') && html.includes('icon-512.png?v=13'), 'html ships cache-busted cover PNGs')
 assert(html.includes('apple-touch.png?v=13'), 'apple-touch-icon is cache-busted cover crop')
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v17'"), 'SW bumped so dual-price buys are one row')
+assert(sw.includes("CACHE = 'amber-shroud-v18'"), 'SW bumped so fight outcomes are their own card')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
 try {
   readFileSync(new URL('../public/favicon.svg', import.meta.url))
