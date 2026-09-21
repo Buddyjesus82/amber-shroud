@@ -34,7 +34,7 @@ import { talkFallback, talkIntentsFor } from './talk'
 import { applyScavenge, canScavenge, canSkim } from './scavenge'
 import { writeSave } from './save'
 import { repairSceneId } from './repair'
-import { matchShopText, shopChoices, vendorFor } from './trade'
+import { matchShopText, moneyLabel, pickPay, shopChoices, vendorFor } from './trade'
 import type { DoorId, Effect, EquipSlot, GameState, ItemId, Scene } from './types'
 
 export function newGame(door: DoorId): GameState {
@@ -186,6 +186,21 @@ function resolveDest(state: GameState, fx: Effect): string | undefined {
 }
 
 export function applyEffect(state: GameState, fx: Effect): GameState {
+  if (fx.pay) {
+    const spent = pickPay(state, fx.pay)
+    if (!spent) {
+      return { ...state, flash: `Need ${moneyLabel(fx.pay)}.`, updatedAt: Date.now() }
+    }
+    const remove: Partial<Record<ItemId, number>> = {
+      ...spent,
+      ...(spent.glints ? fx.payGlintRemove : undefined),
+      ...fx.remove,
+    }
+    const rest = { ...fx }
+    delete rest.pay
+    delete rest.payGlintRemove
+    fx = { ...rest, remove }
+  }
   if (fx.travel) {
     const rest = { ...fx }
     delete rest.travel

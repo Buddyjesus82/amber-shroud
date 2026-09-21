@@ -61,7 +61,6 @@ const AUTH_PRODUCT = new Set([
   'drop',
   'knife',
   'cloak',
-  'cloak-scrap',
   'buy',
   'hide',
   'baton',
@@ -94,23 +93,12 @@ const KAELEN_STOCK: StockOffer[] = [
   {
     id: 'cloak',
     item: 'dust_cloak',
-    label: 'Buy a Dust Cloak — one Glint',
-    sub: 'Armor · Hide 3. Hides a silhouette. Does not hide Heat.',
-    cost: { glints: 1 },
+    label: 'Buy a Dust Cloak — 1 Glint or 2 scrap',
+    sub: 'Armor · Hide 3. Hides a silhouette. Does not hide Heat. Spends a Glint first, else scrap.',
+    cost: { glints: 1, scrap: 2 },
     onceFlag: 'kaelenSoldCloak',
     extraFlag: { kaelenSoldCloak: true },
-    flash: '"Canvas that outlived three owners. Wear it. I already counted the Glint."',
-    tags: ['cloak', 'dust', 'canvas'],
-  },
-  {
-    id: 'cloak-scrap',
-    item: 'dust_cloak',
-    label: 'Buy a Dust Cloak — two scrap',
-    sub: 'Armor · Hide 3. Same hide. Scrap instead of a Glint.',
-    cost: { scrap: 2 },
-    onceFlag: 'kaelenSoldCloak',
-    extraFlag: { kaelenSoldCloak: true },
-    flash: '"Scrap for a hide. Arithmetic."',
+    flash: '"Canvas that outlived three owners. Wear it. I already counted."',
     tags: ['cloak', 'dust', 'canvas'],
   },
 ]
@@ -174,25 +162,15 @@ const VENDORS: Vendor[] = [
     scenes: ['spine:silas', 'spine:silas-drop'],
     stock: [
       {
-        id: 'drop-glint',
+        id: 'drop',
         item: 'vial_drop',
-        label: 'Buy a Drop — one Glint',
-        sub: 'First Drop prices. He does not take scrip.',
-        cost: { glints: 1 },
+        label: 'Buy a Drop — 1 Glint or 2 scrap',
+        sub: 'First Drop prices. Spends a Glint first, else scrap. He does not take scrip.',
+        cost: { glints: 1, scrap: 2 },
         extraRemove: { vial_empty: 1 },
         extraFlag: { firstDrop: true, silasGave: true },
-        flash: 'He sets a Drop in your vial. It looks like a captured noon. Your hands remember hope, which is irritating.',
-        tags: ['drop', 'vial', 'sap', 'oasis', 'glint'],
-      },
-      {
-        id: 'drop-scrap',
-        item: 'vial_drop',
-        label: 'Buy a Drop — two scrap',
-        sub: 'Scrap enough to patch a tent.',
-        cost: { scrap: 2 },
-        extraFlag: { firstDrop: true, silasGave: true },
-        flash: 'First Drop. It sits in the glass like a dare you already lost.',
-        tags: ['drop', 'vial', 'sap', 'oasis', 'scrap'],
+        flash: 'He sets a Drop in your hands. It looks like a captured noon. First Drop. Your hands remember hope, which is irritating.',
+        tags: ['drop', 'vial', 'sap', 'oasis', 'glint', 'scrap'],
       },
     ],
     changeScrap: true,
@@ -233,7 +211,7 @@ function moneyCond(m: Money): Cond | undefined {
   if (m.scrap) parts.push({ itemMin: ['scrap', m.scrap] })
   if (!parts.length) return undefined
   if (parts.length === 1) return parts[0]
-  return { all: parts }
+  return { any: parts }
 }
 
 function payRemove(m: Money): Partial<Record<ItemId, number>> {
@@ -243,10 +221,15 @@ function payRemove(m: Money): Partial<Record<ItemId, number>> {
   return remove
 }
 
-function canPay(state: GameState, m: Money): boolean {
-  if (m.glints && (state.items.glints ?? 0) < m.glints) return false
-  if (m.scrap && (state.items.scrap ?? 0) < m.scrap) return false
-  return true
+/** Spend Glint if the pack can, else scrap. Both fields are alternative prices. */
+export function pickPay(state: GameState, m: Money): Partial<Record<ItemId, number>> | null {
+  if (m.glints && (state.items.glints ?? 0) >= m.glints) return { glints: m.glints }
+  if (m.scrap && (state.items.scrap ?? 0) >= m.scrap) return { scrap: m.scrap }
+  return null
+}
+
+export function canPay(state: GameState, m: Money): boolean {
+  return pickPay(state, m) != null
 }
 
 function sellPay(id: ItemId): Money | null {
@@ -297,7 +280,8 @@ function buyRows(state: GameState, vendor: Vendor): Choice[] {
       enable: moneyCond(offer.cost),
       locked: `Need ${moneyLabel(offer.cost)}`,
       effects: {
-        remove: { ...payRemove(offer.cost), ...offer.extraRemove },
+        pay: offer.cost,
+        payGlintRemove: offer.extraRemove,
         add: { [offer.item]: 1 },
         flag,
         ticks: 1,
@@ -454,7 +438,8 @@ export function matchShopText(state: GameState, text: string): { effects: Effect
       const flag = knownFlag(vendor, state.sceneId, named.extraFlag)
       return {
         effects: {
-          remove: { ...payRemove(named.cost), ...named.extraRemove },
+          pay: named.cost,
+          payGlintRemove: named.extraRemove,
           add: { [named.item]: 1 },
           flag,
           ticks: 1,

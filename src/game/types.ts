@@ -86,6 +86,10 @@ export type Effect = {
   heat?: Partial<Heat>
   add?: Partial<Record<ItemId, number>>
   remove?: Partial<Record<ItemId, number>>
+  /** Dual-currency OR: spend Glint if you can, else scrap. */
+  pay?: { glints?: number; scrap?: number }
+  /** Extra remove only when `pay` actually spends Glints. */
+  payGlintRemove?: Partial<Record<ItemId, number>>
   flag?: FlagMap
   unsetFlag?: string[]
   goto?: string

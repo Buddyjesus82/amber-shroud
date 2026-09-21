@@ -1,4 +1,5 @@
 import { ITEMS } from './content/catalog'
+import { moneyLabel } from './trade'
 import type { Effect, EquipSlot, GameState, ItemDef, ItemId } from './types'
 
 export type KitChip = {
@@ -73,6 +74,10 @@ export function effectPills(fx: Effect): CostPill[] {
       const name = n > 1 ? `${ITEMS[id].name} ×${n}` : ITEMS[id].name
       pills.push({ kind: 'item', text: stat ? `${name} · ${stat}` : name })
     }
+  }
+  if (fx.pay) {
+    const label = moneyLabel(fx.pay)
+    if (label) pills.push({ kind: 'item', text: label })
   }
   if (fx.remove) {
     for (const id of Object.keys(fx.remove) as ItemId[]) {

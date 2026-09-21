@@ -4,6 +4,7 @@ import {
   bodyOf,
   equipItem,
   interpret,
+  isChoiceOn,
   newGame,
   scavenge,
   sceneOf,
@@ -1035,7 +1036,7 @@ s = pick(s, 'pens')
 s = applyEffect(s, { goto: 'camp:kaelen', add: { scrap: 2 } })
 assert(ids(s).includes('shop-buy') && ids(s).includes('shop-sell'), 'Prisoner Kaelen has Buy/Sell')
 s = openShop(s, 'buy')
-assert(ids(s).includes('cloak-scrap'), 'Prisoner Kaelen sells cloak for scrap')
+assert(ids(s).includes('cloak') && !ids(s).includes('cloak-scrap'), 'Prisoner Kaelen sells one dual-price cloak')
 s = applyEffect(s, { goto: 'camp:wire' })
 s = interpret(s, 'talk')
 assert(/gloves|product|shelf/i.test(s.flash ?? ''), 'Do talk on the Wire hits Kaelen who is there')
@@ -1045,7 +1046,7 @@ s = pick(s, 'stand')
 s = applyEffect(s, { goto: 'spine:kaelen', add: { scrap: 2 } })
 assert(ids(s).includes('shop-buy') && ids(s).includes('shop-sell'), 'Outcast Kaelen has Buy/Sell like Prisoner')
 s = openShop(s, 'buy')
-assert(ids(s).includes('cloak-scrap'), 'Outcast Kaelen sells cloak for scrap like Prisoner')
+assert(ids(s).includes('cloak') && !ids(s).includes('cloak-scrap'), 'Outcast Kaelen sells one dual-price cloak like Prisoner')
 s = applyEffect(s, { goto: 'spine:well' })
 s = interpret(s, 'talk')
 assert(/gloves|product|shelf/i.test(s.flash ?? ''), 'Do talk at the well hits Kaelen who is there')
@@ -1071,7 +1072,7 @@ assert(!/\bshe\b|\bher\b/.test(sceneOf(s).body), 'Threshold Kaelen body is not s
 assert(/\bthey\b/i.test(sceneOf(s).body), 'Threshold Kaelen uses they')
 assert(ids(s).includes('shop-buy') && ids(s).includes('shop-sell'), 'Vessel Kaelen has Buy/Sell like Wire and well')
 s = openShop(s, 'buy')
-assert(ids(s).includes('cloak-scrap'), 'Vessel Kaelen sells cloak for scrap like the other doors')
+assert(ids(s).includes('cloak') && !ids(s).includes('cloak-scrap'), 'Vessel Kaelen sells one dual-price cloak like the other doors')
 s = pick(s, 'shop-back')
 s = pick(s, 'rumors')
 assert(s.sceneId === 'thresh:kaelen-rumors', 'Vessel rumor counter is local to Cup-Shadow')
@@ -1090,6 +1091,81 @@ assert(/animals|hymn|joints|cup/i.test(s.flash ?? ''), 'Do talk at the paddock s
 
 s = applyEffect(s, { goto: 'ch1:v-zafir', startChapter: 'cache-run' })
 assert(!ids(s).includes('shop-buy') && !ids(s).includes('shop-sell'), 'Hunger cairn Zafir is not a shop')
+assert(ids(s).includes('heading'), 'cairn still offers one cursed-heading buy')
+assert(!ids(s).includes('glint') && !ids(s).includes('scrap'), 'heading is not two price rows')
+{
+  const row = visibleChoices(s).find((c) => c.id === 'heading')
+  assert(row?.label.includes('Glint') && row?.label.includes('scrap'), 'heading label names both prices')
+  assert(!isChoiceOn(s, row?.enable), 'heading locks without Glint or scrap')
+}
+{
+  let paid = applyEffect(s, { add: { glints: 1, scrap: 1 } })
+  const seekers = paid.heat.seekers
+  paid = pick(paid, 'heading')
+  assert(paid.items.cache_map === 1, 'heading still grants the cache map')
+  assert(!paid.items.glints, 'heading spends Glint first when both are in the pack')
+  assert(paid.items.scrap === 1, 'heading keeps scrap when a Glint paid')
+  assert(paid.flags.zafirPaid && paid.flags.zafirCup && paid.flags.zafirMet, 'heading flags stay the same')
+  assert(paid.heat.seekers === seekers + 1, 'heading still raises Seekers')
+  assert(paid.sceneId === 'ch1:sybella', 'paid heading still walks to Sybella')
+}
+{
+  let scrapOnly = applyEffect(s, { add: { scrap: 1 } })
+  scrapOnly = pick(scrapOnly, 'heading')
+  assert(scrapOnly.items.cache_map === 1, 'scrap still buys the heading')
+  assert(!scrapOnly.items.scrap, 'heading spends scrap when there is no Glint')
+  assert(scrapOnly.flags.zafirPaid, 'scrap heading still sets zafirPaid')
+}
+{
+  let cloak = newGame('prisoner')
+  cloak = pick(cloak, 'pens')
+  cloak = applyEffect(cloak, { goto: 'camp:kaelen', add: { glints: 1, scrap: 2 } })
+  cloak = openShop(cloak, 'buy')
+  const row = visibleChoices(cloak).find((c) => c.id === 'cloak')
+  assert(row && !ids(cloak).includes('cloak-scrap'), 'Kaelen cloak is one dual-price row')
+  assert(row.label.includes('Glint') && row.label.includes('scrap'), 'cloak label names both prices')
+  cloak = pick(cloak, 'cloak')
+  assert(cloak.items.dust_cloak === 1, 'cloak still grants Dust Cloak')
+  assert(!cloak.items.glints, 'cloak spends Glint first')
+  assert((cloak.items.scrap ?? 0) === 2, 'cloak keeps scrap when a Glint paid')
+  assert(cloak.flags.kaelenSoldCloak, 'cloak once-flag stays the same')
+}
+{
+  let cloak = newGame('prisoner')
+  cloak = pick(cloak, 'pens')
+  cloak = applyEffect(cloak, { goto: 'camp:kaelen', add: { scrap: 2 } })
+  cloak = openShop(cloak, 'buy')
+  cloak = pick(cloak, 'cloak')
+  assert(cloak.items.dust_cloak === 1, 'two scrap still buys the cloak')
+  assert(!cloak.items.scrap, 'cloak spends scrap when there is no Glint')
+  assert(cloak.flags.kaelenSoldCloak, 'scrap cloak still sets kaelenSoldCloak')
+}
+{
+  let drop = newGame('outcast')
+  drop = pick(drop, 'stand')
+  drop = applyEffect(drop, { goto: 'spine:silas-drop', add: { glints: 1, scrap: 2 } })
+  drop = openShop(drop, 'buy')
+  assert(ids(drop).includes('drop') && !ids(drop).includes('drop-glint') && !ids(drop).includes('drop-scrap'), 'Silas Drop is one dual-price row')
+  const empty = drop.items.vial_empty ?? 0
+  drop = pick(drop, 'drop')
+  assert((drop.items.vial_drop ?? 0) >= 1, 'Silas still sells a Drop')
+  assert(!drop.items.glints, 'Silas spends Glint first')
+  assert((drop.items.scrap ?? 0) === 2, 'Silas keeps scrap when a Glint paid')
+  assert((drop.items.vial_empty ?? 0) === Math.max(0, empty - 1), 'Glint Drop still fills the empty vial')
+  assert(drop.flags.firstDrop && drop.flags.silasGave, 'Silas Drop flags stay the same')
+}
+{
+  let drop = newGame('outcast')
+  drop = pick(drop, 'stand')
+  drop = applyEffect(drop, { goto: 'spine:silas-drop', add: { scrap: 2 }, remove: { glints: 9 } })
+  drop = openShop(drop, 'buy')
+  const empty = drop.items.vial_empty ?? 0
+  drop = pick(drop, 'drop')
+  assert((drop.items.vial_drop ?? 0) >= 1, 'two scrap still buys Silas Drop')
+  assert(!drop.items.scrap, 'Silas spends scrap when there is no Glint')
+  assert((drop.items.vial_empty ?? 0) === empty, 'scrap Drop does not consume the empty vial')
+  assert(drop.flags.firstDrop && drop.flags.silasGave, 'scrap Drop flags stay the same')
+}
 
 for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
   let shop = newGame(door)
@@ -1261,7 +1337,7 @@ assert(html.includes('favicon.png?v=13'), 'tab favicon is the cover PNG')
 assert(html.includes('icon-192.png?v=13') && html.includes('icon-512.png?v=13'), 'html ships cache-busted cover PNGs')
 assert(html.includes('apple-touch.png?v=13'), 'apple-touch-icon is cache-busted cover crop')
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v16'"), 'SW bumped so Kaelen sits on all three doors')
+assert(sw.includes("CACHE = 'amber-shroud-v17'"), 'SW bumped so dual-price buys are one row')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
 try {
   readFileSync(new URL('../public/favicon.svg', import.meta.url))
