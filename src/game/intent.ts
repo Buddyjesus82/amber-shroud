@@ -1,4 +1,4 @@
-import type { GameState, IntentRule } from './types'
+import type { Choice, GameState, IntentRule } from './types'
 import { check } from './logic'
 
 function normalize(text: string): string {
@@ -18,6 +18,38 @@ function scoreRule(haystack: string, rule: IntentRule): number {
     if (haystack.includes(t)) score += t.length + 2
   }
   return score
+}
+
+/** Visible-button Do match. Exact label/id, or a phrase from label/sub. */
+export function matchChoiceText(text: string, choices: Choice[]): Choice | null {
+  const hay = normalize(text)
+  if (!hay) return null
+  let best: Choice | null = null
+  let bestScore = 0
+  for (const choice of choices) {
+    const label = normalize(choice.label)
+    const sub = normalize(choice.sub ?? '')
+    const id = normalize(choice.id.replace(/-/g, ' '))
+    const words = hay.split(' ').filter(Boolean)
+    let score = 0
+    if (hay === label || hay === id) score = 1000 + hay.length
+    else if (label.includes(hay) && (words.length >= 2 || hay.length >= 6)) score = 400 + hay.length
+    else if (hay.includes(label) && label.length >= 6) score = 350 + label.length
+    else if (sub && sub.includes(hay) && (words.length >= 2 || hay.length >= 8)) score = 200 + hay.length
+    else {
+      const asked = words.filter((w) => w.length >= 3)
+      const have = new Set(label.split(' ').filter(Boolean))
+      const hits = asked.filter((w) => have.has(w))
+      if (hits.length >= 2 && hits.length >= Math.ceil(asked.length * 0.6)) {
+        score = 100 + hits.join('').length
+      }
+    }
+    if (score > bestScore) {
+      best = choice
+      bestScore = score
+    }
+  }
+  return best
 }
 
 export function matchIntent(

@@ -1,6 +1,6 @@
 import { DOORS, HUBS, ITEMS, getScene, hasScene, resolveBody } from './content'
 import { applyDelta, check, clamp } from './logic'
-import { GLOBAL_INTENTS, matchIntent } from './intent'
+import { GLOBAL_INTENTS, matchChoiceText, matchIntent } from './intent'
 import { travelGate } from './map'
 import {
   atGuardStation,
@@ -148,6 +148,7 @@ function hunterScene(state: GameState): string | null {
   if (state.chapterId) return null
   if (state.pressure < 9) return null
   if (state.ticks === 0 || state.ticks % 4 !== 0) return null
+  // Park (later): Camp pressure interrupt should not star Valerius.
   const map: Record<string, string> = {
     camp04: 'camp:hunter',
     spine: 'spine:hunter',
@@ -566,6 +567,14 @@ export function interpret(state: GameState, text: string): GameState {
   const shopHit = matchShopText(state, text)
   if (shopHit) {
     return withVerb(applyEffect(state, shopHit.effects), shopHit.verb)
+  }
+
+  const button = matchChoiceText(
+    text,
+    visibleChoices(state).filter((c) => isChoiceOn(state, c.enable)),
+  )
+  if (button) {
+    return withVerb(applyEffect(state, button.effects), button.id)
   }
 
   const local = matchIntent(text, [...(scene.intents ?? []), ...talkIntentsFor(scene.id)], state)

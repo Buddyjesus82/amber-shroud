@@ -66,6 +66,13 @@ function pick(s: GameState, id: string) {
   if (s.flags.hunterHere && (s.hubId === 'redmaw' || s.sceneId.startsWith('maw:')) && !id.startsWith('sybella-')) {
     s = applyEffect(s, { returnHunterFrom: true, unsetFlag: ['hunterHere', 'hunterFrom'] })
   }
+  if (
+    s.flags.hunterHere &&
+    (s.sceneId === 'camp:wire' || s.sceneId.startsWith('camp:kaelen')) &&
+    !id.startsWith('hunter-')
+  ) {
+    s = applyEffect(s, { returnHunterFrom: true, unsetFlag: ['hunterHere', 'hunterFrom'] })
+  }
   const c = visibleChoices(s).find((x) => x.id === id)
   if (!c) {
     throw new Error(
@@ -371,6 +378,30 @@ assert(s.hubId === 'redmaw', 'red maw hub')
 
 s = newGame('outcast')
 assert(s.sap === 2, 'outcast starts thin')
+{
+  const button = pick(s, 'stand')
+  for (const typed of ['stand up into the noon', 'stand up', 'into the noon']) {
+    const viaDo = interpret(s, typed)
+    assert(viaDo.sceneId === button.sceneId, `Do "${typed}" walks the same road as the button`)
+    assert(viaDo.hubId === button.hubId, `Do "${typed}" enters the Spine like the button`)
+    assert(viaDo.flash === button.flash, `Do "${typed}" uses the button flash`)
+    assert(!/miss/i.test(viaDo.flash ?? ''), `Do "${typed}" is not a miss`)
+  }
+  const miss = interpret(s, 'xyzzy poetry please')
+  assert(/miss/i.test(miss.flash ?? ''), 'garbage Do on First Drop is still a miss')
+}
+{
+  const open = newGame('prisoner')
+  const button = pick(open, 'pens')
+  const viaDo = interpret(open, 'sit up')
+  assert(viaDo.sceneId === button.sceneId && viaDo.hubId === button.hubId, 'Do sit up is the Prisoner button')
+}
+{
+  const open = newGame('vessel')
+  const button = pick(open, 'keep')
+  const viaDo = interpret(open, 'walk the court')
+  assert(viaDo.sceneId === button.sceneId && viaDo.heat.seekers === button.heat.seekers, 'Do walk the court is the Vessel button')
+}
 s = pick(s, 'stand')
 assert(s.hubId === 'spine')
 assert(ids(s).includes('tip'), 'silas tip on ridge')
@@ -1433,7 +1464,7 @@ assert(html.includes('favicon.png?v=13'), 'tab favicon is the cover PNG')
 assert(html.includes('icon-192.png?v=13') && html.includes('icon-512.png?v=13'), 'html ships cache-busted cover PNGs')
 assert(html.includes('apple-touch.png?v=13'), 'apple-touch-icon is cache-busted cover crop')
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v18'"), 'SW bumped so fight outcomes are their own card')
+assert(sw.includes("CACHE = 'amber-shroud-v19'"), 'SW bumped so Do matches visible choice labels')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
 try {
   readFileSync(new URL('../public/favicon.svg', import.meta.url))
