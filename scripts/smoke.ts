@@ -1480,7 +1480,7 @@ assert(html.includes('apple-touch.png?v=13'), 'apple-touch-icon is cache-busted 
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v24'"), 'SW bumped so each door and interrupt has its own cover')
+assert(sw.includes("CACHE = 'amber-shroud-v25'"), 'SW bumped so door covers are tight-cropped and small')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
 try {
@@ -1494,6 +1494,7 @@ assert(/\.choice \{[\s\S]*?flex:\s*0\s+0\s+auto/.test(css), 'choice rows do not 
 assert(css.includes('.choice.shop-row'), 'shop Buy/Sell rows keep their own height')
 assert(css.includes('max-height: 48%'), 'play thumb docks in the viewport instead of pushing actions below the fold')
 assert(/html,\s*body,\s*#root \{[\s\S]*?overflow:\s*hidden/.test(css), 'page chrome does not scroll under the play dock')
+assert(css.includes('object-position: center 68%'), 'scene art crops onto the landmark, not the shared sky')
 assert(css.includes('place-items: center'), 'game screen is centered on the backdrop')
 assert(/html \{\s*font-size:\s*18px/.test(css), 'root type is 18px so rem UI reads on a filled phone')
 assert(/\.play-screen \.scene-art \{[\s\S]*?flex:\s*1 1 auto/.test(css), 'scene art grows into leftover play space')
