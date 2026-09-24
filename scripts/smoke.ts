@@ -1464,7 +1464,7 @@ assert(html.includes('favicon.png?v=13'), 'tab favicon is the cover PNG')
 assert(html.includes('icon-192.png?v=13') && html.includes('icon-512.png?v=13'), 'html ships cache-busted cover PNGs')
 assert(html.includes('apple-touch.png?v=13'), 'apple-touch-icon is cache-busted cover crop')
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v21'"), 'SW bumped so the play screen contain-scales in the viewport')
+assert(sw.includes("CACHE = 'amber-shroud-v22'"), 'SW bumped so play type is readable on a full-phone screen')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
 try {
   readFileSync(new URL('../public/favicon.svg', import.meta.url))
@@ -1478,6 +1478,8 @@ assert(css.includes('.choice.shop-row'), 'shop Buy/Sell rows keep their own heig
 assert(css.includes('max-height: 48%'), 'play thumb docks in the viewport instead of pushing actions below the fold')
 assert(/html,\s*body,\s*#root \{[\s\S]*?overflow:\s*hidden/.test(css), 'page chrome does not scroll under the play dock')
 assert(css.includes('place-items: center'), 'game screen is centered on the backdrop')
+assert(/html \{\s*font-size:\s*18px/.test(css), 'root type is 18px so rem UI reads on a filled phone')
+assert(css.includes('font-size: 1.18rem'), 'story prose is larger than the old 1.05rem')
 assert(css.includes('min-aspect-ratio: 3/4'), 'wide viewports contain-scale the phone screen to the nearer edges')
 
 console.log('OK', {
