@@ -27,8 +27,10 @@ html,
 body,
 #root {
   margin: 0;
-  min-height: 100dvh;
   height: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
 }
 
 body {
@@ -51,8 +53,9 @@ body {
 
 .screen {
   width: min(430px, 100%);
-  min-height: 100dvh;
-  min-height: 100svh;
+  height: 100dvh;
+  height: 100svh;
+  max-height: 100dvh;
   background: linear-gradient(180deg, #140c07 0%, #0c0704 100%);
   display: flex;
   flex-direction: column;
@@ -145,7 +148,7 @@ button {
 .title-hero {
   position: relative;
   flex: 1;
-  min-height: 52dvh;
+  min-height: 0;
 }
 
 .title-hero img {
@@ -401,34 +404,34 @@ h2 {
   padding-top: var(--safe-t);
 }
 
-.play-screen.play-split .story {
-  flex: 1 1 46%;
+.play-screen .story {
+  flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
 }
 
-.play-screen.play-split .thumb {
-  flex: 1 1 46%;
+.play-screen .thumb {
+  flex: 0 1 auto;
   min-height: 0;
-  max-height: none;
+  max-height: 48%;
   overflow: hidden;
 }
 
-.play-screen.play-split .choices {
+.play-screen .choices {
   flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
   -webkit-overflow-scrolling: touch;
 }
 
-.play-screen.play-split .choice,
-.play-screen.play-split .choice-group {
+.play-screen .choice,
+.play-screen .choice-group {
   flex: 0 0 auto;
 }
 
-.play-screen.play-split .say,
-.play-screen.play-split .verb-hint,
-.play-screen.play-split .drink {
+.play-screen .say,
+.play-screen .verb-hint,
+.play-screen .drink {
   flex-shrink: 0;
 }
 
@@ -1203,6 +1206,12 @@ h2 {
   flex: 0 0 auto;
 }
 
+@media (max-height: 700px) {
+  .scene-art {
+    height: 56px;
+  }
+}
+
 .scene-art img {
   width: 100%;
   height: 100%;
@@ -1490,7 +1499,8 @@ h2 {
 
 @media (min-width: 800px) {
   .screen {
-    min-height: min(920px, 100dvh);
+    height: min(920px, calc(100dvh - 24px));
+    max-height: calc(100dvh - 24px);
     margin: 12px 0;
     border-radius: 18px;
   }
