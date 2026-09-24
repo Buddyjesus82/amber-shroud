@@ -417,10 +417,27 @@ h2 {
   padding-top: var(--safe-t);
 }
 
-.play-screen .story {
+.play-screen .scene-art {
   flex: 1 1 auto;
+  min-height: 88px;
+  height: auto;
+  position: relative;
+}
+
+.play-screen .scene-art::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 42%, rgba(12, 7, 4, 0.55) 72%, #0c0704 100%);
+  pointer-events: none;
+}
+
+.play-screen .story {
+  flex: 0 1 auto;
+  max-height: 40%;
   min-height: 0;
   overflow: auto;
+  background: #0c0704;
 }
 
 .play-screen .thumb {

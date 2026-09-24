@@ -171,12 +171,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     onChange(interpret(state, t))
   }
 
-  const art =
-    scene.art === 'hunger'
-      ? `${import.meta.env.BASE_URL}covers/hunger.png`
-      : scene.art === 'world'
-        ? `${import.meta.env.BASE_URL}covers/world.png`
-        : null
+  const artSrc = `${import.meta.env.BASE_URL}covers/${scene.art === 'hunger' ? 'hunger' : 'world'}.png`
 
   return (
     <div className={`screen play-screen${split ? ' play-split' : ''}`}>
@@ -242,11 +237,9 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
       {saveToast ? <p className="heat-toast">{saveToast}</p> : null}
       {toast ? <p className="heat-toast">{toast}</p> : null}
 
-      {art && !state.flags.encounterHere ? (
-        <div className="scene-art">
-          <img src={art} alt="" />
-        </div>
-      ) : null}
+      <div className="scene-art" aria-hidden="true">
+        <img src={artSrc} alt="" />
+      </div>
 
       <div className="story" ref={storyRef}>
         {scene.speaker || isSybellaOverlay(state) || state.flags.encounterHere ? (
