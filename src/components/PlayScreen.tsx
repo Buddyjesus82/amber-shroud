@@ -20,6 +20,7 @@ import { HEAT_FACTIONS, heatRiseLine } from '../game/heat'
 import { effectPills, listedKit } from '../game/kit'
 import { isMawExit } from '../game/map'
 import { encounterSpeaker, isEncounterResult } from '../game/encounter'
+import { playCoverFile, playCoverKey } from '../game/art'
 import { isSybellaOverlay, isWireSide } from '../game/hunter'
 import { isShopOpen } from '../game/trade'
 import type { Faction, GameState } from '../game/types'
@@ -171,7 +172,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     onChange(interpret(state, t))
   }
 
-  const artSrc = `${import.meta.env.BASE_URL}covers/${scene.art === 'hunger' ? 'hunger' : 'world'}.png`
+  const artSrc = `${import.meta.env.BASE_URL}covers/${playCoverFile(playCoverKey(state, scene))}`
 
   return (
     <div className={`screen play-screen${split ? ' play-split' : ''}`}>

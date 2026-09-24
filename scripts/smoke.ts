@@ -25,6 +25,7 @@ import {
   tapResume,
 } from '../src/game/doorPick.ts'
 import type { GameState } from '../src/game/types.ts'
+import { playCoverKey } from '../src/game/art.ts'
 import { canTravelTo, edgeSap, HUB_MAPS, nodeIdForScene, route } from '../src/game/map.ts'
 import {
   clearAllSaves,
@@ -1463,8 +1464,24 @@ assert(!html.includes('image/svg+xml'), 'html has no SVG icon link')
 assert(html.includes('favicon.png?v=13'), 'tab favicon is the cover PNG')
 assert(html.includes('icon-192.png?v=13') && html.includes('icon-512.png?v=13'), 'html ships cache-busted cover PNGs')
 assert(html.includes('apple-touch.png?v=13'), 'apple-touch-icon is cache-busted cover crop')
+{
+  const p = newGame('prisoner')
+  assert(playCoverKey(p, sceneOf(p)) === 'camp04', 'Prisoner opening uses Camp-04 art')
+  const o = newGame('outcast')
+  assert(playCoverKey(o, sceneOf(o)) === 'spine', 'Outcast opening uses Spine art')
+  const v = newGame('vessel')
+  assert(playCoverKey(v, sceneOf(v)) === 'threshold', 'Vessel opening uses Threshold art')
+  const hunt = applyEffect(p, { goto: 'camp:hunter' })
+  assert(playCoverKey(hunt, sceneOf(hunt)) === 'valerius', 'Camp hunter interrupt uses Valerius')
+  const hound = applyEffect(o, { goto: 'spine:hound' })
+  assert(playCoverKey(hound, sceneOf(hound)) === 'hound', 'Spine hunt uses Shard-Hound art')
+  const sy = { ...v, flags: { ...v.flags, hunterHere: true }, hubId: 'redmaw', sceneId: 'maw:lip', chapterId: 'cache-run' }
+  assert(playCoverKey(sy, { id: 'maw:lip', art: 'hunger' }) === 'sybella', 'Sybella overlay uses Sybella art')
+}
+
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v23'"), 'SW bumped so leftover play space is scene art, not empty brown')
+assert(sw.includes("CACHE = 'amber-shroud-v24'"), 'SW bumped so each door and interrupt has its own cover')
+assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
 try {
   readFileSync(new URL('../public/favicon.svg', import.meta.url))
