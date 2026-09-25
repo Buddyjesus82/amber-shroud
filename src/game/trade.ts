@@ -59,8 +59,12 @@ const SELL_PAY: Partial<Record<ItemId, Money>> = {
 
 const AUTH_PRODUCT = new Set([
   'drop',
+  'drop-glint',
+  'drop-scrap',
   'knife',
   'cloak',
+  'cloak-glint',
+  'cloak-scrap',
   'buy',
   'hide',
   'baton',
@@ -93,8 +97,8 @@ const KAELEN_STOCK: StockOffer[] = [
   {
     id: 'cloak',
     item: 'dust_cloak',
-    label: 'Buy a Dust Cloak — 1 Glint or 2 scrap',
-    sub: 'Armor · Hide 3. Hides a silhouette. Does not hide Heat. Spends a Glint first, else scrap.',
+    label: 'Buy a Dust Cloak',
+    sub: 'Armor · Hide 3. Hides a silhouette. Does not hide Heat. Pay with a Glint or with scrap.',
     cost: { glints: 1, scrap: 2 },
     onceFlag: 'kaelenSoldCloak',
     extraFlag: { kaelenSoldCloak: true },
@@ -164,8 +168,8 @@ const VENDORS: Vendor[] = [
       {
         id: 'drop',
         item: 'vial_drop',
-        label: 'Buy a Drop — 1 Glint or 2 scrap',
-        sub: 'First Drop prices. Spends a Glint first, else scrap. He does not take scrip.',
+        label: 'Buy a Drop',
+        sub: 'First Drop prices. Pay with a Glint or with scrap. He does not take scrip.',
         cost: { glints: 1, scrap: 2 },
         extraRemove: { vial_empty: 1 },
         extraFlag: { firstDrop: true, silasGave: true },
@@ -267,27 +271,50 @@ function backChoice(): Choice {
   }
 }
 
+/** Dual-price stock is two rows so the player picks Glint or scrap. */
+export function priceOptions(m: Money): { key: string; cost: Money }[] {
+  const glints = m.glints ?? 0
+  const scrap = m.scrap ?? 0
+  if (glints > 0 && scrap > 0) {
+    return [
+      { key: 'glint', cost: { glints } },
+      { key: 'scrap', cost: { scrap } },
+    ]
+  }
+  return [{ key: 'pay', cost: m }]
+}
+
+function offerLabel(offer: StockOffer, cost: Money): string {
+  const name = ITEMS[offer.item]?.name
+  const base = name ? `Buy ${name}` : offer.label.replace(/\s+—\s+.+$/, '')
+  return `${base} — ${moneyLabel(cost)}`
+}
+
 function buyRows(state: GameState, vendor: Vendor): Choice[] {
   const rows: Choice[] = []
   for (const offer of vendor.stock) {
     if (offer.onceFlag && state.flags[offer.onceFlag]) continue
     const flag = knownFlag(vendor, state.sceneId, offer.extraFlag)
-    rows.push({
-      id: offer.id,
-      label: offer.label,
-      sub: offer.sub,
-      group: 'buy',
-      enable: moneyCond(offer.cost),
-      locked: `Need ${moneyLabel(offer.cost)}`,
-      effects: {
-        pay: offer.cost,
-        payGlintRemove: offer.extraRemove,
-        add: { [offer.item]: 1 },
-        flag,
-        ticks: 1,
-        flash: offer.flash,
-      },
-    })
+    const opts = priceOptions(offer.cost)
+    for (const opt of opts) {
+      const id = opts.length > 1 ? `${offer.id}-${opt.key}` : offer.id
+      rows.push({
+        id,
+        label: offerLabel(offer, opt.cost),
+        sub: offer.sub,
+        group: 'buy',
+        enable: moneyCond(opt.cost),
+        locked: `Need ${moneyLabel(opt.cost)}`,
+        effects: {
+          pay: opt.cost,
+          payGlintRemove: opt.cost.glints ? offer.extraRemove : undefined,
+          add: { [offer.item]: 1 },
+          flag,
+          ticks: 1,
+          flash: offer.flash,
+        },
+      })
+    }
   }
   rows.push(backChoice())
   return rows
@@ -301,7 +328,8 @@ function sellRows(state: GameState, vendor: Vendor): Choice[] {
       label: 'Change two scrap for a Glint',
       sub: 'The stall’s exchange. Not a bargain.',
       group: 'sell',
-      show: { itemMin: ['scrap', 2] },
+      enable: { itemMin: ['scrap', 2] },
+      locked: 'Need 2 scrap',
       effects: {
         remove: { scrap: 2 },
         add: { glints: 1 },
@@ -317,7 +345,8 @@ function sellRows(state: GameState, vendor: Vendor): Choice[] {
       label: 'Pawn Cartel scrip for scrap',
       sub: 'Ironwood lullabies. Cartel Heat notices.',
       group: 'sell',
-      show: { item: 'scrip' },
+      enable: { item: 'scrip' },
+      locked: 'No Cartel scrip in the pack',
       effects: {
         remove: { scrip: 1 },
         add: { scrap: 1 },
@@ -434,12 +463,34 @@ export function matchShopText(state: GameState, text: string): { effects: Effect
   const offers = vendor.stock.filter((o) => !o.onceFlag || !state.flags[o.onceFlag])
   const named = offers.find((o) => o.tags.some((t) => word(hay, t)))
   if (named && (wantsBuy || shelf === 'buy' || (!wantsSell && named.tags.some((t) => word(hay, t) && t !== 'scrap' && t !== 'glint')))) {
-    if (canPay(state, named.cost)) {
+    const opts = priceOptions(named.cost)
+    const wantG = /\bglints?\b/.test(hay)
+    const wantS = /\bscrap\b/.test(hay)
+    let cost: Money | null = null
+    if (opts.length === 1) cost = opts[0].cost
+    else if (wantG && !wantS) cost = { glints: named.cost.glints }
+    else if (wantS && !wantG) cost = { scrap: named.cost.scrap }
+    else {
+      const canG = !!(named.cost.glints && canPay(state, { glints: named.cost.glints }))
+      const canS = !!(named.cost.scrap && canPay(state, { scrap: named.cost.scrap }))
+      if (canG && canS) {
+        return {
+          effects: {
+            flag: { shopShelf: 'buy' },
+            flash: `Pay with ${moneyLabel({ glints: named.cost.glints })} or with ${moneyLabel({ scrap: named.cost.scrap })}. Point at a price.`,
+          },
+          verb: 'buy',
+        }
+      }
+      if (canG) cost = { glints: named.cost.glints }
+      else if (canS) cost = { scrap: named.cost.scrap }
+    }
+    if (cost && canPay(state, cost)) {
       const flag = knownFlag(vendor, state.sceneId, named.extraFlag)
       return {
         effects: {
-          pay: named.cost,
-          payGlintRemove: named.extraRemove,
+          pay: cost,
+          payGlintRemove: cost.glints ? named.extraRemove : undefined,
           add: { [named.item]: 1 },
           flag,
           ticks: 1,
