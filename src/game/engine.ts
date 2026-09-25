@@ -37,6 +37,7 @@ import { talkFallback, talkIntentsFor } from './talk'
 import { applyScavenge, canScavenge, canSkim } from './scavenge'
 import { writeSave } from './save'
 import { repairSceneId } from './repair'
+import { isRumorCounter, matchRumorText, rumorChoices } from './rumors'
 import { matchShopText, moneyLabel, pickPay, shopChoices, vendorFor } from './trade'
 import type { DoorId, Effect, EquipSlot, GameState, ItemId, Scene } from './types'
 
@@ -259,9 +260,10 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   if (dest) {
     next.flags = markMetOnLeave(state.sceneId, dest, next.flags)
     next.sceneId = dest
-    if (dest !== state.sceneId && next.flags.shopShelf) {
+    if (dest !== state.sceneId && (next.flags.shopShelf || next.flags.rumorShelf)) {
       const flags = { ...next.flags }
       delete flags.shopShelf
+      delete flags.rumorShelf
       next.flags = flags
     }
     if (next.flags.hunterHere && !isWireSide(dest)) {
@@ -569,6 +571,11 @@ export function interpret(state: GameState, text: string): GameState {
     return withVerb(applyEffect(state, shopHit.effects), shopHit.verb)
   }
 
+  const rumorHit = matchRumorText(state, text)
+  if (rumorHit) {
+    return withVerb(applyEffect(state, rumorHit.effects), rumorHit.verb)
+  }
+
   const button = matchChoiceText(
     text,
     visibleChoices(state).filter((c) => isChoiceOn(state, c.enable)),
@@ -638,6 +645,9 @@ export function visibleChoices(state: GameState) {
   const authored = sceneOf(state).choices.filter((c) => check(c.show, state))
   if (vendorFor(state.sceneId)) {
     return shopChoices(state, authored).filter((c) => check(c.show, state))
+  }
+  if (isRumorCounter(state.sceneId)) {
+    return rumorChoices(state, authored).filter((c) => check(c.show, state))
   }
   return authored
 }

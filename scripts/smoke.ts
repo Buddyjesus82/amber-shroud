@@ -1477,10 +1477,18 @@ assert(html.includes('apple-touch.png?v=13'), 'apple-touch-icon is cache-busted 
   assert(playCoverKey(hound, sceneOf(hound)) === 'hound', 'Spine hunt uses Shard-Hound art')
   const sy = { ...v, flags: { ...v.flags, hunterHere: true }, hubId: 'redmaw', sceneId: 'maw:lip', chapterId: 'cache-run' }
   assert(playCoverKey(sy, { id: 'maw:lip', art: 'hunger' }) === 'sybella', 'Sybella overlay uses Sybella art')
+  const rumors = applyEffect(p, { goto: 'camp:kaelen-rumors' })
+  const rumorLabels = visibleChoices(rumors).map((c) => c.label)
+  assert(rumorLabels.includes('Intel'), 'Kaelen rumor counter opens with Intel')
+  assert(rumorLabels.includes('Side trouble'), 'Kaelen rumor counter opens with Side trouble')
+  const intel = applyEffect(rumors, { flag: { rumorShelf: 'intel' } })
+  const intelRow = visibleChoices(intel).find((c) => c.id === 'hunger-glint')
+  assert(intelRow, 'Hunger lead stays on the Intel shelf without a Glint')
+  assert(intelRow && !isChoiceOn(intel, intelRow.enable), 'Hunger lead locks until you have a Glint')
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v25'"), 'SW bumped so door covers are tight-cropped and small')
+assert(sw.includes("CACHE = 'amber-shroud-v26'"), 'SW bumped so Kaelen rumors split Intel / Side trouble')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
 try {

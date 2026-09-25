@@ -277,7 +277,19 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
             const head = row.group && row.group !== prev?.group ? row.group : null
             return (
               <Fragment key={row.key}>
-                {head ? <p className="choice-group">{head === 'buy' ? 'Buy' : head === 'sell' ? 'Sell' : 'Talk'}</p> : null}
+                {head ? (
+                  <p className="choice-group">
+                    {head === 'buy'
+                      ? 'Buy'
+                      : head === 'sell'
+                        ? 'Sell'
+                        : head === 'intel'
+                          ? 'Intel'
+                          : head === 'side'
+                            ? 'Side trouble'
+                            : 'Talk'}
+                  </p>
+                ) : null}
                 <button
                   type="button"
                   className={`choice ${row.tone}${row.group ? ` shop-row` : ''}`}
