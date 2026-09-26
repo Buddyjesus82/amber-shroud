@@ -21,7 +21,7 @@ import { effectPills, listedKit } from '../game/kit'
 import { isMawExit } from '../game/map'
 import { encounterSpeaker, isEncounterResult } from '../game/encounter'
 import { playCoverFile, playCoverKey } from '../game/art'
-import { isSybellaOverlay, isWireSide } from '../game/hunter'
+import { isPressureOverlay, pressureFace } from '../game/hunter'
 import { isShopOpen } from '../game/trade'
 import type { Choice, Faction, GameState } from '../game/types'
 import { HeatExplainer, HeatTip } from './HeatGuide'
@@ -69,10 +69,9 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
   const choices = visibleChoices(state)
   const roam = canScavenge(state)
   const skimOn = canSkim(state)
-  const overlay =
-    !!state.flags.encounterHere ||
-    isSybellaOverlay(state) ||
-    (!!state.flags.hunterHere && isWireSide(state.sceneId))
+  const overlay = !!state.flags.encounterHere || isPressureOverlay(state)
+  const face =
+    (state.flags.encounterHere ? encounterSpeaker(state) : null) ?? pressureFace(state) ?? scene.speaker
   const shopOpen = isShopOpen(state)
   const hookRow = !!(!overlay && !shopOpen && hub && hookOn && hook && showNav)
   const closeRow = !!(!overlay && !shopOpen && closing && showNav)
@@ -172,7 +171,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     onChange(interpret(state, t))
   }
 
-  const artSrc = `${import.meta.env.BASE_URL}covers/${playCoverFile(playCoverKey(state, scene))}?v=28`
+  const artSrc = `${import.meta.env.BASE_URL}covers/${playCoverFile(playCoverKey(state, scene))}?v=30`
 
   return (
     <div className={`screen play-screen${split ? ' play-split' : ''}`}>
@@ -243,15 +242,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
       </div>
 
       <div className="story" ref={storyRef}>
-        {scene.speaker || isSybellaOverlay(state) || state.flags.encounterHere ? (
-          <p className="speaker">
-            {state.flags.encounterHere
-              ? encounterSpeaker(state)
-              : isSybellaOverlay(state)
-                ? 'Sybella'
-                : scene.speaker}
-          </p>
-        ) : null}
+        {face ? <p className="speaker">{face}</p> : null}
         {bodyOf(state)
           .split('\n\n')
           .map((p, i) => (
@@ -332,7 +323,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
                   ? 'on'
                   : state.flags.encounterHere
                     ? 'fight / skip'
-                    : 'sabotage vent pipes / scavenge / who is kaelen'
+                    : 'look / talk / fight / bribe / who is kaelen'
               }
               enterKeyHint="go"
               autoComplete="off"
