@@ -1,4 +1,4 @@
-import { isSybellaOverlay } from './hunter'
+import { isCampHunt, isSpineHunt, isSybellaOverlay } from './hunter'
 import { PEOPLE, type PersonId } from './people'
 import type { GameState, Scene } from './types'
 
@@ -73,22 +73,9 @@ export function playCoverFile(key: CoverKey): string {
 export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' | 'chapterId' | 'hubId'>): CoverKey {
   const id = scene.id
   if (isSybellaOverlay(state) || id.startsWith('maw:sybella')) return 'sybella'
-  if (
-    id === 'camp:hunter' ||
-    id === 'camp:valerius' ||
-    id === 'camp:tower' ||
-    (state.flags.hunterHere && (state.hubId === 'camp04' || id.startsWith('camp:')))
-  ) {
-    return 'valerius'
-  }
-  if (
-    id === 'spine:hunter' ||
-    id === 'spine:hound' ||
-    id === 'spine:valerius' ||
-    (state.flags.hunterHere && (state.hubId === 'spine' || id.startsWith('spine:')))
-  ) {
-    return 'hound'
-  }
+  if (isCampHunt(state)) return 'hound'
+  if (id === 'camp:hunter' || id === 'camp:valerius' || id === 'camp:tower') return 'valerius'
+  if (isSpineHunt(state) || id === 'spine:hunter' || id === 'spine:hound' || id === 'spine:valerius') return 'hound'
   if (id === 'thresh:thalia' || id.startsWith('thresh:thalia')) return 'thalia'
 
   const who = npcCover(id)

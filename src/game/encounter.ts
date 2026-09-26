@@ -356,11 +356,35 @@ export function resolveEncounter(state: GameState, how: 'fight' | 'skip'): { fx:
 }
 
 export function wantsEncounterFight(text: string): boolean {
-  return /\b(fight|attack|kill|stab|hit|punch|cut|strike|engage)\b/i.test(text)
+  return /\b(fight|attack|bite|kill|stab|hit|punch|cut|strike|engage)\b/i.test(text)
+}
+
+export function wantsEncounterHide(text: string): boolean {
+  return /\b(hide|cloak|crouch|duck|conceal)\b/i.test(text)
 }
 
 export function wantsEncounterSkip(text: string): boolean {
   return /\b(skip|leave|run|flee|walk|pass|ignore|back|go)\b/i.test(text)
+}
+
+export function roadPressureScene(sceneId: string): boolean {
+  return ENCOUNTER_SCENES.has(sceneId)
+}
+
+/** Open a road fight on the current ground. Bite vs Hide stays in the encounter card. */
+export function beginEncounter(state: GameState, kind?: EncounterKind, flash?: string): Effect {
+  const k = kind ?? pickEncounterKind(state)
+  return {
+    unsetFlag: ['hunterHere', 'hunterFrom', 'encounterDone', 'encounterClash', 'encounterFlash'],
+    flag: {
+      encounterHere: true,
+      encounterKind: k,
+      encounterHp: enemyHealth(k),
+      encounterAt: state.ticks,
+    },
+    ticks: 1,
+    flash: flash ?? 'The road answers.',
+  }
 }
 
 export function healthLabel(n: number): string {

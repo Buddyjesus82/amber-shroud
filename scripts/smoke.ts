@@ -26,6 +26,7 @@ import {
 } from '../src/game/doorPick.ts'
 import type { GameState } from '../src/game/types.ts'
 import { playCoverKey } from '../src/game/art.ts'
+import { pressureFace } from '../src/game/hunter.ts'
 import { canTravelTo, edgeSap, HUB_MAPS, nodeIdForScene, route } from '../src/game/map.ts'
 import {
   clearAllSaves,
@@ -64,15 +65,14 @@ function pick(s: GameState, id: string) {
   if (s.flags.encounterHere && id !== 'enc-fight' && id !== 'enc-skip' && id !== 'enc-cloak' && id !== 'enc-continue') {
     s = dismissFight(s)
   }
-  if (s.flags.hunterHere && (s.hubId === 'redmaw' || s.sceneId.startsWith('maw:')) && !id.startsWith('sybella-')) {
-    s = applyEffect(s, { returnHunterFrom: true, unsetFlag: ['hunterHere', 'hunterFrom'] })
-  }
   if (
     s.flags.hunterHere &&
-    (s.sceneId === 'camp:wire' || s.sceneId.startsWith('camp:kaelen')) &&
-    !id.startsWith('hunter-')
+    !id.startsWith('sybella-') &&
+    !id.startsWith('hunter-') &&
+    !id.startsWith('spine-') &&
+    !id.startsWith('thresh-')
   ) {
-    s = applyEffect(s, { returnHunterFrom: true, unsetFlag: ['hunterHere', 'hunterFrom'] })
+    s = applyEffect(s, { unsetFlag: ['hunterHere', 'hunterFrom'] })
   }
   const c = visibleChoices(s).find((x) => x.id === id)
   if (!c) {
@@ -162,8 +162,8 @@ function walkTo(s: GameState, destScene: string): GameState {
     const cost = edgeSap(map, path[i - 1], nodeId) ?? 1
     if (cur.sap <= cost) cur = applyEffect(cur, { sap: cost + 1 - cur.sap })
     if (cur.flags.encounterHere) cur = dismissFight(cur)
-    if (cur.flags.hunterHere && (cur.hubId === 'redmaw' || cur.sceneId.startsWith('maw:'))) {
-      cur = applyEffect(cur, { returnHunterFrom: true, unsetFlag: ['hunterHere', 'hunterFrom'] })
+    if (cur.flags.hunterHere) {
+      cur = applyEffect(cur, { unsetFlag: ['hunterHere', 'hunterFrom'] })
     }
     cur = travelTo(cur, dest)
     if (cur.flags.encounterHere) cur = dismissFight(cur)
@@ -1650,7 +1650,15 @@ assert(html.includes('apple-touch.png?v=13'), 'apple-touch-icon is cache-busted 
   const v = newGame('vessel')
   assert(playCoverKey(v, sceneOf(v)) === 'threshold', 'Vessel opening uses Threshold art')
   const hunt = applyEffect(p, { goto: 'camp:hunter' })
-  assert(playCoverKey(hunt, sceneOf(hunt)) === 'valerius', 'Camp hunter interrupt uses Valerius')
+  assert(playCoverKey(hunt, sceneOf(hunt)) === 'valerius', 'Shiv confrontation with Valerius still uses his cover')
+  const knock = {
+    ...p,
+    hubId: 'camp04' as const,
+    sceneId: 'camp:yard',
+    flags: { ...p.flags, hunterHere: true, hunterFrom: 'camp:yard' },
+  }
+  assert(playCoverKey(knock, sceneOf(knock)) === 'hound', 'Camp pressure interrupt uses the Hound-handler')
+  assert(pressureFace(knock) === 'Hound-handler', 'Camp knock speaker is the handler')
   const hound = applyEffect(o, { goto: 'spine:hound' })
   assert(playCoverKey(hound, sceneOf(hound)) === 'hound', 'Spine hunt uses Shard-Hound art')
   const sy = { ...v, flags: { ...v.flags, hunterHere: true }, hubId: 'redmaw', sceneId: 'maw:lip', chapterId: 'cache-run' }
@@ -1670,8 +1678,120 @@ assert(html.includes('apple-touch.png?v=13'), 'apple-touch-icon is cache-busted 
   assert(intelRow && !isChoiceOn(intel, intelRow.enable), 'Hunger lead locks until you have a Glint')
 }
 
+s = newGame('prisoner')
+s = pick(s, 'pens')
+{
+  const looked = interpret(s, 'look around')
+  assert(looked.sceneId === 'camp:cages', 'look around stays in the pens')
+  assert(/pens|cage|Oil-Tooth/i.test(looked.flash ?? ''), 'look around names the pens')
+  assert(!/miss/i.test(looked.flash ?? ''), 'look around is not a miss')
+  const examined = interpret(s, 'examine scrip')
+  assert(examined.sceneId === 'camp:cages' && /scrip|paper|Ironwood/i.test(examined.flash ?? ''), 'examine names a thing in the pack')
+  const noFight = interpret(s, 'attack')
+  assert(noFight.sceneId === 'camp:cages' && !noFight.flags.encounterHere, 'attack in the pens does not invent a fight')
+  assert(/wrench|throat|shield|fluent|not/i.test(noFight.flash ?? '') && !/miss/i.test(noFight.flash ?? ''), 'attack on Oil-Tooth is a threaten, not a brick wall')
+  const bribed = interpret(s, 'bribe')
+  assert(/job|wrench|palm/i.test(bribed.flash ?? '') && !/miss/i.test(bribed.flash ?? ''), 'bribe Oil-Tooth is authored')
+  const taken = interpret(s, 'take')
+  assert(/shelf|button/i.test(taken.flash ?? ''), 'take from a person is refused in one line')
+}
+s = applyEffect(s, { sap: 6, goto: 'camp:yard', enterHub: 'camp04' })
+{
+  const before = s.sceneId
+  const fought = interpret(s, 'fight')
+  assert(fought.sceneId === before && fought.flags.encounterHere, 'fight on the Yard starts a road encounter in place')
+  const hid = interpret({ ...s, flags: { ...s.flags } }, 'hide')
+  assert(hid.sceneId === before && !hid.flags.encounterHere, 'hide on an empty Yard does not start a fight')
+}
+s = newGame('outcast')
+s = pick(s, 'stand')
+{
+  const looked = interpret(s, 'search')
+  assert(looked.sceneId === s.sceneId && /Spine|ridge|Silas/i.test(looked.flash ?? ''), 'Outcast search describes the ridge')
+  const noFight = interpret(s, 'bite')
+  assert(!noFight.flags.encounterHere, 'bite on Silas does not invent a jackal')
+  assert(!/miss/i.test(noFight.flash ?? ''), 'bite on Silas is answered')
+}
+s = newGame('vessel')
+s = pick(s, 'keep')
+{
+  const looked = interpret(s, 'examine')
+  assert(/Court|Thalia|Threshold/i.test(looked.flash ?? ''), 'Vessel examine describes the court')
+  assert(!looked.flags.encounterHere, 'examine does not start a fight')
+}
+
+s = newGame('prisoner')
+s = pick(s, 'pens')
+s = applyEffect(s, { sap: 6, goto: 'camp:yard', enterHub: 'camp04' })
+s = { ...s, pressure: 9, ticks: 0 }
+s = applyEffect(s, { ticks: 4 })
+assert(s.sceneId === 'camp:yard', `Camp knock stays in the Yard (got ${s.sceneId})`)
+assert(s.sceneId !== 'camp:hunter', 'Camp knock does not open the Valerius sweep scene')
+assert(s.flags.hunterHere, 'Camp knock is an overlay')
+assert(bodyOf(s).includes('Hound-handler'), 'Camp knock stars the Hound-handler')
+assert(!bodyOf(s).includes('Valerius does not run'), 'Camp knock does not star Valerius arriving')
+assert(playCoverKey(s, sceneOf(s)) === 'hound', 'Camp knock art is the Hound')
+assert(ids(s).includes('hunter-fight') && ids(s).includes('hunter-hold') && ids(s).includes('hunter-scrip'), 'Camp knock has fight, hide, and scrip stakes')
+{
+  const sapBefore = s.sap
+  const heatBefore = s.heat.cartel
+  const held = pick(s, 'hunter-hold')
+  assert(held.sceneId === 'camp:yard', 'hiding from the handler stays in the Yard')
+  assert(!held.flags.hunterHere, 'hide clears the knock')
+  assert(held.sap < sapBefore || held.heat.cartel > heatBefore, 'hide from the handler costs Sap or Heat')
+}
+
+s = newGame('outcast')
+s = pick(s, 'stand')
+s = applyEffect(s, { sap: 6, goto: 'spine:ridge', enterHub: 'spine' })
+s = { ...s, pressure: 9, ticks: 0 }
+s = applyEffect(s, { ticks: 4 })
+assert(s.sceneId === 'spine:ridge', `Spine knock stays on the ridge (got ${s.sceneId})`)
+assert(s.sceneId !== 'spine:hunter' && s.sceneId !== 'spine:shade', 'Spine knock does not yank to shade')
+assert(s.flags.hunterHere, 'Spine knock is an overlay')
+assert(ids(s).includes('spine-fight') && ids(s).includes('spine-hide') && ids(s).includes('spine-bargain'), 'Spine knock has fight, hide, and bargain')
+{
+  const sapBefore = s.sap
+  const hid = pick(s, 'spine-hide')
+  assert(hid.sceneId === 'spine:ridge' && !hid.flags.hunterHere, 'Spine hide stays on the ridge')
+  assert(hid.sap < sapBefore || hid.heat.cartel > s.heat.cartel, 'Spine hide costs something')
+}
+
+s = newGame('vessel')
+s = pick(s, 'keep')
+s = applyEffect(s, { sap: 6, goto: 'thresh:court', enterHub: 'threshold' })
+s = { ...s, pressure: 9, ticks: 0 }
+s = applyEffect(s, { ticks: 4 })
+assert(s.sceneId === 'thresh:court', `Threshold knock stays in the Court (got ${s.sceneId})`)
+assert(s.sceneId !== 'thresh:hunter' && s.sceneId !== 'thresh:paddock', 'Threshold knock does not yank to the paddock')
+assert(ids(s).includes('thresh-fight') && ids(s).includes('thresh-hide'), 'Threshold knock has fight and hide')
+{
+  const heatBefore = s.heat.seekers
+  const defied = pick(s, 'thresh-bargain')
+  assert(defied.sceneId === 'thresh:court' && !defied.flags.hunterHere, 'Threshold bargain stays in the Court')
+  assert(defied.sap < s.sap || defied.heat.seekers > heatBefore, 'Threshold bargain costs Sap or Heat')
+}
+
+s = newGame('prisoner')
+s = applyEffect(s, {
+  sap: 6,
+  enterHub: 'redmaw',
+  goto: 'maw:market',
+  flag: { chapter1Done: true },
+  pressure: 8,
+  ticks: 5,
+})
+assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids(s).includes('sybella-swing'), 'Sybella knock has costly stay, defy, and swing')
+{
+  const sapBefore = s.sap
+  const heatBefore = s.heat.seekers
+  const held = pick(s, 'sybella-hold')
+  assert(held.sceneId === 'maw:market', 'Sybella stay does not yank')
+  assert(held.sap < sapBefore || held.heat.seekers > heatBefore, 'Sybella stay costs Sap or Heat')
+}
+
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v29'"), 'SW bumped so scavenger fights and gear drops reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v30'"), 'SW bumped so Do verbs and hunt stakes reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')

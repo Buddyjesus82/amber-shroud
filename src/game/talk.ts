@@ -3,7 +3,7 @@ import type { IntentRule } from './types'
 
 const TALK = ['ask', 'talk', 'hello', 'hi', 'hey', 'say', 'tell', 'speak', 'greet']
 const HELP = ['help', 'aid', 'favor']
-const THREAT = ['threaten', 'threat', 'intimidate', 'attack', 'kill', 'stab', 'hit', 'fight', 'punch']
+const THREAT = ['threaten', 'threat', 'intimidate', 'attack', 'kill', 'stab', 'hit', 'fight', 'punch', 'bite']
 const TRADE = ['trade', 'buy', 'sell', 'shop', 'barter', 'deal', 'price']
 
 const oiltooth: IntentRule[] = [

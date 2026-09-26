@@ -11,14 +11,8 @@ import {
   wantsDoSabotage,
 } from './campJob'
 import { markMetOnLeave, matchPersonQuery, personAtScene } from './people'
-import {
-  isSybellaOverlay,
-  isWireSide,
-  SYBELLA_SHADOW_APPEND,
-  sybellaShadowChoices,
-  WIRE_HUNTER_APPEND,
-  wireHunterChoices,
-} from './hunter'
+import { isPressureOverlay, pressureAppend, pressureChoices, pressureVerb } from './hunter'
+import { offButton } from './verbs'
 import {
   canEncounter,
   dismissEncounter,
@@ -31,6 +25,7 @@ import {
   pickEncounterKind,
   resolveEncounter,
   wantsEncounterFight,
+  wantsEncounterHide,
   wantsEncounterSkip,
 } from './encounter'
 import { talkFallback, talkIntentsFor } from './talk'
@@ -84,12 +79,8 @@ export function bodyOf(state: GameState): string {
   const person = personAtScene(scene.id)
   const base = person && state.flags[person.metFlag] && person.later[scene.id] ? person.later[scene.id] : scene.body
   const resolved = resolveBody(scene, (c) => check(c, state), base)
-  if (state.flags.hunterHere && isWireSide(state.sceneId)) {
-    return `${resolved}\n\n${WIRE_HUNTER_APPEND}`
-  }
-  if (isSybellaOverlay(state)) {
-    return `${resolved}\n\n${SYBELLA_SHADOW_APPEND}`
-  }
+  const knock = pressureAppend(state)
+  if (knock) return `${resolved}\n\n${knock}`
   return resolved
 }
 
@@ -149,7 +140,6 @@ function hunterScene(state: GameState): string | null {
   if (state.chapterId) return null
   if (state.pressure < 9) return null
   if (state.ticks === 0 || state.ticks % 4 !== 0) return null
-  // Park (later): Camp pressure interrupt should not star Valerius.
   const map: Record<string, string> = {
     camp04: 'camp:hunter',
     spine: 'spine:hunter',
@@ -266,9 +256,10 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
       delete flags.rumorShelf
       next.flags = flags
     }
-    if (next.flags.hunterHere && !isWireSide(dest)) {
+    if (dest !== state.sceneId && next.flags.hunterHere) {
       const flags = { ...next.flags }
       delete flags.hunterHere
+      delete flags.hunterFrom
       next.flags = flags
     }
     if (next.flags.encounterHere) {
@@ -310,16 +301,7 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   const fightBeat = !!fx.resolveEncounter || !!next.flags.encounterHere || !!fx.unsetFlag?.includes('encounterHere')
   if (interrupt && !fightBeat && getScene(next.sceneId).kind !== 'crisis') {
     const from = next.sceneId
-    next.flags = { ...next.flags, hunterFrom: from, hunterAt: next.ticks }
-    if (interrupt === 'camp:hunter' && isWireSide(from)) {
-      next.flags = { ...next.flags, hunterHere: true }
-    } else if (interrupt === 'maw:sybella-shadow') {
-      next.flags = { ...next.flags, hunterHere: true }
-    } else {
-      next.sceneId = interrupt
-      const h = getScene(interrupt)
-      if (h.hubId) next.hubId = h.hubId
-    }
+    next.flags = { ...next.flags, hunterFrom: from, hunterAt: next.ticks, hunterHere: true }
   }
 
   if (
@@ -531,49 +513,21 @@ export function interpret(state: GameState, text: string): GameState {
     if (wantsEncounterFight(text)) {
       return withVerb(applyEffect(state, { resolveEncounter: 'fight', ticks: 1 }), 'fight')
     }
-    if (wantsEncounterSkip(text)) {
-      return withVerb(applyEffect(state, { resolveEncounter: 'skip' }), 'skip')
+    if (wantsEncounterHide(text) || wantsEncounterSkip(text)) {
+      return withVerb(applyEffect(state, { resolveEncounter: 'skip' }), wantsEncounterHide(text) ? 'hide' : 'skip')
     }
   }
 
-  if (state.flags.hunterHere && isWireSide(state.sceneId)) {
-    const hay = text.toLowerCase()
-    if (/\b(stay|hold|wait|here|dismiss|pass)\b/.test(hay)) {
-      return withVerb(applyEffect(state, wireHunterChoices()[0].effects), 'hold')
+  if (!isPressureOverlay(state)) {
+    const shopHit = matchShopText(state, text)
+    if (shopHit) {
+      return withVerb(applyEffect(state, shopHit.effects), shopHit.verb)
     }
-    if (/\b(line|yard|scrape|dive)\b/.test(hay)) {
-      return withVerb(applyEffect(state, wireHunterChoices()[1].effects), 'line')
-    }
-    if (/\b(cloak|hide|cover)\b/.test(hay) && state.equipped?.armor) {
-      return withVerb(applyEffect(state, wireHunterChoices()[2].effects), 'cloak')
-    }
-  }
 
-  if (isSybellaOverlay(state)) {
-    const hay = text.toLowerCase()
-    if (/\b(stay|hold|wait|dismiss|pass|here)\b/.test(hay)) {
-      return withVerb(applyEffect(state, sybellaShadowChoices()[0].effects), 'stay')
+    const rumorHit = matchRumorText(state, text)
+    if (rumorHit) {
+      return withVerb(applyEffect(state, rumorHit.effects), rumorHit.verb)
     }
-    if (/\b(smoke|face|approach|sybella)\b/.test(hay)) {
-      return withVerb(
-        applyEffect(state, {
-          goto: 'maw:sybella',
-          ticks: 1,
-          unsetFlag: ['hunterHere', 'hunterFrom'],
-        }),
-        'sybella',
-      )
-    }
-  }
-
-  const shopHit = matchShopText(state, text)
-  if (shopHit) {
-    return withVerb(applyEffect(state, shopHit.effects), shopHit.verb)
-  }
-
-  const rumorHit = matchRumorText(state, text)
-  if (rumorHit) {
-    return withVerb(applyEffect(state, rumorHit.effects), rumorHit.verb)
   }
 
   const button = matchChoiceText(
@@ -584,18 +538,28 @@ export function interpret(state: GameState, text: string): GameState {
     return withVerb(applyEffect(state, button.effects), button.id)
   }
 
+  const pressed = pressureVerb(state, text)
+  if (pressed) {
+    return withVerb(applyEffect(state, pressed.effects), pressed.id)
+  }
+
   const local = matchIntent(text, [...(scene.intents ?? []), ...talkIntentsFor(scene.id)], state)
   if (local) {
     return withVerb(applyEffect(state, { ...local.effects, flash: local.reply }), verbLabel(local.tags[0]))
   }
 
+  const labels = visibleChoices(state).map((c) => c.label)
+  const off = offButton(state, text, scene, labels)
+  if (off) {
+    return withVerb(applyEffect(state, off.effects), off.verb)
+  }
+
   const hay = text.toLowerCase()
-  const wantsScavenge = /\b(scavenge|forage|rummage|scrounge|look around|search around)\b/.test(hay)
-  const wantsLook = /\b(look|search|scan)\b/.test(hay)
+  const wantsScavenge = /\b(scavenge|forage|rummage|scrounge)\b/.test(hay)
   const wantsSkim = /\b(skim|tap|siphon)\b/.test(hay)
   const wantsMap = /\bmap\b/.test(hay)
 
-  if (wantsScavenge || (wantsLook && canScavenge(state))) return scavenge(state)
+  if (wantsScavenge) return scavenge(state)
   if (wantsSkim) return skim(state)
   if (wantsMap) {
     return withVerb(
@@ -626,8 +590,7 @@ export function interpret(state: GameState, text: string): GameState {
   return persist({
     ...state,
     ticks: state.ticks + 1,
-    flash:
-      'Miss. The desert did not catch that. Try ask, who is, scavenge, look, hide, trade, map — or use the buttons.',
+    flash: 'Miss. Try look, talk, fight, hide, bribe, give — or a button.',
     updatedAt: Date.now(),
   })
 }
@@ -636,12 +599,8 @@ export function visibleChoices(state: GameState) {
   if (state.flags.encounterHere) {
     return encounterChoices(state)
   }
-  if (state.flags.hunterHere && isWireSide(state.sceneId)) {
-    return wireHunterChoices().filter((c) => check(c.show, state))
-  }
-  if (isSybellaOverlay(state)) {
-    return sybellaShadowChoices().filter((c) => check(c.show, state))
-  }
+  const knock = pressureChoices(state)
+  if (knock.length) return knock
   const authored = sceneOf(state).choices.filter((c) => check(c.show, state))
   if (vendorFor(state.sceneId)) {
     return shopChoices(state, authored).filter((c) => check(c.show, state))
