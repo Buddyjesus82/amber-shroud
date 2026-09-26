@@ -4,7 +4,7 @@ import { check } from './logic'
 import { equippedBite, equippedHide } from './kit'
 import type { Choice, Effect, GameState, ItemId } from './types'
 
-export type EncounterKind = 'jackal' | 'cutter' | 'tick' | 'pup'
+export type EncounterKind = 'jackal' | 'cutter' | 'tick' | 'pup' | 'scavenger'
 
 /** Fight hits. Sap stays thirst/travel. */
 export const HEALTH_MAX = 6
@@ -33,7 +33,7 @@ const SPECS: Spec[] = [
     bite: 3,
     hide: 2,
     hp: 2,
-    line: 'A rim-cutter stands up out of scrap-shade. Knife-smile. Saleable pockets. Optional throat.',
+    line: 'A rim-cutter stands up out of scrap-shade. Half a person, half a stolen knife. Knife-smile. Saleable pockets. Optional throat.',
   },
   {
     kind: 'tick',
@@ -50,6 +50,14 @@ const SPECS: Spec[] = [
     hide: 2,
     hp: 2,
     line: 'A Shard-pup — not a Hound yet, already a jaw. Cartel leftovers. Fight or give the road.',
+  },
+  {
+    kind: 'scavenger',
+    name: 'Waste scavenger',
+    bite: 2,
+    hide: 1,
+    hp: 2,
+    line: 'A waste scavenger blocks the grit. Not fauna — a person who robs travelers who look alone. Stolen knife. Empty pockets. Optional throat.',
   },
 ]
 
@@ -206,20 +214,49 @@ export function encounterSpeaker(state: GameState): string {
   return encounterSpec(state).name
 }
 
-function lootFor(kind: EncounterKind): Partial<Record<ItemId, number>> {
+/** Same road seed as who showed up, shifted so the pocket is its own bucket. */
+function pocket(state: GameState): number {
+  return Math.abs(seed(state) * 17 + 9) % 10
+}
+
+/**
+ * Junk a body can actually carry. Shop and quest steel stay on their shelves.
+ * Fauna pay scrap or sap. People sometimes pay with the weapon or cloak too.
+ */
+function lootFor(state: GameState, kind: EncounterKind): Partial<Record<ItemId, number>> {
   if (kind === 'jackal') return { scrap: 2 }
-  if (kind === 'cutter') return { glints: 1, scrap: 1 }
   if (kind === 'tick') return { vial_drop: 1 }
+  if (kind === 'pup') return { glints: 1, scrap: 1 }
+  const roll = pocket(state)
+  if (kind === 'cutter') {
+    if (roll === 0 || roll === 1) return { scrap: 1, shiv: 1 }
+    if (roll === 2) return { glints: 1, scrap: 1, rusted_dagger: 1 }
+    return { glints: 1, scrap: 1 }
+  }
+  if (roll <= 1) return { scrap: 1, shiv: 1 }
+  if (roll === 2) return { scrap: 1, rusted_dagger: 1 }
+  if (roll === 3) return { scrap: 1, dust_cloak: 1 }
+  if (roll === 4) return { shiv: 1, dust_cloak: 1 }
   return { glints: 1, scrap: 1 }
 }
 
 function lootLine(add: Partial<Record<ItemId, number>>): string {
-  const bits = (Object.keys(add) as ItemId[]).map((id) => {
+  const pockets: string[] = []
+  const gear: string[] = []
+  for (const id of Object.keys(add) as ItemId[]) {
     const n = add[id] ?? 0
-    const name = ITEMS[id]?.name ?? id
-    return n > 1 ? `${name} ×${n}` : name
-  })
-  return bits.join(', ')
+    if (n <= 0) continue
+    const item = ITEMS[id]
+    const name = item?.name ?? id
+    const bit = n > 1 ? `${name} ×${n}` : name
+    if (item?.slot === 'weapon' || item?.slot === 'armor') gear.push(bit)
+    else pockets.push(bit)
+  }
+  const held = pockets.join(', ')
+  const worn = gear.join(', ')
+  if (held && worn) return `${held}. On the body: ${worn}`
+  if (worn) return `On the body: ${worn}`
+  return held
 }
 
 export const ENCOUNTER_FLAGS = [
@@ -278,7 +315,7 @@ export function resolveEncounter(state: GameState, how: 'fight' | 'skip'): { fx:
   const hitCard = compareHit(c)
 
   if (theirHp <= 0) {
-    const add = lootFor(spec.kind)
+    const add = lootFor(state, spec.kind)
     const loot = lootLine(add)
     const stagger = yourHp <= 0
     const outcome = stagger

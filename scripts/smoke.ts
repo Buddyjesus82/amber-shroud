@@ -970,6 +970,168 @@ for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
   assert(!wonOn.flags.encounterHere, `${door} On. clears the interrupt`)
 }
 
+const ROAD_EXCLUSIVE = ['wrench', 'needle_knife', 'hide_wrap', 'ceremonial_cloth', 'ironwood_baton'] as const
+
+function primedFight(
+  door: 'prisoner' | 'outcast' | 'vessel',
+  ticks: number,
+  kind: string,
+  opts?: { hp?: number; taught?: boolean; arm?: boolean },
+): GameState {
+  const scene = door === 'outcast' ? 'spine:ridge' : door === 'vessel' ? 'thresh:court' : 'camp:yard'
+  const hub = door === 'outcast' ? 'spine' : door === 'vessel' ? 'threshold' : 'camp04'
+  const s = newGame(door)
+  const arm = opts?.arm !== false
+  return {
+    ...s,
+    ticks,
+    sap: 6,
+    pressure: 1,
+    health: 6,
+    healthMax: 6,
+    sceneId: scene,
+    hubId: hub,
+    items: arm ? { ...s.items, ironwood_baton: 1 } : { ...s.items },
+    equipped: arm ? { ...s.equipped, weapon: 'ironwood_baton' } : { ...s.equipped },
+    flags: {
+      ...s.flags,
+      encounterHere: true,
+      encounterKind: kind,
+      encounterHp: opts?.hp ?? 1,
+      ...(opts?.taught === false ? {} : { fightTaught: true }),
+    },
+  }
+}
+
+function gearGained(before: GameState, after: GameState): string[] {
+  return (Object.keys(ITEMS) as (keyof typeof ITEMS)[]).filter(
+    (id) => ITEMS[id].slot && (after.items[id] ?? 0) > (before.items[id] ?? 0),
+  )
+}
+
+for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
+  const card = primedFight(door, 4, 'scavenger', { taught: false, arm: false })
+  assert(/waste scavenger/i.test(bodyOf(card)), `${door} scavenger card names the robber`)
+  assert(/Not fauna/.test(bodyOf(card)), `${door} scavenger card is a person, not fauna`)
+  assert(/Bite has to beat Hide/i.test(bodyOf(card)), `${door} first scavenger still teaches`)
+  assert(/You Bite \d+ vs their Hide 1/.test(bodyOf(card)), `${door} scavenger Hide is on the card`)
+  assert(/Their Bite 2 vs your Hide/.test(bodyOf(card)), `${door} scavenger Bite is on the card`)
+  const fightRow = visibleChoices(card).find((c) => c.id === 'enc-fight')
+  assert(fightRow?.label === 'Fight the Waste scavenger', `${door} fight label names the scavenger`)
+  assert(ids(card).includes('enc-skip'), `${door} scavenger can be skipped`)
+  const skipped = pick(card, 'enc-skip')
+  assert(/give the .* road/i.test(bodyOf(skipped)), `${door} scavenger skip is the outcome card`)
+  assert(/No loot/.test(bodyOf(skipped)), `${door} scavenger skip names no loot`)
+  assert(JSON.stringify(skipped.items) === JSON.stringify(card.items), `${door} scavenger skip pays nothing`)
+  assert(skipped.equipped?.weapon === card.equipped?.weapon, `${door} skip does not equip a drop`)
+  const skippedOn = pick(skipped, 'enc-continue')
+  assert(!skippedOn.flags.encounterHere, `${door} On. clears a scavenger skip`)
+  assert(skippedOn.sceneId === card.sceneId, `${door} scavenger skip stays on the road`)
+}
+
+{
+  const scratch = primedFight('prisoner', 2, 'scavenger', { hp: 2, arm: false })
+  const armed = {
+    ...scratch,
+    items: { ...scratch.items, shiv: 1 },
+    equipped: { weapon: 'shiv' as const },
+  }
+  assert(/You Bite 2 vs their Hide 1/.test(bodyOf(armed)), 'shiv vs scavenger Hide is on the card')
+  const stood = pick(armed, 'enc-fight')
+  assert(!stood.flags.encounterDone, 'scavenger Health 2 survives one shiv hit')
+  assert(/Their Health 1\/2/.test(bodyOf(stood)), 'scavenger has 2 Health')
+  assert(/No loot yet/.test(bodyOf(stood)), 'a standing scavenger pays nothing')
+  assert((stood.items.shiv ?? 0) === 1, 'a scratch does not drop the shiv back')
+  assert((stood.items.scrap ?? 0) === (armed.items.scrap ?? 0), 'a scratch does not pay scrap')
+  const killed = pick(stood, 'enc-fight')
+  assert(killed.flags.encounterDone, 'second hit drops the scavenger')
+  assert(/They drop/.test(bodyOf(killed)), 'scavenger kill names the drop')
+  assert(killed.equipped?.weapon === 'shiv', 'a kill does not auto-equip the drop')
+}
+
+for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
+  let sawGear = 0
+  let sawEmpty = 0
+  let sawWeapon = false
+  let sawArmor = false
+  let sawBoth = false
+  let named = false
+  for (let ticks = 0; ticks < 20; ticks++) {
+    const before = primedFight(door, ticks, 'scavenger')
+    const after = pick(before, 'enc-fight')
+    assert(after.flags.encounterDone, `${door} scavenger kill holds the outcome`)
+    assert(after.equipped?.weapon === 'ironwood_baton', `${door} scavenger gear stays in the pack`)
+    assert(
+      (after.equipped?.armor ?? null) === (before.equipped?.armor ?? null),
+      `${door} scavenger armor drop is not auto-worn`,
+    )
+    const gained = gearGained(before, after)
+    for (const id of ROAD_EXCLUSIVE) {
+      assert((after.items[id] ?? 0) === (before.items[id] ?? 0), `${door} scavenger does not drop ${id}`)
+    }
+    for (const id of gained) {
+      assert(
+        id === 'shiv' || id === 'rusted_dagger' || id === 'dust_cloak',
+        `${door} scavenger gear is junk-tier, got ${id}`,
+      )
+    }
+    if (gained.length === 0) sawEmpty++
+    else {
+      sawGear++
+      if (gained.some((id) => ITEMS[id].slot === 'weapon')) sawWeapon = true
+      if (gained.some((id) => ITEMS[id].slot === 'armor')) sawArmor = true
+      if (gained.some((id) => ITEMS[id].slot === 'weapon') && gained.some((id) => ITEMS[id].slot === 'armor')) {
+        sawBoth = true
+      }
+      const body = bodyOf(after)
+      assert(/On the body:/.test(body), `${door} gear drop names the body`)
+      for (const id of gained) assert(body.includes(ITEMS[id].name), `${door} drop names ${ITEMS[id].name}`)
+      named = true
+      assert(/On the body:/.test(after.flags.encounterFlash as string), `${door} hub line will name the gear`)
+    }
+    const again = pick(primedFight(door, ticks, 'scavenger'), 'enc-fight')
+    assert(JSON.stringify(again.items) === JSON.stringify(after.items), `${door} scavenger loot is seeded`)
+    const skipped = pick(primedFight(door, ticks, 'scavenger'), 'enc-skip')
+    assert(JSON.stringify(skipped.items) === JSON.stringify(before.items), `${door} seeded skip still pays nothing`)
+  }
+  assert(sawGear > 0 && sawEmpty > 0, `${door} scavenger gear is sometimes, not always`)
+  assert(sawWeapon && sawArmor && sawBoth, `${door} scavenger can drop a weapon, a cloak, or both`)
+  assert(named, `${door} gear copy names the item`)
+
+  let cutterGear = 0
+  let cutterPlain = 0
+  for (let ticks = 0; ticks < 20; ticks++) {
+    const before = primedFight(door, ticks, 'cutter')
+    const after = pick(before, 'enc-fight')
+    const gained = gearGained(before, after)
+    for (const id of gained) {
+      assert(id === 'shiv' || id === 'rusted_dagger', `${door} rim cutter drops a knife, got ${id}`)
+      assert(bodyOf(after).includes(ITEMS[id].name), `${door} cutter copy names ${ITEMS[id].name}`)
+    }
+    assert((after.items.dust_cloak ?? 0) === (before.items.dust_cloak ?? 0), `${door} cutter does not drop a cloak`)
+    if (gained.length) cutterGear++
+    else cutterPlain++
+    assert((after.items.glints ?? 0) >= (before.items.glints ?? 0), `${door} cutter kill does not take Glints`)
+  }
+  assert(cutterGear > 0 && cutterPlain > 0, `${door} half-human cutter sometimes still has the knife`)
+}
+
+for (const kind of ['jackal', 'tick', 'pup'] as const) {
+  for (let ticks = 0; ticks < 12; ticks++) {
+    for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
+      const before = primedFight(door, ticks, kind)
+      const after = pick(before, 'enc-fight')
+      assert(gearGained(before, after).length === 0, `${door} ${kind} kill pays no weapon or armor`)
+      if (kind === 'jackal') assert((after.items.scrap ?? 0) >= (before.items.scrap ?? 0) + 2, `${door} jackal still pays scrap`)
+      if (kind === 'tick') assert((after.items.vial_drop ?? 0) >= (before.items.vial_drop ?? 0) + 1, `${door} tick still pays a Drop`)
+      if (kind === 'pup') {
+        assert((after.items.glints ?? 0) >= (before.items.glints ?? 0) + 1, `${door} pup still pays a Glint`)
+        assert((after.items.scrap ?? 0) >= (before.items.scrap ?? 0) + 1, `${door} pup still pays scrap`)
+      }
+    }
+  }
+}
+
 s = newGame('prisoner')
 s = applyEffect(s, { startChapter: 'cache-run', goto: 'ch1:p-pipe', sap: 4 })
 s = {
@@ -1156,6 +1318,18 @@ assert(encSrc.includes("'thresh:sift'"), 'Vessel Cup-Shadow can roll encounters'
 assert(encSrc.includes("'ch1:p-pipe'"), 'Prisoner fence can roll encounters')
 assert(encSrc.includes("'ch1:o-noon'"), 'Outcast noon can roll encounters')
 assert(encSrc.includes("'ch1:v-hymn'"), 'Vessel hymn-road can roll encounters')
+assert(encSrc.includes("kind: 'scavenger'"), 'shared roster includes a waste scavenger')
+assert(encSrc.includes('Waste scavenger'), 'scavenger has a traveler name')
+assert(!encSrc.includes('Math.random'), 'encounter outcomes stay seeded')
+assert(!encSrc.includes('state.door'), 'road fights are not door-gated')
+assert(
+  !encSrc.includes('wrench') &&
+    !encSrc.includes('ironwood_baton') &&
+    !encSrc.includes('needle_knife') &&
+    !encSrc.includes('hide_wrap') &&
+    !encSrc.includes('ceremonial_cloth'),
+  'road loot stays off shop and quest exclusives',
+)
 assert(
   readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8').includes('hasSceneSkim'),
   'shared Skim row does not double a scene skim',
@@ -1497,7 +1671,7 @@ assert(html.includes('apple-touch.png?v=13'), 'apple-touch-icon is cache-busted 
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v28'"), 'SW bumped so Zafir is on the Bone Market and NPCs have covers')
+assert(sw.includes("CACHE = 'amber-shroud-v29'"), 'SW bumped so scavenger fights and gear drops reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
