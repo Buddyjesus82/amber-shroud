@@ -23,7 +23,7 @@ import { encounterSpeaker, isEncounterResult } from '../game/encounter'
 import { playCoverFile, playCoverKey } from '../game/art'
 import { isSybellaOverlay, isWireSide } from '../game/hunter'
 import { isShopOpen } from '../game/trade'
-import type { Faction, GameState } from '../game/types'
+import type { Choice, Faction, GameState } from '../game/types'
 import { HeatExplainer, HeatTip } from './HeatGuide'
 import { InventorySheet } from './InventorySheet'
 import { MapSheet } from './MapSheet'
@@ -33,7 +33,7 @@ type OptionRow = {
   tone: string
   label: string
   sub?: string
-  group?: 'buy' | 'sell' | 'talk'
+  group?: Choice['group']
   locked?: boolean
   lockedNote?: string
   pills?: { kind: string; text: string }[]
