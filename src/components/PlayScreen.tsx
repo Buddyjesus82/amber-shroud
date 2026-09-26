@@ -172,7 +172,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     onChange(interpret(state, t))
   }
 
-  const artSrc = `${import.meta.env.BASE_URL}covers/${playCoverFile(playCoverKey(state, scene))}?v=25`
+  const artSrc = `${import.meta.env.BASE_URL}covers/${playCoverFile(playCoverKey(state, scene))}?v=28`
 
   return (
     <div className={`screen play-screen${split ? ' play-split' : ''}`}>

@@ -54,13 +54,12 @@ This is harder country than your start door. Sap goes faster. Hunters know the r
     title: 'Bone Market',
     body: `A few stalls that pretend this is a town. Dried strider, spent Glints, maps that have killed people.
 
-Zafir is here if the cairn did not keep him. He looks like a man who sold the same heading twice and is waiting to see which buyer lives. The stall behind him is stocked: Drops, Hide, a pawned baton, a tray that buys scrap.`,
+Zafir is at the stall whether the cairn kept him or not. He looks like a man who sold the same heading twice and is waiting to see which buyer lives. The tray behind him is stocked: Drops, Hide, a pawned baton, scrap for Glints.`,
     choices: [
       {
         id: 'zafir',
-        label: 'Find Zafir',
-        show: { flag: 'zafirMet' },
-        effects: { goto: 'maw:zafir', ticks: 1 },
+        label: 'Talk to Zafir',
+        effects: { goto: 'maw:zafir', ticks: 1, flag: { zafirMet: true, metZafir: true } },
       },
       {
         id: 'browse',
@@ -84,6 +83,11 @@ Zafir is here if the cairn did not keep him. He looks like a man who sold the sa
     speaker: 'Zafir',
     body: `"You lived. How rude." Zafir's smile is thinner. "Sybella circled twice. Cache is still there. This stall is a shop now — Buy and Sell, not only headings. When the Maw opens a stair, don't take my maps with you. They get embarrassed."`,
     variants: [
+      {
+        if: { flagUnset: 'zafirCup' },
+        mode: 'replace',
+        body: `Zafir smiles in a way that costs extra. The cairn did not keep him. "You found the Approach without buying my heading. Rude, and impressive. This stall still sells. Drops, Hide, a baton the Maw pawned. Buy and Sell. I do not donate the next Hunger."`,
+      },
       {
         if: { flag: 'zafirSore' },
         mode: 'append',

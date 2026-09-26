@@ -1481,6 +1481,11 @@ assert(html.includes('apple-touch.png?v=13'), 'apple-touch-icon is cache-busted 
   assert(playCoverKey(hound, sceneOf(hound)) === 'hound', 'Spine hunt uses Shard-Hound art')
   const sy = { ...v, flags: { ...v.flags, hunterHere: true }, hubId: 'redmaw', sceneId: 'maw:lip', chapterId: 'cache-run' }
   assert(playCoverKey(sy, { id: 'maw:lip', art: 'hunger' }) === 'sybella', 'Sybella overlay uses Sybella art')
+  const maw = applyEffect(p, { goto: 'maw:market', enterHub: 'redmaw' })
+  assert(visibleChoices(maw).some((c) => c.id === 'zafir'), 'Bone Market always offers Talk to Zafir')
+  assert(visibleChoices(maw).some((c) => c.id === 'shop-buy'), 'Bone Market offers Zafir Buy without having met him at the cairn')
+  assert(playCoverKey(maw, { id: 'maw:market' }) === 'zafir', 'Bone Market uses Zafir art')
+  assert(playCoverKey(p, { id: 'maw:zafir' }) === 'zafir', 'Zafir stall uses Zafir art')
   const rumors = applyEffect(p, { goto: 'camp:kaelen-rumors' })
   const rumorLabels = visibleChoices(rumors).map((c) => c.label)
   assert(rumorLabels.includes('Intel'), 'Kaelen rumor counter opens with Intel')
@@ -1492,7 +1497,8 @@ assert(html.includes('apple-touch.png?v=13'), 'apple-touch-icon is cache-busted 
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v27'"), 'SW bumped so vendor prices split by currency')
+assert(sw.includes("CACHE = 'amber-shroud-v28'"), 'SW bumped so Zafir is on the Bone Market and NPCs have covers')
+assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
 try {

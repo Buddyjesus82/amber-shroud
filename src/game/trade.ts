@@ -120,7 +120,7 @@ const VENDORS: Vendor[] = [
   },
   {
     id: 'zafir',
-    scenes: ['maw:zafir'],
+    scenes: ['maw:zafir', 'maw:market'],
     knownFlag: 'zafirMet',
     stock: [
       {
