@@ -173,7 +173,7 @@ function campHuntChoices(state: GameState): Choice[] {
     {
       id: 'hunter-fight',
       label: 'Fight the Hound',
-      sub: 'Bite vs Hide. Health takes the hits. You stay.',
+      sub: 'Strike vs Shell. Health takes the hits. You stay.',
       tone: 'danger',
       effects: beginEncounter(state, 'pup', 'You go for the jaw. The handler swears. This ground becomes a fight.'),
     },
@@ -196,7 +196,7 @@ function campHuntChoices(state: GameState): Choice[] {
       show: { slot: 'armor' },
       effects: stay(state, {
         pressure: 1,
-        flash: 'Dust-cloth or hide. The handler’s glance slides. Gear did that. You never left.',
+        flash: 'The armor takes the glance. Gear did that. You never left.',
       }),
     },
     {
@@ -257,7 +257,7 @@ function spineHuntChoices(state: GameState): Choice[] {
     {
       id: 'spine-fight',
       label: 'Fight the Shard-Hound',
-      sub: 'Bite vs Hide. Health takes the hits. You stay.',
+      sub: 'Strike vs Shell. Health takes the hits. You stay.',
       tone: 'danger',
       effects: beginEncounter(state, 'pup', 'The jaw is the fight. Valerius watches from this same ground.'),
     },
@@ -342,7 +342,7 @@ function threshHuntChoices(state: GameState): Choice[] {
     {
       id: 'thresh-fight',
       label: 'Meet the spear',
-      sub: 'Bite vs Hide. Health takes the hits. You stay.',
+      sub: 'Strike vs Shell. Health takes the hits. You stay.',
       tone: 'danger',
       effects: beginEncounter(state, 'cutter', 'The spear is a person with a knife-smile. This ground is the fight.'),
     },
@@ -445,7 +445,7 @@ export function sybellaShadowChoices(state: GameState): Choice[] {
       show: { slot: 'armor' },
       effects: stay(state, {
         pressure: 1,
-        flash: 'Dust-cloth or hide. The skiff-shadow slides. Pressure keeps the receipt. You never left.',
+        flash: 'The armor takes the glance. The skiff-shadow slides. Pressure keeps the receipt. You never left.',
       }),
     },
     {

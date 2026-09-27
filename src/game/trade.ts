@@ -55,6 +55,7 @@ const SELL_PAY: Partial<Record<ItemId, Money>> = {
   wrench: { scrap: 2 },
   rusted_dagger: { scrap: 1 },
   ceremonial_cloth: { scrap: 1 },
+  scav_wrap: { scrap: 1 },
 }
 
 const AUTH_PRODUCT = new Set([
@@ -87,7 +88,7 @@ const KAELEN_STOCK: StockOffer[] = [
     id: 'knife',
     item: 'needle_knife',
     label: 'Buy a Needle Knife — two scrap',
-    sub: 'Weapon · Bite 3. Equip it in Gear. No dice — numbers compare gear.',
+    sub: 'Weapon · Strike 3. Equip it in Gear. No dice — numbers compare gear.',
     cost: { scrap: 2 },
     onceFlag: 'kaelenSoldKnife',
     extraFlag: { kaelenSoldKnife: true },
@@ -95,10 +96,21 @@ const KAELEN_STOCK: StockOffer[] = [
     tags: ['knife', 'needle', 'blade'],
   },
   {
+    id: 'wrap',
+    item: 'scav_wrap',
+    label: 'Buy a Scav Wrap — one scrap',
+    sub: 'Armor · Shell 2. The step before a cloak. Equip it in Gear.',
+    cost: { scrap: 1 },
+    onceFlag: 'kaelenSoldWrap',
+    extraFlag: { kaelenSoldWrap: true },
+    flash: '"Wire and rag. Shell 2. Wear it until a better shell turns up."',
+    tags: ['wrap', 'scav', 'rag'],
+  },
+  {
     id: 'cloak',
     item: 'dust_cloak',
     label: 'Buy a Dust Cloak',
-    sub: 'Armor · Hide 3. Hides a silhouette. Does not hide Heat. Pay with a Glint or with scrap.',
+    sub: 'Armor · Shell 3. Hides a silhouette. Does not hide Heat. Pay with a Glint or with scrap.',
     cost: { glints: 1, scrap: 2 },
     onceFlag: 'kaelenSoldCloak',
     extraFlag: { kaelenSoldCloak: true },
@@ -114,7 +126,7 @@ const VENDORS: Vendor[] = [
     knownFlag: 'kaelenKnown',
     stock: KAELEN_STOCK,
     changeScrap: true,
-    openBuyFlash: 'They tap the pack. "Buy is a shelf. Drops. A knife. A cloak if I still have one. Pay on the line."',
+    openBuyFlash: 'They tap the pack. "Buy is a shelf. Drops. A knife. A wrap. A cloak if I still have one. Pay on the line."',
     openSellFlash: '"Unequipped only. I do not buy what is on your body. I do not buy keys. I pay less than I charge. That is the job."',
     sellFlash: '"Cost in. Profit out. I buy cheaper than I sell."',
   },
@@ -136,7 +148,7 @@ const VENDORS: Vendor[] = [
         id: 'hide',
         item: 'hide_wrap',
         label: 'Buy Hound Hide — three Glints',
-        sub: 'Armor · Hide 4. Maw specialty. Equip it in Gear.',
+        sub: 'Armor · Shell 4. Maw specialty. Equip it in Gear.',
         cost: { glints: 3 },
         onceFlag: 'zafirSoldHide',
         extraFlag: { zafirSoldHide: true },
@@ -147,7 +159,7 @@ const VENDORS: Vendor[] = [
         id: 'baton',
         item: 'ironwood_baton',
         label: 'Buy a Shock Baton — four Glints',
-        sub: 'Weapon · Bite 4. Pawned Ironwood. Equip it in Gear.',
+        sub: 'Weapon · Strike 4. Pawned Ironwood. Equip it in Gear.',
         cost: { glints: 4 },
         onceFlag: 'zafirSoldBaton',
         extraFlag: { zafirSoldBaton: true },
@@ -157,7 +169,7 @@ const VENDORS: Vendor[] = [
     ],
     changeScrap: true,
     buyScrip: true,
-    openBuyFlash: '"Drops. Hide. A baton if the Maw pawned one. Approach prices. That is Buy."',
+    openBuyFlash: '"Drops. Hound Hide. A baton if the Maw pawned one. Approach prices. That is Buy."',
     openSellFlash: '"I buy what the dunes spat out — if it is not on your body, and it is not a key. I pay less than I charge."',
     sellFlash: 'He smiles like a receipt. You get less than the stall would charge.',
   },
@@ -240,16 +252,16 @@ function sellPay(id: ItemId): Money | null {
   if (NEVER_SELL.has(id)) return null
   if (SELL_PAY[id]) return SELL_PAY[id] as Money
   const kind = ITEMS[id]?.kind
-  if (kind === 'weapon' || kind === 'armor') return { scrap: 1 }
+  if (kind === 'weapon' || kind === 'armor' || kind === 'garment') return { scrap: 1 }
   if (kind === 'gear' && id !== 'vial_empty') return { scrap: 1 }
   return null
 }
 
-/** Spare copies — equipped weapon/armor stay off the list until unequipped in Gear. */
+/** Spare copies — equipped weapon, armor, and garment stay off the list until unequipped in Gear. */
 export function saleableCount(state: GameState, id: ItemId): number {
   const n = state.items[id] ?? 0
   if (n <= 0) return 0
-  const worn = state.equipped?.weapon === id || state.equipped?.armor === id
+  const worn = state.equipped?.weapon === id || state.equipped?.armor === id || state.equipped?.garment === id
   return worn ? Math.max(0, n - 1) : n
 }
 

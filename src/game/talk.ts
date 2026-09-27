@@ -263,7 +263,7 @@ const zafirCup: IntentRule[] = [
 const zafir: IntentRule[] = [
   {
     tags: TALK,
-    reply: '"You lived. How rude. Headings, news, and now a stall that actually sells things — Hide, a baton if the Maw pawned one, Drops at Approach prices. Pick a product."',
+    reply: '"You lived. How rude. Headings, news, and now a stall that actually sells things — Hound Hide, a baton if the Maw pawned one, Drops at Approach prices. Pick a product."',
     effects: { ticks: 1 },
   },
   {

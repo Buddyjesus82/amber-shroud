@@ -225,7 +225,7 @@ He is not Kaelen. Kaelen is inventory with gloves. Zafir is a man who sold the s
     scenes: ['ch1:v-zafir', 'maw:zafir', 'maw:market'],
     later: {
       'ch1:v-zafir': `He looks at gold thread like fire in a dry stall. "I don't sell headings to walking batteries. I sell the news that she already knows."`,
-      'maw:zafir': `"You lived. How rude." The stall actually stocks things now — Hide, a baton, Drops, a tray that buys scrap. Sybella circled twice. He is waiting to see which product you pick.`,
+      'maw:zafir': `"You lived. How rude." The stall actually stocks things now — Hound Hide, a baton, Drops, a tray that buys scrap. Sybella circled twice. He is waiting to see which product you pick.`,
       'maw:market': `A few stalls that pretend this is a town. Zafir is here if the cairn did not keep him. Same smile. A real tray of goods, not only news.`,
     },
   },

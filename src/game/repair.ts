@@ -1,5 +1,31 @@
-import { getScene, hasScene } from './content'
-import type { DoorId, GameState } from './types'
+import { ITEMS, getScene, hasScene } from './content'
+import type { DoorId, EquipSlot, GameState } from './types'
+
+const EQUIP_SLOTS: EquipSlot[] = ['weapon', 'armor', 'garment']
+
+/** Old saves parked Vessel Cloth on armor. Move a piece onto the slot its catalog declares. */
+export function migrateEquipped(state: GameState): GameState {
+  const prev = state.equipped ?? {}
+  const next: GameState['equipped'] = { ...prev }
+  let changed = !state.equipped
+  for (const slot of EQUIP_SLOTS) {
+    const id = next[slot]
+    if (!id) continue
+    const want = ITEMS[id]?.slot
+    if (!want) {
+      delete next[slot]
+      changed = true
+      continue
+    }
+    if (want !== slot) {
+      delete next[slot]
+      changed = true
+      if (!next[want]) next[want] = id
+    }
+  }
+  if (!changed) return state
+  return { ...state, equipped: next }
+}
 
 /** Old Cache Run beats removed when Hunger spokes split. */
 const RENAMES: Record<string, (door: DoorId) => string> = {
@@ -57,16 +83,17 @@ export function repairSceneId(state: Pick<GameState, 'door' | 'sceneId' | 'chapt
 }
 
 export function repairLoadedState(state: GameState): GameState {
-  const sceneId = repairSceneId(state)
-  if (sceneId === state.sceneId && hasScene(sceneId) && sceneFitsDoor(sceneId, state.door)) {
-    const scene = getScene(sceneId, state.door)
-    let next = state
-    if (scene.hubId && state.hubId !== scene.hubId) next = { ...next, hubId: scene.hubId }
-    if (scene.chapterId && state.chapterId !== scene.chapterId) next = { ...next, chapterId: scene.chapterId }
+  const base = migrateEquipped(state)
+  const sceneId = repairSceneId(base)
+  if (sceneId === base.sceneId && hasScene(sceneId) && sceneFitsDoor(sceneId, base.door)) {
+    const scene = getScene(sceneId, base.door)
+    let next = base
+    if (scene.hubId && base.hubId !== scene.hubId) next = { ...next, hubId: scene.hubId }
+    if (scene.chapterId && base.chapterId !== scene.chapterId) next = { ...next, chapterId: scene.chapterId }
     return next
   }
-  const scene = getScene(sceneId, state.door)
-  const next: GameState = { ...state, sceneId }
+  const scene = getScene(sceneId, base.door)
+  const next: GameState = { ...base, sceneId }
   if (scene.id === 'missing') {
     const home = doorHomeScene(state.door, { hunger: inHunger(state) && !landed(state), landed: landed(state) })
     next.sceneId = home.sceneId
@@ -83,5 +110,6 @@ export function repairLoadedState(state: GameState): GameState {
 }
 
 export function repairedSlotChanged(before: GameState, after: GameState): boolean {
-  return before.sceneId !== after.sceneId || before.hubId !== after.hubId || before.chapterId !== after.chapterId
+  if (before.sceneId !== after.sceneId || before.hubId !== after.hubId || before.chapterId !== after.chapterId) return true
+  return EQUIP_SLOTS.some((slot) => (before.equipped?.[slot] ?? null) !== (after.equipped?.[slot] ?? null))
 }

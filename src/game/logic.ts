@@ -1,5 +1,6 @@
 import { ITEMS } from './content/catalog'
-import type { Cond, Effect, EquipSlot, GameState, ItemId } from './types'
+import { EQUIP_SLOTS } from './kit'
+import type { Cond, Effect, GameState, ItemId } from './types'
 
 export function check(cond: Cond | undefined, s: GameState): boolean {
   if (!cond) return true
@@ -18,7 +19,14 @@ export function check(cond: Cond | undefined, s: GameState): boolean {
   if (cond.door && s.door !== cond.door) return false
   if (cond.pressureMin !== undefined && s.pressure < cond.pressureMin) return false
   if (cond.ticksMin !== undefined && s.ticks < cond.ticksMin) return false
-  if (cond.equipped && s.equipped?.weapon !== cond.equipped && s.equipped?.armor !== cond.equipped) return false
+  if (
+    cond.equipped &&
+    s.equipped?.weapon !== cond.equipped &&
+    s.equipped?.armor !== cond.equipped &&
+    s.equipped?.garment !== cond.equipped
+  ) {
+    return false
+  }
   if (cond.slot && !s.equipped?.[cond.slot]) return false
   return true
 }
@@ -77,7 +85,7 @@ export function applyDelta(s: GameState, fx: Effect): GameState {
       next.equipped = { ...next.equipped, [def.slot]: fx.equip }
     }
   }
-  for (const slot of ['weapon', 'armor'] as EquipSlot[]) {
+  for (const slot of EQUIP_SLOTS) {
     const id = next.equipped[slot]
     if (id && !(next.items[id] ?? 0)) delete next.equipped[slot]
   }
