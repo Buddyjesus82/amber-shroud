@@ -1,4 +1,5 @@
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import {
   applyEffect,
   bodyOf,
@@ -26,6 +27,8 @@ import {
 } from '../src/game/doorPick.ts'
 import type { GameState } from '../src/game/types.ts'
 import { playCoverKey } from '../src/game/art.ts'
+import { equippedShell } from '../src/game/kit.ts'
+import { repairLoadedState } from '../src/game/repair.ts'
 import { pressureFace } from '../src/game/hunter.ts'
 import { canTravelTo, edgeSap, HUB_MAPS, nodeIdForScene, route } from '../src/game/map.ts'
 import {
@@ -193,10 +196,12 @@ assert(vessel.items.ceremonial_cloth === 1 && vessel.items.vial_drop === 1, 'ves
 assert(!vessel.items.wrench && !vessel.items.silas_tip, 'vessel kit unique')
 assert(vessel.heat.seekers === 3, 'vessel seeker pressure')
 
-assert(ITEMS.wrench.bite === 3 && ITEMS.shiv.bite === 2 && ITEMS.needle_knife.bite === 3, 'weapons have Bite')
-assert(ITEMS.ironwood_baton.bite === 4 && ITEMS.rusted_dagger.bite === 2, 'baton and dagger Bite')
-assert(ITEMS.dust_cloak.hide === 3 && ITEMS.hide_wrap.hide === 4 && ITEMS.ceremonial_cloth.hide === 1, 'armor has Hide')
-assert(!ITEMS.scrap.bite && !ITEMS.vial_drop.hide, 'currency is not Bite/Hide')
+assert(ITEMS.wrench.strike === 3 && ITEMS.shiv.strike === 2 && ITEMS.needle_knife.strike === 3, 'work steel is Strike 3; junk edge is Strike 2')
+assert(ITEMS.ironwood_baton.strike === 4 && ITEMS.rusted_dagger.strike === 2, 'Cartel issue is Strike 4; dagger stays junk edge')
+assert(ITEMS.scav_wrap.shell === 2 && ITEMS.scav_wrap.slot === 'armor', 'mid armor is Scav Wrap Shell 2')
+assert(ITEMS.dust_cloak.shell === 3 && ITEMS.hide_wrap.shell === 4, 'Dust Cloak Shell 3, Hound Hide Shell 4')
+assert(ITEMS.ceremonial_cloth.slot === 'garment' && ITEMS.ceremonial_cloth.shell == null, 'Vessel Cloth is garment and adds no Shell')
+assert(!ITEMS.scrap.strike && !ITEMS.vial_drop.shell, 'currency is not Strike/Shell')
 assert(!/(\bshe\b|\bher\b)/i.test(PEOPLE.kaelen.card), 'Kaelen card is not she/her')
 assert(/\bthey\b/i.test(PEOPLE.kaelen.card), 'Kaelen card uses they')
 assert(!/(\bshe\b|\bher\b)/i.test(PEOPLE.kaelen.later['thresh:kaelen'] ?? ''), 'Threshold later card is they/them')
@@ -485,7 +490,8 @@ assert(s.flags.ossaKin, 'Outcast Ossa is kin-height, not a cage-smell meet')
 s = newGame('vessel')
 s = pick(s, 'keep')
 assert(s.hubId === 'threshold')
-assert(s.equipped.weapon === 'rusted_dagger' && s.equipped.armor === 'ceremonial_cloth', 'Vessel starts with dagger and cloth equipped')
+assert(s.equipped.weapon === 'rusted_dagger' && s.equipped.garment === 'ceremonial_cloth' && !s.equipped.armor, 'Vessel starts with dagger and cloth; cloth is not armor')
+assert(equippedShell(s) === 0, 'worn Vessel Cloth does not add Shell')
 assert(s.heat.seekers >= 4, 'opening + start heat = thalia pressure')
 assert(s.items.oram_map === 1 && s.items.rusted_dagger === 1)
 s = travelTo(s, 'thresh:guard')
@@ -879,7 +885,7 @@ s = {
 assert(s.sceneId === 'camp:yard', 'forced encounter stays in the Yard')
 assert(ids(s).includes('enc-fight') && ids(s).includes('enc-skip'), 'fight or skip, no dice')
 assert(!bodyOf(s).includes('cooked resin'), 'encounter card does not bleed Yard prose')
-assert(/Bite has to beat Hide/i.test(bodyOf(s)), 'first encounter teaches Bite/Hide/Health')
+assert(/Strike has to beat Shell/i.test(bodyOf(s)), 'first encounter teaches Strike/Shell/Health')
 const skipped = pick(s, 'enc-skip')
 assert(skipped.sceneId === 'camp:yard', 'skip stays put')
 assert(skipped.flags.encounterHere && skipped.flags.encounterDone, 'skip holds the outcome card')
@@ -899,22 +905,22 @@ s = {
   health: 6,
   healthMax: 6,
 }
-assert(!/Bite has to beat Hide/i.test(bodyOf(s)), 'later fights skip the lecture')
-assert(bodyOf(s).includes('You Bite'), 'compact card still shows compares')
+assert(!/Strike has to beat Shell/i.test(bodyOf(s)), 'later fights skip the lecture')
+assert(bodyOf(s).includes('You Strike'), 'compact card still shows compares')
 const fought = pick(s, 'enc-fight')
 assert(fought.sceneId === 'camp:yard', 'fight stays in the Yard')
 assert(fought.flags.encounterHere && fought.flags.encounterDone, 'win holds the outcome card')
 assert((fought.items.scrap ?? 0) >= 2, 'winning a jackal yields saleable scrap')
 assert(fought.health < 6, 'Health takes the incoming hit, not Sap')
 assert(fought.sap === 6, 'Sap is unchanged by a win')
-assert(/You Bite 2 vs their Hide 1/.test(bodyOf(fought)), 'fight result shows your compare line')
-assert(/Their Bite 2 vs your Hide 0/.test(bodyOf(fought)), 'fight result shows their compare line')
+assert(/You Strike 2 vs their Shell 1/.test(bodyOf(fought)), 'fight result shows your compare line')
+assert(/Their Strike 2 vs your Shell 0/.test(bodyOf(fought)), 'fight result shows their compare line')
 assert(!bodyOf(fought).includes('cooked resin'), 'outcome card does not bleed Yard prose')
-assert(!(fought.flash ?? '').includes('Bite'), 'compares live on the card, not a stacked flash')
+assert(!(fought.flash ?? '').includes('Strike'), 'compares live on the card, not a stacked flash')
 const foughtOn = pick(fought, 'enc-continue')
 assert(!foughtOn.flags.encounterHere, 'On. returns to the place')
 assert(/They drop/.test(foughtOn.flash ?? ''), 'hub flash is the compact loot line')
-assert(!/Bite/.test(foughtOn.flash ?? ''), 'hub flash is not the full compare block')
+assert(!/Strike/.test(foughtOn.flash ?? ''), 'hub flash is not the full compare block')
 assert(bodyOf(foughtOn).includes('cooked resin'), 'Yard prose returns after On.')
 
 s = newGame('vessel')
@@ -937,14 +943,14 @@ s = {
   health: 6,
   healthMax: 6,
 }
-assert(/You Bite 2 vs their Hide 2/.test(bodyOf(s)), 'Vessel dagger vs pup Hide is on the card')
+assert(/You Strike 2 vs their Shell 2/.test(bodyOf(s)), 'Vessel dagger vs pup Shell is on the card')
 const loss = pick(s, 'enc-fight')
 assert((loss.items.glints ?? 0) === beforeGlints, 'lose compare does not pay Glints')
 assert((loss.items.scrap ?? 0) === (s.items.scrap ?? 0), 'lose compare does not pay scrap')
-assert(loss.health === 3, 'Shard-pup Bite 4 vs Hide 1 deals 3 Health')
+assert(loss.health === 2, 'Shard-pup Strike 4 vs Shell 0 deals 4 Health; cloth is not armor')
 assert(loss.flags.encounterHere, 'they still stand after a scratch')
-assert(/You Bite 2 vs their Hide 2 → 0/.test(bodyOf(loss)), 'Fight body is the compare, not a prose wall')
-assert(/Their Bite 4 vs your Hide 1 → 3/.test(bodyOf(loss)), 'incoming compare is on the card')
+assert(/You Strike 2 vs their Shell 2 → 0/.test(bodyOf(loss)), 'Fight body is the compare, not a prose wall')
+assert(/Their Strike 4 vs your Shell 0 → 4/.test(bodyOf(loss)), 'incoming compare is on the card')
 const drop = pick(loss, 'enc-fight')
 assert(drop.flags.encounterHere && drop.flags.encounterDone, 'dropping to 0 Health holds the outcome card')
 assert(drop.health === 1, 'empty Health is a stagger, not a lock')
@@ -1013,9 +1019,9 @@ for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
   const card = primedFight(door, 4, 'scavenger', { taught: false, arm: false })
   assert(/waste scavenger/i.test(bodyOf(card)), `${door} scavenger card names the robber`)
   assert(/Not fauna/.test(bodyOf(card)), `${door} scavenger card is a person, not fauna`)
-  assert(/Bite has to beat Hide/i.test(bodyOf(card)), `${door} first scavenger still teaches`)
-  assert(/You Bite \d+ vs their Hide 1/.test(bodyOf(card)), `${door} scavenger Hide is on the card`)
-  assert(/Their Bite 2 vs your Hide/.test(bodyOf(card)), `${door} scavenger Bite is on the card`)
+  assert(/Strike has to beat Shell/i.test(bodyOf(card)), `${door} first scavenger still teaches`)
+  assert(/You Strike \d+ vs their Shell 1/.test(bodyOf(card)), `${door} scavenger Shell is on the card`)
+  assert(/Their Strike 2 vs your Shell/.test(bodyOf(card)), `${door} scavenger Strike is on the card`)
   const fightRow = visibleChoices(card).find((c) => c.id === 'enc-fight')
   assert(fightRow?.label === 'Fight the Waste scavenger', `${door} fight label names the scavenger`)
   assert(ids(card).includes('enc-skip'), `${door} scavenger can be skipped`)
@@ -1036,7 +1042,7 @@ for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
     items: { ...scratch.items, shiv: 1 },
     equipped: { weapon: 'shiv' as const },
   }
-  assert(/You Bite 2 vs their Hide 1/.test(bodyOf(armed)), 'shiv vs scavenger Hide is on the card')
+  assert(/You Strike 2 vs their Shell 1/.test(bodyOf(armed)), 'shiv vs scavenger Shell is on the card')
   const stood = pick(armed, 'enc-fight')
   assert(!stood.flags.encounterDone, 'scavenger Health 2 survives one shiv hit')
   assert(/Their Health 1\/2/.test(bodyOf(stood)), 'scavenger has 2 Health')
@@ -1054,6 +1060,7 @@ for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
   let sawEmpty = 0
   let sawWeapon = false
   let sawArmor = false
+  let sawWrap = false
   let sawBoth = false
   let named = false
   for (let ticks = 0; ticks < 20; ticks++) {
@@ -1071,8 +1078,8 @@ for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
     }
     for (const id of gained) {
       assert(
-        id === 'shiv' || id === 'rusted_dagger' || id === 'dust_cloak',
-        `${door} scavenger gear is junk-tier, got ${id}`,
+        id === 'shiv' || id === 'rusted_dagger' || id === 'dust_cloak' || id === 'scav_wrap',
+        `${door} scavenger gear is junk or mid wrap, got ${id}`,
       )
     }
     if (gained.length === 0) sawEmpty++
@@ -1080,6 +1087,7 @@ for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
       sawGear++
       if (gained.some((id) => ITEMS[id].slot === 'weapon')) sawWeapon = true
       if (gained.some((id) => ITEMS[id].slot === 'armor')) sawArmor = true
+      if (gained.includes('scav_wrap')) sawWrap = true
       if (gained.some((id) => ITEMS[id].slot === 'weapon') && gained.some((id) => ITEMS[id].slot === 'armor')) {
         sawBoth = true
       }
@@ -1096,6 +1104,7 @@ for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
   }
   assert(sawGear > 0 && sawEmpty > 0, `${door} scavenger gear is sometimes, not always`)
   assert(sawWeapon && sawArmor && sawBoth, `${door} scavenger can drop a weapon, a cloak, or both`)
+  assert(sawWrap, `${door} scavenger can drop Scav Wrap`)
   assert(named, `${door} gear copy names the item`)
 
   let cutterGear = 0
@@ -1181,9 +1190,9 @@ const rimOn = pick(rimFight, 'enc-continue')
 assert(!rimOn.flags.encounterHere, 'On. returns to Maw Rim')
 assert(!rimOn.flags.hunterHere, 'Sybella still waits for the next linger')
 assert(/They drop/.test(rimOn.flash ?? ''), 'Rim hub flash is the compact loot line')
-assert(!/Bite/.test(rimOn.flash ?? ''), 'Rim hub flash is not the compare block')
+assert(!/Strike/.test(rimOn.flash ?? ''), 'Rim hub flash is not the compare block')
 assert(bodyOf(rimOn).includes('lip of rock'), 'Approach body returns after On.')
-assert(!bodyOf(rimOn).includes('You Bite'), 'Approach body does not keep the fight log')
+assert(!bodyOf(rimOn).includes('You Strike'), 'Approach body does not keep the fight log')
 assert(!/Tick\. Tick/.test(bodyOf(rimOn)), 'Sybella whisper is not stacked under the hub')
 
 s = newGame('prisoner')
@@ -1341,6 +1350,11 @@ s = applyEffect(s, { goto: 'camp:kaelen', add: { scrap: 2 } })
 assert(ids(s).includes('shop-buy') && ids(s).includes('shop-sell'), 'Prisoner Kaelen has Buy/Sell')
 s = openShop(s, 'buy')
 assert(ids(s).includes('cloak-glint') && ids(s).includes('cloak-scrap'), 'Prisoner Kaelen cloak is Glint or scrap, two rows')
+assert(ids(s).includes('wrap'), 'Prisoner Kaelen sells Scav Wrap')
+s = pick(s, 'wrap')
+assert(s.items.scav_wrap === 1 && (s.items.scrap ?? 0) === 1, 'one scrap buys Scav Wrap and leaves the rest')
+s = equipItem(s, 'scav_wrap')
+assert(s.equipped.armor === 'scav_wrap' && equippedShell(s) === 2, 'Scav Wrap is the only Shell when worn')
 s = applyEffect(s, { goto: 'camp:wire' })
 s = interpret(s, 'talk')
 assert(/gloves|product|shelf/i.test(s.flash ?? ''), 'Do talk on the Wire hits Kaelen who is there')
@@ -1351,6 +1365,7 @@ s = applyEffect(s, { goto: 'spine:kaelen', add: { scrap: 2 } })
 assert(ids(s).includes('shop-buy') && ids(s).includes('shop-sell'), 'Outcast Kaelen has Buy/Sell like Prisoner')
 s = openShop(s, 'buy')
 assert(ids(s).includes('cloak-glint') && ids(s).includes('cloak-scrap'), 'Outcast Kaelen cloak is Glint or scrap, two rows')
+assert(ids(s).includes('wrap'), 'Outcast Kaelen sells Scav Wrap')
 s = applyEffect(s, { goto: 'spine:well' })
 s = interpret(s, 'talk')
 assert(/gloves|product|shelf/i.test(s.flash ?? ''), 'Do talk at the well hits Kaelen who is there')
@@ -1377,6 +1392,7 @@ assert(/\bthey\b/i.test(sceneOf(s).body), 'Threshold Kaelen uses they')
 assert(ids(s).includes('shop-buy') && ids(s).includes('shop-sell'), 'Vessel Kaelen has Buy/Sell like Wire and well')
 s = openShop(s, 'buy')
 assert(ids(s).includes('cloak-glint') && ids(s).includes('cloak-scrap'), 'Vessel Kaelen cloak is Glint or scrap, two rows')
+assert(ids(s).includes('wrap'), 'Vessel Kaelen sells Scav Wrap')
 s = pick(s, 'shop-back')
 s = pick(s, 'rumors')
 assert(s.sceneId === 'thresh:kaelen-rumors', 'Vessel rumor counter is local to Cup-Shadow')
@@ -1494,6 +1510,44 @@ s = equipItem(s, 'hide_wrap')
 s = openShop(s, 'sell')
 assert(ids(s).includes('sell-dust_cloak'), 'unequipped Dust Cloak can be sold')
 assert(!ids(s).includes('sell-hide_wrap'), 'equipped Hound Hide stays off Sell until unequipped')
+{
+  const legacy = newGame('vessel')
+  const moved = repairLoadedState({
+    ...legacy,
+    equipped: { weapon: 'rusted_dagger', armor: 'ceremonial_cloth' },
+  })
+  assert(moved.equipped.garment === 'ceremonial_cloth', 'old cloth-on-armor save moves to garment')
+  assert(!moved.equipped.armor, 'old cloth-on-armor save frees the armor slot')
+  assert(moved.equipped.weapon === 'rusted_dagger', 'weapon stays when cloth migrates')
+  const kept = repairLoadedState({
+    ...legacy,
+    items: { ...legacy.items, dust_cloak: 1 },
+    equipped: { weapon: 'rusted_dagger', armor: 'dust_cloak' },
+  })
+  assert(kept.equipped.armor === 'dust_cloak' && !kept.equipped.garment, 'real armor stays on the armor slot')
+  const bareArmor = repairLoadedState({
+    ...newGame('prisoner'),
+    items: { dust_cloak: 1 },
+    equipped: { armor: 'dust_cloak' },
+  })
+  assert(bareArmor.equipped.armor === 'dust_cloak' && !bareArmor.equipped.garment, 'armor-only saves do not grow a garment')
+}
+{
+  let cloth = newGame('vessel')
+  cloth = pick(cloth, 'keep')
+  cloth = applyEffect(cloth, { goto: 'thresh:kaelen', add: { dust_cloak: 1 } })
+  cloth = equipItem(cloth, 'dust_cloak')
+  assert(
+    cloth.equipped.garment === 'ceremonial_cloth' && cloth.equipped.armor === 'dust_cloak',
+    'garment and armor equip together',
+  )
+  assert(equippedShell(cloth) === 3, 'only armor Shell counts when cloth is also worn')
+  cloth = openShop(cloth, 'sell')
+  assert(!ids(cloth).includes('sell-ceremonial_cloth'), 'equipped garment stays off Sell')
+  assert(!ids(cloth).includes('sell-dust_cloak'), 'equipped armor stays off Sell beside a garment')
+  cloth = unequipSlot(cloth, 'garment')
+  assert(ids(cloth).includes('sell-ceremonial_cloth'), 'unequipped garment returns to Sell')
+}
 assert(!ids(s).includes('sell-cache_map'), 'quest maps are not saleable')
 s = unequipSlot(s, 'armor')
 assert(ids(s).includes('sell-hide_wrap'), 'unequipped Hide returns to Sell')
@@ -1791,7 +1845,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v30'"), 'SW bumped so Do verbs and hunt stakes reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v31'"), 'SW bumped so Strike/Shell and the garment slot reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -1813,6 +1867,21 @@ assert(/\.play-screen \.scene-art \{[\s\S]*?flex:\s*1 1 auto/.test(css), 'scene 
 assert(/\.play-screen \.story \{[\s\S]*?flex:\s*0 1 auto/.test(css), 'story hugs prose so actions sit under the last line')
 assert(css.includes('font-size: 1.18rem'), 'story prose is larger than the old 1.05rem')
 assert(css.includes('min-aspect-ratio: 3/4'), 'wide viewports contain-scale the phone screen to the nearer edges')
+assert(/grid-template-columns:\s*1fr 1fr 1fr/.test(css), 'Gear shows weapon, armor, and garment')
+
+function walkTs(dir: string, out: string[] = []): string[] {
+  for (const name of readdirSync(dir, { withFileTypes: true })) {
+    const p = join(dir, name.name)
+    if (name.isDirectory()) walkTs(p, out)
+    else if (/\.(ts|tsx)$/.test(name.name)) out.push(p)
+  }
+  return out
+}
+const statLabel = /\bBite\b|Hide \d|\bBite \d|vs Hide|your Hide|their Hide|Bite vs|Bite and Hide/
+for (const file of walkTs(new URL('../src', import.meta.url).pathname)) {
+  assert(!statLabel.test(readFileSync(file, 'utf8')), `no Bite/Hide stat label in ${file}`)
+}
+assert(!statLabel.test(readFileSync(new URL('../README.md', import.meta.url), 'utf8')), 'README uses Strike/Shell')
 
 console.log('OK', {
   prisoner: Object.keys(DOORS.prisoner.items),

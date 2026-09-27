@@ -54,7 +54,7 @@ This is harder country than your start door. Sap goes faster. Hunters know the r
     title: 'Bone Market',
     body: `A few stalls that pretend this is a town. Dried strider, spent Glints, maps that have killed people.
 
-Zafir is at the stall whether the cairn kept him or not. He looks like a man who sold the same heading twice and is waiting to see which buyer lives. The tray behind him is stocked: Drops, Hide, a pawned baton, scrap for Glints.`,
+Zafir is at the stall whether the cairn kept him or not. He looks like a man who sold the same heading twice and is waiting to see which buyer lives. The tray behind him is stocked: Drops, Hound Hide, a pawned baton, scrap for Glints.`,
     choices: [
       {
         id: 'zafir',
@@ -86,7 +86,7 @@ Zafir is at the stall whether the cairn kept him or not. He looks like a man who
       {
         if: { flagUnset: 'zafirCup' },
         mode: 'replace',
-        body: `Zafir smiles in a way that costs extra. The cairn did not keep him. "You found the Approach without buying my heading. Rude, and impressive. This stall still sells. Drops, Hide, a baton the Maw pawned. Buy and Sell. I do not donate the next Hunger."`,
+        body: `Zafir smiles in a way that costs extra. The cairn did not keep him. "You found the Approach without buying my heading. Rude, and impressive. This stall still sells. Drops, Hound Hide, a baton the Maw pawned. Buy and Sell. I do not donate the next Hunger."`,
       },
       {
         if: { flag: 'zafirSore' },
@@ -128,7 +128,7 @@ Zafir is at the stall whether the cairn kept him or not. He looks like a man who
       {
         tags: ['baton', 'weapon', 'shock'],
         show: { all: [{ itemMin: ['glints', 4] }, { flagUnset: 'zafirSoldBaton' }] },
-        reply: 'Ironwood issue. Bite 4. He does not ask who you plan to correct.',
+        reply: 'Ironwood issue. Strike 4. He does not ask who you plan to correct.',
         effects: {
           remove: { glints: 4 },
           add: { ironwood_baton: 1 },

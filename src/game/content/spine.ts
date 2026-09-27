@@ -396,7 +396,7 @@ Valerius is here in a different uniform: dust instead of cuffs, the same ledger 
       {
         id: 'cut',
         label: 'Meet the Hound with equipped steel',
-        sub: 'Weapon on. Loot Hound Hide · Hide 4. No dice.',
+        sub: 'Weapon on. Loot Hound Hide · Shell 4. No dice.',
         show: { all: [{ slot: 'weapon' }, { flagUnset: 'hideWrap' }] },
         effects: {
           add: { hide_wrap: 1 },
@@ -405,7 +405,7 @@ Valerius is here in a different uniform: dust instead of cuffs, the same ledger 
           heat: { cartel: 1 },
           goto: 'spine:hound',
           flash:
-            'Resin jaw, then silence. Hound Hide · Hide 4 still smells like Cartel loyalty. Equip it in Gear. Valerius will count this.',
+            'Resin jaw, then silence. Hound Hide · Shell 4 still smells like Cartel loyalty. Equip it in Gear. Valerius will count this.',
         },
       },
       {

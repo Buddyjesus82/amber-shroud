@@ -109,7 +109,7 @@ export const GLOBAL_INTENTS: IntentRule[] = [
   },
   {
     tags: ['inventory', 'pack', 'pocket', 'items', 'gear', 'kit'],
-    reply: 'You pat the pack. Whatever you have, it is listed in Gear — not across the screen. Equip a weapon or armor if it has a slot. Bite and Hide compare gear. No dice.',
+    reply: 'You pat the pack. Whatever you have, it is listed in Gear — not across the screen. Equip a weapon, armor, or garment if it has a slot. Strike and Shell compare gear. No dice.',
     effects: {},
   },
   {
@@ -120,7 +120,7 @@ export const GLOBAL_INTENTS: IntentRule[] = [
   {
     tags: ['trade', 'buy', 'sell', 'shop', 'merchant', 'barter'],
     reply:
-      'Kaelen the Sifter trades from Buy and Sell shelves — scrap for a Drop of Oasis Sap, Glints for intel. Zafir keeps a stall at the Bone Market — Hide, Drops, a pawned baton. Silas sells a Drop in the shade. Oil-Tooth is a different invoice.',
+      'Kaelen the Sifter trades from Buy and Sell shelves — scrap for a Drop of Oasis Sap, Glints for intel. Zafir keeps a stall at the Bone Market — Hound Hide, Drops, a pawned baton. Silas sells a Drop in the shade. Oil-Tooth is a different invoice.',
     effects: {},
   },
   {

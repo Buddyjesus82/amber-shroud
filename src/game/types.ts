@@ -24,9 +24,10 @@ export type ItemId =
   | 'needle_knife'
   | 'dust_cloak'
   | 'hide_wrap'
+  | 'scav_wrap'
 
-export type ItemKind = 'gear' | 'currency' | 'key' | 'weapon' | 'armor'
-export type EquipSlot = 'weapon' | 'armor'
+export type ItemKind = 'gear' | 'currency' | 'key' | 'weapon' | 'armor' | 'garment'
+export type EquipSlot = 'weapon' | 'armor' | 'garment'
 
 export type Heat = {
   cartel: number
@@ -56,7 +57,7 @@ export type GameState = {
   flash?: string
   startedAt: number
   updatedAt: number
-  equipped: { weapon?: ItemId; armor?: ItemId }
+  equipped: { weapon?: ItemId; armor?: ItemId; garment?: ItemId }
   recentVerbs?: string[]
 }
 
@@ -103,7 +104,7 @@ export type Effect = {
   equip?: ItemId
   returnHunterFrom?: boolean
   returnCrisisFrom?: boolean
-  /** Optional roam fight. Bite/Hide compare — no dice. */
+  /** Optional roam fight. Strike/Shell compare — no dice. */
   resolveEncounter?: 'fight' | 'skip'
 }
 
@@ -223,8 +224,8 @@ export type ItemDef = {
   kind: ItemKind
   desc: string
   slot?: EquipSlot
-  /** Weapon compare-number. Gear only — never added to a roll. */
-  bite?: number
-  /** Armor compare-number. Gear only — never added to a roll. */
-  hide?: number
+  /** Weapon compare-number. Shown as Strike. Never added to a roll. */
+  strike?: number
+  /** Armor compare-number. Shown as Shell. Never added to a roll. Garment does not stack into this. */
+  shell?: number
 }

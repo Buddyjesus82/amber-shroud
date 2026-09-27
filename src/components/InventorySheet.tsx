@@ -1,5 +1,5 @@
 import { drinkDrop, equipItem, sapLabel, unequipSlot } from '../game/engine'
-import { gearStat, listedKit } from '../game/kit'
+import { gearStat, isWorn, listedKit } from '../game/kit'
 import { ITEMS } from '../game/content/catalog'
 import type { EquipSlot, GameState, ItemId } from '../game/types'
 
@@ -13,6 +13,7 @@ export function InventorySheet({ state, onClose, onChange }: Props) {
   const chips = listedKit(state.items)
   const weapon = state.equipped?.weapon ? ITEMS[state.equipped.weapon] : null
   const armor = state.equipped?.armor ? ITEMS[state.equipped.armor] : null
+  const garment = state.equipped?.garment ? ITEMS[state.equipped.garment] : null
 
   return (
     <div className="sheet-backdrop" role="dialog" aria-label="Gear" onClick={onClose}>
@@ -27,20 +28,29 @@ export function InventorySheet({ state, onClose, onChange }: Props) {
         <p className="kit-sap">
           Sap {state.sap}/{state.sapMax} · {sapLabel(state.sap)}. Health {state.health}/{state.healthMax}.
           Sap is thirst and walking. Health takes fight hits. Empty sap is a crisis, not a death. Empty
-          health is a stagger — you crawl, you do not end. Equip weapons (Bite) and armor (Hide) — no
-          dice. The numbers compare gear only. They never add to a roll.
+          health is a stagger — you crawl, you do not end. Equip a weapon (Strike), armor (Shell), and a
+          garment. The garment does not take the armor slot. Numbers compare gear only. They never add to a
+          roll. No dice.
         </p>
 
         <div className="equip-slots">
           <Slot
             label="Weapon"
+            empty="Empty hand"
             item={weapon}
             onClear={() => onChange(unequipSlot(state, 'weapon'))}
           />
           <Slot
             label="Armor"
+            empty="Bare"
             item={armor}
             onClear={() => onChange(unequipSlot(state, 'armor'))}
+          />
+          <Slot
+            label="Garment"
+            empty="Unworn"
+            item={garment}
+            onClear={() => onChange(unequipSlot(state, 'garment'))}
           />
         </div>
 
@@ -55,7 +65,7 @@ export function InventorySheet({ state, onClose, onChange }: Props) {
                     {c.name}
                     {c.n > 1 ? ` ×${c.n}` : ''}
                     {gearStat(c) ? ` · ${gearStat(c)}` : ''}
-                    {worn(state, c.id) ? ' · on' : ''}
+                    {isWorn(state, c.id) ? ' · on' : ''}
                   </strong>
                   <span>{c.desc}</span>
                 </div>
@@ -80,17 +90,15 @@ export function InventorySheet({ state, onClose, onChange }: Props) {
   )
 }
 
-function worn(state: GameState, id: ItemId) {
-  return state.equipped?.weapon === id || state.equipped?.armor === id
-}
-
 function Slot({
   label,
+  empty,
   item,
   onClear,
 }: {
   label: string
-  item: { name: string; bite?: number; hide?: number } | null
+  empty: string
+  item: { name: string; strike?: number; shell?: number } | null
   onClear: () => void
 }) {
   const stat = gearStat(item)
@@ -106,7 +114,7 @@ function Slot({
           Unequip
         </button>
       ) : (
-        <span className="kit-empty">Tap a weapon or armor below</span>
+        <span className="kit-empty">{empty}</span>
       )}
     </div>
   )
@@ -140,7 +148,7 @@ function ItemActs({
     )
   }
   if (!slot) return null
-  const on = worn(state, id)
+  const on = isWorn(state, id)
   return (
     <button
       type="button"

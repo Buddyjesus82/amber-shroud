@@ -49,7 +49,7 @@ export function newGame(door: DoorId): GameState {
     heat: { ...d.heat },
     items: { ...d.items },
     flags: { ...d.flags },
-    equipped: d.id === 'vessel' ? { weapon: 'rusted_dagger', armor: 'ceremonial_cloth' } : {},
+    equipped: d.id === 'vessel' ? { weapon: 'rusted_dagger', garment: 'ceremonial_cloth' } : {},
     recentVerbs: [],
     sceneId: d.sceneId,
     hubId: null,
@@ -640,10 +640,12 @@ export function equipItem(state: GameState, id: ItemId): GameState {
     return persist({ ...state, flash: 'You do not have it to equip.' })
   }
   const equipped = { ...(state.equipped ?? {}), [def.slot]: id }
+  const flash =
+    def.slot === 'weapon' ? `${def.name} in the hand.` : def.slot === 'armor' ? `${def.name} on the body.` : `${def.name} worn.`
   return persist({
     ...state,
     equipped,
-    flash: def.slot === 'weapon' ? `${def.name} in the hand.` : `${def.name} on the body.`,
+    flash,
     updatedAt: Date.now(),
   })
 }
@@ -651,10 +653,11 @@ export function equipItem(state: GameState, id: ItemId): GameState {
 export function unequipSlot(state: GameState, slot: EquipSlot): GameState {
   const equipped = { ...(state.equipped ?? {}) }
   delete equipped[slot]
+  const flash = slot === 'weapon' ? 'Empty hand.' : slot === 'armor' ? 'Bare shoulders.' : 'The garment comes off.'
   return persist({
     ...state,
     equipped,
-    flash: slot === 'weapon' ? 'Empty hand.' : 'Bare shoulders.',
+    flash,
     updatedAt: Date.now(),
   })
 }

@@ -2,34 +2,41 @@ import { ITEMS } from './content/catalog'
 import { moneyLabel } from './trade'
 import type { Effect, EquipSlot, GameState, ItemDef, ItemId } from './types'
 
+export const EQUIP_SLOTS: EquipSlot[] = ['weapon', 'armor', 'garment']
+
 export type KitChip = {
   id: ItemId
   name: string
   n: number
-  kind: 'gear' | 'currency' | 'key' | 'weapon' | 'armor'
+  kind: 'gear' | 'currency' | 'key' | 'weapon' | 'armor' | 'garment'
   desc: string
   slot?: EquipSlot
-  bite?: number
-  hide?: number
+  strike?: number
+  shell?: number
 }
 
-export function gearStat(item: Pick<ItemDef, 'bite' | 'hide'> | null | undefined): string | null {
+export function gearStat(item: Pick<ItemDef, 'strike' | 'shell'> | null | undefined): string | null {
   if (!item) return null
-  if (item.bite != null) return `Bite ${item.bite}`
-  if (item.hide != null) return `Hide ${item.hide}`
+  if (item.strike != null) return `Strike ${item.strike}`
+  if (item.shell != null) return `Shell ${item.shell}`
   return null
 }
 
+export function isWorn(state: GameState, id: ItemId): boolean {
+  return EQUIP_SLOTS.some((slot) => state.equipped?.[slot] === id)
+}
+
 /** Empty hand still has a number. Never a roll. */
-export function equippedBite(state: GameState): number {
+export function equippedStrike(state: GameState): number {
   const id = state.equipped?.weapon
-  if (id && ITEMS[id]?.bite != null) return ITEMS[id].bite as number
+  if (id && ITEMS[id]?.strike != null) return ITEMS[id].strike as number
   return 1
 }
 
-export function equippedHide(state: GameState): number {
+/** Armor only. A worn garment does not stack into this. Bare shoulders are 0. */
+export function equippedShell(state: GameState): number {
   const id = state.equipped?.armor
-  if (id && ITEMS[id]?.hide != null) return ITEMS[id].hide as number
+  if (id && ITEMS[id]?.shell != null) return ITEMS[id].shell as number
   return 0
 }
 
@@ -43,8 +50,8 @@ export function listedKit(items: Partial<Record<ItemId, number>>): KitChip[] {
       kind: ITEMS[id].kind,
       desc: ITEMS[id].desc,
       slot: ITEMS[id].slot,
-      bite: ITEMS[id].bite,
-      hide: ITEMS[id].hide,
+      strike: ITEMS[id].strike,
+      shell: ITEMS[id].shell,
     }))
 }
 

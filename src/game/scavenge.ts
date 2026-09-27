@@ -166,7 +166,7 @@ export function applySkim(state: GameState): GameState {
 export function lootTag(id: ItemId): string {
   const item = ITEMS[id]
   if (!item) return id
-  if (item.bite != null) return `${item.name} · Bite ${item.bite}`
-  if (item.hide != null) return `${item.name} · Hide ${item.hide}`
+  if (item.strike != null) return `${item.name} · Strike ${item.strike}`
+  if (item.shell != null) return `${item.name} · Shell ${item.shell}`
   return item.name
 }

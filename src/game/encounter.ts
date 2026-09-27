@@ -1,7 +1,7 @@
 import { ITEMS } from './content/catalog'
 import { getScene } from './content'
 import { check } from './logic'
-import { equippedBite, equippedHide } from './kit'
+import { equippedShell, equippedStrike } from './kit'
 import type { Choice, Effect, GameState, ItemId } from './types'
 
 export type EncounterKind = 'jackal' | 'cutter' | 'tick' | 'pup' | 'scavenger'
@@ -12,8 +12,8 @@ export const HEALTH_MAX = 6
 type Spec = {
   kind: EncounterKind
   name: string
-  bite: number
-  hide: number
+  strike: number
+  shell: number
   hp: number
   line: string
 }
@@ -22,47 +22,47 @@ const SPECS: Spec[] = [
   {
     kind: 'jackal',
     name: 'Dust-jackal',
-    bite: 2,
-    hide: 1,
+    strike: 2,
+    shell: 1,
     hp: 1,
     line: 'A dust-jackal blocks the grit — ribs like wire, eyes like spent Glints. It will take a hand or a skip.',
   },
   {
     kind: 'cutter',
     name: 'Rim cutter',
-    bite: 3,
-    hide: 2,
+    strike: 3,
+    shell: 2,
     hp: 2,
     line: 'A rim-cutter stands up out of scrap-shade. Half a person, half a stolen knife. Knife-smile. Saleable pockets. Optional throat.',
   },
   {
     kind: 'tick',
     name: 'Amber-tick',
-    bite: 1,
-    hide: 3,
+    strike: 1,
+    shell: 3,
     hp: 1,
     line: "An amber-tick clings to a rib of rock, fat with somebody else's Drop. You can crack it or leave it humming.",
   },
   {
     kind: 'pup',
     name: 'Shard-pup',
-    bite: 4,
-    hide: 2,
+    strike: 4,
+    shell: 2,
     hp: 2,
     line: 'A Shard-pup — not a Hound yet, already a jaw. Cartel leftovers. Fight or give the road.',
   },
   {
     kind: 'scavenger',
     name: 'Waste scavenger',
-    bite: 2,
-    hide: 1,
+    strike: 2,
+    shell: 1,
     hp: 2,
     line: 'A waste scavenger blocks the grit. Not fauna — a person who robs travelers who look alone. Stolen knife. Empty pockets. Optional throat.',
   },
 ]
 
 const TEACH =
-  'Bite has to beat Hide to wound. Health takes the hits — not Sap. Fight or skip. Skip is free and pays nothing. Loot only if they drop.'
+  'Strike has to beat Shell to wound. Health takes the hits — not Sap. Fight or skip. Skip is free and pays nothing. Loot only if they drop.'
 
 function seed(state: GameState): number {
   let n = state.ticks * 11 + state.pressure * 5 + state.sap * 3
@@ -122,8 +122,8 @@ export function canEncounter(state: GameState): boolean {
 
 export type Clash = {
   spec: Spec
-  bite: number
-  hide: number
+  strike: number
+  shell: number
   dmgOut: number
   dmgIn: number
   theirHp: number
@@ -132,17 +132,17 @@ export type Clash = {
 
 export function clashOf(state: GameState): Clash {
   const spec = encounterSpec(state)
-  const bite = equippedBite(state)
-  const hide = equippedHide(state)
-  const dmgOut = Math.max(0, bite - spec.hide)
-  const dmgIn = Math.max(0, spec.bite - hide)
+  const strike = equippedStrike(state)
+  const shell = equippedShell(state)
+  const dmgOut = Math.max(0, strike - spec.shell)
+  const dmgIn = Math.max(0, spec.strike - shell)
   const theirNow = Number(state.flags.encounterHp ?? spec.hp)
   const healthMax = state.healthMax ?? HEALTH_MAX
   const yours = state.health ?? healthMax
   return {
     spec,
-    bite,
-    hide,
+    strike,
+    shell,
     dmgOut,
     dmgIn,
     theirHp: Math.max(0, theirNow),
@@ -151,11 +151,11 @@ export function clashOf(state: GameState): Clash {
 }
 
 function compareLines(c: Clash): string {
-  return `You Bite ${c.bite} vs their Hide ${c.spec.hide}\n\nTheir Bite ${c.spec.bite} vs your Hide ${c.hide}`
+  return `You Strike ${c.strike} vs their Shell ${c.spec.shell}\n\nTheir Strike ${c.spec.strike} vs your Shell ${c.shell}`
 }
 
 function compareHit(c: Clash): string {
-  return `You Bite ${c.bite} vs their Hide ${c.spec.hide} → ${c.dmgOut}\n\nTheir Bite ${c.spec.bite} vs your Hide ${c.hide} → ${c.dmgIn}`
+  return `You Strike ${c.strike} vs their Shell ${c.spec.shell} → ${c.dmgOut}\n\nTheir Strike ${c.spec.strike} vs your Shell ${c.shell} → ${c.dmgIn}`
 }
 
 /** Encounter interrupt body only — never the place underneath. */
@@ -190,7 +190,7 @@ export function encounterChoices(state: GameState): Choice[] {
     {
       id: 'enc-fight',
       label: `Fight the ${spec.name}`,
-      sub: 'Bite vs Hide. Health takes hits. No dice.',
+      sub: 'Strike vs Shell. Health takes hits. No dice.',
       tone: 'danger',
       effects: { resolveEncounter: 'fight', ticks: 1 },
     },
@@ -221,7 +221,7 @@ function pocket(state: GameState): number {
 
 /**
  * Junk a body can actually carry. Shop and quest steel stay on their shelves.
- * Fauna pay scrap or sap. People sometimes pay with the weapon or cloak too.
+ * Fauna pay scrap or sap. People sometimes pay with a knife, a scav wrap, or a cloak.
  */
 function lootFor(state: GameState, kind: EncounterKind): Partial<Record<ItemId, number>> {
   if (kind === 'jackal') return { scrap: 2 }
@@ -235,7 +235,7 @@ function lootFor(state: GameState, kind: EncounterKind): Partial<Record<ItemId, 
   }
   if (roll <= 1) return { scrap: 1, shiv: 1 }
   if (roll === 2) return { scrap: 1, rusted_dagger: 1 }
-  if (roll === 3) return { scrap: 1, dust_cloak: 1 }
+  if (roll === 3) return { scrap: 1, scav_wrap: 1 }
   if (roll === 4) return { shiv: 1, dust_cloak: 1 }
   return { glints: 1, scrap: 1 }
 }
@@ -249,7 +249,7 @@ function lootLine(add: Partial<Record<ItemId, number>>): string {
     const item = ITEMS[id]
     const name = item?.name ?? id
     const bit = n > 1 ? `${name} ×${n}` : name
-    if (item?.slot === 'weapon' || item?.slot === 'armor') gear.push(bit)
+    if (item?.slot === 'weapon' || item?.slot === 'armor' || item?.slot === 'garment') gear.push(bit)
     else pockets.push(bit)
   }
   const held = pockets.join(', ')
@@ -371,7 +371,7 @@ export function roadPressureScene(sceneId: string): boolean {
   return ENCOUNTER_SCENES.has(sceneId)
 }
 
-/** Open a road fight on the current ground. Bite vs Hide stays in the encounter card. */
+/** Open a road fight on the current ground. Strike vs Shell stays in the encounter card. */
 export function beginEncounter(state: GameState, kind?: EncounterKind, flash?: string): Effect {
   const k = kind ?? pickEncounterKind(state)
   return {
