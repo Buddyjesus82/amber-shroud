@@ -4,7 +4,7 @@ import { check } from './logic'
 import { equippedShell, equippedStrike } from './kit'
 import type { Choice, Effect, GameState, ItemId } from './types'
 
-export type EncounterKind = 'jackal' | 'cutter' | 'tick' | 'pup' | 'scavenger'
+export type EncounterKind = 'jackal' | 'cutter' | 'tick' | 'pup' | 'scavenger' | 'patrol'
 
 /** Fight hits. Sap stays thirst/travel. */
 export const HEALTH_MAX = 6
@@ -59,7 +59,17 @@ const SPECS: Spec[] = [
     hp: 2,
     line: 'A waste scavenger blocks the grit. Not fauna — a person who robs travelers who look alone. Stolen knife. Empty pockets. Optional throat.',
   },
+  {
+    kind: 'patrol',
+    name: 'Vent patrol',
+    strike: 2,
+    shell: 0,
+    hp: 1,
+    line: 'Vent patrol. One clerk, shock baton, standing on the bolt. A short scrap. Then the vent, or not.',
+  },
 ]
+
+const ROAD_KINDS: EncounterKind[] = ['jackal', 'cutter', 'tick', 'pup', 'scavenger']
 
 const TEACH =
   'Strike has to beat Shell to wound. Health takes the hits — not Sap. Fight or skip. Skip is free and pays nothing. Loot only if they drop.'
@@ -79,7 +89,7 @@ export function encounterSpec(state: GameState): Spec {
 }
 
 export function pickEncounterKind(state: GameState): EncounterKind {
-  return SPECS[seed(state) % SPECS.length].kind
+  return ROAD_KINDS[seed(state) % ROAD_KINDS.length]
 }
 
 export function enemyHealth(kind: EncounterKind): number {
@@ -176,12 +186,20 @@ export function encounterAppend(state: GameState): string {
 
 export function encounterChoices(state: GameState): Choice[] {
   if (isEncounterResult(state)) {
+    const ventWon = state.sceneId === 'camp:sabotage' && state.flags.encounterKind === 'patrol' && !!state.flags.guardDown
+    const base = dismissEncounter(state)
     return [
       {
         id: 'enc-continue',
-        label: 'On.',
+        label: ventWon ? 'Bay. The bolt is open.' : 'On.',
         tone: 'quiet',
-        effects: dismissEncounter(state),
+        effects: ventWon
+          ? {
+              ...base,
+              goto: 'camp:bay',
+              flash: 'The clerk is down. The vent screams. Shock Baton · Strike 4. Equip it. Oil-Tooth is under a hull.',
+            }
+          : base,
       },
     ]
   }
@@ -313,6 +331,20 @@ export function resolveEncounter(state: GameState, how: 'fight' | 'skip'): { fx:
   const max = state.healthMax ?? HEALTH_MAX
   const healthDelta = yourHp - c.yourHp
   const hitCard = compareHit(c)
+
+  if (theirHp <= 0 && spec.kind === 'patrol') {
+    const stagger = yourHp <= 0
+    const outcome = stagger
+      ? `The clerk drops. You drop with them. Scrap. Shock Baton. Health 1/${max}. The bolt is still yours.`
+      : 'The clerk drops. Scrap. Shock Baton. The bolt is open.'
+    return holdCard(state, spec, `${hitCard}\n\n${outcome}`, outcome, {
+      health: stagger ? 1 - c.yourHp : healthDelta,
+      add: { scrap: 1 },
+      heat: { cartel: 1 },
+      pressure: 1,
+      flag: { guardDown: true, ventLoot: true },
+    })
+  }
 
   if (theirHp <= 0) {
     const add = lootFor(state, spec.kind)

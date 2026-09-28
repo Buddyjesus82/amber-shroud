@@ -7,6 +7,8 @@ import {
   atKaelenInvoice,
   campJobOpen,
   TAKE_INSIDE_JOB,
+  campHeard,
+  ventPatrolInPlace,
   wantsCampSabotage,
   wantsDoSabotage,
 } from './campJob'
@@ -147,7 +149,31 @@ function hunterScene(state: GameState): string | null {
   }
   const id = state.hubId ? map[state.hubId] : null
   if (!id || state.sceneId === id) return null
+  // Camp loom waits for noise: the job, a theft, or the station before the job. Spine and Threshold keep the pressure clock.
+  if (id === 'camp:hunter' && !campHeard(state)) return null
   return id
+}
+
+function markCartelNotice(prev: GameState, next: GameState, fx: Effect): GameState {
+  if (next.flags.cartelNotice) return next
+  const camp =
+    prev.hubId === 'camp04' ||
+    next.hubId === 'camp04' ||
+    prev.sceneId.startsWith('camp:') ||
+    next.sceneId.startsWith('camp:')
+  if (!camp || prev.chapterId || next.chapterId) return next
+  const stole =
+    !!fx.flag?.bayPikeTook ||
+    !!fx.flag?.baySarnTook ||
+    !!fx.flag?.bayVetchTook ||
+    !!fx.flag?.skimmed ||
+    !!fx.flag?.relicTaken ||
+    !!(fx.flag?.vatDripTaken && fx.heat?.cartel) ||
+    !!fx.flag?.cartelNotice
+  const job = !!fx.flag?.jaxsonInside && !prev.flags.jaxsonInside
+  const offLimits = next.sceneId === 'camp:guard' && prev.sceneId !== 'camp:guard' && !next.flags.jaxsonInside
+  if (!stole && !job && !offLimits) return next
+  return { ...next, flags: { ...next.flags, cartelNotice: true } }
 }
 
 function hunterReturnFallback(state: GameState, dest: string | undefined): string {
@@ -209,6 +235,7 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   if (fx.resolveEncounter) {
     const result = resolveEncounter(state, fx.resolveEncounter)
     next = applyDelta(next, result.fx)
+    if (result.fx.flag?.ventLoot) next = applyDelta(next, { add: { ironwood_baton: 1 } })
     next.flash = result.flash
     if (result.fx.add?.vial_drop && (state.items.vial_empty ?? 0) > 0) {
       next = applyDelta(next, { remove: { vial_empty: 1 } })
@@ -294,6 +321,11 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     for (const k of ENCOUNTER_FLAGS) delete flags[k]
     next.flags = flags
     if (short) next.flash = short
+  }
+
+  next = markCartelNotice(state, next, fx)
+  if (next.sceneId === 'camp:sabotage' && state.sceneId !== 'camp:sabotage' && !next.flags.guardDown) {
+    next.flags = { ...next.flags, ventPatrol: ventPatrolInPlace(next) }
   }
 
   const lingered = (fx.ticks ?? 0) > 0 || (fx.pressure ?? 0) > 0 || !!dest
