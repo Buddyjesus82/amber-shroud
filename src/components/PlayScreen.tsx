@@ -171,7 +171,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     onChange(interpret(state, t))
   }
 
-  const artSrc = `${import.meta.env.BASE_URL}covers/${playCoverFile(playCoverKey(state, scene))}?v=31`
+  const artSrc = `${import.meta.env.BASE_URL}covers/${playCoverFile(playCoverKey(state, scene))}?v=32`
 
   return (
     <div className={`screen play-screen${split ? ' play-split' : ''}`}>
@@ -237,11 +237,12 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
       {saveToast ? <p className="heat-toast">{saveToast}</p> : null}
       {toast ? <p className="heat-toast">{toast}</p> : null}
 
-      <div className="scene-art" aria-hidden="true">
-        <img src={artSrc} alt="" />
-      </div>
+      <div className="play-stage">
+        <div className="scene-art" aria-hidden="true">
+          <img src={artSrc} alt="" />
+        </div>
 
-      <div className="story" ref={storyRef}>
+        <div className="story" ref={storyRef}>
         {face ? <p className="speaker">{face}</p> : null}
         {bodyOf(state)
           .split('\n\n')
@@ -259,6 +260,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
         {state.pressure >= 8 && !state.flags.chapter1Done && !state.chapterId && !state.flags.encounterHere ? (
           <p className="pressure-note">Pressure is mounting. Hunters use the hours you spend lingering.</p>
         ) : null}
+        </div>
       </div>
 
       <div className="thumb">

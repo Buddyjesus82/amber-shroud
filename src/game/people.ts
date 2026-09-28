@@ -39,7 +39,6 @@ Prison-break technical inside man. Reckless. Charismatic. Anti-authority. Humor 
       'camp:jaxson',
       'camp:jaxson-cache',
       'camp:jaxson-drop',
-      'camp:bay',
       'crisis:camp',
       'ch1:p-oil',
     ],
@@ -53,7 +52,6 @@ Oil-Tooth is still in the next bunk, brass jaw working, already talking the job:
       'camp:jaxson': `"Valerius is the first major victory you have to overcome," Oil-Tooth says, smirking around the brass. "I have watched the guard station until I could draw it in grease.
 
 Great Bleed hits, you sabotage that station. I hotwire an Ironclad Skiff-Strider. We leave the pens. You want rumors — Kallik, the Hunger, the blonde — that is Kaelen the Sifter at the Wire. They sell leads. I sell a ride."`,
-      'camp:bay': `Oil-Tooth is under a hull if the job is live — welding leather, smirk the brass jaw cannot hide. The Striders stand like bad architecture. Corporate tags he has been waiting to steal.`,
       'ch1:p-oil': `The stolen Strider coughs like a guilty throat. Oil-Tooth is under the hull anyway — brass, leather, tags he still has not cut off. He hotwired. He will not tour. Red Maw is south of his cowardice.`,
     },
   },
@@ -71,7 +69,6 @@ They sell Drops of Oasis Sap for scrap, intel for Glints, and rumors that open t
       'camp:kaelen-rumors',
       'spine:kaelen',
       'spine:kaelen-rumors',
-      'spine:well',
       'thresh:sift',
       'thresh:kaelen',
       'thresh:kaelen-rumors',
@@ -142,7 +139,6 @@ Cruel only as a filing. He wants shade and a cooler ledger. Scrip is a lullaby. 
 
 He sells shade by the minute. Talk is not free. Drops are a fairy tale he still keeps in stock for people who pay. He is not Kaelen. Kaelen sells inventory. Silas sells the minute you are not in the sun.`,
     scenes: [
-      'spine:ridge',
       'spine:shade',
       'spine:silas',
       'spine:silas-drop',
@@ -151,9 +147,6 @@ He sells shade by the minute. Talk is not free. Drops are a fairy tale he still 
       'ch1:o-silas',
     ],
     later: {
-      'spine:ridge': `The Bleached Spine is a ridge of bone-pale rock. Nothing casts a kind shadow. Your empty vial ticks against your ribs like a second, drier heart.
-
-Down-slope: Silas's tent, still selling shade by the minute. Farther, the dry well. Hound tracks stitch the eastern wash.`,
       'spine:shade': `Silas sits the expensive shade. One eye milk, one eye accounting. "Noon-Empty," he says. "Shade is not free. Talk is not free. Drops still cost."`,
       'spine:silas': `He pours nothing into a cup and drinks it with ceremony.
 
