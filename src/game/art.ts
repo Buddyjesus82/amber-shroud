@@ -1,3 +1,4 @@
+import { bayLookout } from './campJob'
 import { isCampHunt, isSpineHunt, isSybellaOverlay } from './hunter'
 import { PEOPLE, type PersonId } from './people'
 import type { GameState, Scene } from './types'
@@ -80,6 +81,8 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
 
   const who = npcCover(id)
   if (who) return who
+
+  if (id === 'camp:bay') return bayLookout(state) ? 'oiltooth' : 'camp04'
 
   if (scene.art === 'hunger' || scene.chapterId === 'cache-run' || state.chapterId === 'cache-run' || state.hubId === 'redmaw' || id.startsWith('maw:') || id.startsWith('ch1:') || id.startsWith('ch2:')) {
     return 'hunger'

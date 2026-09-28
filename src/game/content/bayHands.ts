@@ -31,7 +31,7 @@ export const bayHandIntents: IntentRule[] = [
     tags: phrases(MOUTH, oil).concat(oil),
     show: underHull,
     reply:
-      'He is under one hull — the job, not the bay. Welding leather. Brass ticking. Pike, Sarn, and Vetch still have the other cradles. Cover him if you mean to hotwire.',
+      '"Cover me," Oil-Tooth says, brass ticking under the hull. "I hotwire. You watch the bay. This cradle is the job."',
     effects: { ticks: 1 },
   },
   {
@@ -58,6 +58,19 @@ export const bayHandIntents: IntentRule[] = [
     reply:
       'Vetch lifts the mask a finger. The glove\'s tag is not her name. "South skid. Talk is sparks. I don\'t hotwire and I don\'t sell headings."',
     effects: { ticks: 1 },
+  },
+  {
+    tags: MOUTH,
+    show: underHull,
+    reply:
+      '"Cover me," Oil-Tooth says, without looking up from the joint. "I hotwire. You are the lookout. Pike can scrape."',
+    effects: { ticks: 1 },
+  },
+  {
+    tags: phrases(TAKE, oil),
+    show: underHull,
+    reply: 'His hand closes on your wrist without leaving the joint. "I like you. Do not make me unlike you. Cover the bay."',
+    effects: { heat: { strays: 1 }, pressure: 1, ticks: 1 },
   },
   {
     tags: MOUTH,

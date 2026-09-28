@@ -1016,8 +1016,14 @@ A word gets a short answer. A hand in a pocket gets a bolt, or a shout.`,
       },
       {
         if: { all: [{ flag: 'jaxsonInside' }, { flag: 'guardDown' }, { flagUnset: 'striderHot' }] },
-        mode: 'append',
-        body: `One hull is the job. Oil-Tooth is under it now — welding leather, brass jaw, the smirk. Pike, Sarn, and Vetch keep the other cradles. Cover him if you mean to hotwire.`,
+        mode: 'replace',
+        body: `The guard station is coughing steam behind you. Patrol is late. This cradle is the job.
+
+Jaxson "Oil-Tooth" Vance is under the hull — burly, grease-stained, permanent smirk, cybernetic brass jaw in the weld-light. Scorched welding leathers. Corporate tags he has not cut off. The oversized wrench is in the joint.
+
+You are the lookout. He hotwires. "Cover me," he says. "Valerius eats dust if we are fast."
+
+Pike, Sarn, and Vetch keep their heads down on the other cradles. They are not this job.`,
       },
     ],
     choices: [

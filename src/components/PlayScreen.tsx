@@ -21,6 +21,7 @@ import { effectPills, listedKit } from '../game/kit'
 import { isMawExit } from '../game/map'
 import { encounterSpeaker, isEncounterResult } from '../game/encounter'
 import { playCoverFile, playCoverKey } from '../game/art'
+import { bayLookout } from '../game/campJob'
 import { isPressureOverlay, pressureFace } from '../game/hunter'
 import { isShopOpen } from '../game/trade'
 import type { Choice, Faction, GameState } from '../game/types'
@@ -71,7 +72,10 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
   const skimOn = canSkim(state)
   const overlay = !!state.flags.encounterHere || isPressureOverlay(state)
   const face =
-    (state.flags.encounterHere ? encounterSpeaker(state) : null) ?? pressureFace(state) ?? scene.speaker
+    (state.flags.encounterHere ? encounterSpeaker(state) : null) ??
+    pressureFace(state) ??
+    (scene.id === 'camp:bay' && bayLookout(state) ? 'Jaxson "Oil-Tooth" Vance' : null) ??
+    scene.speaker
   const shopOpen = isShopOpen(state)
   const hookRow = !!(!overlay && !shopOpen && hub && hookOn && hook && showNav)
   const closeRow = !!(!overlay && !shopOpen && closing && showNav)
