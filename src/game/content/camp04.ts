@@ -652,7 +652,7 @@ Great Bleed hits, you sabotage that station. I hotwire an Ironclad Skiff-Strider
       {
         tags: ['steal', 'pick', 'pocket', 'rob'],
         reply: 'His hand closes on your wrist without looking. "I like you. Do not make me unlike you."',
-        effects: { heat: { strays: 1 }, pressure: 1 },
+        effects: { heat: { strays: 1 }, pressure: 1, flag: { cartelNotice: true } },
       },
     ],
   },
@@ -952,21 +952,30 @@ The Great Bleed is a clock. Sabotage here, Oil-Tooth hotwires there. Valerius wi
     hubId: 'camp04',
     kind: 'story',
     title: 'Great Bleed',
-    body: `The Great Bleed hits like a factory finding its scream. Vats weep. Guards look at amber, not at you.
+    body: `The Great Bleed hits. Vats weep. The west steam-vent is empty for a breath — patrol is on the wire, not on this bolt.
 
-Oil-Tooth named the west steam-vent. The oversized wrench knows the language.`,
+Quiet still risks a shout. Oil-Tooth named this throat. The wrench knows the bolt.`,
     variants: [
+      {
+        if: { flag: 'ventPatrol' },
+        mode: 'replace',
+        body: `The Great Bleed hits. Vats weep. This bolt is not empty.
+
+A vent patrol is in place: one clerk, shock baton, eyes on the joint. Unwatched is a lie. Scrap them, or leave the bolt alone.`,
+      },
       {
         if: { flag: 'bleedIntel' },
         mode: 'append',
-        body: `Kaelen's clock is exact. You work in a gap Valerius has not budgeted.`,
+        body: `Kaelen's clock is exact. If the bolt is empty, you work in a gap Valerius has not budgeted.`,
       },
     ],
     choices: [
       {
         id: 'do',
-        label: 'Crack the vent. Blind the station.',
+        label: 'Crack the vent while they are gone',
+        sub: 'Quiet work. The steam still sings your name.',
         tone: 'danger',
+        show: { all: [{ flagUnset: 'ventPatrol' }, { flagUnset: 'bleedIntel' }] },
         effects: {
           flag: { guardDown: true },
           add: { scrap: 1, ironwood_baton: 1 },
@@ -975,20 +984,39 @@ Oil-Tooth named the west steam-vent. The oversized wrench knows the language.`,
           ticks: 1,
           goto: 'camp:bay',
           flash:
-            'Steam. Alarms that belong to the Bleed, not to you. Scrap in the palm. Shock Baton · Strike 4 from a clerk who will not need it. Equip it in Gear. Oil-Tooth will be under a hull.',
+            'The bolt turns. Nobody is on it. The scream still puts you in the steam. Scrap. Shock Baton · Strike 4. Equip it. Oil-Tooth is under a hull.',
         },
       },
       {
         id: 'quiet',
         label: 'Crack it on Kaelen\'s clock',
-        show: { flag: 'bleedIntel' },
+        sub: 'The gap you paid for. Less hymn. Still a risk if you linger.',
+        show: { all: [{ flag: 'bleedIntel' }, { flagUnset: 'ventPatrol' }] },
         effects: {
           flag: { guardDown: true },
           add: { scrap: 1, ironwood_baton: 1 },
+          pressure: 1,
           ticks: 1,
           goto: 'camp:bay',
           flash:
-            'No extra hymn for Valerius. The Sifter sold timing. Shock Baton · Strike 4 from a clerk who was looking at vats. Equip it. Oil-Tooth still has to hotwire.',
+            'The Sifter sold a gap. You take it. Shock Baton · Strike 4 from a clerk who was counting vats. Equip it. Oil-Tooth still has to hotwire.',
+        },
+      },
+      {
+        id: 'scrap',
+        label: 'Scrap the patrol off the bolt',
+        sub: 'Short fight. Strike vs Shell. Then the vent.',
+        tone: 'danger',
+        show: { flag: 'ventPatrol' },
+        effects: {
+          unsetFlag: ['encounterDone', 'encounterClash', 'encounterFlash', 'hunterHere', 'hunterFrom'],
+          flag: {
+            encounterHere: true,
+            encounterKind: 'patrol',
+            encounterHp: 1,
+          },
+          ticks: 1,
+          flash: 'The clerk turns. Baton up. This is a scrap, not a sermon.',
         },
       },
     ],

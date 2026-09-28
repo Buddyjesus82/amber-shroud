@@ -64,6 +64,21 @@ function dismissFight(s: GameState): GameState {
   return s
 }
 
+function crackVent(s: GameState): GameState {
+  if (ids(s).includes('do')) return pick(s, 'do')
+  if (ids(s).includes('quiet')) return pick(s, 'quiet')
+  assert(!!s.flags.ventPatrol && ids(s).includes('scrap'), `watched vent is a patrol scrap (got ${ids(s).join(',')})`)
+  s = pick(s, 'scrap')
+  let n = 0
+  while (s.flags.encounterHere && !s.flags.guardDown && n < 4) {
+    s = pick(s, 'enc-fight')
+    n++
+  }
+  assert(s.flags.guardDown, 'winning the vent scrap blinds the station')
+  if (s.flags.encounterHere) s = pick(s, 'enc-continue')
+  return s
+}
+
 function pick(s: GameState, id: string) {
   if (s.flags.encounterHere && id !== 'enc-fight' && id !== 'enc-skip' && id !== 'enc-cloak' && id !== 'enc-continue') {
     s = dismissFight(s)
@@ -353,7 +368,7 @@ assert(s.flags.hungerKnown, 'paid Glint intel')
 s = applyEffect(s, { sap: 6, pressure: -20 })
 s = walkTo(s, 'camp:guard')
 s = pick(s, 'sabotage')
-s = pick(s, 'do')
+s = crackVent(s)
 assert(s.flags.guardDown, 'sabotage guard station')
 s = pick(s, 'hotwire')
 assert(s.flags.striderHot, 'Oil-Tooth hotwires the Strider')
@@ -555,7 +570,7 @@ s = pick(s, 'inside')
 s = pick(s, 'station')
 assert(s.sceneId === 'camp:guard', 'button-only prisoner reaches the station')
 s = pick(s, 'sabotage')
-s = pick(s, 'do')
+s = crackVent(s)
 assert(s.items.ironwood_baton === 1, 'loot shock-baton from the downed station')
 assert(s.sceneId === 'camp:bay', 'sabotage dumps you in the bay')
 assert(playCoverKey(s, sceneOf(s)) === 'oiltooth', 'lookout bay uses Oil-Tooth art')
@@ -627,6 +642,7 @@ assert(!ids(s).includes('hotwire'), 'hotwire stays off the bay until the station
   const stole = interpret(s, 'steal from pike')
   assert((stole.items.scrap ?? 0) === before + 1 && stole.flags.bayPikeTook, 'steal from Pike pays a scrap')
   assert(stole.heat.cartel > s.heat.cartel, 'steal from Pike costs Cartel Heat')
+  assert(stole.flags.cartelNotice, 'stealing on the bay is cartel notice')
   const again = interpret(stole, 'rob pike')
   assert((again.items.scrap ?? 0) === (stole.items.scrap ?? 0), 'a second steal from Pike pays nothing')
   assert(again.pressure > stole.pressure, 'a second steal from Pike is a risk')
@@ -642,7 +658,7 @@ s = newGame('prisoner')
 s = pick(s, 'pens')
 s = pick(s, 'jaxson')
 s = pick(s, 'inside')
-assert(s.flags.jaxsonInside && !s.flags.guardDown, 'the job is accepted before the station falls')
+assert(s.flags.jaxsonInside && s.flags.cartelNotice && !s.flags.guardDown, 'the job is accepted before the station falls')
 s = applyEffect(s, { sap: 6 })
 s = walkTo(s, 'camp:bay')
 assert(playCoverKey(s, sceneOf(s)) === 'camp04', 'accepted job is not yet the Skiff Bay lookout')
@@ -1847,6 +1863,9 @@ s = pick(s, 'pens')
 s = applyEffect(s, { sap: 6, goto: 'camp:yard', enterHub: 'camp04' })
 s = { ...s, pressure: 9, ticks: 0 }
 s = applyEffect(s, { ticks: 4 })
+assert(!s.flags.hunterHere && !s.flags.cartelNotice, 'Camp roam without noise does not call the handler')
+s = applyEffect(s, { flag: { cartelNotice: true } })
+s = applyEffect(s, { ticks: 4 })
 assert(s.sceneId === 'camp:yard', `Camp knock stays in the Yard (got ${s.sceneId})`)
 assert(s.sceneId !== 'camp:hunter', 'Camp knock does not open the Valerius sweep scene')
 assert(s.flags.hunterHere, 'Camp knock is an overlay')
@@ -1861,6 +1880,42 @@ assert(ids(s).includes('hunter-fight') && ids(s).includes('hunter-hold') && ids(
   assert(held.sceneId === 'camp:yard', 'hiding from the handler stays in the Yard')
   assert(!held.flags.hunterHere, 'hide clears the knock')
   assert(held.sap < sapBefore || held.heat.cartel > heatBefore, 'hide from the handler costs Sap or Heat')
+}
+
+{
+  let off = newGame('prisoner')
+  off = pick(off, 'pens')
+  off = applyEffect(off, { sap: 6 })
+  off = walkTo(off, 'camp:guard')
+  assert(off.sceneId === 'camp:guard' && !off.flags.jaxsonInside, 'the station is reachable before the job')
+  assert(off.flags.cartelNotice, 'walking the station before the job is cartel notice')
+}
+
+{
+  let watched = newGame('prisoner')
+  watched = pick(watched, 'pens')
+  watched = pick(watched, 'jaxson')
+  watched = pick(watched, 'inside')
+  watched = { ...watched, ticks: 1, pressure: 0, sap: 6 }
+  watched = applyEffect(watched, { goto: 'camp:sabotage' })
+  assert(watched.flags.ventPatrol, 'vent roll can put the patrol on the bolt')
+  assert(ids(watched).includes('scrap') && !ids(watched).includes('do'), 'a watched bolt is a scrap, not a free crack')
+  assert(/in place/i.test(bodyOf(watched)), 'watched bolt says the patrol is there')
+  watched = crackVent(watched)
+  assert(watched.flags.guardDown && watched.sceneId === 'camp:bay', 'scraping the patrol opens the bay')
+  assert(playCoverKey(watched, sceneOf(watched)) === 'oiltooth', 'lookout still uses Oil-Tooth after the scrap')
+
+  let clear = newGame('prisoner')
+  clear = pick(clear, 'pens')
+  clear = pick(clear, 'jaxson')
+  clear = pick(clear, 'inside')
+  clear = { ...clear, ticks: 2, pressure: 0, sap: 6 }
+  clear = applyEffect(clear, { goto: 'camp:sabotage' })
+  assert(!clear.flags.ventPatrol, 'vent roll can leave the bolt empty')
+  assert(ids(clear).includes('do') && !ids(clear).includes('scrap'), 'an empty bolt is a quiet crack with risk')
+  const heat = clear.heat.cartel
+  clear = crackVent(clear)
+  assert(clear.flags.guardDown && clear.heat.cartel > heat, 'quiet crack still costs Cartel Heat')
 }
 
 s = newGame('outcast')
@@ -1913,7 +1968,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v33'"), 'SW bumped so the lighter story scrim and Skiff Bay reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v34'"), 'SW bumped so the noise gate and vent patrol reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -1935,7 +1990,7 @@ assert(/top:\s*min\(28\.125cqi,\s*46cqb\)/.test(css), 'story starts at the cover
 assert(css.includes('rgba(12, 7, 4, 0.58)'), 'story scrim stays translucent so cover art shows through')
 assert(!css.includes('rgba(12, 7, 4, 0.88)'), 'story scrim is lighter than the v32 slab')
 const playSrc = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
-assert(playSrc.includes('?v=33'), 'scene cover URLs are cache-busted with the service worker')
+assert(playSrc.includes('?v=34'), 'scene cover URLs are cache-busted with the service worker')
 assert(!css.includes('object-position: center 68%'), 'scene art no longer crops toward the ground')
 assert(!css.includes('height: 56px'), 'short phones no longer squash covers into a head-cropping strip')
 assert(css.includes('place-items: center'), 'game screen is centered on the backdrop')
