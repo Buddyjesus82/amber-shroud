@@ -48,3 +48,8 @@ export function atKaelenInvoice(state: GameState): boolean {
 export function atGuardStation(state: GameState): boolean {
   return state.sceneId === 'camp:guard' || state.sceneId === 'camp:sabotage'
 }
+
+/** Accepted the inside job, station is down, Strider not hot yet. Skiff Bay is the lookout. */
+export function bayLookout(state: GameState): boolean {
+  return !!(state.flags.jaxsonInside && state.flags.guardDown && !state.flags.striderHot)
+}

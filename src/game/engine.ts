@@ -304,8 +304,11 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     next.flags = { ...next.flags, hunterFrom: from, hunterAt: next.ticks, hunterHere: true }
   }
 
+  // Skiff Bay Do lines (talk, steal) are the beat. A road jump must not eat them.
+  const keepBayLine = state.sceneId === 'camp:bay' && typeof fx.flash === 'string'
   if (
     lingered &&
+    !keepBayLine &&
     next.sceneId === state.sceneId &&
     !fx.resolveEncounter &&
     !next.flags.hunterHere &&

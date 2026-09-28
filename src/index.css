@@ -454,12 +454,12 @@ h2 {
   background: linear-gradient(
     180deg,
     rgba(12, 7, 4, 0) 0,
-    rgba(12, 7, 4, 0.42) 0.55rem,
-    rgba(12, 7, 4, 0.72) 1.35rem,
-    rgba(12, 7, 4, 0.84) 2.6rem,
-    rgba(12, 7, 4, 0.88) 100%
+    rgba(12, 7, 4, 0.16) 0.7rem,
+    rgba(12, 7, 4, 0.34) 1.6rem,
+    rgba(12, 7, 4, 0.48) 3rem,
+    rgba(12, 7, 4, 0.58) 100%
   );
-  text-shadow: 0 1px 2px #000, 0 0 10px rgba(0, 0, 0, 0.72);
+  text-shadow: 0 1px 2px #000, 0 0 12px rgba(0, 0, 0, 0.85);
 }
 
 @supports (width: 1cqi) {

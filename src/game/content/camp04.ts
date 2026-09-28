@@ -1,5 +1,6 @@
 import { TAKE_INSIDE_JOB } from '../campJob'
 import type { Scene } from '../types'
+import { bayHandIntents } from './bayHands'
 
 export const campScenes: Scene[] = [
   {
@@ -997,9 +998,11 @@ Oil-Tooth named the west steam-vent. The oversized wrench knows the language.`,
     hubId: 'camp04',
     kind: 'place',
     title: 'Skiff Bay',
-    body: `Ironclad Skiff-Striders stand like bad architecture — resin-sheen, too many joints, corporate inventory tags slapped on hulls Oil-Tooth has repaired until he could steal one in his sleep.
+    body: `Ironclad Skiff-Striders stand in separate bays — resin-sheen, too many joints, corporate tags on hulls that have outlived their mechanics.
 
-If he is your inside man, he is already under a hull with a smirk the brass jaw cannot hide.`,
+These cradles are not one man. Pike scrapes the north hull. Sarn counts bolts on the east cradle like the numbers might pardon him. Vetch welds the south skid in a glove that still wears someone else's tag. Prisoners. Not the inside man. Not a rumor counter.
+
+A word gets a short answer. A hand in a pocket gets a bolt, or a shout.`,
     variants: [
       {
         if: { flag: 'striderHot' },
@@ -1011,15 +1014,24 @@ If he is your inside man, he is already under a hull with a smirk the brass jaw 
         mode: 'append',
         body: `The station behind you is coughing steam. Patrol is late. That was the sabotage.`,
       },
+      {
+        if: { all: [{ flag: 'jaxsonInside' }, { flag: 'guardDown' }, { flagUnset: 'striderHot' }] },
+        mode: 'replace',
+        body: `The guard station is coughing steam behind you. Patrol is late. This cradle is the job.
+
+Jaxson "Oil-Tooth" Vance is under the hull — burly, grease-stained, permanent smirk, cybernetic brass jaw in the weld-light. Scorched welding leathers. Corporate tags he has not cut off. The oversized wrench is in the joint.
+
+You are the lookout. He hotwires. "Cover me," he says. "Valerius eats dust if we are fast."
+
+Pike, Sarn, and Vetch keep their heads down on the other cradles. They are not this job.`,
+      },
     ],
     choices: [
       {
         id: 'hotwire',
         label: 'Cover Oil-Tooth while he hotwires',
         sub: 'He is the inside man. You are the extra pair of hands.',
-        show: { all: [{ flag: 'jaxsonInside' }, { flagUnset: 'striderHot' }] },
-        enable: { flag: 'guardDown' },
-        locked: 'Sabotage the guard station first. That was the job.',
+        show: { all: [{ flag: 'jaxsonInside' }, { flag: 'guardDown' }, { flagUnset: 'striderHot' }] },
         effects: {
           flag: { striderHot: true },
           heat: { cartel: 1 },
@@ -1056,6 +1068,7 @@ If he is your inside man, he is already under a hull with a smirk the brass jaw 
         },
       },
     ],
+    intents: bayHandIntents,
   },
   {
     id: 'camp:hunter',

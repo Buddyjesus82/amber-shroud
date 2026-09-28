@@ -434,7 +434,7 @@ export function talkIntentsFor(sceneId: string): IntentRule[] {
   if (sceneId === 'ch1:v-zafir') return zafirCup
   const here = personAtScene(sceneId)
   if (here) return BY_PERSON[here.id]
-  if (match(sceneId, ['camp:jaxson', 'camp:lean', 'camp:bay', 'camp:cages'])) return oiltooth
+  if (match(sceneId, ['camp:jaxson', 'camp:lean', 'camp:cages'])) return oiltooth
   if (match(sceneId, ['camp:kaelen', 'spine:kaelen', 'camp:wire', 'spine:well', 'thresh:kaelen', 'thresh:sift'])) {
     return kaelen
   }
