@@ -175,7 +175,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     onChange(interpret(state, t))
   }
 
-  const artSrc = `${import.meta.env.BASE_URL}covers/${playCoverFile(playCoverKey(state, scene))}?v=32`
+  const artSrc = `${import.meta.env.BASE_URL}covers/${playCoverFile(playCoverKey(state, scene))}?v=33`
 
   return (
     <div className={`screen play-screen${split ? ' play-split' : ''}`}>
@@ -241,29 +241,29 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
       {saveToast ? <p className="heat-toast">{saveToast}</p> : null}
       {toast ? <p className="heat-toast">{toast}</p> : null}
 
-      <div className="play-stage">
+      <div className="scene-stage">
         <div className="scene-art" aria-hidden="true">
           <img src={artSrc} alt="" />
         </div>
 
         <div className="story" ref={storyRef}>
-        {face ? <p className="speaker">{face}</p> : null}
-        {bodyOf(state)
-          .split('\n\n')
-          .map((p, i) => (
-            <p key={i}>{p}</p>
-          ))}
-        {state.flash && !state.flags.encounterHere ? <p className="flash">{state.flash}</p> : null}
-        {sapThin && scene.kind !== 'crisis' && !state.flags.encounterHere ? (
-          <p className="pressure-note">
-            {state.sap <= 0
-              ? 'Sap is empty. The next act that costs sap will be a crisis, not a death.'
-              : 'Sap is thin. Walks and work will empty you.'}
-          </p>
-        ) : null}
-        {state.pressure >= 8 && !state.flags.chapter1Done && !state.chapterId && !state.flags.encounterHere ? (
-          <p className="pressure-note">Pressure is mounting. Hunters use the hours you spend lingering.</p>
-        ) : null}
+          {face ? <p className="speaker">{face}</p> : null}
+          {bodyOf(state)
+            .split('\n\n')
+            .map((p, i) => (
+              <p key={i}>{p}</p>
+            ))}
+          {state.flash && !state.flags.encounterHere ? <p className="flash">{state.flash}</p> : null}
+          {sapThin && scene.kind !== 'crisis' && !state.flags.encounterHere ? (
+            <p className="pressure-note">
+              {state.sap <= 0
+                ? 'Sap is empty. The next act that costs sap will be a crisis, not a death.'
+                : 'Sap is thin. Walks and work will empty you.'}
+            </p>
+          ) : null}
+          {state.pressure >= 8 && !state.flags.chapter1Done && !state.chapterId && !state.flags.encounterHere ? (
+            <p className="pressure-note">Pressure is mounting. Hunters use the hours you spend lingering.</p>
+          ) : null}
         </div>
       </div>
 

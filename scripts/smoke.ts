@@ -1913,7 +1913,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v32'"), 'SW bumped so the story scrim and Skiff Bay reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v33'"), 'SW bumped so the lighter story scrim and Skiff Bay reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -1928,15 +1928,21 @@ assert(/\.choice \{[\s\S]*?flex:\s*0\s+0\s+auto/.test(css), 'choice rows do not 
 assert(css.includes('.choice.shop-row'), 'shop Buy/Sell rows keep their own height')
 assert(css.includes('max-height: 48%'), 'play thumb docks in the viewport instead of pushing actions below the fold')
 assert(/html,\s*body,\s*#root \{[\s\S]*?overflow:\s*hidden/.test(css), 'page chrome does not scroll under the play dock')
-assert(css.includes('object-position: center 68%'), 'scene art crops onto the landmark, not the shared sky')
+assert(css.includes('object-fit: contain'), 'scene art shows the whole cover instead of cropping heads')
+assert(css.includes('object-position: center top'), 'scene art keeps faces at the top of the frame')
+assert(css.includes('scene-stage'), 'story shares a stage with the cover')
+assert(/top:\s*min\(28\.125cqi,\s*46cqb\)/.test(css), 'story starts at the cover midline so the upper half stays clear')
+assert(css.includes('rgba(12, 7, 4, 0.58)'), 'story scrim stays translucent so cover art shows through')
+assert(!css.includes('rgba(12, 7, 4, 0.88)'), 'story scrim is lighter than the v32 slab')
+const playSrc = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
+assert(playSrc.includes('?v=33'), 'scene cover URLs are cache-busted with the service worker')
+assert(!css.includes('object-position: center 68%'), 'scene art no longer crops toward the ground')
+assert(!css.includes('height: 56px'), 'short phones no longer squash covers into a head-cropping strip')
 assert(css.includes('place-items: center'), 'game screen is centered on the backdrop')
 assert(/html \{\s*font-size:\s*18px/.test(css), 'root type is 18px so rem UI reads on a filled phone')
-assert(/\.play-screen \.scene-art \{[\s\S]*?flex:\s*1 1 auto/.test(css), 'scene art grows into leftover play space')
-assert(/\.play-screen \.story \{[\s\S]*?flex:\s*0 1 auto/.test(css), 'story hugs prose so actions sit under the last line')
-assert(
-  /\.play-screen \.story \{[\s\S]*?rgba\(12,\s*7,\s*4,\s*0\./.test(css),
-  'story scrim is translucent so cover art shows through',
-)
+assert(/\.play-screen \.scene-art \{[\s\S]*?flex:\s*0\s+0\s+auto/.test(css), 'scene art keeps its frame instead of shrinking under the story')
+assert(/\.play-screen \.scene-art \{[\s\S]*?aspect-ratio:\s*16\s*\/\s*9/.test(css), 'scene art keeps the full 16:9 cover')
+assert(/\.play-screen \.story \{[\s\S]*?position:\s*absolute/.test(css), 'story overlays the lower half of the cover')
 assert(!/\.play-screen \.story \{[^}]*background:\s*#0c0704/.test(css), 'story panel is not a solid black slab')
 assert(css.includes('font-size: 1.18rem'), 'story prose is larger than the old 1.05rem')
 assert(css.includes('min-aspect-ratio: 3/4'), 'wide viewports contain-scale the phone screen to the nearer edges')
