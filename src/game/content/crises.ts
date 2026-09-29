@@ -104,7 +104,7 @@ Stilts plant on either side of your head. Ossa is alive — of course she is —
     title: 'Approach Dry',
     body: `You go down on the Rim with nothing left in the glass.
 
-The desert does not send Sybella. She hunts Seekers' cups. Cartel property gets a clerk. Stray empty gets a scavenger. Nobody here is her battery.`,
+The desert does not send Sybella. She hunts what the faith wants kept. Cartel property gets a clerk. A Stray empty gets a scavenger.`,
     variants: [
       {
         if: { door: 'prisoner' },
@@ -153,7 +153,7 @@ Sybella's shadow is cooler than the rock. She kneels — ceremonial, not tender 
           add: { kohl_smear: 1 },
           heat: { seekers: 1 },
           goto: 'maw:rim',
-          flash: 'You live on her terms for an hour. The kohl receipt is darker. Seekers-only.',
+          flash: 'You live because she allows it. The kohl on your brow is darker. Seekers-only.',
         },
       },
     ],

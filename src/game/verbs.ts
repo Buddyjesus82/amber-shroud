@@ -119,6 +119,12 @@ function wantsHide(hay: string): boolean {
 }
 
 function combatHit(state: GameState, scene: Scene, hay: string): DoHit | null {
+  if (wantsFight(hay) && /\b(hound[- ]handler|handler)\b/.test(hay)) {
+    return {
+      effects: beginEncounter(state, 'handler', 'You go for the man with the leash. The hound is not the fight.'),
+      verb: 'fight',
+    }
+  }
   if (wantsFight(hay)) {
     if (mouthHere(scene)) return null
     if (roadPressureScene(scene.id) && scene.kind !== 'talk' && scene.kind !== 'crisis' && scene.kind !== 'ending') {
@@ -201,7 +207,7 @@ function bribeHit(state: GameState, scene: Scene): DoHit {
           remove: { glints: 1 },
           heat: { seekers: -1 },
           ticks: 1,
-          flash: 'She takes the Glint like a receipt. An hour. Not mercy.',
+          flash: 'She takes the Glint as an offering to the sand. A breath. Not mercy.',
         },
         verb: 'bribe',
       }
@@ -213,7 +219,7 @@ function bribeHit(state: GameState, scene: Scene): DoHit {
           heat: { seekers: 1 },
           pressure: 1,
           ticks: 1,
-          flash: 'She does not sell hours to you. She keeps the Glint as evidence.',
+          flash: 'The rite is not yours to buy. She keeps the Glint in the sand.',
         },
         verb: 'bribe',
       }
@@ -223,14 +229,14 @@ function bribeHit(state: GameState, scene: Scene): DoHit {
         heat: { seekers: 1 },
         pressure: 1,
         ticks: 1,
-        flash: 'She does not sell hours to you. The offer is noted.',
+        flash: 'She does not take the offering. The attempt is noted.',
       },
       verb: 'bribe',
     }
   }
   if (who?.id === 'thalia' || who?.id === 'brin') {
     return {
-      effects: { heat: { seekers: 1 }, ticks: 1, flash: `${mouthName(scene)} does not sell. The hymn hears the attempt.` },
+      effects: { heat: { seekers: 1 }, ticks: 1, flash: `${mouthName(scene)} does not deal. The hymn hears the attempt.` },
       verb: 'bribe',
     }
   }
@@ -332,6 +338,18 @@ function takeHit(scene: Scene, hay: string): DoHit | null {
  * Verbs that are not the story buttons. Shared by every door.
  * Returns null when talk, shop, or a visible choice should own the line.
  */
+export function helpLine(state: GameState, scene: Scene, labels: string[]): string {
+  const verbs = ['look']
+  if (mouthHere(scene) || scene.speaker) verbs.push('talk', 'ask')
+  if (state.flags.hunterHere || state.flags.encounterHere || roadPressureScene(scene.id)) verbs.push('fight', 'hide', 'run')
+  if (mouthHere(scene) || scene.speaker || vendorFor(scene.id)) verbs.push('bribe', 'give')
+  if (labels.length) {
+    const named = labels.slice(0, 5).map((l) => l.replace(/\s+—.*$/, '').trim())
+    verbs.push(...named)
+  }
+  return `Here: ${verbs.join(' · ')}.`
+}
+
 export function offButton(state: GameState, text: string, scene: Scene, labels: string[]): DoHit | null {
   const hay = text
     .toLowerCase()

@@ -22,6 +22,7 @@ export type CoverKey =
   | 'oram'
   | 'brin'
   | 'rell'
+  | 'handler'
 
 const FILES: Record<CoverKey, string> = {
   world: 'world.png',
@@ -42,6 +43,7 @@ const FILES: Record<CoverKey, string> = {
   oram: 'oram.jpg',
   brin: 'brin.jpg',
   rell: 'rell.jpg',
+  handler: 'hound.jpg',
 }
 
 const PERSON_COVER: Record<PersonId, CoverKey> = {
@@ -57,6 +59,7 @@ const PERSON_COVER: Record<PersonId, CoverKey> = {
   zafir: 'zafir',
   ossa: 'ossa',
   sybella: 'sybella',
+  handler: 'handler',
 }
 
 function npcCover(sceneId: string): CoverKey | null {
@@ -73,10 +76,19 @@ export function playCoverFile(key: CoverKey): string {
 /** Interrupt faces first, then the door's land, then Hunger / world. */
 export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' | 'chapterId' | 'hubId'>): CoverKey {
   const id = scene.id
+  if (state.flags.encounterHere) {
+    const kind = state.flags.encounterKind
+    if (kind === 'handler' || kind === 'pup') return 'hound'
+    if (kind === 'overseer') return 'valerius'
+    if (kind === 'patrol') return 'rell'
+    if (kind === 'scavenger' || kind === 'cutter') return 'hunger'
+  }
   if (isSybellaOverlay(state) || id.startsWith('maw:sybella')) return 'sybella'
   if (isCampHunt(state)) return 'hound'
   if (id === 'camp:hunter' || id === 'camp:valerius' || id === 'camp:tower') return 'valerius'
-  if (isSpineHunt(state) || id === 'spine:hunter' || id === 'spine:hound' || id === 'spine:valerius') return 'hound'
+  if (isSpineHunt(state)) return state.heat.cartel >= 7 ? 'valerius' : 'hound'
+  if (id === 'spine:valerius') return 'valerius'
+  if (id === 'spine:hunter' || id === 'spine:hound') return 'hound'
   if (id === 'thresh:thalia' || id.startsWith('thresh:thalia')) return 'thalia'
 
   const who = npcCover(id)

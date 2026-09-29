@@ -23,7 +23,7 @@ export const ITEMS: Record<ItemId, ItemDef> = {
     id: 'glints',
     name: 'Glints',
     kind: 'currency',
-    desc: 'Chips of spent amber. Dune money.',
+    desc: 'Chips of spent amber. Offerings, and coin, depending on who is watching.',
   },
   scrip: {
     id: 'scrip',
@@ -37,7 +37,7 @@ export const ITEMS: Record<ItemId, ItemDef> = {
     kind: 'weapon',
     slot: 'weapon',
     strike: 2,
-    desc: 'A vat-edge ground to a point. Strike 2. Equip it to meet a throat, not a hymn. Numbers compare gear — no dice.',
+    desc: 'A vat-edge ground to a point. Strike 2. Equip it to meet a throat, not a hymn.',
   },
   strider_bit: {
     id: 'strider_bit',
@@ -61,8 +61,9 @@ export const ITEMS: Record<ItemId, ItemDef> = {
   ossa_token: {
     id: 'ossa_token',
     name: "Ossa's Knot",
-    kind: 'key',
-    desc: 'Stilt-cord knotted twice. She is alive. She remembers.',
+    kind: 'gear',
+    slot: 'head',
+    desc: 'Stilt-cord knotted twice. A headband. She is alive. She remembers.',
   },
   kallik_mark: {
     id: 'kallik_mark',
@@ -74,7 +75,7 @@ export const ITEMS: Record<ItemId, ItemDef> = {
     id: 'kohl_smear',
     name: "Sybella's Kohl",
     kind: 'key',
-    desc: 'She wiped her thumb on you. A claim.',
+    desc: 'Her thumb, dark with kohl, pressed to your brow. The old way of saying: the sand has seen this one.',
   },
   false_vessel: {
     id: 'false_vessel',
@@ -94,7 +95,7 @@ export const ITEMS: Record<ItemId, ItemDef> = {
     kind: 'weapon',
     slot: 'weapon',
     strike: 3,
-    desc: "Oil-Tooth's steel. Strike 3. Hotwires Striders. Pries bolts, wire, and lies. Equip it if you mean to swing. Numbers compare gear — no dice.",
+    desc: "Oil-Tooth's steel. Strike 3. Hotwires Striders. Pries bolts, wire, and lies. Equip it if you mean to swing.",
   },
   rusted_dagger: {
     id: 'rusted_dagger',
@@ -102,7 +103,7 @@ export const ITEMS: Record<ItemId, ItemDef> = {
     kind: 'weapon',
     slot: 'weapon',
     strike: 2,
-    desc: 'A Threshold kitchen knife that learned a worse job. Strike 2. Equip it to make the worse job count. Numbers compare gear — no dice.',
+    desc: 'A Threshold kitchen knife that learned a worse job. Strike 2. Equip it to make the worse job count.',
   },
   silas_tip: {
     id: 'silas_tip',
@@ -122,7 +123,7 @@ export const ITEMS: Record<ItemId, ItemDef> = {
     kind: 'weapon',
     slot: 'weapon',
     strike: 4,
-    desc: 'Ironwood issue. Strike 4. Still warm from a clerk who loved a ledger more than a throat. Numbers compare gear — no dice.',
+    desc: 'Ironwood issue. Strike 4. Still warm from a clerk who loved a ledger more than a throat.',
   },
   needle_knife: {
     id: 'needle_knife',
@@ -130,7 +131,7 @@ export const ITEMS: Record<ItemId, ItemDef> = {
     kind: 'weapon',
     slot: 'weapon',
     strike: 3,
-    desc: "Kaelen's shelf. Strike 3. Thin. Mean. Cost, not charity. Numbers compare gear — no dice.",
+    desc: "Kaelen's shelf. Strike 3. Thin. Mean. Cost, not charity.",
   },
   scav_wrap: {
     id: 'scav_wrap',
@@ -138,7 +139,7 @@ export const ITEMS: Record<ItemId, ItemDef> = {
     kind: 'armor',
     slot: 'armor',
     shell: 2,
-    desc: 'Wire and rag, wrapped twice by someone who lived. Shell 2. The step between bare shoulders and a Dust Cloak. Numbers compare gear — no dice.',
+    desc: 'Wire and rag, wrapped twice by someone who lived. Shell 2. The step between bare shoulders and a Dust Cloak.',
   },
   dust_cloak: {
     id: 'dust_cloak',
@@ -146,7 +147,7 @@ export const ITEMS: Record<ItemId, ItemDef> = {
     kind: 'armor',
     slot: 'armor',
     shell: 3,
-    desc: 'Canvas that has outlived three owners. Shell 3. Hides a silhouette. Does not hide Heat. Numbers compare gear — no dice.',
+    desc: 'Canvas that has outlived three owners. Shell 3. Hides a silhouette. Does not hide Heat.',
   },
   hide_wrap: {
     id: 'hide_wrap',
@@ -154,7 +155,13 @@ export const ITEMS: Record<ItemId, ItemDef> = {
     kind: 'armor',
     slot: 'armor',
     shell: 4,
-    desc: 'Resin-jawed scrap from a Shard-Hound that lost. Shell 4. Wear it and the next glance slides. Numbers compare gear — no dice.',
+    desc: 'Resin-jawed scrap from a Shard-Hound that lost. Shell 4. Wear it and the next glance slides.',
+  },
+  salve: {
+    id: 'salve',
+    name: 'Resin Salve',
+    kind: 'gear',
+    desc: 'A thumb of camp resin. Binds a cut. Not a Drop. Health, not sap.',
   },
 }
 
@@ -166,7 +173,7 @@ export const DOORS: Record<string, DoorDef> = {
     place: 'Ironwood Camp-04',
     epithet: 'the Bleed-Cut',
     blurb:
-      'Holding pens. Cartel Scrip only. The Great Bleed is about to hit. Oil-Tooth hotwires the Strider. Kaelen the Sifter sells rumors — they are not your inside man.',
+      'Holding pens. Cartel Scrip only. The Great Bleed is about to hit. You wake with blood on the back of your head and no faction\'s kit. Oil-Tooth hotwires. Kaelen the Sifter, once, sells rumors at the Wire.',
     sap: 4,
     heat: { cartel: 3, seekers: 0, strays: 1 },
     items: { scrip: 2 },
@@ -294,9 +301,10 @@ export const HUBS: Record<string, HubDef> = {
       { id: 'stilt', name: 'Stilt Shade', sceneId: 'maw:stilt' },
       { id: 'smoke', name: 'Skiff Smoke', sceneId: 'maw:smoke' },
       { id: 'lip', name: 'Hollow Lip', sceneId: 'maw:lip' },
+      { id: 'tuner', name: "Oil-Tooth's Wreck", sceneId: 'maw:tuner' },
     ],
     hungerHook: {
-      label: 'The Walking Amber',
+      label: 'Under the jaw',
       sub: 'Hunger is open. Run, leave, or take the Hunger.',
       sceneId: 'ch2:stub',
       show: { flag: 'chapter1Done' },

@@ -200,7 +200,7 @@ The Hunger is a red bruise east-south. You could fill the empty vial with this s
           flag: { kaelenKnown: true },
           ticks: 1,
           flash:
-            '"Kaelen the Sifter passes at dusk if dusk remembers them. Jittery merchant. Pack of vials. They sell Drops for scrap and rumors for Glints. They are not shade. I am shade." Silas points his chin at the well. "They left a scratch in the stone. Read it or don\'t."',
+            '"Kaelen the Sifter passes at dusk if dusk remembers him. Jittery merchant. Pack of vials. He sells Drops for scrap and rumors for Glints. He is not shade. I am shade." Silas points his chin at the well. "He left a scratch in the stone. Read it or don\'t."',
           goto: 'spine:silas',
         },
       },
@@ -267,7 +267,7 @@ The Hunger is a red bruise east-south. You could fill the empty vial with this s
     kind: 'talk',
     speaker: 'Silas Vane',
     title: "Kallik's Hole",
-    body: `"Kallik thought the Maw was a lock. Buried Drops, Glints, a tin mark. Then he buried himself by standing too close. Cache is still there. So is Sybella. She wants a person who can metabolize sap like a furnace — a walking battery. You have the empty look of someone who might qualify.
+    body: `"Kallik thought the Maw was a lock. Buried Drops, Glints, a tin mark. He carved a nine-tooth gear on the second rib from the jaw and never came back up. Cache is still there. So is Sybella. She wants whoever the sand should not have let walk. You have the empty look of someone who might qualify.
 
 I will scratch you a heading. You take the Hunger when the noon gets honest."`,
     choices: [

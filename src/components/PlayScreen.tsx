@@ -27,6 +27,7 @@ import { isShopOpen } from '../game/trade'
 import type { Choice, Faction, GameState } from '../game/types'
 import { HeatExplainer, HeatTip } from './HeatGuide'
 import { InventorySheet } from './InventorySheet'
+import { JournalSheet } from './JournalSheet'
 import { MapSheet } from './MapSheet'
 
 type OptionRow = {
@@ -56,6 +57,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
   const [draft, setDraft] = useState('')
   const [kit, setKit] = useState(false)
   const [mapOpen, setMapOpen] = useState(false)
+  const [journalOpen, setJournalOpen] = useState(false)
   const [heatInfo, setHeatInfo] = useState<Faction | null>(null)
   const [toast, setToast] = useState<string | null>(null)
   const prevHeat = useRef(state.heat)
@@ -70,9 +72,11 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
   const choices = visibleChoices(state)
   const roam = canScavenge(state)
   const skimOn = canSkim(state)
-  const overlay = !!state.flags.encounterHere || isPressureOverlay(state)
-  const face =
-    (state.flags.encounterHere ? encounterSpeaker(state) : null) ??
+  const downed = !!state.flags.downed || state.health <= 0
+  const overlay = !!state.flags.encounterHere || isPressureOverlay(state) || downed
+  const face = downed
+    ? null
+    : (state.flags.encounterHere ? encounterSpeaker(state) : null) ??
     pressureFace(state) ??
     (scene.id === 'camp:bay' && bayLookout(state) ? 'Jaxson "Oil-Tooth" Vance' : null) ??
     scene.speaker
@@ -148,7 +152,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     })
   }
   const split = optionRows.length >= 4
-  const showDo = talky || roam
+  const showDo = talky || roam || overlay
 
   useEffect(() => {
     storyRef.current?.scrollTo({ top: 0 })
@@ -175,7 +179,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     onChange(interpret(state, t))
   }
 
-  const artSrc = `${import.meta.env.BASE_URL}covers/${playCoverFile(playCoverKey(state, scene))}?v=36`
+  const artSrc = `${import.meta.env.BASE_URL}covers/${playCoverFile(playCoverKey(state, scene))}?v=37`
 
   return (
     <div className={`screen play-screen${split ? ' play-split' : ''}`}>
@@ -210,6 +214,9 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
           </button>
         </div>
         <div className="heat-row">
+          <button type="button" className="map-btn journal-btn" onClick={() => setJournalOpen(true)}>
+            Rumors
+          </button>
           {(['cartel', 'seekers', 'strays'] as const).map((f) => (
             <button
               type="button"
@@ -229,7 +236,11 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
         </div>
         <div className="place-line">
           <strong>
-            {state.flags.encounterHere ? encounterSpeaker(state) : (scene.title ?? hub?.name ?? 'The dunes')}
+            {downed
+              ? 'Down'
+              : state.flags.encounterHere
+                ? encounterSpeaker(state)
+                : (pressureFace(state) ?? scene.title ?? hub?.name ?? 'The dunes')}
           </strong>
           <span className="place-meta">
             {hub ? hub.name : scene.chapterId === 'cache-run' ? 'The Hunger' : null}
@@ -253,15 +264,15 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
             .map((p, i) => (
               <p key={i}>{p}</p>
             ))}
-          {state.flash && !state.flags.encounterHere ? <p className="flash">{state.flash}</p> : null}
-          {sapThin && scene.kind !== 'crisis' && !state.flags.encounterHere ? (
+          {state.flash && !overlay ? <p className="flash">{state.flash}</p> : null}
+          {sapThin && scene.kind !== 'crisis' && !overlay ? (
             <p className="pressure-note">
               {state.sap <= 0
                 ? 'Sap is empty. The next act that costs sap will be a crisis, not a death.'
                 : 'Sap is thin. Walks and work will empty you.'}
             </p>
           ) : null}
-          {state.pressure >= 8 && !state.flags.chapter1Done && !state.chapterId && !state.flags.encounterHere ? (
+          {state.pressure >= 8 && !state.flags.chapter1Done && !state.chapterId && !overlay ? (
             <p className="pressure-note">Pressure is mounting. Hunters use the hours you spend lingering.</p>
           ) : null}
         </div>
@@ -327,9 +338,9 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
               placeholder={
                 isEncounterResult(state)
                   ? 'on'
-                  : state.flags.encounterHere
-                    ? 'fight / skip'
-                    : 'look / talk / fight / bribe / who is kaelen'
+                  : overlay
+                    ? 'talk / fight / bribe / run'
+                    : 'look / talk / fight / bribe / help / who is kaelen'
               }
               enterKeyHint="go"
               autoComplete="off"
@@ -353,6 +364,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
 
       {kit ? <InventorySheet state={state} onClose={() => setKit(false)} onChange={onChange} /> : null}
       {mapOpen ? <MapSheet state={state} onClose={() => setMapOpen(false)} onChange={onChange} /> : null}
+      {journalOpen ? <JournalSheet state={state} onClose={() => setJournalOpen(false)} /> : null}
       {heatInfo ? <HeatExplainer faction={heatInfo} onClose={() => setHeatInfo(null)} /> : null}
       {!state.flags.heatTaught ? (
         <HeatTip onDismiss={() => onChange(applyEffect(state, { flag: { heatTaught: true } }))} />

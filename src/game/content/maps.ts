@@ -141,6 +141,7 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
       { id: 'stilt', name: 'Stilt Shade', short: 'Stilts', sceneId: 'maw:stilt', x: 26, y: 74 },
       { id: 'smoke', name: 'Skiff Smoke', short: 'Smoke', sceneId: 'maw:smoke', x: 74, y: 36 },
       { id: 'lip', name: 'Hollow Lip', short: 'Lip', sceneId: 'maw:lip', x: 78, y: 78, mawExit: true },
+      { id: 'tuner', name: "Oil-Tooth's Wreck", short: 'Wreck', sceneId: 'maw:tuner', x: 40, y: 92 },
     ],
     edges: [
       { a: 'rim', b: 'market' },
@@ -148,6 +149,8 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
       { a: 'rim', b: 'smoke' },
       { a: 'market', b: 'stilt' },
       { a: 'smoke', b: 'lip', sap: 2 },
+      { a: 'rim', b: 'tuner' },
+      { a: 'stilt', b: 'tuner' },
     ],
     sceneNode: {
       'maw:rim': 'rim',
@@ -159,6 +162,9 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
       'maw:smoke': 'smoke',
       'maw:sybella': 'smoke',
       'maw:lip': 'lip',
+      'maw:ribs': 'rim',
+      'maw:hold': 'rim',
+      'maw:tuner': 'tuner',
     },
   },
 }

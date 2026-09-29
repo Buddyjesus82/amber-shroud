@@ -13,6 +13,7 @@ export type PersonId =
   | 'zafir'
   | 'ossa'
   | 'sybella'
+  | 'handler'
 
 export type Person = {
   id: PersonId
@@ -25,6 +26,15 @@ export type Person = {
 }
 
 export const PEOPLE: Record<PersonId, Person> = {
+  handler: {
+    id: 'handler',
+    name: 'Hound-handler',
+    aliases: ['hound-handler', 'hound handler', 'handler', 'leash'],
+    metFlag: 'metHandler',
+    card: `The Hound-handler. Not Valerius. Lean kit, shock-leash, an amber-eyed shard-hound at his heel with its eyes open. He likes a throat. The Overseer likes a diagram and stays in the tower until Cartel Heat is ugly enough to drag him out.`,
+    scenes: [],
+    later: {},
+  },
   oiltooth: {
     id: 'oiltooth',
     name: 'Oil-Tooth',
@@ -32,7 +42,7 @@ export const PEOPLE: Record<PersonId, Person> = {
     metFlag: 'metOilTooth',
     card: `Jaxson "Oil-Tooth" Vance — burly, grease-stained, permanent smirk, cybernetic brass jaw catching the steam-light. Scorched welding leathers with corporate inventory tags he never cut off. An oversized wrench when he is not hiding it.
 
-Prison-break technical inside man. Reckless. Charismatic. Anti-authority. Humor as a shield. Observant of security weaknesses. He has skimmed Oasis Sap for a lifetime of repairing Ironclad Skiff-Striders. He hotwires. He does not sell headings. That invoice is Kaelen's.`,
+Prison-break technical inside man. Reckless. Charismatic. Anti-authority. Humor as a shield. Observant of security weaknesses. He has skimmed Oasis Sap for a lifetime of repairing Ironclad Skiff-Striders. He hotwires. He does not sell headings. Headings are Kaelen's.`,
     scenes: [
       'camp:cages',
       'camp:lean',
@@ -48,10 +58,10 @@ Prison-break technical inside man. Reckless. Charismatic. Anti-authority. Humor 
 Oil-Tooth is still in the next bunk, brass jaw working, already talking the job: sabotage the station, he hotwires a Strider. Kaelen the Sifter is not here. Kaelen sells rumors at the Wire.`,
       'camp:lean': `Oil-Tooth works the stall like the wrench is still in his fist. Grease. The smirk. Brass ticking.
 
-"Bleed-Cut," he says. "Great Bleed is coming. You sabotage the guard station. I hotwire a Strider. That is the job. Kaelen the Sifter sells rumors at the Wire if you want news. They are not the inside man. I am."`,
+"Bleed-Cut," he says. "Great Bleed is coming. You sabotage the guard station. I hotwire a Strider. That is the job. Kaelen the Sifter sells rumors at the Wire if you want news. He sells rumors. I sell the ride."`,
       'camp:jaxson': `"Valerius is the first major victory you have to overcome," Oil-Tooth says, smirking around the brass. "I have watched the guard station until I could draw it in grease.
 
-Great Bleed hits, you sabotage that station. I hotwire an Ironclad Skiff-Strider. We leave the pens. You want rumors — Kallik, the Hunger, the blonde — that is Kaelen the Sifter at the Wire. They sell leads. I sell a ride."`,
+Great Bleed hits, you sabotage that station. I hotwire an Ironclad Skiff-Strider. We leave the pens. You want rumors — Kallik, the Hunger, the blonde — that is Kaelen the Sifter at the Wire. He sells leads. I sell a ride."`,
       'ch1:p-oil': `The stolen Strider coughs like a guilty throat. Oil-Tooth is under the hull anyway — brass, leather, tags he still has not cut off. He hotwired. He will not tour. Red Maw is south of his cowardice.`,
     },
   },
@@ -60,9 +70,9 @@ Great Bleed hits, you sabotage that station. I hotwire an Ironclad Skiff-Strider
     name: 'Kaelen',
     aliases: ['kaelen', 'sifter', 'merchant'],
     metFlag: 'metKaelen',
-    card: `Kaelen the Sifter jitters — a diminutive merchant in dust-caked canvas, an overstuffed pack of vials, gears, and amber jars, thick gloves on both hands. Independent scavenger. They play all sides. Shrewd. Paranoid. Fast-talk. Everything is cost and profit. Their hidden trade routes are unmatched.
+    card: `Kaelen the Sifter jitters — a diminutive merchant in dust-caked canvas, an overstuffed pack of vials, gears, and amber jars, thick gloves on both hands. Born near the Ironwood roots in the first Great Bleed. Lost his family to a Gilded Hollow raid. He sifts memory-essence from amber sand, sells to the Seekers, and quietly funds storm-escape routes.
 
-They sell Drops of Oasis Sap for scrap, intel for Glints, and rumors that open trouble. They do not hotwire Striders. They do not donate the Hunger. They are not the inside man.`,
+He will not sell anything meant to harm a fellow survivor. He trades Drops for scrap and rumors for Glints. He does not hotwire Striders.`,
     scenes: [
       'camp:wire',
       'camp:kaelen',
@@ -72,6 +82,7 @@ They sell Drops of Oasis Sap for scrap, intel for Glints, and rumors that open t
       'thresh:sift',
       'thresh:kaelen',
       'thresh:kaelen-rumors',
+      'roam:kaelen',
     ],
     later: {
       'camp:wire': `The perimeter. Razor-wire. Steam-vents coughing. Beyond it the dunes begin to have opinions.
@@ -79,18 +90,18 @@ They sell Drops of Oasis Sap for scrap, intel for Glints, and rumors that open t
 Kaelen the Sifter is here when profit says here — pack, gloves, already counting. Rumors if you ask. Drops if you pay. Oil-Tooth remains the inside man.
 
 Ironclad Skiff-Striders patrol the other side of this line. The Hunger lives past it. So do Hounds.`,
-      'camp:kaelen': `Kaelen works the pack with both gloves. The Wire at their back like a second strap. "Pick a shelf," they say. "Buy. Sell. Rumors that open trouble. I am not Oil-Tooth."`,
-      'spine:kaelen': `Dusk on the Spine. Same pack. Same gloves. Less wire, more dust. "You're the empty vial," they say. "I fill those if you pay. I also sell rumors. Silas sold you shade. I sell inventory."`,
+      'camp:kaelen': `Kaelen works the pack with both gloves. The Wire at his back like a second strap. "Pick a shelf," he says. "Buy. Sell. Rumors. I am not the man who hotwires."`,
+      'spine:kaelen': `Dusk on the Spine. Same pack. Same gloves. Less wire, more dust. "You're the empty vial," he says. "I fill those if you pay. Silas sold you shade. I sell what a survivor can carry."`,
       'thresh:sift': `Hymn-shade off the paddock. Not a stall. A pack on a false-route wall.
 
-Kaelen the Sifter is here when profit says here — gloves, already counting the cloth like it might fetch if they were crueler. They buy false routes. They sell inventory. Thalia remains the church. Oram remains the ledger.`,
-      'thresh:kaelen': `Kaelen works the pack with both gloves. Hymn-dust on the canvas. "Pick a shelf," they say. "Buy. Sell. Rumors that open trouble. I am not a cup. I do not ride."`,
+Kaelen the Sifter is here when the route says here — gloves, already counting. He buys false routes. He sells what will not open a survivor. Thalia remains the church. Oram remains the animals.`,
+      'thresh:kaelen': `Kaelen works the pack with both gloves. Hymn-dust on the canvas. "Pick a shelf," he says. "Buy. Sell. Rumors that open roads. I am not a cup. I do not ride."`,
     },
   },
   valerius: {
     id: 'valerius',
     name: 'Valerius',
-    aliases: ['valerius', 'overseer', 'shard-hound', 'shard hound'],
+    aliases: ['valerius', 'overseer'],
     metFlag: 'metValerius',
     card: `Overseer Valerius — imposing, scarred, reinforced iron plating over dust-cloaks, a steam-hissing shock baton in the fist. Cruel. Calculating. Brutal enforcer protecting corporate interests. He hunts Sap thieves and unpermitted relic hoarders. Sadistic. Arrogant. Disciplined.
 
@@ -243,14 +254,14 @@ She is a living person on purpose. She falls funny. She does not die easy. A twi
     name: 'Sybella',
     aliases: ['sybella', 'blonde', 'skiff'],
     metFlag: 'metSybella',
-    card: `Sybella — blonde, kohl ruined on purpose, blindfold up like a discarded halo. A sand-skiff. A voice like a lullaby that learned law.
+    card: `Sybella — older, blonde, kohl ruined on purpose, blindfold pushed up. A sand-skiff. Cold of faith. She was High Seeker Thalia's mentor, a faithful acolyte until the Cartel and the Dune-Strays made her bitter.
 
-She needs a lantern that can walk. A furnace. A battery. Seekers-only kindness. Cartel mouths and Stray empties get hunted, not fed. She will bargain. She is very good at remaining the most reasonable person in a murder.`,
+She would bury a road in amber and sand before she let an enemy reach what is sealed in the First Spire. Danger first. Enemy only if you make one.`,
     scenes: ['ch1:sybella', 'maw:smoke', 'maw:sybella', 'maw:sybella-shadow'],
     later: {
-      'ch1:sybella': `The sky goes brass. The skiff comes in low. Hard choice. Resource poker. No dice.`,
-      'maw:smoke': `The skiff is parked like a threat that learned manners. Incense or resin-smoke. She is here. Hunting. Reasonable.`,
-      'maw:sybella': `"The Approach is a waiting room," she says. "The Walking Amber is the appointment. Fill, walk, don't crack."`,
+      'ch1:sybella': `The sky goes brass. The skiff comes in low. She has already let one name slip. She will not say it again.`,
+      'maw:smoke': `The skiff is parked like a threat that learned manners. Resin-smoke. She is here. Hunting. Patient.`,
+      'maw:sybella': `"The Approach is patient," she says. "So am I."`,
     },
   },
 }
@@ -277,7 +288,19 @@ export function isWhoWatching(text: string): boolean {
   return hay.includes('watching') || hay.includes('heat') || hay.includes('who is watching')
 }
 
-export function matchPersonQuery(text: string): Person | 'ask' | null {
+export function personKnown(state: GameState, person: Person): boolean {
+  if (state.flags[person.metFlag]) return true
+  if (state.flags[`asked:${person.id}`]) return true
+  const here = personAtScene(state.sceneId)
+  if (here?.id === person.id) return true
+  if (person.id === 'handler' && (state.flags.metHandler || state.flags.hunterHere)) return true
+  if (person.id === 'sybella' && state.flags.hunterHere && (state.hubId === 'redmaw' || state.sceneId.startsWith('maw:'))) {
+    return true
+  }
+  return false
+}
+
+export function matchPersonQuery(text: string, state?: GameState): Person | 'ask' | 'unknown' | null {
   const hay = normalize(text)
   if (!hay || isWhoWatching(hay)) return null
   const asking =
@@ -288,7 +311,9 @@ export function matchPersonQuery(text: string): Person | 'ask' | null {
     hay.includes('who is')
   if (!asking) return null
   for (const p of Object.values(PEOPLE)) {
-    if (p.aliases.some((a) => hay.includes(a))) return p
+    if (!p.aliases.some((a) => hay.includes(a))) continue
+    if (state && !personKnown(state, p)) return 'unknown'
+    return p
   }
   if (asking) return 'ask'
   return null

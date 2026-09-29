@@ -11,25 +11,28 @@ import {
   RIM_NOWHERE,
 } from './hunger'
 import { GLOBAL_INTENTS, matchChoiceText, matchIntent } from './intent'
-import { travelGate } from './map'
+import { compassLine, travelGate } from './map'
 import {
   atGuardStation,
   atKaelenInvoice,
   campJobOpen,
   TAKE_INSIDE_JOB,
+  bayLookout,
   campHeard,
   ventPatrolInPlace,
   wantsCampSabotage,
   wantsDoSabotage,
 } from './campJob'
 import { markMetOnLeave, matchPersonQuery, personAtScene } from './people'
+import { downedNote, wakeEffect } from './downed'
 import { isPressureOverlay, pressureAppend, pressureChoices, pressureVerb } from './hunter'
-import { offButton } from './verbs'
+import { helpLine, offButton } from './verbs'
 import {
   canEncounter,
   dismissEncounter,
   encounterCard,
   encounterChoices,
+  encounterGround,
   enemyHealth,
   ENCOUNTER_FLAGS,
   HEALTH_MAX,
@@ -46,7 +49,7 @@ import { writeSave } from './save'
 import { repairSceneId } from './repair'
 import { isRumorCounter, matchRumorText, rumorChoices } from './rumors'
 import { matchShopText, moneyLabel, pickPay, shopChoices, vendorFor } from './trade'
-import type { DoorId, Effect, EquipSlot, GameState, ItemId, Scene } from './types'
+import type { Choice, DoorId, Effect, EquipSlot, FlagMap, GameState, ItemId, Scene } from './types'
 
 export function newGame(door: DoorId): GameState {
   const d = DOORS[door]
@@ -83,17 +86,24 @@ export function sceneOf(state: GameState): Scene {
   return getScene(state.sceneId, state.door)
 }
 
-export function bodyOf(state: GameState): string {
-  if (state.flags.encounterHere) {
-    return encounterCard(state)
-  }
+export function sceneProse(state: GameState): string {
   const scene = sceneOf(state)
   const person = personAtScene(scene.id)
   const base = person && state.flags[person.metFlag] && person.later[scene.id] ? person.later[scene.id] : scene.body
-  const resolved = resolveBody(scene, (c) => check(c, state), base)
+  return resolveBody(scene, (c) => check(c, state), base)
+}
+
+export function bodyOf(state: GameState): string {
+  if (state.flags.downed || (state.health ?? 1) <= 0) {
+    const note = state.flags.downedNote
+    return typeof note === 'string' && note ? note : downedNote(state)
+  }
+  if (state.flags.encounterHere) {
+    return encounterCard(state)
+  }
   const knock = pressureAppend(state)
-  if (knock) return `${resolved}\n\n${knock}`
-  return resolved
+  if (knock) return knock
+  return sceneProse(state)
 }
 
 function pickCrisis(state: GameState): string {
@@ -128,30 +138,55 @@ function spendValued(state: GameState): GameState {
 }
 
 function spendFalse(state: GameState): GameState {
-  const spent = spendFirst(
-    state,
-    ['scrap', 'wrench', 'cache_map', 'oram_map', 'rusted_dagger', 'silas_tip'],
-    'falseSpent',
-  )
-  if (spent.flags.falseSpent) return spent
-  return applyDelta(state, { flag: { falseSpent: 'ossa' } })
+  return spendFirst(state, ['scrap', 'wrench', 'cache_map', 'oram_map'], 'falseSpent')
+}
+
+function huntHeat(state: GameState): number {
+  const seekersGround =
+    state.hubId === 'redmaw' ||
+    state.hubId === 'threshold' ||
+    state.sceneId.startsWith('maw:') ||
+    state.sceneId.startsWith('thresh:')
+  const heat = seekersGround ? state.heat.seekers : state.heat.cartel
+  if (seekersGround && state.flags.sybellaHunting) return Math.max(heat, 4)
+  return heat
+}
+
+/** Scenes that must pass before the same hunter can hit again. Back-to-back only at very high Heat. */
+export function huntGap(heat: number): number {
+  if (heat >= 8) return 1
+  if (heat >= 7) return 2
+  if (heat >= 4) return 3
+  return 5
 }
 
 function hunterScene(state: GameState): string | null {
-  if (state.flags.hunterHere || state.flags.encounterHere) return null
-  const last = Number(state.flags.hunterAt ?? -99)
-  if (last >= 0 && state.ticks - last < 4) return null
-  if (state.flags.chapter1Done) {
-    if (state.hubId === 'redmaw' && state.pressure >= 8 && state.ticks > 0 && state.ticks % 5 === 0) {
-      if (state.sceneId !== 'maw:sybella-shadow' && state.sceneId !== 'maw:sybella') {
-        return 'maw:sybella-shadow'
-      }
-    }
+  if (state.flags.hunterHere || state.flags.encounterHere || state.flags.downed) return null
+  if (
+    state.sceneId === 'camp:sabotage' ||
+    state.sceneId === 'camp:gate' ||
+    state.sceneId === 'camp:shiv' ||
+    state.sceneId === 'camp:cages' ||
+    state.sceneId === 'camp:lean' ||
+    state.sceneId === 'camp:jaxson' ||
+    state.sceneId === 'camp:jaxson-cache' ||
+    state.sceneId === 'camp:jaxson-drop'
+  ) {
     return null
   }
+  if (state.sceneId === 'camp:bay' && bayLookout(state)) return null
+  if ((state.health ?? 1) <= 0) return null
+  if (state.sceneId.startsWith('open:') || state.sceneId.startsWith('crisis:') || state.sceneId.startsWith('ch1:')) return null
+  if (state.chapterId && state.hubId !== 'redmaw') return null
+  const quiet = Number(state.flags.huntQuiet ?? 0)
+  if (quiet < huntGap(huntHeat(state))) return null
+  if (state.hubId === 'redmaw' || state.sceneId.startsWith('maw:')) {
+    if (state.sceneId === 'maw:sybella' || state.sceneId === 'maw:sybella-shadow' || state.sceneId === 'maw:smoke') {
+      return null
+    }
+    return 'maw:sybella-shadow'
+  }
   if (state.chapterId) return null
-  if (state.pressure < 9) return null
-  if (state.ticks === 0 || state.ticks % 4 !== 0) return null
   const map: Record<string, string> = {
     camp04: 'camp:hunter',
     spine: 'spine:hunter',
@@ -159,8 +194,8 @@ function hunterScene(state: GameState): string | null {
   }
   const id = state.hubId ? map[state.hubId] : null
   if (!id || state.sceneId === id) return null
-  // Camp loom waits for noise: the job, a theft, or the station before the job. Spine and Threshold keep the pressure clock.
   if (id === 'camp:hunter' && !campHeard(state)) return null
+  if (id === 'spine:hunter' && state.heat.cartel < 2 && state.pressure < 6) return null
   return id
 }
 
@@ -239,6 +274,30 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     const paid = applyEffect(state, rest)
     return travelTo(paid, fx.travel)
   }
+  if (fx.flag?.chipGamble && (state.items.overseer_chip ?? 0) > 0 && !state.flags.chipBluff) {
+    const rare = (state.ticks * 17 + state.heat.cartel * 3 + 1) % 8 === 0
+    const flag = { ...(fx.flag ?? {}) }
+    delete flag.chipGamble
+    const rest = { ...fx, flag }
+    if (rare) {
+      fx = {
+        ...rest,
+        heat: { cartel: -1 },
+        flag: { ...(rest.flag ?? {}), chipBluff: true },
+        flash:
+          'The chip catches the light and, for once, the math believes you. He lets the moment pass. You are still in the tower. It will not work twice.',
+      }
+    } else {
+      fx = {
+        ...rest,
+        remove: { ...(rest.remove ?? {}), overseer_chip: 1 },
+        heat: { cartel: 3 },
+        flag: { ...(rest.flag ?? {}), chipCaught: true },
+        flash:
+          'Caught. He takes the chip off you like it was never yours. Cartel Heat spikes. You are still standing in his tower, poorer and known.',
+      }
+    }
+  }
   const dest = resolveDest(state, fx)
   let next = applyDelta(state, fx)
   next.flash = fx.flash
@@ -255,7 +314,20 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   if (fx.startChapter) {
     next.chapterId = fx.startChapter
     next.hubId = null
-    next.flags = { ...next.flags, hungerLocked: true, hungerKnown: true }
+    const leavingCamp = state.hubId === 'camp04' || state.sceneId.startsWith('camp:')
+    next.flags = {
+      ...next.flags,
+      hungerLocked: true,
+      hungerKnown: true,
+      ...(leavingCamp
+        ? {
+            leftCamp: true,
+            campLockdown: !!state.flags.guardDown,
+            quietFence: !!state.flags.wireCut && !state.flags.guardDown,
+            oilResentful: !state.flags.guardDown && !state.flags.jaxsonInside ? true : next.flags.oilResentful,
+          }
+        : {}),
+    }
     if (next.items.oram_map || next.items.silas_tip || next.items.cache_map) {
       delete next.flags.cacheBlind
     }
@@ -299,11 +371,56 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
       delete flags.hunterFrom
       next.flags = flags
     }
-    if (next.flags.encounterHere) {
+    if (dest !== state.sceneId) {
       const flags = { ...next.flags }
-      for (const k of ENCOUNTER_FLAGS) delete flags[k]
+      if (flags.encounterHere) {
+        for (const k of ENCOUNTER_FLAGS) delete flags[k]
+      }
+      delete flags.encounterDone
+      delete flags.encounterClash
+      delete flags.encounterFlash
       next.flags = flags
     }
+    if (
+      dest.startsWith('camp:') &&
+      dest !== 'camp:gate' &&
+      state.flags.leftCamp &&
+      state.flags.campLockdown &&
+      !state.flags.quietFence
+    ) {
+      next.sceneId = 'camp:gate'
+      next.flags = { ...next.flags, gateFrom: state.sceneId }
+      next.flash =
+        'Lockdown. The gates are counted and the sabotage is still in their teeth. Walking in is a fight or a collar.'
+    }
+  }
+
+  if (next.flags.leaveGate) {
+    const from = state.flags.gateFrom
+    if (typeof from === 'string' && from && !from.startsWith('camp:') && hasScene(from)) {
+      next.sceneId = from
+      const back = getScene(from)
+      if (back.hubId) next.hubId = back.hubId
+    } else if (state.flags.chapter1Done || state.hubId === 'redmaw') {
+      next.sceneId = 'maw:rim'
+      next.hubId = 'redmaw'
+    }
+    const flags = { ...next.flags }
+    delete flags.leaveGate
+    next.flags = flags
+  }
+
+  if (next.flags.returnPass) {
+    const from = state.flags.kaelenFrom
+    if (typeof from === 'string' && from && from !== 'roam:kaelen' && hasScene(from)) {
+      next.sceneId = from
+      const back = getScene(from)
+      if (back.hubId) next.hubId = back.hubId
+      if (back.chapterId) next.chapterId = back.chapterId
+    }
+    const flags = { ...next.flags }
+    delete flags.returnPass
+    next.flags = flags
   }
 
   if (next.sceneId === 'ch1:hollow' && state.sceneId !== 'ch1:hollow') {
@@ -339,24 +456,63 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   }
 
   const lingered = (fx.ticks ?? 0) > 0 || (fx.pressure ?? 0) > 0 || !!dest
-  const interrupt = lingered ? hunterScene(next) : null
+  const clearingHunt = !!state.flags.hunterHere && (!next.flags.hunterHere || !!fx.unsetFlag?.includes('hunterHere'))
+  if (clearingHunt) {
+    next.flags = { ...next.flags, huntQuiet: 0 }
+    delete next.flags.hunterHere
+    delete next.flags.hunterFrom
+  } else if (lingered && !next.flags.hunterHere && !next.flags.encounterHere) {
+    next.flags = { ...next.flags, huntQuiet: Number(next.flags.huntQuiet ?? 0) + 1 }
+  }
+  const interrupt = lingered && !clearingHunt ? hunterScene(next) : null
   const fightBeat = !!fx.resolveEncounter || !!next.flags.encounterHere || !!fx.unsetFlag?.includes('encounterHere')
-  if (interrupt && !fightBeat && getScene(next.sceneId).kind !== 'crisis') {
+  const arrivedKind = getScene(next.sceneId).kind
+  if (interrupt && !fightBeat && arrivedKind !== 'crisis' && arrivedKind !== 'talk' && arrivedKind !== 'ending') {
     const from = next.sceneId
-    next.flags = { ...next.flags, hunterFrom: from, hunterAt: next.ticks, hunterHere: true }
+    next.flash = undefined
+    next.flags = {
+      ...next.flags,
+      hunterFrom: from,
+      hunterAt: next.ticks,
+      hunterHere: true,
+      huntQuiet: 0,
+      sybellaShadowed: from.startsWith('maw:') || next.hubId === 'redmaw' ? true : next.flags.sybellaShadowed,
+      metHandler: interrupt === 'camp:hunter' ? true : next.flags.metHandler,
+    }
   }
 
-  // Skiff Bay Do lines (talk, steal) are the beat. A road jump must not eat them.
-  const keepBayLine = state.sceneId === 'camp:bay' && typeof fx.flash === 'string'
+  const place = getScene(next.sceneId).kind === 'place'
   if (
     lingered &&
-    !keepBayLine &&
-    next.sceneId === state.sceneId &&
-    !fx.resolveEncounter &&
+    place &&
+    !next.flags.kaelenPassing &&
     !next.flags.hunterHere &&
-    next.sceneId !== 'maw:sybella-shadow' &&
-    getScene(next.sceneId).kind !== 'crisis' &&
-    canEncounter(next)
+    !next.flags.encounterHere &&
+    !next.sceneId.includes('kaelen') &&
+    Number(next.flags.huntQuiet ?? 0) >= 8 &&
+    next.ticks % 11 === 0
+  ) {
+    next.flags = { ...next.flags, kaelenPassing: true }
+  }
+  if (next.flags.sybellaHunting && next.heat.cartel >= 6 && !next.flags.opposedHook) {
+    next.flags = { ...next.flags, opposedHook: true, heardOpposed: true }
+  }
+
+  const traveled = !!dest && dest !== state.sceneId
+  const firstWalk =
+    !next.flags.roadFightSeen &&
+    (next.chapterId === 'cache-run' || !!state.chapterId) &&
+    (next.sceneId === 'ch1:p-pipe' || next.sceneId === 'ch1:o-noon' || next.sceneId === 'ch1:v-hymn')
+  const keepBayLine = state.sceneId === 'camp:bay' && typeof fx.flash === 'string'
+  const roamBeat = lingered && (next.sceneId === state.sceneId || traveled || !!fx.travel)
+  if (
+    roamBeat &&
+    !keepBayLine &&
+    !fightBeat &&
+    !next.flags.hunterHere &&
+    !clearingHunt &&
+    encounterGround(next) &&
+    canEncounter(next, { traveled, firstWalk })
   ) {
     const kind = pickEncounterKind(next)
     next.flash = undefined
@@ -366,12 +522,24 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
       encounterKind: kind,
       encounterAt: next.ticks,
       encounterHp: enemyHealth(kind),
+      roadFightSeen: true,
     }
     delete next.flags.encounterClash
+  } else if (firstWalk) {
+    next.flags = { ...next.flags, roadFightSeen: true }
   }
 
-  if (arrived.onEnter && next.sceneId === arrived.id && state.sceneId !== arrived.id) {
+  if (arrived.onEnter && next.sceneId === arrived.id && state.sceneId !== arrived.id && !next.flags.encounterHere && !next.flags.hunterHere) {
     next = applyDelta(next, arrived.onEnter)
+  }
+
+  if ((state.health ?? 1) > 0 && (next.health ?? 1) <= 0 && !state.flags.downed) {
+    const note = downedNote({ ...state, sceneId: next.sceneId, flags: next.flags, hubId: next.hubId })
+    const flags: FlagMap = { ...next.flags, downed: true, downedNote: note }
+    for (const k of ENCOUNTER_FLAGS) delete flags[k]
+    next.flags = flags
+    next.health = 0
+    next.flash = undefined
   }
 
   next.updatedAt = Date.now()
@@ -527,15 +695,59 @@ function tryCampSabotageJob(state: GameState, text: string): GameState | null {
   )
 }
 
+const REST_SCENES = new Set(['camp:bay', 'camp:lean', 'camp:cages', 'maw:tuner', 'maw:stilt', 'spine:shade', 'thresh:cell'])
+
 export function interpret(state: GameState, text: string): GameState {
   const scene = sceneOf(state)
-  const who = matchPersonQuery(text)
+  const bare = text.trim().toLowerCase()
+  if (bare === 'help' || bare === '?') {
+    const labels = visibleChoices(state).map((c) => c.label)
+    const face = isPressureOverlay(state)
+      ? 'This interrupt is the whole ground. '
+      : state.flags.encounterHere
+        ? 'The fight is the whole ground. '
+        : ''
+    return withVerb(
+      persist({ ...state, flash: `${face}${helpLine(state, scene, labels)}`, updatedAt: Date.now() }),
+      'help',
+    )
+  }
+  if ((state.flags.downed || (state.health ?? 1) <= 0) && !/^(wake|up|stand|rise)$/.test(bare)) {
+    return withVerb(
+      persist({
+        ...state,
+        flash: 'You are down. Too hurt to fight. Take the hand that is offered.',
+        updatedAt: Date.now(),
+      }),
+      'down',
+    )
+  }
+  const who = matchPersonQuery(text, state)
+  if (who === 'unknown') {
+    return withVerb(
+      persist({
+        ...state,
+        flash: 'You have not met them. The dunes can keep that name until you do.',
+        updatedAt: Date.now(),
+      }),
+      'who is',
+    )
+  }
   if (who === 'ask') {
     return withVerb(
       persist({
         ...state,
-        flash:
-          'Name them. Who is Oil-Tooth. Who is Kaelen. Who is Valerius. Who is Clerk Rell. Who is Silas. Who is Nim. Who is Thalia. Who is Oram. Who is Brin. Who is Zafir. Who is Ossa. Who is Sybella.',
+        flash: 'Name someone in front of you, or someone you have already met.',
+        updatedAt: Date.now(),
+      }),
+      'who is',
+    )
+  }
+  if (who && isPressureOverlay(state)) {
+    return withVerb(
+      persist({
+        ...state,
+        flash: 'The one in front of you is the conversation. Talk, fight, bribe, or run.',
         updatedAt: Date.now(),
       }),
       'who is',
@@ -552,6 +764,9 @@ export function interpret(state: GameState, text: string): GameState {
   if (job) return job
 
   if (state.flags.encounterHere) {
+    if ((state.health ?? 1) <= 0 && wantsEncounterFight(text)) {
+      return withVerb(persist({ ...state, flash: 'Too hurt to fight.', updatedAt: Date.now() }), 'fight')
+    }
     if (isEncounterResult(state)) {
       return withVerb(applyEffect(state, dismissEncounter(state)), 'on')
     }
@@ -561,6 +776,68 @@ export function interpret(state: GameState, text: string): GameState {
     if (wantsEncounterHide(text) || wantsEncounterSkip(text)) {
       return withVerb(applyEffect(state, { resolveEncounter: 'skip' }), wantsEncounterHide(text) ? 'hide' : 'skip')
     }
+    return withVerb(
+      persist({ ...state, flash: 'The fight is the ground. Fight, or give the road.', updatedAt: Date.now() }),
+      'fight',
+    )
+  }
+
+  if (isPressureOverlay(state)) {
+    const shown = visibleChoices(state).filter((c) => isChoiceOn(state, c.enable))
+    const button = matchChoiceText(text, shown)
+    if (button) return withVerb(applyEffect(state, button.effects), button.id)
+    const pressed = pressureVerb(state, text)
+    if (pressed && isChoiceOn(state, pressed.enable)) {
+      return withVerb(applyEffect(state, pressed.effects), pressed.id)
+    }
+    if (/\blook\b/.test(bare)) {
+      const knock = pressureAppend(state) ?? 'The interrupt is the ground.'
+      return withVerb(persist({ ...state, flash: `${knock}\n\n${compassLine(state)}`, updatedAt: Date.now() }), 'look')
+    }
+    return withVerb(
+      persist({
+        ...state,
+        flash: 'This interrupt is the ground. Talk, fight, bribe, run, or a card. The scene underneath can wait.',
+        updatedAt: Date.now(),
+      }),
+      'try',
+    )
+  }
+
+  if (/\b(rest|sleep|bind|bandage|heal)\b/.test(bare) && (REST_SCENES.has(state.sceneId) || (state.items.salve ?? 0) > 0)) {
+    if ((state.items.salve ?? 0) > 0 && /\b(bind|bandage|salve|heal)\b/.test(bare)) {
+      return withVerb(
+        applyEffect(state, {
+          remove: { salve: 1 },
+          health: 3,
+          ticks: 1,
+          flash: 'Resin salve on the cut. Health comes back a few pips. The tin is lighter.',
+        }),
+        'heal',
+      )
+    }
+    if (REST_SCENES.has(state.sceneId) && state.health < state.healthMax && state.sap > 0) {
+      return withVerb(
+        applyEffect(state, {
+          health: 2,
+          sap: -1,
+          ticks: 1,
+          flash: 'You sit until the cut stops arguing. Health returns a little. Sap pays for the hour.',
+        }),
+        'rest',
+      )
+    }
+  }
+
+  if (/^(look|look around|search|examine|inspect)$/.test(bare)) {
+    const prose = sceneProse(state)
+    return withVerb(
+      applyEffect(state, {
+        flag: state.sceneId === 'camp:bay' ? { bayLooked: true } : undefined,
+        flash: `${prose}\n\n${compassLine(state)}`,
+      }),
+      'look',
+    )
   }
 
   if (!isPressureOverlay(state)) {
@@ -661,20 +938,68 @@ export function interpret(state: GameState, text: string): GameState {
   })
 }
 
-export function visibleChoices(state: GameState) {
+function scopeDecoy(state: GameState, choices: ReturnType<typeof sceneOf>['choices']) {
+  return choices.map((c) => {
+    if (c.id !== 'false') return c
+    const bits: string[] = []
+    if ((state.items.scrap ?? 0) > 0) bits.push('scrap')
+    if ((state.items.wrench ?? 0) > 0) bits.push('the wrench')
+    if ((state.items.cache_map ?? 0) > 0 || (state.items.oram_map ?? 0) > 0) bits.push('a map')
+    if (!bits.length) return c
+    return { ...c, sub: `Throw ${bits.join(' or ')}. She still follows.` }
+  })
+}
+
+export function visibleChoices(state: GameState): Choice[] {
+  if (state.flags.downed || (state.health ?? 1) <= 0) {
+    return [
+      {
+        id: 'wake',
+        label: 'Take the hand. Get up.',
+        sub: 'Too hurt to fight.',
+        tone: 'quiet',
+        effects: wakeEffect(state),
+      },
+      {
+        id: 'too-hurt',
+        label: 'Fight',
+        locked: 'Too hurt to fight.',
+        enable: { flag: '__no__' },
+        tone: 'danger',
+        effects: {},
+      },
+    ]
+  }
   if (state.flags.encounterHere) {
     return encounterChoices(state)
   }
   const knock = pressureChoices(state)
   if (knock.length) return knock
-  const authored = sceneOf(state).choices.filter((c) => check(c.show, state))
-  if (vendorFor(state.sceneId)) {
-    return shopChoices(state, authored).filter((c) => check(c.show, state))
-  }
-  if (isRumorCounter(state.sceneId)) {
-    return rumorChoices(state, authored).filter((c) => check(c.show, state))
-  }
-  return authored
+  const authored = scopeDecoy(state, sceneOf(state).choices.filter((c) => check(c.show, state)))
+  const rows = vendorFor(state.sceneId)
+    ? shopChoices(state, authored).filter((c) => check(c.show, state))
+    : isRumorCounter(state.sceneId)
+      ? rumorChoices(state, authored).filter((c) => check(c.show, state))
+      : authored
+  return withKaelenPass(state, rows)
+}
+
+function withKaelenPass(state: GameState, rows: Choice[]): Choice[] {
+  if (!state.flags.kaelenPassing || state.sceneId === 'roam:kaelen') return rows
+  return [
+    ...rows,
+    {
+      id: 'kaelen-pass',
+      label: 'Kaelen the Sifter has stopped',
+      sub: 'His pack. A rumor from the last road. He will not stay.',
+      effects: {
+        goto: 'roam:kaelen',
+        unsetFlag: ['kaelenPassing'],
+        flag: { kaelenFrom: state.sceneId, kaelenKnown: true, metKaelen: true },
+        ticks: 1,
+      },
+    },
+  ]
 }
 
 export function isChoiceOn(state: GameState, cond: import('./types').Cond | undefined) {
@@ -707,7 +1032,13 @@ export function equipItem(state: GameState, id: ItemId): GameState {
   }
   const equipped = { ...(state.equipped ?? {}), [def.slot]: id }
   const flash =
-    def.slot === 'weapon' ? `${def.name} in the hand.` : def.slot === 'armor' ? `${def.name} on the body.` : `${def.name} worn.`
+    def.slot === 'weapon'
+      ? `${def.name} in the hand.`
+      : def.slot === 'armor'
+        ? `${def.name} on the body.`
+        : def.slot === 'head'
+          ? `${def.name} at the brow.`
+          : `${def.name} worn.`
   return persist({
     ...state,
     equipped,
@@ -719,7 +1050,8 @@ export function equipItem(state: GameState, id: ItemId): GameState {
 export function unequipSlot(state: GameState, slot: EquipSlot): GameState {
   const equipped = { ...(state.equipped ?? {}) }
   delete equipped[slot]
-  const flash = slot === 'weapon' ? 'Empty hand.' : slot === 'armor' ? 'Bare shoulders.' : 'The garment comes off.'
+  const flash =
+    slot === 'weapon' ? 'Empty hand.' : slot === 'armor' ? 'Bare shoulders.' : slot === 'head' ? 'The brow is bare.' : 'The garment comes off.'
   return persist({
     ...state,
     equipped,

@@ -19,6 +19,26 @@ export function nodeIdForScene(map: HubMapDef, sceneId: string, fallback = false
   return fallback ? map.defaultNode : null
 }
 
+/** N/S/E/W off the current map node. Plain roads, no faction lecture. */
+export function compassLine(state: GameState): string {
+  const map = hubMapOf(state)
+  if (!map) return 'No marked road. The choices in front of you are the way.'
+  const node = currentNode(state)
+  if (!node) return 'No marked road. The choices in front of you are the way.'
+  const links = adjacency(map).get(node.id) ?? []
+  if (!links.length) return 'No marked road off this ground.'
+  const bits: string[] = []
+  for (const link of links) {
+    const other = nodeById(map, link.id)
+    if (!other) continue
+    const dx = other.x - node.x
+    const dy = other.y - node.y
+    const dir = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'East' : 'West') : dy > 0 ? 'South' : 'North'
+    bits.push(`${dir}: ${other.name}`)
+  }
+  return bits.join('. ') + '.'
+}
+
 export function currentNode(state: GameState): HubMapNode | null {
   const map = hubMapOf(state)
   if (!map) return null
