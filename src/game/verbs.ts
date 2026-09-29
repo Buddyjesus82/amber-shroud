@@ -306,7 +306,7 @@ function giveHit(state: GameState, scene: Scene, hay: string): DoHit {
   }
 }
 
-function takeHit(scene: Scene, hay: string): DoHit {
+function takeHit(scene: Scene, hay: string): DoHit | null {
   const rest = hay.replace(/^(?:take|grab|steal|snatch|pocket)\s+(?:the\s+)?/, '').trim()
   if (mouthHere(scene)) {
     return {
@@ -324,6 +324,7 @@ function takeHit(scene: Scene, hay: string): DoHit {
       verb: 'take',
     }
   }
+  if (rest === 'hunger') return null
   return { effects: { flash: `You can't take ${rest} off this beat.` }, verb: 'take' }
 }
 

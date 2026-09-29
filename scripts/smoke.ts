@@ -1967,8 +1967,76 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
   assert(held.sap < sapBefore || held.heat.seekers > heatBefore, 'Sybella stay costs Sap or Heat')
 }
 
+{
+  const bad = /can't take hunger|don't understand|i don't understand/i
+  let pens = newGame('prisoner')
+  pens = pick(pens, 'pens')
+  const ran = interpret(pens, 'run')
+  assert(!/take the Hunger/.test(ran.flash ?? ''), 'pens do not offer Hunger before a heading exists')
+  assert(/Pick a place/.test(ran.flash ?? ''), 'aimless run still asks for a place')
+  const denied = interpret(pens, 'take the hunger')
+  assert(denied.sceneId === 'camp:cages', 'blocked Hunger stays in the pens')
+  assert(!bad.test(denied.flash ?? ''), 'blocked Hunger is not the old take-error')
+  assert(/not a road/i.test(denied.flash ?? ''), 'blocked Hunger says the road is closed')
+
+  let known = newGame('prisoner')
+  known = pick(known, 'pens')
+  known = applyEffect(known, { sap: 4, goto: 'camp:yard', flag: { hungerKnown: true } })
+  const offered = interpret(known, 'walk')
+  assert(/take the Hunger/.test(offered.flash ?? ''), 'a known Hunger is offered on an aimless walk')
+  const started = interpret(known, 'take the hunger')
+  assert(started.chapterId === 'cache-run' && started.sceneId === 'ch1:leave', 'take the hunger from the Yard starts Cache Run')
+  assert(!bad.test(started.flash ?? ''), 'Yard Hunger start is not an error')
+
+  for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
+    let rim = newGame(door)
+    rim = applyEffect(rim, {
+      sap: 4,
+      enterHub: 'redmaw',
+      goto: 'maw:rim',
+      flag: { chapter1Done: true, hungerKnown: true },
+    })
+    assert(rim.sceneId === 'maw:rim' && rim.hubId === 'redmaw', `${door} stands on Maw Rim`)
+    const walk = interpret(rim, 'run')
+    assert(/take the Hunger/.test(walk.flash ?? ''), `${door} Rim walk offers take the Hunger`)
+    for (const typed of ['take the hunger', 'take hunger', 'take the Hunger', 'walk the hunger']) {
+      const via = interpret(rim, typed)
+      assert(via.sceneId === 'ch2:stub', `${door} Do "${typed}" enters the Walking Amber`)
+      assert(via.chapterId === 'walking-amber', `${door} Do "${typed}" is the next Hunger`)
+      assert(!bad.test(via.flash ?? ''), `${door} Do "${typed}" has no error flash`)
+    }
+    let lip = { ...rim, sceneId: 'maw:lip' }
+    const fromLip = interpret(lip, 'take the hunger')
+    assert(fromLip.sceneId === 'ch2:stub', `${door} Hollow Lip take the hunger matches the hook`)
+  }
+
+  for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
+    let road = newGame(door)
+    road = applyEffect(road, { sap: 4, startChapter: 'cache-run', goto: 'ch1:leave' })
+    const button = pick(road, 'go')
+    const via = interpret(road, 'take the hunger')
+    assert(via.sceneId === button.sceneId, `${door} take the hunger follows that door's Cache Run road`)
+    assert(via.chapterId === 'cache-run', `${door} Hunger stay in Cache Run`)
+  }
+
+  let ridge = newGame('outcast')
+  ridge = pick(ridge, 'stand')
+  const ridgeButton = pick(ridge, 'hunger')
+  const ridgeDo = interpret(ridge, 'take hunger')
+  assert(ridgeDo.sceneId === ridgeButton.sceneId && ridgeDo.flash === ridgeButton.flash, 'Outcast take hunger is the ridge button')
+
+  let court = newGame('vessel')
+  court = pick(court, 'keep')
+  const courtButton = pick(court, 'hunger')
+  const courtDo = interpret(court, 'walk the hunger')
+  assert(
+    courtDo.sceneId === courtButton.sceneId && courtDo.heat.seekers === courtButton.heat.seekers,
+    'Vessel walk the hunger is the Court button',
+  )
+}
+
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v34'"), 'SW bumped so the noise gate and vent patrol reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v35'"), 'SW bumped so take-the-Hunger reaches Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -1990,7 +2058,7 @@ assert(/top:\s*min\(28\.125cqi,\s*46cqb\)/.test(css), 'story starts at the cover
 assert(css.includes('rgba(12, 7, 4, 0.58)'), 'story scrim stays translucent so cover art shows through')
 assert(!css.includes('rgba(12, 7, 4, 0.88)'), 'story scrim is lighter than the v32 slab')
 const playSrc = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
-assert(playSrc.includes('?v=34'), 'scene cover URLs are cache-busted with the service worker')
+assert(playSrc.includes('?v=35'), 'scene cover URLs are cache-busted with the service worker')
 assert(!css.includes('object-position: center 68%'), 'scene art no longer crops toward the ground')
 assert(!css.includes('height: 56px'), 'short phones no longer squash covers into a head-cropping strip')
 assert(css.includes('place-items: center'), 'game screen is centered on the backdrop')
