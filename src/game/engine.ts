@@ -1,6 +1,15 @@
 import { DOORS, HUBS, ITEMS, getScene, hasScene, resolveBody } from './content'
 import { applyDelta, check, clamp } from './logic'
-import { aimlessRunReply, hungerCommandEffect, HUNGER_BLOCKED, isHungerCommand } from './hunger'
+import {
+  aimlessRunReply,
+  hungerCommandEffect,
+  HUNGER_BLOCKED,
+  isHungerCommand,
+  isRimDepartBeat,
+  isRimDepartCommand,
+  RIM_HUNGER_OPEN,
+  RIM_NOWHERE,
+} from './hunger'
 import { GLOBAL_INTENTS, matchChoiceText, matchIntent } from './intent'
 import { travelGate } from './map'
 import {
@@ -621,10 +630,16 @@ export function interpret(state: GameState, text: string): GameState {
 
   const global = matchIntent(text, GLOBAL_INTENTS, state)
   if (global) {
-    const reply =
-      global.tags.includes('escape') && global.tags.includes('walk')
-        ? aimlessRunReply(hungerCommandEffect(state, enabled) != null)
-        : global.reply
+    const escape = global.tags.includes('escape') && global.tags.includes('walk')
+    if (escape && isRimDepartBeat(state)) {
+      const fx = hungerCommandEffect(state, enabled)
+      if (fx && isRimDepartCommand(text)) {
+        return withVerb(applyEffect(state, fx), 'hunger')
+      }
+      const reply = fx ? RIM_HUNGER_OPEN : RIM_NOWHERE
+      return withVerb(applyEffect(state, { ...global.effects, flash: reply }), verbLabel(global.tags[0]))
+    }
+    const reply = escape ? aimlessRunReply(hungerCommandEffect(state, enabled) != null) : global.reply
     return withVerb(applyEffect(state, { ...global.effects, flash: reply }), verbLabel(global.tags[0]))
   }
   const fallback = scene.intentFallback ?? (scene.kind === 'talk' || scene.speaker ? talkFallback(scene.id, scene.speaker) : null)

@@ -297,7 +297,7 @@ export const HUBS: Record<string, HubDef> = {
     ],
     hungerHook: {
       label: 'The Walking Amber',
-      sub: 'Chapter 2 — sealed for now. You are already at the bite.',
+      sub: 'Hunger is open. Run, leave, or take the Hunger.',
       sceneId: 'ch2:stub',
       show: { flag: 'chapter1Done' },
     },

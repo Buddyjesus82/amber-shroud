@@ -11,6 +11,11 @@ export const redMawScenes: Scene[] = [
 This is harder country than your start door. Sap goes faster. Hunters know the roads. The Hunger is not a rumor now. It is the ground.`,
     variants: [
       {
+        if: { flag: 'chapter1Done' },
+        mode: 'append',
+        body: `Hunger is open. Run, leave, or take the Hunger.`,
+      },
+      {
         if: { flagEq: ['climax', 'bargain'] },
         mode: 'append',
         body: `Kohl at your throat itches when the wind hits it. Sybella's receipt. She will come to collect.`,
@@ -42,6 +47,13 @@ This is harder country than your start door. Sap goes faster. Hunters know the r
     intents: [
       {
         tags: ['cache', 'kallik', 'climb', 'down', 'rib'],
+        show: { flag: 'chapter1Done' },
+        reply: 'The cache stays under the lip. Hunger is open. Run, leave, or take the Hunger.',
+        effects: { ticks: 1, sap: -1 },
+      },
+      {
+        tags: ['cache', 'kallik', 'climb', 'down', 'rib'],
+        show: { flagUnset: 'chapter1Done' },
         reply: 'The lip does not give you a path yet. The Walking Amber is the next Hunger. Today you survive the Approach.',
         effects: { ticks: 1, sap: -1 },
       },
