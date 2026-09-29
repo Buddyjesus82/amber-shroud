@@ -147,17 +147,26 @@ function huntHeat(state: GameState): number {
     state.hubId === 'threshold' ||
     state.sceneId.startsWith('maw:') ||
     state.sceneId.startsWith('thresh:')
-  const heat = seekersGround ? state.heat.seekers : state.heat.cartel
-  if (seekersGround && state.flags.sybellaHunting) return Math.max(heat, 4)
-  return heat
+  return seekersGround ? state.heat.seekers : state.heat.cartel
 }
 
-/** Scenes that must pass before the same hunter can hit again. Back-to-back only at very high Heat. */
-export function huntGap(heat: number): number {
-  if (heat >= 8) return 1
-  if (heat >= 7) return 2
-  if (heat >= 4) return 3
-  return 5
+/**
+ * Quiet scenes that must pass before the same hunter interrupts again.
+ * Heat 0 never interrupts. One table for every faction hunter.
+ */
+export const HUNTER_QUIET_GAPS = [
+  { heatMin: 0, heatMax: 0, quiet: null },
+  { heatMin: 1, heatMax: 3, quiet: 8 },
+  { heatMin: 4, heatMax: 5, quiet: 6 },
+  { heatMin: 6, heatMax: 7, quiet: 4 },
+  { heatMin: 8, heatMax: 8, quiet: 2 },
+] as const
+
+/** Scenes that must pass before the same hunter can hit again. Null means that Heat does not interrupt. */
+export function huntGap(heat: number): number | null {
+  const h = Math.max(0, Math.min(8, Math.floor(heat)))
+  const row = HUNTER_QUIET_GAPS.find((r) => h >= r.heatMin && h <= r.heatMax)
+  return row ? row.quiet : null
 }
 
 /** Scenes that are the confrontation. Leaving one restarts the heat gap. */
@@ -193,7 +202,8 @@ function hunterScene(state: GameState): string | null {
   if (state.sceneId.startsWith('open:') || state.sceneId.startsWith('crisis:') || state.sceneId.startsWith('ch1:')) return null
   if (state.chapterId && state.hubId !== 'redmaw') return null
   const quiet = Number(state.flags.huntQuiet ?? 0)
-  if (quiet < huntGap(huntHeat(state))) return null
+  const gap = huntGap(huntHeat(state))
+  if (gap == null || quiet < gap) return null
   if (state.hubId === 'redmaw' || state.sceneId.startsWith('maw:')) {
     if (state.sceneId === 'maw:sybella' || state.sceneId === 'maw:sybella-shadow' || state.sceneId === 'maw:smoke') {
       return null

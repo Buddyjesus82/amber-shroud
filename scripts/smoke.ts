@@ -4,6 +4,8 @@ import {
   applyEffect,
   bodyOf,
   equipItem,
+  HUNTER_QUIET_GAPS,
+  huntGap,
   interpret,
   isChoiceOn,
   newGame,
@@ -958,6 +960,7 @@ s = applyEffect(s, {
   sap: 6,
   enterHub: 'redmaw',
   goto: 'maw:market',
+  heat: { seekers: 2 },
   flag: { chapter1Done: true, huntQuiet: 8 },
   pressure: 8,
   ticks: 5,
@@ -976,6 +979,7 @@ s = applyEffect(s, {
   sap: 6,
   enterHub: 'redmaw',
   goto: 'maw:lip',
+  heat: { seekers: 2 },
   flag: { chapter1Done: true, huntQuiet: 8 },
   pressure: 8,
   ticks: 5,
@@ -1080,6 +1084,7 @@ assert(s.flags.hunterFrom === 'maw:lip', 'facing her smoke keeps the ground unde
     enterHub: 'redmaw',
     goto: 'maw:market',
     add: { scrap: 1 },
+    heat: { seekers: 5 },
     flag: {
       chapter1Done: true,
       sybellaHunting: true,
@@ -1103,7 +1108,9 @@ assert(s.flags.hunterFrom === 'maw:lip', 'facing her smoke keeps the ground unde
   let hot = atSkiff('prisoner')
   hot = { ...hot, heat: { cartel: 7, seekers: 8, strays: 1 } }
   hot = pick(hot, 'on')
-  assert(hot.sceneId === 'maw:rim' && hot.flags.hunterHere, 'Heat 8 may re-arm Sybella on the very next scene')
+  assert(hot.sceneId === 'maw:rim' && !hot.flags.hunterHere, 'Heat 8 does not re-arm Sybella on the very next scene')
+  hot = applyEffect(hot, { ticks: 1, flag: { encounterAt: 999 } })
+  assert(hot.sceneId === 'maw:rim' && hot.flags.hunterHere, 'Heat 8 re-arms Sybella after 2 quiet scenes')
 
   let slip = newGame('prisoner')
   slip = applyEffect(slip, {
@@ -1155,7 +1162,9 @@ assert(s.flags.hunterFrom === 'maw:lip', 'facing her smoke keeps the ground unde
   const backToBack = knockAt('prisoner', 'camp04', 'camp:yard', 8, 0)
   const backHeld = pick(backToBack, 'hunter-scrap')
   assert(!backHeld.flags.hunterHere, 'Heat 8 dismiss still clears the knock')
-  assert(applyEffect(backHeld, { ticks: 1 }).flags.hunterHere, 'Heat 8 can re-arm on the next scene')
+  const backNext = applyEffect(backHeld, { ticks: 1, flag: { encounterAt: 999 } })
+  assert(!backNext.flags.hunterHere, 'Heat 8 does not re-arm on the next scene')
+  assert(applyEffect(backNext, { ticks: 1, flag: { encounterAt: 999 } }).flags.hunterHere, 'Heat 8 re-arms after 2 quiet scenes')
 
   const spineVal = knockAt('outcast', 'spine', 'spine:ridge', 7, 0)
   assert(spineVal.flags.hunterHere && pressureFace(spineVal) === 'Valerius', 'Spine Heat 7 is Valerius')
@@ -1185,6 +1194,99 @@ assert(s.flags.hunterFrom === 'maw:lip', 'facing her smoke keeps the ground unde
   assert(
     confessed.sceneId === 'thresh:paddock' && !confessed.flags.hunterHere,
     'leaving the Court hunter does not immediately re-arm at Heat 5',
+  )
+
+  assert(HUNTER_QUIET_GAPS.map((row) => row.quiet ?? 0).join(',') === '0,8,6,4,2', 'hunter gaps are one table: Heat 0 / 8 / 6 / 4 / 2')
+  assert(huntGap(0) === null, 'Heat 0 does not interrupt')
+  for (const heat of [1, 2, 3]) assert(huntGap(heat) === 8, `Heat ${heat} waits 8 quiet scenes`)
+  for (const heat of [4, 5]) assert(huntGap(heat) === 6, `Heat ${heat} waits 6 quiet scenes`)
+  for (const heat of [6, 7]) assert(huntGap(heat) === 4, `Heat ${heat} waits 4 quiet scenes`)
+  assert(huntGap(8) === 2, 'Heat 8 waits 2 quiet scenes and is not back-to-back')
+
+  function stepQuiet(state: GameState): GameState {
+    return applyEffect(state, { ticks: 1, flag: { encounterAt: 999 } })
+  }
+  function passQuiet(state: GameState, n: number): GameState {
+    let cur = state
+    for (let i = 0; i < n; i++) cur = stepQuiet(cur)
+    return cur
+  }
+  function armed(state: GameState, heat: Partial<GameState['heat']>): GameState {
+    const flags = { ...state.flags, huntQuiet: 0, encounterAt: 999, sybellaHunting: true }
+    delete flags.hunterHere
+    delete flags.hunterFrom
+    return { ...state, heat: { ...state.heat, ...heat }, flags }
+  }
+
+  for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
+    let sk = newGame(door)
+    sk = applyEffect(sk, {
+      sap: 6,
+      enterHub: 'redmaw',
+      goto: 'maw:market',
+      flag: { chapter1Done: true, sybellaHunting: true, metSybella: true, huntQuiet: 0, encounterAt: 999 },
+    })
+    sk = armed(sk, { seekers: 0 })
+    sk = { ...sk, flags: { ...sk.flags, huntQuiet: 30 } }
+    assert(!stepQuiet(sk).flags.hunterHere, `${door} Seeker Heat 0 does not call Sybella`)
+    sk = armed(sk, { seekers: 2 })
+    const early = passQuiet(sk, 7)
+    assert(
+      !early.flags.hunterHere && early.sceneId === 'maw:market' && Number(early.flags.huntQuiet) === 7,
+      `${door} Seeker Heat 2: Sybella does not re-fire within 8 quiet scenes`,
+    )
+    const due = stepQuiet(early)
+    assert(due.flags.hunterHere && pressureFace(due) === 'Sybella', `${door} Seeker Heat 2 re-arms Sybella on the 8th quiet scene`)
+  }
+
+  let hound = newGame('prisoner')
+  hound = applyEffect(hound, {
+    sap: 6,
+    enterHub: 'camp04',
+    goto: 'camp:yard',
+    flag: { cartelNotice: true, huntQuiet: 0, encounterAt: 999 },
+  })
+  hound = armed(hound, { cartel: 0 })
+  hound = { ...hound, flags: { ...hound.flags, huntQuiet: 30 } }
+  assert(!stepQuiet(hound).flags.hunterHere, 'Cartel Heat 0 does not call the handler')
+  hound = armed(hound, { cartel: 2 })
+  assert(!passQuiet(hound, 7).flags.hunterHere, 'Cartel Heat 2: the handler does not re-fire within 8 quiet scenes')
+  assert(pressureFace(stepQuiet(passQuiet(hound, 7))) === 'Hound-handler', 'Cartel Heat 2 re-arms the handler on the 8th quiet scene')
+  hound = armed(hound, { cartel: 7 })
+  assert(!passQuiet(hound, 3).flags.hunterHere, 'Cartel Heat 7: Valerius does not re-fire within 4 quiet scenes')
+  assert(pressureFace(stepQuiet(passQuiet(hound, 3))) === 'Valerius', 'Cartel Heat 7 still brings Valerius, after 4 quiet scenes')
+
+  let ridge = newGame('outcast')
+  ridge = applyEffect(ridge, {
+    sap: 6,
+    enterHub: 'spine',
+    goto: 'spine:ridge',
+    flag: { huntQuiet: 30, encounterAt: 999 },
+  })
+  ridge = armed(ridge, { cartel: 0, strays: 8 })
+  ridge = { ...ridge, pressure: 9, flags: { ...ridge.flags, huntQuiet: 30 } }
+  assert(!stepQuiet(ridge).flags.hunterHere, 'Stray Heat does not field a hunter, and Cartel Heat 0 stays quiet')
+  ridge = armed(ridge, { cartel: 1 })
+  ridge = { ...ridge, pressure: 0, flags: { ...ridge.flags, huntQuiet: 30 } }
+  assert(!stepQuiet(ridge).flags.hunterHere, 'Spine still waits for Cartel Heat 2 or pressure 6')
+  ridge = armed(ridge, { cartel: 1 })
+  ridge = { ...ridge, pressure: 6 }
+  const ridgeEarly = passQuiet(ridge, 7)
+  assert(!ridgeEarly.flags.hunterHere, 'Spine Heat 1 still uses the low-Heat gap of 8')
+  assert(stepQuiet(ridgeEarly).flags.hunterHere, 'Spine Heat 1 with pressure 6 re-arms after 8 quiet scenes')
+
+  let courtLow = newGame('vessel')
+  courtLow = applyEffect(courtLow, {
+    sap: 6,
+    enterHub: 'threshold',
+    goto: 'thresh:court',
+    flag: { huntQuiet: 0, encounterAt: 999 },
+  })
+  courtLow = armed(courtLow, { seekers: 2 })
+  assert(!passQuiet(courtLow, 7).flags.hunterHere, 'Court Heat 2: the guard does not re-fire within 8 quiet scenes')
+  assert(
+    pressureFace(stepQuiet(passQuiet(courtLow, 7))) === 'Court Guard',
+    'Court Heat 2 re-arms the guard on the 8th quiet scene',
   )
 }
 
@@ -2167,7 +2269,7 @@ s = newGame('outcast')
 s = pick(s, 'stand')
 s = applyEffect(s, { sap: 6, goto: 'spine:ridge', enterHub: 'spine' })
 s = { ...s, pressure: 9, ticks: 0 }
-s = applyEffect(s, { ticks: 4, flag: { huntQuiet: 8 } })
+s = applyEffect(s, { ticks: 4, heat: { cartel: 3 }, flag: { huntQuiet: 8 } })
 assert(s.sceneId === 'spine:ridge', `Spine knock stays on the ridge (got ${s.sceneId})`)
 assert(s.sceneId !== 'spine:hunter' && s.sceneId !== 'spine:shade', 'Spine knock does not yank to shade')
 assert(s.flags.hunterHere, 'Spine knock is an overlay')
@@ -2199,6 +2301,7 @@ s = applyEffect(s, {
   sap: 6,
   enterHub: 'redmaw',
   goto: 'maw:market',
+  heat: { seekers: 2 },
   flag: { chapter1Done: true, huntQuiet: 8 },
   pressure: 8,
   ticks: 5,
