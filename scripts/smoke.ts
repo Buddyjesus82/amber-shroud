@@ -1251,6 +1251,9 @@ s = applyEffect(s, {
     healthMax: 6,
   }
 }
+const rimRan = interpret(s, 'run')
+assert(rimRan.sceneId === 'maw:rim' && rimRan.flags.encounterDone, 'Rim run during a fight skips onto the outcome card')
+assert(rimRan.chapterId !== 'walking-amber', 'Rim run during a fight does not take the Hunger')
 const rimFight = pick(s, 'enc-fight')
 assert(rimFight.sceneId === 'maw:rim', 'Maw Rim fight stays on the rim')
 assert(rimFight.flags.encounterDone, 'Rim win is an outcome card')
@@ -1997,17 +2000,61 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
       flag: { chapter1Done: true, hungerKnown: true },
     })
     assert(rim.sceneId === 'maw:rim' && rim.hubId === 'redmaw', `${door} stands on Maw Rim`)
-    const walk = interpret(rim, 'run')
-    assert(/take the Hunger/.test(walk.flash ?? ''), `${door} Rim walk offers take the Hunger`)
-    for (const typed of ['take the hunger', 'take hunger', 'take the Hunger', 'walk the hunger']) {
+    assert(/Hunger is open\. Run, leave, or take the Hunger/.test(bodyOf(rim)), `${door} Rim walk-line is one beat`)
+    for (const typed of [
+      'run',
+      'go',
+      'leave',
+      'leave the rim',
+      'run to the hunger',
+      'go to the hunger',
+      'take the hunger',
+      'take hunger',
+      'take the Hunger',
+      'walk the hunger',
+    ]) {
       const via = interpret(rim, typed)
       assert(via.sceneId === 'ch2:stub', `${door} Do "${typed}" enters the Walking Amber`)
       assert(via.chapterId === 'walking-amber', `${door} Do "${typed}" is the next Hunger`)
       assert(!bad.test(via.flash ?? ''), `${door} Do "${typed}" has no error flash`)
     }
+    const wandered = interpret(rim, 'walk')
+    assert(wandered.sceneId === 'maw:rim', `${door} bare walk on the Rim does not leave`)
+    assert(/Hunger is open\. Run, leave, or take the Hunger/.test(wandered.flash ?? ''), `${door} Rim walk flash is one beat`)
+    assert(!/Pick a place, or take the Hunger/.test(wandered.flash ?? ''), `${door} Rim walk does not teach a second command`)
+
+    let shut = newGame(door)
+    shut = applyEffect(shut, { sap: 4, enterHub: 'redmaw', goto: 'maw:rim' })
+    assert(!shut.flags.chapter1Done, `${door} Rim can stand before Hunger opens`)
+    for (const typed of ['run', 'go', 'leave', 'leave the rim']) {
+      const held = interpret(shut, typed)
+      assert(held.sceneId === 'maw:rim', `${door} Do "${typed}" stays on a closed Rim`)
+      assert(held.chapterId !== 'walking-amber' && held.chapterId !== 'cache-run', `${door} closed Rim does not start Hunger`)
+      assert(/Nowhere to run yet/.test(held.flash ?? ''), `${door} closed Rim says nowhere to run`)
+      assert(!/hunger/i.test(held.flash ?? ''), `${door} closed Rim does not offer Hunger`)
+    }
+    const shutNamed = interpret(shut, 'take the hunger')
+    assert(shutNamed.sceneId === 'maw:rim', `${door} named Hunger on a closed Rim stays`)
+    assert(/not a road/i.test(shutNamed.flash ?? ''), `${door} closed Rim Hunger is not a road`)
+
     let lip = { ...rim, sceneId: 'maw:lip' }
     const fromLip = interpret(lip, 'take the hunger')
     assert(fromLip.sceneId === 'ch2:stub', `${door} Hollow Lip take the hunger matches the hook`)
+    const lipRun = interpret(lip, 'run')
+    assert(lipRun.sceneId === 'ch2:stub' && lipRun.chapterId === 'walking-amber', `${door} Hollow Lip run is the Hunger button`)
+    assert(!bad.test(lipRun.flash ?? ''), `${door} Hollow Lip run has no error flash`)
+
+    let land = newGame(door)
+    land = applyEffect(land, { sap: 4, startChapter: 'cache-run', goto: 'ch1:land' })
+    const landButton = pick(land, 'hub')
+    const landRun = interpret(land, 'leave')
+    assert(landRun.sceneId === landButton.sceneId && landRun.hubId === landButton.hubId, `${door} Approach leave is the landing button`)
+    assert(landRun.flash === landButton.flash, `${door} Approach leave uses the landing flash`)
+
+    let market = applyEffect(rim, { goto: 'maw:market' })
+    const marketRun = interpret(market, 'run')
+    assert(marketRun.sceneId === 'maw:market', `${door} Bone Market run does not start Hunger`)
+    assert(/take the Hunger/.test(marketRun.flash ?? ''), `${door} Market walk still names the Hunger as a second step`)
   }
 
   for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
@@ -2036,7 +2083,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v35'"), 'SW bumped so take-the-Hunger reaches Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v36'"), 'SW bumped so Rim leave reaches Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -2058,7 +2105,7 @@ assert(/top:\s*min\(28\.125cqi,\s*46cqb\)/.test(css), 'story starts at the cover
 assert(css.includes('rgba(12, 7, 4, 0.58)'), 'story scrim stays translucent so cover art shows through')
 assert(!css.includes('rgba(12, 7, 4, 0.88)'), 'story scrim is lighter than the v32 slab')
 const playSrc = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
-assert(playSrc.includes('?v=35'), 'scene cover URLs are cache-busted with the service worker')
+assert(playSrc.includes('?v=36'), 'scene cover URLs are cache-busted with the service worker')
 assert(!css.includes('object-position: center 68%'), 'scene art no longer crops toward the ground')
 assert(!css.includes('height: 56px'), 'short phones no longer squash covers into a head-cropping strip')
 assert(css.includes('place-items: center'), 'game screen is centered on the backdrop')

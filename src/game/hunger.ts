@@ -84,4 +84,30 @@ export function aimlessRunReply(offered: boolean): string {
   return offered ? AIMLESS_RUN_HUNGER : AIMLESS_RUN
 }
 
+/**
+ * Maw Rim, the Hollow Lip (where the Approach offers the Hunger button),
+ * and the Red Maw Approach landing. Other hubs keep the two-step walk line.
+ */
+const RIM_DEPART_SCENES = new Set(['maw:rim', 'maw:lip', 'ch1:land'])
+
+export function isRimDepartBeat(state: GameState): boolean {
+  if (state.flags.encounterHere || isPressureOverlay(state)) return false
+  const scene = getScene(state.sceneId, state.door)
+  if (scene.kind === 'crisis' || scene.kind === 'ending') return false
+  return RIM_DEPART_SCENES.has(state.sceneId)
+}
+
+/** Bare leave verbs. Hunger-named lines stay on isHungerCommand. */
+export function isRimDepartCommand(text: string): boolean {
+  const hay = norm(text)
+  if (/^(?:run|go|leave|flee|escape)(?:\s+(?:away|off|out|now|here))?$/.test(hay)) return true
+  if (/^leave(?:\s+the)?\s+rim$/.test(hay)) return true
+  if (/^(?:run|go|flee)(?:\s+(?:off|from))?(?:\s+the)?\s+rim$/.test(hay)) return true
+  return false
+}
+
+export const RIM_NOWHERE = 'Nowhere to run yet. The rim holds.'
+
+export const RIM_HUNGER_OPEN = 'Hunger is open. Run, leave, or take the Hunger.'
+
 export const HUNGER_BLOCKED = 'The Hunger is not a road on this beat.'
