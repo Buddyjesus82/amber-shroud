@@ -496,6 +496,7 @@ assert(!s.flags.sybellaBargain, 'outcast push is hunt, not a bargain')
 s = pick(s, 'hub')
 assert(s.hubId === 'redmaw' && s.sceneId === 'maw:rim', 'outcast enters Red Maw Approach')
 assert(s.sceneId !== 'ch1:sybella' && s.sceneId !== 'spine:ridge', 'no bounce back to Spine or Sybella')
+assert(!s.flags.hunterHere, 'entering the Approach after Sybella does not immediately re-arm her')
 
 s = newGame('outcast')
 s = pick(s, 'stand')
@@ -982,6 +983,210 @@ s = applyEffect(s, {
 assert(s.sceneId === 'maw:lip', 'Sybella overlay can land on the Lip')
 s = pick(s, 'sybella-smoke')
 assert(s.sceneId === 'maw:sybella', 'choosing her smoke is the travel')
+assert(s.flags.hunterFrom === 'maw:lip', 'facing her smoke keeps the ground underneath')
+
+{
+  const leak = /no delay granted|cartel mouths|stray empties/i
+  function atSkiff(door: GameState['door']): GameState {
+    let sk = newGame(door)
+    sk = applyEffect(sk, {
+      sap: 6,
+      health: 6,
+      enterHub: 'redmaw',
+      goto: 'maw:smoke',
+      add: { scrap: 1 },
+      flag: {
+        chapter1Done: true,
+        sybellaHunting: true,
+        metSybella: true,
+        heardWalkingAmber: true,
+        huntQuiet: 8,
+        encounterAt: 999,
+      },
+      ticks: 5,
+    })
+    sk = { ...sk, heat: { cartel: 7, seekers: 3, strays: 1 } }
+    assert(sk.sceneId === 'maw:smoke', `${door} stands on Skiff Smoke`)
+    assert(!sk.flags.hunterHere && !sk.flags.encounterHere, `${door} Skiff Smoke is not already an interrupt`)
+    assert(ids(sk).includes('on'), `${door} Skiff Smoke has a way on into the Approach`)
+    assert(ids(sk).includes('talk'), `${door} Skiff Smoke can still approach Sybella`)
+    assert(!leak.test(bodyOf(sk)), `${door} Skiff Smoke body is not the leaked line`)
+    return sk
+  }
+
+  function onward(sk: GameState): boolean {
+    return ids(sk).some((id) =>
+      ['look', 'hold', 'zafir', 'bury', 'listen', 'gear', 'back', 'heal', 'oram', 'talk'].includes(id),
+    )
+  }
+
+  for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
+    const smoke = atSkiff(door)
+    const slipped = pick(smoke, 'on')
+    assert(slipped.sceneId === 'maw:rim', `${door} can slip Skiff Smoke into the Approach`)
+    assert(!slipped.flags.hunterHere, `${door} slipping the smoke does not immediately re-arm Sybella`)
+    assert(ids(slipped).includes('look'), `${door} Approach still opens the ribs`)
+    assert(!leak.test(slipped.flash ?? ''), `${door} slip flash is in-world`)
+
+    const talk = pick(smoke, 'talk')
+    assert(talk.sceneId === 'maw:sybella', `${door} approach opens Sybella`)
+    const optionIds = ids(talk)
+    assert(optionIds.includes('push'), `${door} can push past Sybella`)
+    assert(optionIds.includes('false'), `${door} can throw a decoy`)
+    assert(optionIds.includes('back'), `${door} can leave the smoke`)
+    assert(optionIds.includes(door === 'vessel' ? 'hold' : 'help'), `${door} can ask for help`)
+    if (door !== 'vessel') assert(optionIds.includes('off'), `${door} can decline her`)
+    for (const id of optionIds) {
+      let branch = pick(atSkiff(door), 'talk')
+      const choice = visibleChoices(branch).find((c) => c.id === id)
+      if (!choice || !isChoiceOn(branch, choice.enable)) continue
+      const scrapBefore = branch.items.scrap ?? 0
+      branch = pick(branch, id)
+      assert(
+        branch.sceneId !== 'maw:smoke' && branch.sceneId !== 'maw:sybella',
+        `${door} ${id} leaves Skiff Smoke (got ${branch.sceneId})`,
+      )
+      assert(!branch.flags.hunterHere, `${door} ${id} does not immediately re-arm Sybella`)
+      assert(!leak.test(branch.flash ?? '') && !leak.test(bodyOf(branch)), `${door} ${id} shows no leaked shorthand`)
+      assert(onward(branch), `${door} ${id} lands with a way forward at ${branch.sceneId}: ${ids(branch).join(',')}`)
+      if (id === 'false') {
+        assert((branch.items.scrap ?? 0) < scrapBefore, `${door} decoy spends what was thrown`)
+        assert(branch.flags.falseSpent === 'scrap', `${door} decoy records the scrap`)
+        assert(!branch.flags.decoyNow, `${door} decoy flag does not stick`)
+      }
+      if (id === 'push') {
+        assert(branch.sceneId === 'maw:rim', `${door} push past enters the Approach`)
+        assert((branch.flash ?? '').includes('Seeker Heat +1'), `${door} push past keeps the Seeker Heat line`)
+        assert(branch.heat.seekers === 4, `${door} push past is Seeker Heat +1`)
+      }
+    }
+  }
+
+  let asked = pick(atSkiff('prisoner'), 'talk')
+  asked = interpret(asked, 'ask for help')
+  assert(asked.sceneId !== 'maw:sybella' && !asked.flags.hunterHere, 'typing ask for help resolves and continues')
+  assert(!leak.test(asked.flash ?? ''), 'ask for help is not the leaked line')
+  let stepped = pick(atSkiff('prisoner'), 'talk')
+  stepped = interpret(stepped, 'step out of smoke')
+  assert(stepped.sceneId !== 'maw:smoke' && stepped.sceneId !== 'maw:sybella', 'step out of smoke leaves the loop')
+  assert(!leak.test(stepped.flash ?? ''), 'stepping out does not show the leaked line')
+  let left = pick(atSkiff('outcast'), 'talk')
+  left = interpret(left, 'leave smoke')
+  assert(left.sceneId !== 'maw:smoke' && !left.flags.hunterHere, 'leave smoke continues')
+
+  let under = newGame('prisoner')
+  under = applyEffect(under, {
+    sap: 6,
+    enterHub: 'redmaw',
+    goto: 'maw:market',
+    add: { scrap: 1 },
+    flag: {
+      chapter1Done: true,
+      sybellaHunting: true,
+      metSybella: true,
+      huntQuiet: 8,
+      encounterAt: 999,
+    },
+    ticks: 5,
+  })
+  under = { ...under, heat: { cartel: 7, seekers: 5, strays: 1 } }
+  assert(under.flags.hunterHere && under.sceneId === 'maw:market', 'Sybella interrupt still takes the market')
+  under = pick(under, 'sybella-smoke')
+  assert(under.flags.hunterFrom === 'maw:market', 'the market is the ground under her smoke')
+  const returned = pick(under, 'back')
+  assert(returned.sceneId === 'maw:market' && !returned.flags.hunterHere, 'leave the smoke returns to the market')
+  assert(ids(returned).includes('zafir'), 'the market still has its own way forward')
+  const pushed = pick(under, 'push')
+  assert(pushed.sceneId === 'maw:rim' && !pushed.flags.hunterHere, 'push past from an interrupt enters the Approach')
+  assert(ids(pushed).includes('look'), 'push past can go on to the ribs')
+
+  let hot = atSkiff('prisoner')
+  hot = { ...hot, heat: { cartel: 7, seekers: 8, strays: 1 } }
+  hot = pick(hot, 'on')
+  assert(hot.sceneId === 'maw:rim' && hot.flags.hunterHere, 'Heat 8 may re-arm Sybella on the very next scene')
+
+  let slip = newGame('prisoner')
+  slip = applyEffect(slip, {
+    sap: 6,
+    startChapter: 'cache-run',
+    goto: 'ch1:sybella',
+    ticks: 1,
+    flag: { encounterAt: 999 },
+  })
+  assert(bodyOf(slip).includes('The Walking Amber...'), 'Walking Amber slips on the first meeting')
+  assert(slip.flags.heardWalkingAmber, 'the slip is marked heard')
+  slip = pick(slip, 'maw')
+  assert(slip.flags.metSybella && slip.sceneId === 'ch1:land', 'push past still lands the chapter')
+  const again = applyEffect(slip, { goto: 'ch1:sybella', ticks: 1 })
+  assert(!bodyOf(again).includes('The Walking Amber'), 'Walking Amber does not slip a second time')
+  slip = { ...slip, flags: { ...slip.flags, huntQuiet: 9, encounterAt: 999 }, heat: { ...slip.heat, seekers: 5 } }
+  slip = pick(slip, 'hub')
+  assert(slip.sceneId === 'maw:rim' && !slip.flags.hunterHere, 'the first Approach does not immediately re-arm her')
+  assert(ids(slip).includes('look'), 'the first Approach can go on to the ribs')
+
+  function knockAt(door: GameState['door'], hub: 'camp04' | 'spine' | 'threshold', scene: string, cartel: number, seekers: number) {
+    let kn = newGame(door)
+    kn = applyEffect(kn, {
+      sap: 6,
+      enterHub: hub,
+      goto: scene,
+      add: { scrap: 1 },
+      flag: { cartelNotice: true, huntQuiet: 0, encounterAt: 999 },
+      ticks: 2,
+    })
+    kn = { ...kn, heat: { ...kn.heat, cartel, seekers }, flags: { ...kn.flags, huntQuiet: 8 } }
+    return applyEffect(kn, { ticks: 1 })
+  }
+
+  const handler = knockAt('prisoner', 'camp04', 'camp:yard', 5, 0)
+  assert(handler.flags.hunterHere && handler.sceneId === 'camp:yard', 'Heat 5 calls the handler in the Yard')
+  assert(pressureFace(handler) === 'Hound-handler', 'Heat 5 is the handler, not Valerius')
+  const handlerHeld = pick(handler, 'hunter-scrap')
+  assert(!handlerHeld.flags.hunterHere, 'handler dismiss clears the knock')
+  assert(handlerHeld.heat.cartel === 5, 'paying scrap does not raise Cartel Heat')
+  assert(!applyEffect(handlerHeld, { ticks: 1 }).flags.hunterHere, 'handler does not re-arm on the next scene at Heat 5')
+
+  const valerius = knockAt('prisoner', 'camp04', 'camp:yard', 7, 0)
+  assert(pressureFace(valerius) === 'Valerius', 'Heat 7 brings Valerius')
+  const valHeld = pick(valerius, 'hunter-scrap')
+  assert(!valHeld.flags.hunterHere && valHeld.heat.cartel === 7, 'Valerius dismiss stays at Heat 7')
+  assert(!applyEffect(valHeld, { ticks: 1 }).flags.hunterHere, 'Valerius does not re-arm on the next scene at Heat 7')
+
+  const backToBack = knockAt('prisoner', 'camp04', 'camp:yard', 8, 0)
+  const backHeld = pick(backToBack, 'hunter-scrap')
+  assert(!backHeld.flags.hunterHere, 'Heat 8 dismiss still clears the knock')
+  assert(applyEffect(backHeld, { ticks: 1 }).flags.hunterHere, 'Heat 8 can re-arm on the next scene')
+
+  const spineVal = knockAt('outcast', 'spine', 'spine:ridge', 7, 0)
+  assert(spineVal.flags.hunterHere && pressureFace(spineVal) === 'Valerius', 'Spine Heat 7 is Valerius')
+  const spineHeld = pick(spineVal, 'spine-scrap')
+  assert(!spineHeld.flags.hunterHere && spineHeld.sceneId === 'spine:ridge', 'Spine dismiss stays on the ridge')
+  assert(!applyEffect(spineHeld, { ticks: 1 }).flags.hunterHere, 'Spine Valerius does not re-arm on the next scene at Heat 7')
+
+  const court = knockAt('vessel', 'threshold', 'thresh:court', 0, 5)
+  assert(court.flags.hunterHere && court.sceneId === 'thresh:court', 'Heat 5 calls the Court guard')
+  const courtHeld = pick(court, 'thresh-hide')
+  assert(!courtHeld.flags.hunterHere, 'Court dismiss clears the knock')
+  assert(!applyEffect(courtHeld, { ticks: 1 }).flags.hunterHere, 'Court guard does not re-arm on the next scene at Heat 5')
+
+  let confessed = newGame('vessel')
+  confessed = applyEffect(confessed, {
+    sap: 6,
+    enterHub: 'threshold',
+    goto: 'thresh:thalia',
+    flag: { huntQuiet: 9, encounterAt: 999 },
+    ticks: 4,
+  })
+  confessed = { ...confessed, heat: { ...confessed.heat, seekers: 2 } }
+  confessed = pick(confessed, 'confess')
+  assert(confessed.sceneId === 'thresh:hunter', 'confessing the cloth reaches the hunter scene')
+  assert(confessed.heat.seekers === 5, 'confess climbs Seeker Heat and stays under 8')
+  confessed = pick(confessed, 'oram')
+  assert(
+    confessed.sceneId === 'thresh:paddock' && !confessed.flags.hunterHere,
+    'leaving the Court hunter does not immediately re-arm at Heat 5',
+  )
+}
 
 s = newGame('prisoner')
 s = pick(s, 'pens')

@@ -160,6 +160,20 @@ export function huntGap(heat: number): number {
   return 5
 }
 
+/** Scenes that are the confrontation. Leaving one restarts the heat gap. */
+const HUNT_GROUND = new Set([
+  'maw:smoke',
+  'maw:sybella',
+  'maw:sybella-shadow',
+  'camp:hunter',
+  'spine:hunter',
+  'thresh:hunter',
+])
+
+function facingSybella(sceneId: string): boolean {
+  return sceneId === 'maw:sybella' || sceneId === 'maw:sybella-shadow'
+}
+
 function hunterScene(state: GameState): string | null {
   if (state.flags.hunterHere || state.flags.encounterHere || state.flags.downed) return null
   if (
@@ -368,7 +382,7 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     if (dest !== state.sceneId && next.flags.hunterHere) {
       const flags = { ...next.flags }
       delete flags.hunterHere
-      delete flags.hunterFrom
+      if (!facingSybella(dest)) delete flags.hunterFrom
       next.flags = flags
     }
     if (dest !== state.sceneId) {
@@ -429,6 +443,12 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   if (next.flags.climax === 'false' && state.flags.climax !== 'false') {
     next = spendFalse(next)
   }
+  if (next.flags.decoyNow && !state.flags.decoyNow) {
+    next = spendFalse(next)
+    const flags = { ...next.flags }
+    delete flags.decoyNow
+    next.flags = flags
+  }
 
   const arrived = getScene(next.sceneId)
   if (arrived.hubId) next.hubId = arrived.hubId
@@ -458,11 +478,14 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   const lingered = (fx.ticks ?? 0) > 0 || (fx.pressure ?? 0) > 0 || !!dest
   const clearingHunt = !!state.flags.hunterHere && (!next.flags.hunterHere || !!fx.unsetFlag?.includes('hunterHere'))
   if (clearingHunt) {
+    const keepFrom = facingSybella(next.sceneId)
     next.flags = { ...next.flags, huntQuiet: 0 }
     delete next.flags.hunterHere
-    delete next.flags.hunterFrom
+    if (!keepFrom) delete next.flags.hunterFrom
   } else if (lingered && !next.flags.hunterHere && !next.flags.encounterHere) {
-    next.flags = { ...next.flags, huntQuiet: Number(next.flags.huntQuiet ?? 0) + 1 }
+    const restart = HUNT_GROUND.has(state.sceneId) && next.sceneId !== state.sceneId
+    const carried = restart ? 0 : Number(next.flags.huntQuiet ?? 0)
+    next.flags = { ...next.flags, huntQuiet: carried + 1 }
   }
   const interrupt = lingered && !clearingHunt ? hunterScene(next) : null
   const fightBeat = !!fx.resolveEncounter || !!next.flags.encounterHere || !!fx.unsetFlag?.includes('encounterHere')

@@ -344,7 +344,7 @@ const sybella: IntentRule[] = [
   },
   {
     tags: HELP,
-    reply: 'She does not feed Cartel mouths or Stray empties. "I hunt. I do not aid. Delay is a kind of theft."',
+    reply: '"I hunt. I do not pour. The old roads remember who waits."',
     effects: { heat: { seekers: 1 }, pressure: 1, ticks: 1 },
   },
   {

@@ -1,4 +1,17 @@
-import type { Scene } from '../types'
+import type { Choice, Scene } from '../types'
+
+/** Resolve Sybella and leave her smoke. Underlying ground if she interrupted it, otherwise the Approach. */
+function sybellaOn(extra: Choice['effects']): Choice['effects'] {
+  const { flag, ...rest } = extra
+  return {
+    ticks: 1,
+    goto: 'maw:rim',
+    unsetFlag: ['hunterHere', 'hunterFrom'],
+    returnHunterFrom: true,
+    ...rest,
+    flag: { huntQuiet: 0, ...flag },
+  }
+}
 
 export const redMawScenes: Scene[] = [
   {
@@ -265,6 +278,16 @@ Zafir is at the stall. He looks like a man who has watched buyers fail and kept 
 She is here. Hunting. Reasonable.`,
     choices: [
       {
+        id: 'on',
+        label: 'Continue into the Approach',
+        sub: 'Slip the smoke. The ribs are still ahead.',
+        tone: 'quiet',
+        effects: sybellaOn({
+          returnHunterFrom: false,
+          flash: 'You slip the resin-smoke. The Approach is ahead, ribs and all.',
+        }),
+      },
+      {
         id: 'talk',
         label: 'Approach Sybella',
         effects: { goto: 'maw:sybella', ticks: 1, pressure: 1 },
@@ -295,40 +318,80 @@ She is here. Hunting. Reasonable.`,
     choices: [
       {
         id: 'hold',
-        label: 'Tell her you will walk when the Maw opens',
+        label: 'Ask for help',
+        sub: 'Walk when the Maw opens.',
         show: { door: 'vessel' },
-        effects: {
-          ticks: 1,
+        effects: sybellaOn({
           heat: { seekers: -1 },
-          goto: 'maw:smoke',
-          flash: 'She accepts the delay the way old stone accepts a hand. Temporarily. The faith keeps its own. She does not keep you.',
-        },
+          flash:
+            'She accepts the ask the way old stone accepts a hand. Temporarily. The faith keeps its own. She does not keep you.',
+        }),
+      },
+      {
+        id: 'help',
+        label: 'Ask for help',
+        sub: 'She hunts. She does not pour for you.',
+        show: { not: { door: 'vessel' } },
+        effects: sybellaOn({
+          heat: { seekers: 1 },
+          flash: 'She does not pour. The faith keeps its own, and the sand keeps the rest.',
+        }),
       },
       {
         id: 'off',
         label: 'Step out of her smoke. Do not ask for help.',
         show: { not: { door: 'vessel' } },
-        effects: {
-          ticks: 1,
+        effects: sybellaOn({
           heat: { seekers: 1 },
           pressure: 1,
-          goto: 'maw:smoke',
-          flash: 'No delay granted. She hunts Cartel mouths and Stray empties. She does not feed them.',
-        },
+          flash: 'The old roads do not wait, and she will not pour for you.',
+        }),
       },
       {
         id: 'defy',
         label: 'Tell her to find someone else to shadow',
         tone: 'danger',
-        effects: {
-          ticks: 1,
+        effects: sybellaOn({
           heat: { seekers: 2 },
           pressure: 2,
-          goto: 'maw:smoke',
           flash: 'A small nod. Agreement, even. She can use a person who thinks they are free. Especially those.',
-        },
+        }),
       },
-      { id: 'back', label: 'Leave the smoke', tone: 'quiet', effects: { goto: 'maw:smoke' } },
+      {
+        id: 'push',
+        label: 'Push past her into the Approach',
+        sub: 'She follows. You still arrive.',
+        tone: 'hunger',
+        effects: sybellaOn({
+          returnHunterFrom: false,
+          heat: { seekers: 1 },
+          flash:
+            "You walked past without paying. Sybella didn't stop you, and she didn't let you go either. She's following you into the Approach. Seeker Heat +1.",
+        }),
+      },
+      {
+        id: 'false',
+        label: 'Throw a decoy',
+        sub: 'Scrap, a wrench, or a map — only what is in your hands. She still follows.',
+        enable: {
+          any: [{ item: 'scrap' }, { item: 'wrench' }, { item: 'cache_map' }, { item: 'oram_map' }],
+        },
+        locked: 'You need scrap, a wrench, or a map in hand.',
+        effects: sybellaOn({
+          heat: { seekers: 1 },
+          flag: { falseTrail: true, decoyNow: true },
+          flash:
+            'You throw what you are carrying. It buys a head start and a lie in the sand. She is a moment late. She still follows. Seeker Heat climbs.',
+        }),
+      },
+      {
+        id: 'back',
+        label: 'Leave the smoke',
+        tone: 'quiet',
+        effects: sybellaOn({
+          flash: 'You leave the resin-smoke. The ground under it is still there.',
+        }),
+      },
     ],
     intents: [
       {
@@ -373,7 +436,7 @@ She is here. Hunting. Reasonable.`,
         effects: {
           goto: 'maw:sybella',
           ticks: 1,
-          unsetFlag: ['hunterHere', 'hunterFrom'],
+          unsetFlag: ['hunterHere'],
         },
       },
     ],
