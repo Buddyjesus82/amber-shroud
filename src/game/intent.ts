@@ -1,4 +1,5 @@
 import type { Choice, GameState, IntentRule } from './types'
+import { AIMLESS_RUN } from './hunger'
 import { check } from './logic'
 
 function normalize(text: string): string {
@@ -130,7 +131,7 @@ export const GLOBAL_INTENTS: IntentRule[] = [
   },
   {
     tags: ['run', 'flee', 'leave', 'go', 'escape', 'walk'],
-    reply: 'Running without a heading is how the Maw gets fed. Pick a place, or take the Hunger. Map if you need a road.',
+    reply: AIMLESS_RUN,
     effects: { ticks: 1 },
   },
   {

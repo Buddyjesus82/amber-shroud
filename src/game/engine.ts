@@ -1,5 +1,6 @@
 import { DOORS, HUBS, ITEMS, getScene, hasScene, resolveBody } from './content'
 import { applyDelta, check, clamp } from './logic'
+import { aimlessRunReply, hungerCommandEffect, HUNGER_BLOCKED, isHungerCommand } from './hunger'
 import { GLOBAL_INTENTS, matchChoiceText, matchIntent } from './intent'
 import { travelGate } from './map'
 import {
@@ -565,10 +566,21 @@ export function interpret(state: GameState, text: string): GameState {
     }
   }
 
-  const button = matchChoiceText(
-    text,
-    visibleChoices(state).filter((c) => isChoiceOn(state, c.enable)),
-  )
+  const shown = visibleChoices(state)
+  const enabled = shown.filter((c) => isChoiceOn(state, c.enable))
+
+  if (isHungerCommand(text)) {
+    const fx = hungerCommandEffect(state, enabled)
+    if (fx) return withVerb(applyEffect(state, fx), 'hunger')
+    const named = enabled.filter((c) => /\bhunger\b/i.test(`${c.label} ${c.sub ?? ''}`))
+    const namedHit = matchChoiceText(text, named)
+    if (namedHit) return withVerb(applyEffect(state, namedHit.effects), namedHit.id)
+    if (!state.flags.encounterHere && !isPressureOverlay(state)) {
+      return withVerb(persist({ ...state, flash: HUNGER_BLOCKED, updatedAt: Date.now() }), 'hunger')
+    }
+  }
+
+  const button = matchChoiceText(text, enabled)
   if (button) {
     return withVerb(applyEffect(state, button.effects), button.id)
   }
@@ -583,7 +595,7 @@ export function interpret(state: GameState, text: string): GameState {
     return withVerb(applyEffect(state, { ...local.effects, flash: local.reply }), verbLabel(local.tags[0]))
   }
 
-  const labels = visibleChoices(state).map((c) => c.label)
+  const labels = shown.map((c) => c.label)
   const off = offButton(state, text, scene, labels)
   if (off) {
     return withVerb(applyEffect(state, off.effects), off.verb)
@@ -609,7 +621,11 @@ export function interpret(state: GameState, text: string): GameState {
 
   const global = matchIntent(text, GLOBAL_INTENTS, state)
   if (global) {
-    return withVerb(applyEffect(state, { ...global.effects, flash: global.reply }), verbLabel(global.tags[0]))
+    const reply =
+      global.tags.includes('escape') && global.tags.includes('walk')
+        ? aimlessRunReply(hungerCommandEffect(state, enabled) != null)
+        : global.reply
+    return withVerb(applyEffect(state, { ...global.effects, flash: reply }), verbLabel(global.tags[0]))
   }
   const fallback = scene.intentFallback ?? (scene.kind === 'talk' || scene.speaker ? talkFallback(scene.id, scene.speaker) : null)
   if (fallback) {
