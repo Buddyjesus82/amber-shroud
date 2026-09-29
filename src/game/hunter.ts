@@ -479,7 +479,7 @@ export function sybellaShadowChoices(state: GameState): Choice[] {
       effects: {
         goto: 'maw:sybella',
         ticks: 1,
-        unsetFlag: CLEAR,
+        unsetFlag: ['hunterHere'],
         flash: 'You spend the walk. Whatever ground you left waits without you.',
       },
     },
