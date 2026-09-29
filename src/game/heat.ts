@@ -19,12 +19,12 @@ export const HEAT_FACTIONS: Record<
   seekers: {
     name: 'Seekers',
     watch: 'cloth, vessels, Sybella',
-    body: 'Seekers want a cup that holds. Thalia loves a Vessel. Sybella hunts a walking amber battery — for her church, not yours. Seeker Heat is hymns, runners, and a skiff that treats you as inventory. She does not help Cartel. She does not help Dune-Strays.',
+    body: 'Seekers want a cup that holds. Thalia loves a Vessel. Sybella hunts what the sand should not have let walk — for the faith, not for you. Seeker Heat is hymns, runners, and a skiff. She does not aid Cartel. She does not aid Dune-Strays.',
   },
   strays: {
     name: 'Strays',
     watch: 'Oil-Tooth, Silas, Kaelen the Sifter',
-    body: 'Dune-Strays collect favors, shade, and invoices. Oil-Tooth hotwires. Silas sells minutes. Kaelen sells rumors. Stray Heat is being known by people who charge. Known is not safe.',
+    body: 'Dune-Strays collect favors and shade. Oil-Tooth hotwires. Silas sells minutes. Kaelen sells rumors and funds a way out. Stray Heat is being known. Known is not safe.',
   },
 }
 

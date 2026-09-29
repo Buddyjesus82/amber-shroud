@@ -17,6 +17,16 @@ Jaxson "Oil-Tooth" Vance is not in the line. He is either in the next bunk, or u
 Overseer Valerius is the looming shadow. First major victory: get out from under him.`,
     variants: [
       {
+        if: { all: [{ flag: 'leftCamp' }, { flag: 'quietFence' }, { flagUnset: 'campLockdown' }] },
+        mode: 'append',
+        body: `You came back through the fence-hole. The camp is uneasy and quiet. Guards have not proved the hole. Oil-Tooth's stash, if it is still in the vat-shadow, is a walk, not a war.`,
+      },
+      {
+        if: { flag: 'campLockdown' },
+        mode: 'append',
+        body: `Lockdown still sits on the gates. If you are inside, you fought or you were dragged. Do not linger where a count can see your face.`,
+      },
+      {
         if: { flag: 'vatDripTaken' },
         mode: 'append',
         body: `The vat you robbed is quieter than the others. Guilt is a Cartel invention. Thirst is not.`,
@@ -97,12 +107,12 @@ Overseer Valerius is the looming shadow. First major victory: get out from under
       },
       {
         tags: ['jaxson', 'oil', 'tooth', 'lean', 'vance', 'bunk'],
-        reply: "Oil-Tooth's stall sits off the line. The next bunk in the pens is his. He is the inside man — not Kaelen.",
+        reply: "Oil-Tooth's stall sits off the line. The next bunk in the pens is his. He hotwires. Kaelen works the Wire.",
         effects: { goto: 'camp:lean' },
       },
       {
         tags: ['kaelen', 'sifter', 'rumor', 'news', 'merchant', 'trade'],
-        reply: 'Kaelen the Sifter works the Wire. Rumors. Drops. They do not hotwire Striders.',
+        reply: 'Kaelen the Sifter works the Wire. Rumors. Drops. He does not hotwire Striders.',
         effects: { goto: 'camp:wire' },
       },
       {
@@ -200,6 +210,16 @@ Oil-Tooth named a west bolt at the Guard Station. That is a different throat. Th
       },
     ],
     choices: [
+      {
+        id: 'west',
+        label: 'Take the west bolt',
+        sub: 'It leads to the Guard Station. Not the dunes. Not the bay.',
+        effects: {
+          goto: 'camp:guard',
+          ticks: 1,
+          flash: 'West. The bolt opens on the Guard Station. Steam, then the count. The bay is the other throat.',
+        },
+      },
       {
         id: 'listen',
         label: 'Listen to the pipes',
@@ -401,7 +421,7 @@ Kaelen the Sifter is not here. Kaelen sells rumors at the Wire.`,
           flag: { shivTaken: true },
           goto: 'camp:cages',
           ticks: 1,
-          flash: 'Ugly metal for ugly trades. Kaelen the Sifter buys scrap. They sell Drops. They do not hotwire.',
+          flash: 'Ugly metal for ugly trades. Kaelen the Sifter trades Drops for scrap. He does not hotwire.',
         },
       },
     ],
@@ -416,7 +436,7 @@ Kaelen the Sifter is not here. Kaelen sells rumors at the Wire.`,
 
 Lifetime labor: repairing Ironclad Skiff-Striders. He has skimmed Oasis Sap the whole time. Reckless. Charismatic. Anti-authority. Humor as a shield. He watches security weaknesses the way other men watch the sky.
 
-"Bleed-Cut," he says, like it is already your name. "Great Bleed is coming. You sabotage the guard station. I hotwire a Strider. That is the job. Kaelen the Sifter sells rumors at the Wire if you want news. They are not the inside man. I am."`,
+"Bleed-Cut," he says, like it is already your name. "Great Bleed is coming. You sabotage the guard station. I hotwire a Strider. That is the job. Kaelen the Sifter sells rumors at the Wire if you want news. He sells rumors. I hotwire."`,
     variants: [
       {
         if: { flag: 'striderHot' },
@@ -527,7 +547,7 @@ Lifetime labor: repairing Ironclad Skiff-Striders. He has skimmed Oasis Sap the 
     speaker: 'Jaxson "Oil-Tooth" Vance',
     body: `"Valerius is the first major victory you have to overcome," Oil-Tooth says, smirking around the brass. "Imposing. Scarred. Reinforced iron plating over dust-cloaks. Steam-hissing shock baton. Cruel. Calculating. He hunts Sap thieves and unpermitted relic hoarders. Sadistic. Arrogant. Disciplined. Looming shadow. I have watched the guard station until I could draw it in grease.
 
-Great Bleed hits, you sabotage that station. I hotwire an Ironclad Skiff-Strider. We leave the pens. You want rumors — Kallik, the Hunger, the blonde — that is Kaelen the Sifter at the Wire. They sell leads. I sell a ride."`,
+Great Bleed hits, you sabotage that station. I hotwire an Ironclad Skiff-Strider. We leave the pens. You want rumors — Kallik, the Hunger, the blonde — that is Kaelen the Sifter at the Wire. He sells leads. I sell a ride."`,
     choices: [
       {
         id: 'inside',
@@ -611,7 +631,7 @@ Great Bleed hits, you sabotage that station. I hotwire an Ironclad Skiff-Strider
           pressure: 1,
           goto: 'camp:jaxson',
           flash:
-            '"The Wire. Jittery little Sifter. Dust-caked canvas. Pack full of vials. Glints buy intel. Scrap buys Drops. They play all sides. They are not me."',
+            '"The Wire. Jittery little Sifter. Dust-caked canvas. Pack full of vials. Glints buy intel. Scrap buys Drops. He plays all sides. He is not me."',
         },
       },
       {
@@ -641,7 +661,7 @@ Great Bleed hits, you sabotage that station. I hotwire an Ironclad Skiff-Strider
       },
       {
         tags: ['kaelen', 'wire', 'sifter'],
-        reply: '"Wire. Jittery merchant. Pack of vials. They sell Drops and intel. They are not me."',
+        reply: '"Wire. Jittery merchant. Pack of vials. He sells Drops and intel. He is not me."',
         effects: { flag: { kaelenKnown: true }, goto: 'camp:wire' },
       },
       {
@@ -662,7 +682,7 @@ Great Bleed hits, you sabotage that station. I hotwire an Ironclad Skiff-Strider
     kind: 'talk',
     title: 'Wrong Counter',
     speaker: 'Jaxson "Oil-Tooth" Vance',
-    body: `"That heading is not my product," Oil-Tooth says. "Kaelen the Sifter sells rumors. Wire. Glints for intel. Scrap for Drops. I am the inside man. Guard station. Strider. Go mix your invoices with them."`,
+    body: `"That heading is not my product," Oil-Tooth says. "Kaelen the Sifter sells rumors. Wire. Glints for intel. Scrap for Drops. I hotwire. Guard station. Strider. Take the rumor to him."`,
     choices: [
       {
         id: 'wire',
@@ -711,7 +731,7 @@ Great Bleed hits, you sabotage that station. I hotwire an Ironclad Skiff-Strider
     hubId: 'camp04',
     kind: 'place',
     title: 'Watchtower Drip',
-    body: `The tower leaks shade, steam, and authority. Overseer Valerius stands in it like a nail stands in wood.
+    body: `The tower leaks shade, steam, and authority. Overseer Valerius stands in it like a nail stands in wood. Bald, scarred, steam baton in the fist. No dog. The Hound-handler works the yard. The Overseer stays here until Cartel Heat drags him out.
 
 Imposing. Scarred. Reinforced iron plating over dust-cloaks. A steam-hissing shock baton in the fist. Cruel. Calculating. Brutal enforcer protecting corporate interests. He hunts Sap thieves and unpermitted relic hoarders. Sadistic. Arrogant. Disciplined.
 
@@ -759,9 +779,9 @@ He is the immediate antagonist. The looming shadow. First major victory: get out
     speaker: 'Overseer Valerius',
     body: `Valerius does not bother to raise the shock baton. Steam hisses in the grip anyway.
 
-"You are out of position," he says, cruel and calculating, mild as boiled water. "I protect Ironwood's interests. I hunt Sap thieves and unpermitted relic hoarders. If I write you down as escaped, the company spends a Hound. If I write you down as useful, you scrape until your hands forget they were hands."
+"Escape, I will spend a Hound. The price will be your feet. Stay useful; scrape the line, until your hands forget they were hands. That will buy your life."
 
-He waits. Sadistic. Arrogant. Disciplined. Men like him can afford waiting. You cannot. He is the looming shadow. First major victory: leave him behind.`,
+Bald. Scarred. Steam baton. No dog at his heel. The handler and the hound are a different man, out in the yard. Valerius waits here. He can afford it.`,
     choices: [
       {
         id: 'useful',
@@ -777,13 +797,23 @@ He waits. Sadistic. Arrogant. Disciplined. Men like him can afford waiting. You 
       {
         id: 'bluff',
         label: 'Flash the overseer chip',
-        show: { item: 'overseer_chip' },
+        show: { all: [{ item: 'overseer_chip' }, { flagUnset: 'chipBluff' }, { flagUnset: 'chipCaught' }] },
         effects: {
-          heat: { cartel: -2 },
           ticks: 1,
-          goto: 'camp:tower',
+          flag: { chipGamble: true },
+          flash: 'You show the chip. The tower does not move.',
+        },
+      },
+      {
+        id: 'pass',
+        label: 'Bargain a quiet pass out of camp',
+        effects: {
+          ticks: 1,
+          heat: { cartel: 1 },
+          flag: { quietPass: true, opposedHook: true },
+          goto: 'camp:wire',
           flash:
-            'His mouth tightens. The chip is real. You are not. He lets the math sit unfinished. That is the kindest thing he has done all year.',
+            'He names a gap in the count. You take the wire. He says, almost idle, that the skiff-woman and he want different ends of you. A lever, if you live. You are not in the Yard. You are at the wire.',
         },
       },
       {
@@ -821,8 +851,7 @@ He waits. Sadistic. Arrogant. Disciplined. Men like him can afford waiting. You 
           heat: { cartel: 3 },
           pressure: 3,
           ticks: 1,
-          goto: 'camp:hunter',
-          flash: 'Steel is a language. Valerius is fluent. He does not step back. He steps forward.',
+          flash: 'Steel is a language. Valerius is fluent. He does not step back. He does not send you to the Yard. The baton hisses, and you are still in the tower, known.',
         },
       },
       { id: 'back', label: 'Step out of his shade', tone: 'quiet', effects: { goto: 'camp:tower' } },
@@ -835,8 +864,8 @@ He waits. Sadistic. Arrogant. Disciplined. Men like him can afford waiting. You 
       },
       {
         tags: ['attack', 'stab', 'kill', 'threaten'],
-        reply: 'The tower has a memory for violence. So does he.',
-        effects: { goto: 'camp:hunter', heat: { cartel: 2 }, pressure: 2 },
+        reply: 'The tower has a memory for violence. So does he. You are still standing in it.',
+        effects: { heat: { cartel: 2 }, pressure: 2, ticks: 1 },
       },
     ],
   },
@@ -847,7 +876,7 @@ He waits. Sadistic. Arrogant. Disciplined. Men like him can afford waiting. You 
     title: 'The Wire',
     body: `The perimeter. Razor-wire. Steam-vents coughing. Beyond it the dunes begin to have opinions.
 
-Kaelen the Sifter is here when profit says here: jittery diminutive merchant, dust-caked canvas, overstuffed pack, thick gloves. Primary early-game merchant. Also the rumor counter — if you ask. They are not the prison-break inside man. That is Oil-Tooth.
+Kaelen the Sifter is here when profit says here: jittery diminutive merchant, dust-caked canvas, overstuffed pack, thick gloves. He sells rumors and Drops. He does not hotwire. He will not sell a thing that harms a fellow survivor.
 
 Ironclad Skiff-Striders patrol the other side of this line. The Hunger lives past it. So do Hounds.`,
     variants: [
@@ -902,7 +931,7 @@ The Great Bleed is a clock. Sabotage here, Oil-Tooth hotwires there. Valerius wi
       {
         if: { flag: 'bleedIntel' },
         mode: 'append',
-        body: `Kaelen sold you a clock: west bolt, Bleed-hour. The Sifter does not work for Oil-Tooth. They sold a product.`,
+        body: `Kaelen sold you a clock: west bolt, Bleed-hour. The Sifter does not work for Oil-Tooth. He sold a product.`,
       },
     ],
     choices: [
@@ -1056,6 +1085,45 @@ Pike, Sarn, and Vetch keep their heads down on the other cradles. They are not t
     ],
     choices: [
       {
+        id: 'pike',
+        label: 'Talk to Pike',
+        show: { flag: 'bayLooked' },
+        effects: {
+          ticks: 1,
+          flash: 'Pike does not stop scraping. "North hull. There is cord on the lash. Take it and I did not see you. I am not your man."',
+        },
+      },
+      {
+        id: 'sarn',
+        label: 'Talk to Sarn',
+        show: { flag: 'bayLooked' },
+        effects: {
+          ticks: 1,
+          flash: 'Sarn counts a bolt out loud. "East cradle. I trade a count for quiet. I do not trade the wrench. That is the jaw\'s."',
+        },
+      },
+      {
+        id: 'vetch',
+        label: 'Talk to Vetch',
+        show: { flag: 'bayLooked' },
+        effects: {
+          ticks: 1,
+          flash: 'Vetch lifts the mask a finger. "South skid. Sparks, not talk. You want cord, Pike\'s hull has it. You want a fight, find a guard."',
+        },
+      },
+      {
+        id: 'cord',
+        label: 'Take lash-cord off Pike\'s hull',
+        sub: 'After you have looked. He does not look up.',
+        show: { all: [{ flag: 'bayLooked' }, { flagUnset: 'lashCord' }] },
+        effects: {
+          flag: { lashCord: true, bayPikeTook: true },
+          heat: { cartel: 1 },
+          ticks: 1,
+          flash: 'Cord. Pike does not look up. A stilt-lash will take it. Cartel Heat ticks if anyone counts the hull.',
+        },
+      },
+      {
         id: 'hotwire',
         label: 'Cover Oil-Tooth while he hotwires',
         sub: 'He is the inside man. You are the extra pair of hands.',
@@ -1097,6 +1165,49 @@ Pike, Sarn, and Vetch keep their heads down on the other cradles. They are not t
       },
     ],
     intents: bayHandIntents,
+  },
+  {
+    id: 'camp:gate',
+    hubId: 'camp04',
+    kind: 'story',
+    title: 'Lockdown Gate',
+    body: `The gates are counted. Sabotage is still in their teeth. A Hound-handler has the shock-leash out, amber-eyed hound at his heel. Valerius is not on the gate. He is in the tower.
+
+Walking in is a fight, or a collar.`,
+    choices: [
+      {
+        id: 'fight',
+        label: 'Fight the gate',
+        tone: 'danger',
+        enable: { healthMin: 1 },
+        locked: 'Too hurt to fight.',
+        effects: {
+          health: -2,
+          heat: { cartel: 2 },
+          flag: { gateForced: true, metHandler: true },
+          goto: 'camp:yard',
+          ticks: 1,
+          flash: 'You hit the gate. The handler hits back. You are inside, bleeding, and counted. Health takes the bill.',
+        },
+      },
+      {
+        id: 'caught',
+        label: 'Let them take you',
+        effects: {
+          heat: { cartel: 3 },
+          flag: { gateCaught: true },
+          goto: 'camp:yard',
+          ticks: 1,
+          flash: 'Caught. They drag you through. The lockdown writes your name again. You are in the Yard, and they know it.',
+        },
+      },
+      {
+        id: 'back',
+        label: 'Stay outside',
+        tone: 'quiet',
+        effects: { flag: { leaveGate: true }, ticks: 1, flash: 'You stay off the count. The gate keeps its teeth.' },
+      },
+    ],
   },
   {
     id: 'camp:hunter',

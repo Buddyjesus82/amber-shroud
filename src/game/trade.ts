@@ -81,18 +81,18 @@ const KAELEN_STOCK: StockOffer[] = [
     sub: 'Merchant. Arithmetic. Not charity.',
     cost: { scrap: 1 },
     extraFlag: { kaelenSoldDrop: true },
-    flash: '"Scrap in. Drop out. I don\'t do charity. I do arithmetic." They glove the vial like it might bite them back.',
+    flash: '"Scrap in. Drop out. I don\'t do charity. I do arithmetic." He gloves the vial like it might bite him back.',
     tags: ['drop', 'vial', 'sap', 'oasis'],
   },
   {
     id: 'knife',
     item: 'needle_knife',
     label: 'Buy a Needle Knife — two scrap',
-    sub: 'Weapon · Strike 3. Equip it in Gear. No dice — numbers compare gear.',
+    sub: 'Weapon · Strike 3. A tool for resin, not a throat. Equip it in Gear.',
     cost: { scrap: 2 },
     onceFlag: 'kaelenSoldKnife',
     extraFlag: { kaelenSoldKnife: true },
-    flash: '"Thin. Mean. Cost." They do not gift edges. Equip it or it is only inventory.',
+    flash: '"Thin. Mean. For resin, not for a person who is still breathing." He does not gift edges.',
     tags: ['knife', 'needle', 'blade'],
   },
   {
@@ -105,6 +105,15 @@ const KAELEN_STOCK: StockOffer[] = [
     extraFlag: { kaelenSoldWrap: true },
     flash: '"Wire and rag. Shell 2. Wear it until a better shell turns up."',
     tags: ['wrap', 'scav', 'rag'],
+  },
+  {
+    id: 'salve',
+    item: 'salve',
+    label: 'Buy Resin Salve — one scrap',
+    sub: 'Binds a cut. Health, not sap.',
+    cost: { scrap: 1 },
+    flash: '"Thumb of resin. Put it on the blood. I do not sell anything meant to open a survivor."',
+    tags: ['salve', 'bandage', 'heal', 'resin'],
   },
   {
     id: 'cloak',
@@ -122,11 +131,11 @@ const KAELEN_STOCK: StockOffer[] = [
 const VENDORS: Vendor[] = [
   {
     id: 'kaelen',
-    scenes: ['camp:kaelen', 'spine:kaelen', 'thresh:kaelen'],
+    scenes: ['camp:kaelen', 'spine:kaelen', 'thresh:kaelen', 'roam:kaelen'],
     knownFlag: 'kaelenKnown',
     stock: KAELEN_STOCK,
     changeScrap: true,
-    openBuyFlash: 'They tap the pack. "Buy is a shelf. Drops. A knife. A wrap. A cloak if I still have one. Pay on the line."',
+    openBuyFlash: 'He taps the pack. "Buy is a shelf. Drops. A knife for resin. A wrap. A cloak if I still have one. Salve if the cut is talking. Pay on the line."',
     openSellFlash: '"Unequipped only. I do not buy what is on your body. I do not buy keys. I pay less than I charge. That is the job."',
     sellFlash: '"Cost in. Profit out. I buy cheaper than I sell."',
   },
@@ -163,7 +172,7 @@ const VENDORS: Vendor[] = [
         cost: { glints: 4 },
         onceFlag: 'zafirSoldBaton',
         extraFlag: { zafirSoldBaton: true },
-        flash: '"Still warm from a clerk who loved a ledger more than a throat. Swing it or it is only inventory."',
+        flash: 'Took it off a clerk who guarded his ledger better than his neck. Swing it, or it\'s just dead weight.',
         tags: ['baton', 'shock', 'weapon'],
       },
     ],
@@ -355,17 +364,20 @@ function sellRows(state: GameState, vendor: Vendor): Choice[] {
     rows.push({
       id: 'sell-scrip',
       label: 'Pawn Cartel scrip for scrap',
-      sub: 'Ironwood lullabies. Cartel Heat notices.',
+      sub: 'Ironwood paper for scrap. Cartel Heat only where Cartel can see it.',
       group: 'sell',
       enable: { item: 'scrip' },
       locked: 'No Cartel scrip in the pack',
       effects: {
         remove: { scrip: 1 },
         add: { scrap: 1 },
-        heat: { cartel: 1 },
+        heat: vendor.id === 'zafir' ? undefined : { cartel: 1 },
         flag: knownFlag(vendor, state.sceneId),
         ticks: 1,
-        flash: '"Ironwood lullabies." He gives you scrap like a dare. Cartel Heat notices paper moving.',
+        flash:
+          vendor.id === 'zafir'
+            ? 'He takes the paper like it might stain the tray and gives you scrap. The Cartel is not in this stall. No Heat.'
+            : '"Ironwood lullabies." He gives you scrap like a dare. Cartel Heat notices paper moving.',
       },
     })
   }
@@ -377,7 +389,7 @@ function sellRows(state: GameState, vendor: Vendor): Choice[] {
     rows.push({
       id: `sell-${id}`,
       label: n > 1 ? `Sell ${name} ×1` : `Sell ${name}`,
-      sub: `They pay ${moneyLabel(pay)}. Unequipped.`,
+      sub: `He pays ${moneyLabel(pay)}. Unequipped.`,
       group: 'sell',
       effects: {
         remove: { [id]: 1 },
@@ -422,14 +434,14 @@ export function shopChoices(state: GameState, authored: Choice[]): Choice[] {
     {
       id: 'shop-buy',
       label: 'Buy',
-      sub: 'Their stock. Prices on the shelf.',
+      sub: 'His stock. Prices on the shelf.',
       group: 'buy',
       effects: { flag: { shopShelf: 'buy' }, flash: vendor.openBuyFlash },
     },
     {
       id: 'shop-sell',
       label: 'Sell',
-      sub: 'Unequipped pack. They pay less than they charge.',
+      sub: 'Unequipped pack. He pays less than he charges.',
       group: 'sell',
       effects: { flag: { shopShelf: 'sell' }, flash: vendor.openSellFlash },
     },

@@ -25,9 +25,10 @@ export type ItemId =
   | 'dust_cloak'
   | 'hide_wrap'
   | 'scav_wrap'
+  | 'salve'
 
 export type ItemKind = 'gear' | 'currency' | 'key' | 'weapon' | 'armor' | 'garment'
-export type EquipSlot = 'weapon' | 'armor' | 'garment'
+export type EquipSlot = 'weapon' | 'armor' | 'garment' | 'head'
 
 export type Heat = {
   cartel: number
@@ -57,7 +58,7 @@ export type GameState = {
   flash?: string
   startedAt: number
   updatedAt: number
-  equipped: { weapon?: ItemId; armor?: ItemId; garment?: ItemId }
+  equipped: { weapon?: ItemId; armor?: ItemId; garment?: ItemId; head?: ItemId }
   recentVerbs?: string[]
 }
 
@@ -72,6 +73,7 @@ export type Cond = {
   itemMin?: [ItemId, number]
   sapMin?: number
   sapMax?: number
+  healthMin?: number
   heatMin?: [Faction, number]
   heatMax?: [Faction, number]
   door?: DoorId

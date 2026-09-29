@@ -1,6 +1,6 @@
 import type { Scene } from '../types'
 
-const look = `Kaelen the Sifter jitters — a diminutive merchant in dust-caked canvas, an overstuffed pack of vials, gears, and amber jars, thick gloves on both hands. Independent scavenger. They play all sides. Shrewd. Paranoid. Fast-talk. Everything is cost and profit. Their hidden trade routes are unmatched.`
+const look = `Kaelen the Sifter jitters — a diminutive merchant in dust-caked canvas, an overstuffed pack of vials, gears, and amber jars, thick gloves on both hands. Born near the Ironwood roots. He sifts memory-essence from amber sand. He sells to the Seekers and quietly funds storm-escape routes. He will not sell a thing that harms a fellow survivor.`
 
 const rumorHook = `"News is inventory. I don't give it away. Scrap buys a Drop of Oasis Sap. Glints buy intel. Ask. Pay. Then you get a lead — side trouble, or the Hunger, or both if your pockets are honest."`
 
@@ -13,19 +13,19 @@ export const campKaelenScenes: Scene[] = [
     speaker: 'Kaelen the Sifter',
     body: `${look}
 
-They have the Wire at their back like a second pack-strap. "You're the trench story," they say, already counting what you might be worth. "I am not Oil-Tooth. He hotwires. I sell. Buy. Sell. Rumors that open trouble. Pick a shelf."`,
+He has the Wire at his back like a second pack-strap. "You're the trench story," he says. "I am not the man who hotwires. I sell. Buy. Sell. Rumors that open roads. Pick a shelf."`,
     variants: [
       {
         if: { flag: 'kaelenSoldDrop' },
         mode: 'append',
-        body: `A vial-gap in the pack where your Drop used to live. They notice you noticing. Paranoid is a lifestyle.`,
+        body: `A vial-gap in the pack where your Drop used to live. He notices you noticing. Paranoid is a lifestyle.`,
       },
     ],
     choices: [
       {
         id: 'rumors',
         label: 'Ask for rumors. News.',
-        sub: 'They sell leads. Leads open trouble. Leads can point at the Hunger.',
+        sub: 'He sells leads. Leads open trouble. Leads can point at the Hunger.',
         effects: {
           goto: 'camp:kaelen-rumors',
           ticks: 1,
@@ -45,13 +45,15 @@ They have the Wire at their back like a second pack-strap. "You're the trench st
       },
       {
         id: 'oil',
-        label: 'Ask if they are the inside man',
+        label: 'Ask him to muddy your name with the Cartel',
+        sub: 'A rumor pointed the wrong way. Cartel Heat cools.',
         effects: {
           ticks: 1,
+          heat: { cartel: -1 },
           goto: 'camp:kaelen',
-          flag: { kaelenKnown: true },
+          flag: { kaelenKnown: true, kaelenMud: true },
           flash:
-            '"Oil-Tooth Vance. Bunk next to you. Brass jaw. He repairs Striders and watches the guard station. That is his job. Mine is rumors and Drops. Do not mix the invoices."',
+            '"I can tell a clerk you went west with a hull you do not have." He does not smile. Cartel Heat cools. He is not the man on the bolt. He is the man who lies for survivors.',
         },
       },
       {
@@ -101,12 +103,12 @@ One: a Drop of Oasis Sap for scrap — that is the shop, not this shelf.
 Two: Glints buy intel. Kallik's cache. The Hunger. A blonde on a skiff.
 Three: cheaper leads. Side trouble. Relics Valerius hunts. When the Great Bleed hits the guard station. A hole in the wire if you want a route that is not a Strider.
 
-Oil-Tooth remains your inside man. I remain the counter."`,
+Oil-Tooth hotwires. I remain the counter."`,
     variants: [
       {
         if: { flag: 'kaelenGlintOut' },
         mode: 'append',
-        body: `Your Glint is already in the glove. They tap the pack. "Intel is paid. Point at a lead."`,
+        body: `Your Glint is already in the glove. He taps the pack. "Intel is paid. Point at a lead."`,
       },
     ],
     choices: [
@@ -195,7 +197,7 @@ Oil-Tooth remains your inside man. I remain the counter."`,
           ticks: 1,
           goto: 'camp:wire',
           flash:
-            'They do not cut. They point. A person-sized disloyalty in Ironwood property, already priced. "Route. Not a rescue."',
+            'He does not cut. He points. A person-sized disloyalty in Ironwood property, already priced. "Route. Not a rescue."',
         },
       },
       {
@@ -209,7 +211,7 @@ Oil-Tooth remains your inside man. I remain the counter."`,
           flag: { wireCut: true, kaelenKnown: true },
           ticks: 1,
           goto: 'camp:wire',
-          flash: 'Glint for a route. They smile with no warmth. Profit.',
+          flash: 'Glint for a route. He smiles with no warmth. Profit.',
         },
       },
       {
@@ -222,7 +224,7 @@ Oil-Tooth remains your inside man. I remain the counter."`,
     intents: [
       {
         tags: ['kallik', 'cache', 'hunger', 'maw', 'heading', 'sybella'],
-        reply: 'They name a price with their eyes. Glints. Then the Maw.',
+        reply: 'He names a price with his eyes. Glints. Then the Maw.',
         effects: { ticks: 1 },
       },
       {
@@ -242,18 +244,31 @@ Oil-Tooth remains your inside man. I remain the counter."`,
 You walked here. The Wire did not dump you. This is side trouble. Not the Hunger. Not a Strider. A rumor you paid for, then spent roads to touch.`,
     choices: [
       {
-        id: 'take',
-        label: 'Pocket a Glint and a twist of scrap',
-        tone: 'danger',
+        id: 'look',
+        label: 'Look the latch over',
+        show: { flagUnset: 'relicLooked' },
         effects: {
-          add: { glints: 1, scrap: 1 },
+          flag: { relicLooked: true },
+          ticks: 1,
+          flash:
+            'Nine teeth scratched on the latch. Oil-Tooth\'s stash, or a cousin of his tinkering. The crate is a fight if you force it and a haul if the teeth seat.',
+        },
+      },
+      {
+        id: 'take',
+        label: 'Seat the gear. Take the haul.',
+        sub: 'Scrap, a Glint, and a baton. Better than a scavenge.',
+        tone: 'danger',
+        show: { flag: 'relicLooked' },
+        effects: {
+          add: { glints: 1, scrap: 3, ironwood_baton: 1 },
           flag: { relicTaken: true },
           heat: { cartel: 2 },
           pressure: 1,
           ticks: 1,
           goto: 'camp:yard',
           flash:
-            'Profit. Also a smell Valerius is trained to love. He hunts Sap thieves and unpermitted relic hoarders. You have volunteered. You are still in the Yard. The Wire is a walk.',
+            'Scrap +3. A Glint. A baton that still holds a charge — clerk steel, useful if Valerius ever leaves the tower. He will smell this. You are still in the Yard.',
         },
       },
       {
@@ -264,7 +279,7 @@ You walked here. The Wire did not dump you. This is side trouble. Not the Hunger
           flag: { relicSeen: true },
           goto: 'camp:yard',
           ticks: 1,
-          flash: 'You paid for a door you did not open. You are still in the Yard. Kaelen would call that a lesson. They would still charge for the next one.',
+          flash: 'You paid for a door you did not open. You are still in the Yard. Kaelen would call that a lesson. He would still charge for the next one.',
         },
       },
     ],
@@ -280,7 +295,7 @@ export const spineKaelenScenes: Scene[] = [
     speaker: 'Kaelen the Sifter',
     body: `${look}
 
-Dusk on the Spine. Same pack. Same gloves. Less wire, more dust. "You're the empty vial," they say. "I fill those if you pay. Buy. Sell. I also sell rumors. Silas sold you shade. I sell inventory."`,
+Dusk on the Spine. Same pack. Same gloves. Less wire, more dust. "You're the empty vial," he says. "I fill those if you pay. Buy. Sell. I also sell rumors. Silas sold you shade. I sell inventory."`,
     choices: [
       {
         id: 'rumors',
@@ -300,7 +315,7 @@ Dusk on the Spine. Same pack. Same gloves. Less wire, more dust. "You're the emp
       },
       {
         id: 'go',
-        label: 'Let them pass',
+        label: 'Let him pass',
         tone: 'quiet',
         effects: { goto: 'spine:well' },
       },
@@ -313,7 +328,7 @@ Dusk on the Spine. Same pack. Same gloves. Less wire, more dust. "You're the emp
           startChapter: 'cache-run',
           goto: 'ch1:leave',
           ticks: 1,
-          flash: 'They are already counting the next customer. You spend the dusk on a road.',
+          flash: 'He is already counting the next customer. You spend the dusk on a road.',
         },
       },
     ],
@@ -353,7 +368,7 @@ Dusk on the Spine. Same pack. Same gloves. Less wire, more dust. "You're the emp
           ticks: 1,
           goto: 'spine:well',
           flash:
-            'They scratch Red Maw in the dirt with a boot-heel. "Kallik\'s bait. Sybella\'s skiff. Ossa on stilts if she is still alive. Do not make me collect you as bones."',
+            'He scratches Red Maw in the dirt with a boot-heel. "Kallik\'s bait. Sybella\'s skiff. Ossa on stilts if she is still alive. Do not make me collect you as bones."',
         },
       },
       {
@@ -409,7 +424,7 @@ Dusk on the Spine. Same pack. Same gloves. Less wire, more dust. "You're the emp
           startChapter: 'cache-run',
           goto: 'ch1:leave',
           ticks: 1,
-          flash: 'They do not walk with you. Inventory stays. You do not.',
+          flash: 'He does not walk with you. Inventory stays. You do not.',
         },
       },
     ],
@@ -424,12 +439,12 @@ export const threshKaelenScenes: Scene[] = [
     title: 'Cup-Shadow',
     body: `Hymn-shade off the paddock, court-edge enough to hear the chant miss a beat. Not a stall. A pack leaned on a false-route wall — dust-caked canvas, amber jars, thick gloves, a merchant who buys the lie that a person can be a cup.
 
-Kaelen the Sifter is here when Seekers pay for confirmation and thieves pay for a heading that is not a hymn. They play Thalia's church, Oram's ledger, and the dunes. They do not ride Striders. They do not pour anyone.`,
+Kaelen the Sifter is here when the route says here. He plays no church and no ledger. He does not ride Striders. He does not pour anyone. He funds a way out and will not arm a hand against a survivor.`,
     variants: [
       {
         if: { flag: 'kaelenKnown' },
         mode: 'append',
-        body: `They already priced you. The pack ticks like a second heart.`,
+        body: `He already priced you. The pack ticks like a second heart.`,
       },
     ],
     choices: [
@@ -443,7 +458,7 @@ Kaelen the Sifter is here when Seekers pay for confirmation and thieves pay for 
     intents: [
       {
         tags: ['kaelen', 'sifter', 'merchant', 'pack', 'trade'],
-        reply: 'Gloves. Inventory. They do not look at the cloth like it is holy.',
+        reply: 'Gloves. Inventory. He does not look at the cloth like it is holy.',
         effects: { goto: 'thresh:kaelen', ticks: 1, flag: { kaelenKnown: true } },
       },
     ],
@@ -456,12 +471,12 @@ Kaelen the Sifter is here when Seekers pay for confirmation and thieves pay for 
     speaker: 'Kaelen the Sifter',
     body: `${look}
 
-Cup-shadow. Same pack. Same gloves. Less wire, more hymn-dust. "You're the cup they haven't finished pouring," they say, already counting what the cloth might fetch if they were crueler. "I buy false routes. I sell inventory. I am not Thalia. I am not Oram. I do not ride. Buy. Sell. Rumors that open trouble. Pick a shelf."`,
+Cup-shadow. Same pack. Same gloves. Less wire, more hymn-dust. "You're the cup the church hasn't finished pouring," he says. "I buy false routes. I sell what a survivor can carry. I am not Thalia. I am not Oram. I do not ride. Buy. Sell. Rumors. Pick a shelf."`,
     variants: [
       {
         if: { flag: 'kaelenSoldDrop' },
         mode: 'append',
-        body: `A vial-gap in the pack. They notice you noticing. Paranoid is a lifestyle even in a church.`,
+        body: `A vial-gap in the pack. He notices you noticing. Paranoid is a lifestyle even in a church.`,
       },
     ],
     choices: [
@@ -488,7 +503,7 @@ Cup-shadow. Same pack. Same gloves. Less wire, more hymn-dust. "You're the cup t
       },
       {
         id: 'ride',
-        label: 'Ask if they will steal a Strider',
+        label: 'Ask if he will steal a Strider',
         effects: {
           ticks: 1,
           goto: 'thresh:kaelen',
@@ -549,7 +564,7 @@ I do not take scrip. I do not take blessing. I do not ride."`,
       {
         if: { flag: 'kaelenGlintOut' },
         mode: 'append',
-        body: `Your Glint is already in the glove. They tap the pack. "Intel is paid. Point at a lead."`,
+        body: `Your Glint is already in the glove. He taps the pack. "Intel is paid. Point at a lead."`,
       },
     ],
     choices: [
@@ -632,7 +647,7 @@ I do not take scrip. I do not take blessing. I do not ride."`,
     intents: [
       {
         tags: ['kallik', 'cache', 'hunger', 'maw', 'heading', 'sybella'],
-        reply: 'They name a price with their eyes. Glints. Then the Maw. Not a hymn.',
+        reply: 'He names a price with his eyes. Glints. Then the Maw. Not a hymn.',
         effects: { ticks: 1 },
       },
       {
@@ -642,8 +657,49 @@ I do not take scrip. I do not take blessing. I do not ride."`,
       },
       {
         tags: ['oram', 'map', 'false', 'route'],
-        reply: '"Oram is a ledger. I am a pack. Pay if you want the difference named."',
+        reply: '"Oram keeps animals. I keep a pack. Pay if you want the difference named."',
         effects: { ticks: 1 },
+      },
+    ],
+  },
+]
+
+export const roamKaelenScenes: Scene[] = [
+  {
+    id: 'roam:kaelen',
+    kind: 'talk',
+    title: 'Kaelen the Sifter',
+    speaker: 'Kaelen the Sifter',
+    body: `Kaelen the Sifter, pack open, already half gone. He has been through Cartel wire, Seeker fringe, and Stray dust. The shelf matches the last road. He jitters. He will not sell anything that harms a fellow survivor.
+
+"I do not stay. Buy if you are bleeding. Ask if you want what I heard. Then I walk."`,
+    choices: [
+      {
+        id: 'kallik',
+        label: 'Ask what he heard about the Maw',
+        show: { flagUnset: 'heardKallik' },
+        effects: {
+          flag: { heardKallik: true, kaelenKnown: true },
+          ticks: 1,
+          flash:
+            '"Kallik. Long dead. Buried a haul in the Red Maw and carved a nine-tooth gear on the second rib from the jaw. Blind picks waste you. The mark, the scratch, and this rumor narrow it."',
+        },
+      },
+      {
+        id: 'amber',
+        label: 'Ask what The Walking Amber is',
+        show: { flag: 'heardWalkingAmber' },
+        effects: {
+          ticks: 1,
+          flash:
+            '"Seeker talk. Something that walks out of the sand and should not. I will not say their word louder than this. Ask the woman in the skiff if you like breathing less."',
+        },
+      },
+      {
+        id: 'back',
+        label: 'Let him go',
+        tone: 'quiet',
+        effects: { flag: { returnPass: true }, ticks: 1, flash: 'The pack is gone. You are where you were.' },
       },
     ],
   },

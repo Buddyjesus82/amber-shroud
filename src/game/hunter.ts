@@ -48,10 +48,11 @@ export function isPressureOverlay(state: Pick<GameState, 'flags' | 'sceneId' | '
   return isSybellaOverlay(state) || isCampHunt(state) || isSpineHunt(state) || isThreshHunt(state)
 }
 
-export function pressureFace(state: Pick<GameState, 'flags' | 'sceneId' | 'hubId'>): string | null {
+export function pressureFace(state: Pick<GameState, 'flags' | 'sceneId' | 'hubId' | 'heat'>): string | null {
+  const hot = (state.heat?.cartel ?? 0) >= 7
   if (isSybellaOverlay(state)) return 'Sybella'
-  if (isCampHunt(state)) return 'Hound-handler'
-  if (isSpineHunt(state)) return 'Valerius'
+  if (isCampHunt(state)) return hot ? 'Valerius' : 'Hound-handler'
+  if (isSpineHunt(state)) return hot ? 'Valerius' : 'Hound-handler'
   if (isThreshHunt(state)) return 'Court Guard'
   return null
 }
@@ -73,19 +74,23 @@ export const CAMP_HUNT_APPEND = `A muzzle knocks this ground. Not Valerius — t
 
 "Upright labor. He likes a diagram. I like a throat." You are not moved. Pay, fight, hide, or choose a road.`
 
-export const SPINE_HUNT_APPEND = `The wash narrows on this ground. Valerius has the sun behind him like he rented it — he came to you. Shade did not.
+export const SPINE_HUNT_APPEND = `The wash narrows on this ground. Not the Overseer — the Hound-handler, shock-leash short, amber-eyed hound awake. Valerius is still a tower somewhere.
 
-"A Drop in my vial, a price, or a fight." You leave only if you pick a road.`
+"A Drop, a direction, or a fight." You leave only if you pick a road.`
+
+export const VALERIUS_HUNT_APPEND = `He came himself. Bald, scarred, steam baton, no dog. Cartel Heat dragged Overseer Valerius out of the tower. The skiff-woman wants the other end of you. That is a lever, later, if you live.
+
+"Escape already spent a Hound. This one is my feet." You are still on this ground.`
 
 export const THRESH_HUNT_APPEND = `The chant stutters on this ground. A Court guard lowers a spear. Thalia's gold is a crack in the hymn, not a hand on your collar.
 
 "Fraud." You are not dragged to the paddock. Pay, hide, fight, or run there yourself.`
 
-export const SYBELLA_SHADOW_APPEND = `The skiff-shadow slides over this ground without moving you. Sybella's voice, almost kind:
+export const SYBELLA_SHADOW_APPEND = `The skiff-shadow slides over this ground without moving you. Sybella's voice, cold as stone that remembers rain:
 
-"Tick. Tick. The Maw does not wait on hub-roaming. An hour from me is not free."
+"You carry sap like a lamp in a tomb. The old roads remember that light, and so do the things that sleep under them. Give the sand something to remember you by, or I'll leave you here for it."
 
-You are still here. She is not a teleport. Face her smoke only if you walk it.`
+You are still here. She is not a door. Face her smoke only if you walk it.`
 
 function hungerOuts(heat: Choice['effects']['heat']): Choice[] {
   return [
@@ -172,10 +177,12 @@ function campHuntChoices(state: GameState): Choice[] {
     },
     {
       id: 'hunter-fight',
-      label: 'Fight the Hound',
-      sub: 'Strike vs Shell. Health takes the hits. You stay.',
+      label: 'Fight the Hound-handler',
+      sub: 'The man with the leash. Not the hound. You stay.',
       tone: 'danger',
-      effects: beginEncounter(state, 'pup', 'You go for the jaw. The handler swears. This ground becomes a fight.'),
+      enable: { healthMin: 1 },
+      locked: 'Too hurt to fight.',
+      effects: beginEncounter(state, 'handler', 'You go for the man with the leash. The hound lunges and he hauls it short. This ground becomes a fight.'),
     },
     {
       id: 'hunter-hold',
@@ -212,21 +219,16 @@ function campHuntChoices(state: GameState): Choice[] {
       }),
     },
   ]
-  if (state.sceneId !== 'camp:yard' && state.sceneId !== 'camp:vats') {
-    rows.push({
-      id: 'hunter-line',
-      label: 'Dive the scrape-line',
-      sub: 'That choice is the Yard.',
-      effects: {
-        sap: -1,
-        ticks: 1,
-        heat: { cartel: 1 },
-        unsetFlag: CLEAR,
-        goto: 'camp:yard',
-        flash: 'You become a back among backs. You chose the Yard. The Hound passes. The handler lost the scent.',
-      },
-    })
-  }
+  rows.push({
+    id: 'hunter-line',
+    label: 'Dive the scrape-line',
+    sub: 'Cartel Heat -1. You stay on this ground.',
+    effects: stay(state, {
+      sap: -1,
+      heat: { cartel: -1 },
+      flash: 'You drop into work that is already here. Cartel Heat cools. The handler loses the shape of you. You never left.',
+    }),
+  })
   rows.push(...hungerOuts({ cartel: 2 }))
   return rows
 }
@@ -256,10 +258,18 @@ function spineHuntChoices(state: GameState): Choice[] {
     },
     {
       id: 'spine-fight',
-      label: 'Fight the Shard-Hound',
-      sub: 'Strike vs Shell. Health takes the hits. You stay.',
+      label: state.heat.cartel >= 7 ? 'Fight Valerius' : 'Fight the Hound-handler',
+      sub: state.heat.cartel >= 7 ? 'He came himself. No dog. You stay.' : 'The man with the leash. Not the hound. You stay.',
       tone: 'danger',
-      effects: beginEncounter(state, 'pup', 'The jaw is the fight. Valerius watches from this same ground.'),
+      enable: { healthMin: 1 },
+      locked: 'Too hurt to fight.',
+      effects: beginEncounter(
+        state,
+        state.heat.cartel >= 7 ? 'overseer' : 'handler',
+        state.heat.cartel >= 7
+          ? 'Valerius steps in. Bald, scarred, steam baton, no dog. This ground is the fight.'
+          : 'The handler answers. The hound stays on the leash. This ground is the fight.',
+      ),
     },
     {
       id: 'spine-hide',
@@ -344,6 +354,8 @@ function threshHuntChoices(state: GameState): Choice[] {
       label: 'Meet the spear',
       sub: 'Strike vs Shell. Health takes the hits. You stay.',
       tone: 'danger',
+      enable: { healthMin: 1 },
+      locked: 'Too hurt to fight.',
       effects: beginEncounter(state, 'cutter', 'The spear is a person with a knife-smile. This ground is the fight.'),
     },
     {
@@ -370,7 +382,7 @@ function threshHuntChoices(state: GameState): Choice[] {
     },
     {
       id: 'thresh-bargain',
-      label: 'Bargain an hour',
+      label: 'Ask the guard to pass you',
       sub: 'Sap and Seeker Heat. You stay.',
       effects: stay(state, {
         sap: -1,
@@ -404,70 +416,61 @@ export function sybellaShadowChoices(state: GameState): Choice[] {
   return [
     {
       id: 'sybella-glint',
-      label: 'Buy the hour with a Glint',
-      sub: 'Seekers-only receipt. You stay.',
-      show: { all: [{ door: 'vessel' }, { item: 'glints' }] },
+      label: 'Offer a Glint to the sand',
+      sub: 'Old rite. She is not paid. Seekers Heat cools. You stay.',
+      show: { item: 'glints' },
       effects: stay(state, {
         remove: { glints: 1 },
         heat: { seekers: -1 },
-        flash: 'She takes the Glint like a hymn. An hour. Not a pardon. You are still here.',
-      }),
-    },
-    {
-      id: 'sybella-evidence',
-      label: 'Offer a Glint. She will not sell.',
-      sub: 'She keeps it. Seekers Heat ticks. You stay.',
-      show: { all: [{ not: { door: 'vessel' } }, { item: 'glints' }] },
-      effects: stay(state, {
-        remove: { glints: 1 },
-        heat: { seekers: 1 },
-        pressure: 1,
-        flash:
-          'She does not bargain with Cartel mouths or Stray empties. She keeps the Glint as evidence. You bought a hotter hour. You never left.',
+        flag: { sybellaOffering: true },
+        flash: 'You set the Glint in the grit like an offering, not a price. Her breath steadies. Seekers Heat cools. You are still here.',
       }),
     },
     {
       id: 'sybella-hold',
       label: 'Eat grit. Let the shadow pass.',
-      sub: 'Sap and Seeker Heat. You stay.',
+      sub: 'Sap. Seekers Heat ticks. You stay.',
       tone: 'quiet',
       effects: stay(state, {
         sap: -1,
         heat: { seekers: 1 },
         pressure: 1,
-        flash: 'The shadow lifts because you spent the hour badly. You did not walk. She still knows.',
+        flash: 'You eat grit and let her pass. You did not walk. She still knows your shape.',
       }),
     },
     {
       id: 'sybella-cloak',
       label: 'Let the cloak eat the glance',
-      sub: 'Armor on. Stay. She still counts the hour.',
+      sub: 'Armor on. You stay. She still sees you.',
       show: { slot: 'armor' },
       effects: stay(state, {
         pressure: 1,
-        flash: 'The armor takes the glance. The skiff-shadow slides. Pressure keeps the receipt. You never left.',
+        flash: 'The armor takes the glance. The skiff-shadow slides. You never left.',
       }),
     },
     {
       id: 'sybella-defy',
-      label: 'Tell her you are not a battery',
+      label: 'Tell her to find someone else to shadow',
+      sub: 'Seekers +2. You stay.',
       tone: 'danger',
       effects: stay(state, {
         heat: { seekers: 2 },
         pressure: 1,
-        flash: 'She writes the refusal. The shadow leaves this ground. Seekers Heat does not.',
+        flash: 'You tell her to find someone else. The shadow leaves this ground. Seekers Heat does not.',
       }),
     },
     {
       id: 'sybella-swing',
       label: 'Swing at the shadow',
-      sub: 'She is not a body. Health and Heat. You stay.',
+      sub: 'She is not a body you can drop. Health and Heat. You stay.',
       tone: 'danger',
+      enable: { healthMin: 1 },
+      locked: 'Too hurt to fight.',
       effects: stay(state, {
         health: -1,
         heat: { seekers: 2 },
         pressure: 1,
-        flash: 'You hit grit. The lullaby notes the attempt. You are still here, poorer in blood.',
+        flash: 'You hit grit. She notes the try and does not bleed. You are still here, and the cut is real.',
       }),
     },
     {
@@ -485,8 +488,8 @@ export function sybellaShadowChoices(state: GameState): Choice[] {
 
 export function pressureAppend(state: GameState): string | null {
   if (isSybellaOverlay(state)) return SYBELLA_SHADOW_APPEND
-  if (isCampHunt(state)) return CAMP_HUNT_APPEND
-  if (isSpineHunt(state)) return SPINE_HUNT_APPEND
+  if (isCampHunt(state)) return state.heat.cartel >= 7 ? VALERIUS_HUNT_APPEND : CAMP_HUNT_APPEND
+  if (isSpineHunt(state)) return state.heat.cartel >= 7 ? VALERIUS_HUNT_APPEND : SPINE_HUNT_APPEND
   if (isThreshHunt(state)) return THRESH_HUNT_APPEND
   return null
 }
@@ -518,7 +521,13 @@ export function pressureVerb(state: GameState, text: string): Choice | null {
   if (/\bscrap/.test(hay)) return rows.find((c) => c.id.endsWith('scrap')) ?? null
   if (/\bscrip/.test(hay)) return rows.find((c) => c.id.includes('scrip')) ?? null
   if (/\b(pay|bribe)\b/.test(hay)) return rows.find((c) => /scrap|glint|scrip|evidence/.test(c.id)) ?? null
+  if (/\b(handler|hound)\b/.test(hay) && /\b(fight|attack|kill|stab|swing)\b/.test(hay)) {
+    return rows.find((c) => c.id === 'hunter-fight' || c.id === 'spine-fight') ?? null
+  }
   if (/\b(fight|attack|bite|kill|stab|swing)\b/.test(hay)) return rows.find((c) => /fight|swing/.test(c.id)) ?? null
+  if (/\b(talk|ask|say|tell|speak)\b/.test(hay)) {
+    return rows.find((c) => /defy|bargain|hold/.test(c.id)) ?? null
+  }
   if (/\bcloak\b/.test(hay)) return rows.find((c) => c.id.includes('cloak')) ?? null
   if (/\b(hide|crouch|duck|grit)\b/.test(hay)) {
     if (state.equipped?.armor) {

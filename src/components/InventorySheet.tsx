@@ -1,4 +1,4 @@
-import { drinkDrop, equipItem, sapLabel, unequipSlot } from '../game/engine'
+import { applyEffect, drinkDrop, equipItem, sapLabel, unequipSlot } from '../game/engine'
 import { gearStat, isWorn, listedKit } from '../game/kit'
 import { ITEMS } from '../game/content/catalog'
 import type { EquipSlot, GameState, ItemId } from '../game/types'
@@ -14,6 +14,7 @@ export function InventorySheet({ state, onClose, onChange }: Props) {
   const weapon = state.equipped?.weapon ? ITEMS[state.equipped.weapon] : null
   const armor = state.equipped?.armor ? ITEMS[state.equipped.armor] : null
   const garment = state.equipped?.garment ? ITEMS[state.equipped.garment] : null
+  const head = state.equipped?.head ? ITEMS[state.equipped.head] : null
 
   return (
     <div className="sheet-backdrop" role="dialog" aria-label="Gear" onClick={onClose}>
@@ -27,10 +28,8 @@ export function InventorySheet({ state, onClose, onChange }: Props) {
         <p className="epithet">You are {state.epithet}.</p>
         <p className="kit-sap">
           Sap {state.sap}/{state.sapMax} · {sapLabel(state.sap)}. Health {state.health}/{state.healthMax}.
-          Sap is thirst and walking. Health takes fight hits. Empty sap is a crisis, not a death. Empty
-          health is a stagger — you crawl, you do not end. Equip a weapon (Strike), armor (Shell), and a
-          garment. The garment does not take the armor slot. Numbers compare gear only. They never add to a
-          roll. No dice.
+          Sap is thirst and walking. Health takes fight hits. Empty sap is a crisis. Empty health puts you
+          down. Slots: Weapon (Strike), Armor (Shell), Garment, Head. A garment does not add Shell.
         </p>
 
         <div className="equip-slots">
@@ -51,6 +50,12 @@ export function InventorySheet({ state, onClose, onChange }: Props) {
             empty="Unworn"
             item={garment}
             onClear={() => onChange(unequipSlot(state, 'garment'))}
+          />
+          <Slot
+            label="Head"
+            empty="Bare brow"
+            item={head}
+            onClear={() => onChange(unequipSlot(state, 'head'))}
           />
         </div>
 
@@ -110,7 +115,7 @@ function Slot({
         {stat ? <span className="gear-stat">{stat}</span> : null}
       </strong>
       {item ? (
-        <button type="button" className="text-link" onClick={onClear}>
+        <button type="button" className="btn btn-tiny unequip-btn" onClick={onClear}>
           Unequip
         </button>
       ) : (
@@ -133,6 +138,27 @@ function ItemActs({
   onChange: (s: GameState) => void
   onClose: () => void
 }) {
+  if (id === 'salve') {
+    return (
+      <button
+        type="button"
+        className="btn btn-gold btn-tiny"
+        onClick={() => {
+          onChange(
+            applyEffect(state, {
+              remove: { salve: 1 },
+              health: 3,
+              ticks: 1,
+              flash: 'Resin salve on the cut. Health comes back a few pips. The tin is lighter.',
+            }),
+          )
+          onClose()
+        }}
+      >
+        Bind
+      </button>
+    )
+  }
   if (id === 'vial_drop') {
     return (
       <button

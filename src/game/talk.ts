@@ -17,7 +17,7 @@ const oiltooth: IntentRule[] = [
     tags: HELP,
     show: { flagUnset: 'jaxsonInside' },
     reply:
-      '"Help is the job. You take the west steam-vent. I take a Strider. Kaelen can wait. They are inventory. I am the ride."',
+      '"Help is the job. You take the west steam-vent. I take a Strider. Kaelen can wait. He is inventory. I am the ride."',
     effects: { ticks: 1 },
   },
   {
@@ -82,7 +82,7 @@ const kaelen: IntentRule[] = [
   },
   {
     tags: THREAT,
-    reply: 'They do not step back. They reprice you. "Violence is loud inventory. I sell quieter trouble. Do not make me lose a customer."',
+    reply: 'He does not step back. He reprices you. "Violence is loud inventory. I sell quieter trouble. Do not make me lose a customer."',
     effects: { heat: { strays: 1 }, pressure: 1, ticks: 1 },
   },
 ]
@@ -333,13 +333,13 @@ const ossa: IntentRule[] = [
 const sybella: IntentRule[] = [
   {
     tags: TALK,
-    reply: '"The Approach is a waiting room. The Walking Amber is the appointment. Talk is how batteries stall. Do not stall."',
+    reply: '"The Approach is patient. So am I. Talk is how the sand gets a longer look at you. Do not stall."',
     effects: { ticks: 1, pressure: 1 },
   },
   {
     tags: HELP,
     show: { door: 'vessel' },
-    reply: 'Seekers-only. "Fill. Walk. Don\'t crack. That is the help. I keep receipts."',
+    reply: '"Fill. Walk. Don\'t crack. That is the help the faith gives. I do not aid the others."',
     effects: { ticks: 1 },
   },
   {
@@ -427,6 +427,18 @@ const BY_PERSON: Record<PersonId, IntentRule[]> = {
   thalia,
   oram,
   brin,
+  handler: [
+    {
+      tags: TALK,
+      reply: '"He likes a diagram. I like a throat. Talk is how you stay upright one more breath."',
+      effects: { ticks: 1 },
+    },
+    {
+      tags: THREAT,
+      reply: 'The leash ticks. The hound\'s eyes stay open. "Try it."',
+      effects: { heat: { cartel: 1 }, pressure: 1, ticks: 1 },
+    },
+  ],
 }
 
 export function talkIntentsFor(sceneId: string): IntentRule[] {

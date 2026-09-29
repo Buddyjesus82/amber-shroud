@@ -2,7 +2,7 @@ import { ITEMS } from './content/catalog'
 import { moneyLabel } from './trade'
 import type { Effect, EquipSlot, GameState, ItemDef, ItemId } from './types'
 
-export const EQUIP_SLOTS: EquipSlot[] = ['weapon', 'armor', 'garment']
+export const EQUIP_SLOTS: EquipSlot[] = ['weapon', 'armor', 'garment', 'head']
 
 export type KitChip = {
   id: ItemId
@@ -96,9 +96,9 @@ export function effectPills(fx: Effect): CostPill[] {
   if (fx.heat) {
     for (const f of ['cartel', 'seekers', 'strays'] as const) {
       const n = fx.heat[f]
-      if (n && n > 0) {
+      if (n) {
         const label = f === 'cartel' ? 'Cartel' : f === 'seekers' ? 'Seekers' : 'Strays'
-        pills.push({ kind: 'heat', text: `${label} +${n}` })
+        pills.push({ kind: 'heat', text: n > 0 ? `${label} +${n}` : `${label} Heat ${n}` })
       }
     }
   }

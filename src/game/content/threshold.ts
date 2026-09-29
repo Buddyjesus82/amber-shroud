@@ -35,7 +35,7 @@ Thalia stands at the dais with gold on her cheeks that might be kohl and might b
       {
         id: 'kaelen',
         label: 'Walk the cup-shadow — a pack that is not a hymn',
-        sub: 'Kaelen the Sifter. Map road. They play all sides.',
+        sub: 'Kaelen the Sifter. Map road. He plays all sides.',
         effects: { travel: 'thresh:sift' },
       },
       {
@@ -177,13 +177,13 @@ A shrine-niche holds a sacrament Drop behind a lattice. Stealing from a church t
       },
       {
         id: 'sybella',
-        label: 'Ask why Sybella hunts batteries',
+        label: 'Ask why Sybella hunts',
         effects: {
-          flag: { sybellaNamed: true },
+          flag: { sybellaNamed: true, heardSybellaRumor: true },
           ticks: 1,
           goto: 'thresh:thalia',
           flash:
-            '"Because she was a Vessel who refused to stay poured. Blindfold up. Kohl ruined. She wants a walking amber battery so she never has to be the cup again. She will reason with you. Then she will empty you."',
+            '"She was faithful before I was High Seeker. The Cartel and the Strays made her bitter. She would bury the road in sand before she let an enemy reach the First Spire. She will reason with you. Then she will decide what the desert keeps."',
         },
       },
       { id: 'back', label: 'Bow and withdraw', tone: 'quiet', effects: { goto: 'thresh:court' } },
@@ -218,7 +218,7 @@ Oram is here more than the Court. He prefers animals to hymns. Animals do not as
       {
         id: 'kaelen',
         label: 'The hymn-shade off the paddock',
-        sub: 'Kaelen buys false routes. They do not ride.',
+        sub: 'Kaelen buys false routes. He does not ride.',
         effects: { travel: 'thresh:sift' },
       },
       {
@@ -241,7 +241,7 @@ Oram is here more than the Court. He prefers animals to hymns. Animals do not as
       },
       {
         tags: ['kaelen', 'sifter', 'merchant', 'pack', 'shadow'],
-        reply: 'Cup-shadow. Same pack. You walk the fence-shade. They do not come to the bits.',
+        reply: 'Cup-shadow. Same pack. You walk the fence-shade. He does not come to the bits.',
         effects: { travel: 'thresh:sift' },
       },
     ],

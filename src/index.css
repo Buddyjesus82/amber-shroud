@@ -456,8 +456,10 @@ h2 {
     rgba(12, 7, 4, 0) 0,
     rgba(12, 7, 4, 0.16) 0.7rem,
     rgba(12, 7, 4, 0.34) 1.6rem,
-    rgba(12, 7, 4, 0.48) 3rem,
-    rgba(12, 7, 4, 0.58) 100%
+    rgba(12, 7, 4, 0.48) 2.4rem,
+    rgba(12, 7, 4, 0.58) 3.4rem,
+    rgba(12, 7, 4, 0.84) 6rem,
+    rgba(12, 7, 4, 0.84) 100%
   );
   text-shadow: 0 1px 2px #000, 0 0 12px rgba(0, 0, 0, 0.85);
 }
@@ -659,8 +661,8 @@ h2 {
 
 .equip-slots {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 0.4rem;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 0.35rem;
   margin: 0.6rem 0 0.8rem;
 }
 
@@ -685,8 +687,24 @@ h2 {
 
 .equip-slot strong {
   color: var(--amber-2);
-  font-size: 0.78rem;
-  line-height: 1.25;
+  font-size: 0.68rem;
+  line-height: 1.2;
+  font-weight: 500;
+}
+
+.equip-slot .gear-stat {
+  display: block;
+  font-size: 0.62rem;
+  font-weight: 400;
+  color: var(--dust);
+}
+
+.unequip-btn {
+  margin-top: 0.2rem;
+  min-height: 40px;
+  width: 100%;
+  font-size: 0.95rem;
+  padding: 0.35rem 0.2rem;
 }
 
 .heat-toast {

@@ -4,7 +4,7 @@ import { check } from './logic'
 import { equippedShell, equippedStrike } from './kit'
 import type { Choice, Effect, GameState, ItemId } from './types'
 
-export type EncounterKind = 'jackal' | 'cutter' | 'tick' | 'pup' | 'scavenger' | 'patrol'
+export type EncounterKind = 'jackal' | 'cutter' | 'tick' | 'pup' | 'scavenger' | 'patrol' | 'handler' | 'overseer'
 
 /** Fight hits. Sap stays thirst/travel. */
 export const HEALTH_MAX = 6
@@ -67,9 +67,23 @@ const SPECS: Spec[] = [
     hp: 1,
     line: 'Vent patrol. One clerk, shock baton, standing on the bolt. A short scrap. Then the vent, or not.',
   },
+  {
+    kind: 'handler',
+    name: 'Hound-handler',
+    strike: 3,
+    shell: 2,
+    hp: 2,
+    line: 'The Hound-handler. Lean kit, shock-leash, an amber-eyed shard-hound at his heel with its eyes open. He is the fight. The hound is not.',
+  },
+  {
+    kind: 'overseer',
+    name: 'Overseer Valerius',
+    strike: 4,
+    shell: 3,
+    hp: 3,
+    line: 'Overseer Valerius. Bald, scarred, steam baton in the fist. No dog. He came himself.',
+  },
 ]
-
-const ROAD_KINDS: EncounterKind[] = ['jackal', 'cutter', 'tick', 'pup', 'scavenger']
 
 const TEACH =
   'Strike has to beat Shell to wound. Health takes the hits — not Sap. Fight or skip. Skip is free and pays nothing. Loot only if they drop.'
@@ -88,8 +102,79 @@ export function encounterSpec(state: GameState): Spec {
   return SPECS[seed(state) % SPECS.length]
 }
 
+export function turfFaction(state: GameState): 'cartel' | 'seekers' | 'strays' {
+  const id = state.sceneId
+  if (id.startsWith('spine:hound') || id === 'spine:valerius') return 'cartel'
+  if (state.hubId === 'spine' || id.startsWith('spine:') || id.startsWith('ch1:o-')) return 'strays'
+  if (state.hubId === 'threshold' || id.startsWith('thresh:') || id.startsWith('ch1:v-')) return 'seekers'
+  if (state.hubId === 'redmaw' || id.startsWith('maw:')) return 'seekers'
+  return 'cartel'
+}
+
+/** 0 safe (Skiff Bay), 3 common (Red Maw Approach and the first long road). */
+export function hubDanger(state: GameState): number {
+  const id = state.sceneId
+  if (id === 'camp:bay' || id === 'thresh:court' || id === 'spine:shade' || id === 'thresh:cell') return 0
+  if (id === 'ch1:p-pipe' || id === 'ch1:o-noon' || id === 'ch1:v-hymn' || id === 'maw:rim' || id === 'maw:lip') return 3
+  if (state.hubId === 'redmaw' || id.startsWith('maw:')) return 2
+  if (id === 'camp:wire' || id === 'camp:guard' || id === 'spine:hound' || state.hubId === 'spine') return 2
+  if (state.hubId === 'threshold') return 1
+  return 1
+}
+
+export function encounterPercent(state: GameState, firstWalk: boolean): number {
+  if (firstWalk) return 70
+  const danger = hubDanger(state)
+  const heat = state.heat[turfFaction(state)]
+  let p = [8, 16, 30, 48][danger] ?? 16
+  p += Math.max(0, heat - 1) * 5
+  if (heat <= 2) p = Math.min(p, danger >= 3 ? 22 : 12)
+  if (heat >= 6) p = Math.max(p, danger === 0 ? 18 : 42)
+  return Math.min(72, p)
+}
+
+const ROAD_BEATS = new Set(['ch1:p-pipe', 'ch1:o-noon', 'ch1:v-hymn'])
+
+/** Bunks, stalls, and the first room of a door. Fights live on roads and turf, not in the opening sentence. */
+const HOME = new Set([
+  'camp:cages',
+  'camp:lean',
+  'camp:jaxson',
+  'camp:jaxson-cache',
+  'camp:jaxson-drop',
+  'camp:tower',
+  'camp:valerius',
+  'camp:shiv',
+  'camp:relic',
+  'spine:ridge',
+  'spine:silas',
+  'spine:tip',
+  'thresh:court',
+  'thresh:thalia',
+])
+
+export function encounterGround(state: GameState): boolean {
+  if (state.sceneId.startsWith('open:') || state.sceneId.startsWith('crisis:')) return false
+  if (HOME.has(state.sceneId)) return false
+  const scene = getScene(state.sceneId)
+  if (scene.kind === 'talk' || scene.kind === 'crisis' || scene.kind === 'ending') return false
+  if (scene.kind === 'place') return true
+  return ROAD_BEATS.has(state.sceneId)
+}
+
 export function pickEncounterKind(state: GameState): EncounterKind {
-  return ROAD_KINDS[seed(state) % ROAD_KINDS.length]
+  const n = seed(state)
+  const turf = turfFaction(state)
+  if (turf === 'cartel') {
+    const pool: EncounterKind[] = ['pup', 'pup', 'cutter', 'jackal', 'tick']
+    return pool[n % pool.length]
+  }
+  if (turf === 'seekers') {
+    const pool: EncounterKind[] = ['cutter', 'cutter', 'jackal', 'tick', 'scavenger']
+    return pool[n % pool.length]
+  }
+  const pool: EncounterKind[] = ['scavenger', 'scavenger', 'jackal', 'jackal', 'tick']
+  return pool[n % pool.length]
 }
 
 export function enemyHealth(kind: EncounterKind): number {
@@ -117,17 +202,17 @@ const ENCOUNTER_SCENES = new Set([
   'ch1:v-hymn',
 ])
 
-export function canEncounter(state: GameState): boolean {
-  if (state.flags.hunterHere || state.flags.encounterHere) return false
-  if (!ENCOUNTER_SCENES.has(state.sceneId)) return false
-  if (state.sceneId.startsWith('open:') || state.sceneId.startsWith('crisis:')) return false
+export function canEncounter(state: GameState, opts?: { traveled?: boolean; firstWalk?: boolean }): boolean {
+  if (state.flags.hunterHere || state.flags.encounterHere || state.flags.downed) return false
+  if ((state.health ?? 1) <= 0) return false
+  if (!encounterGround(state)) return false
   const last = Number(state.flags.encounterAt ?? -99)
-  if (last >= 0 && state.ticks - last < 6) return false
-  if (state.ticks < 3) return false
-  const scene = getScene(state.sceneId)
-  if (scene.kind === 'talk' || scene.kind === 'crisis' || scene.kind === 'ending') return false
-  const n = seed(state) % 5
-  return n === 1 || n === 2
+  const heat = state.heat[turfFaction(state)]
+  const gap = heat >= 7 ? 2 : heat >= 4 ? 3 : 5
+  if (last >= 0 && state.ticks - last < gap && !opts?.firstWalk) return false
+  const firstWalk = !!opts?.firstWalk && !state.flags.roadFightSeen
+  const percent = encounterPercent(state, firstWalk)
+  return seed(state) % 100 < percent
 }
 
 export type Clash = {
@@ -208,8 +293,10 @@ export function encounterChoices(state: GameState): Choice[] {
     {
       id: 'enc-fight',
       label: `Fight the ${spec.name}`,
-      sub: 'Strike vs Shell. Health takes hits. No dice.',
+      sub: 'Strike vs Shell. Health takes the hits.',
       tone: 'danger',
+      enable: { healthMin: 1 },
+      locked: 'Too hurt to fight.',
       effects: { resolveEncounter: 'fight', ticks: 1 },
     },
     {
@@ -266,8 +353,8 @@ function lootLine(add: Partial<Record<ItemId, number>>): string {
     if (n <= 0) continue
     const item = ITEMS[id]
     const name = item?.name ?? id
-    const bit = n > 1 ? `${name} ×${n}` : name
-    if (item?.slot === 'weapon' || item?.slot === 'armor' || item?.slot === 'garment') gear.push(bit)
+    const bit = `${name} +${n}`
+    if (item?.slot === 'weapon' || item?.slot === 'armor' || item?.slot === 'garment' || item?.slot === 'head') gear.push(name)
     else pockets.push(bit)
   }
   const held = pockets.join(', ')
@@ -335,10 +422,10 @@ export function resolveEncounter(state: GameState, how: 'fight' | 'skip'): { fx:
   if (theirHp <= 0 && spec.kind === 'patrol') {
     const stagger = yourHp <= 0
     const outcome = stagger
-      ? `The clerk drops. You drop with them. Scrap. Shock Baton. Health 1/${max}. The bolt is still yours.`
+      ? `The clerk drops. You drop with them. Scrap. Shock Baton. Health 0/${max}. The bolt is still yours.`
       : 'The clerk drops. Scrap. Shock Baton. The bolt is open.'
     return holdCard(state, spec, `${hitCard}\n\n${outcome}`, outcome, {
-      health: stagger ? 1 - c.yourHp : healthDelta,
+      health: stagger ? -c.yourHp : healthDelta,
       add: { scrap: 1 },
       heat: { cartel: 1 },
       pressure: 1,
@@ -351,20 +438,19 @@ export function resolveEncounter(state: GameState, how: 'fight' | 'skip'): { fx:
     const loot = lootLine(add)
     const stagger = yourHp <= 0
     const outcome = stagger
-      ? `They drop. You drop with them. ${loot}. Health 1/${max}. You crawl.`
+      ? `They drop. You drop with them. ${loot}. Health 0/${max}.`
       : `They drop. ${loot}.`
     return holdCard(state, spec, `${hitCard}\n\n${outcome}`, outcome, {
-      health: stagger ? 1 - c.yourHp : healthDelta,
+      health: stagger ? -c.yourHp : healthDelta,
       add,
       pressure: c.dmgIn > 0 ? 1 : undefined,
     })
   }
 
   if (yourHp <= 0) {
-    const outcome = `You drop. No loot. Health 1/${max}. The road is theirs.`
+    const outcome = `You drop. No loot. Health 0/${max}. Too hurt to fight.`
     return holdCard(state, spec, `${hitCard}\n\n${outcome}`, outcome, {
-      health: 1 - c.yourHp,
-      sap: state.sap > 0 ? -1 : undefined,
+      health: -c.yourHp,
       pressure: 2,
     })
   }
@@ -400,7 +486,7 @@ export function wantsEncounterSkip(text: string): boolean {
 }
 
 export function roadPressureScene(sceneId: string): boolean {
-  return ENCOUNTER_SCENES.has(sceneId)
+  return ENCOUNTER_SCENES.has(sceneId) || sceneId.startsWith('maw:') || sceneId.startsWith('ch1:')
 }
 
 /** Open a road fight on the current ground. Strike vs Shell stays in the encounter card. */

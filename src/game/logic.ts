@@ -14,6 +14,7 @@ export function check(cond: Cond | undefined, s: GameState): boolean {
   if (cond.itemMin && (s.items[cond.itemMin[0]] ?? 0) < cond.itemMin[1]) return false
   if (cond.sapMin !== undefined && s.sap < cond.sapMin) return false
   if (cond.sapMax !== undefined && s.sap > cond.sapMax) return false
+  if (cond.healthMin !== undefined && (s.health ?? 0) < cond.healthMin) return false
   if (cond.heatMin && s.heat[cond.heatMin[0]] < cond.heatMin[1]) return false
   if (cond.heatMax && s.heat[cond.heatMax[0]] > cond.heatMax[1]) return false
   if (cond.door && s.door !== cond.door) return false
@@ -23,7 +24,8 @@ export function check(cond: Cond | undefined, s: GameState): boolean {
     cond.equipped &&
     s.equipped?.weapon !== cond.equipped &&
     s.equipped?.armor !== cond.equipped &&
-    s.equipped?.garment !== cond.equipped
+    s.equipped?.garment !== cond.equipped &&
+    s.equipped?.head !== cond.equipped
   ) {
     return false
   }
@@ -70,6 +72,7 @@ export function applyDelta(s: GameState, fx: Effect): GameState {
       const d = fx.add[key] ?? 0
       next.items[key] = (next.items[key] ?? 0) + d
     }
+    if ((fx.add.kallik_mark ?? 0) > 0) next.flags = { ...next.flags, heardKallik: true }
   }
   if (fx.remove) {
     for (const key of Object.keys(fx.remove) as ItemId[]) {

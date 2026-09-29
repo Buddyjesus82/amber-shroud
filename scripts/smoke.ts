@@ -116,7 +116,7 @@ function openShop(s: GameState, shelf: 'buy' | 'sell') {
 }
 
 function prisonerToSybella(s: GameState): GameState {
-  s = pick(s, 'go')
+  s = dismissFight(pick(s, 'go'))
   assert(s.sceneId === 'ch1:p-pipe', `prisoner Hunger is the Cartel fence (got ${s.sceneId})`)
   s = pick(s, ids(s).includes('wrench') ? 'wrench' : 'crawl')
   assert(s.sceneId === 'ch1:p-clerk', `prisoner meets Clerk Rell (got ${s.sceneId})`)
@@ -127,12 +127,14 @@ function prisonerToSybella(s: GameState): GameState {
   s = pick(s, ids(s).includes('wrench') ? 'wrench' : 'skip')
   if (s.sceneId === 'ch1:ossa-talk') s = pick(s, 'on')
   if (s.sceneId === 'ch1:ossa-rob') s = pick(s, 'go')
+  if (s.sceneId === 'ch1:ossa-fix') s = pick(s, 'thanks')
+  if (s.sceneId === 'ch1:south-wind') s = pick(s, 'face')
   if (s.sceneId === 'crisis:dunes') s = pick(s, 'up')
   return s
 }
 
 function outcastToSybella(s: GameState): GameState {
-  s = pick(s, 'go')
+  s = dismissFight(pick(s, 'go'))
   assert(s.sceneId === 'ch1:o-noon', `outcast Hunger is noon country (got ${s.sceneId})`)
   s = pick(s, ids(s).includes('silas') ? 'silas' : 'noon')
   if (s.sceneId === 'ch1:o-silas') s = pick(s, 'on')
@@ -142,18 +144,21 @@ function outcastToSybella(s: GameState): GameState {
   s = pick(s, 'skip')
   if (s.sceneId === 'ch1:ossa-talk') s = pick(s, 'on')
   if (s.sceneId === 'ch1:ossa-rob') s = pick(s, 'go')
+  if (s.sceneId === 'ch1:ossa-fix') s = pick(s, 'thanks')
+  if (s.sceneId === 'ch1:south-wind') s = pick(s, 'face')
   if (s.sceneId === 'crisis:dunes') s = pick(s, 'up')
   return s
 }
 
 function vesselToSybella(s: GameState): GameState {
-  s = pick(s, 'go')
+  s = dismissFight(pick(s, 'go'))
   assert(s.sceneId === 'ch1:v-hymn', `vessel Hunger is the hymn-road (got ${s.sceneId})`)
   s = pick(s, ids(s).includes('oram') ? 'oram' : 'hymn')
   assert(s.sceneId === 'ch1:v-runners', `vessel meets Seeker runners (got ${s.sceneId})`)
   s = pick(s, ids(s).includes('cloth') ? 'cloth' : ids(s).includes('bolt') ? 'bolt' : 'map')
   assert(s.sceneId === 'ch1:v-zafir', `vessel meets Zafir who will not shop a cup (got ${s.sceneId})`)
   s = pick(s, ids(s).includes('oram') ? 'oram' : 'news')
+  if (s.sceneId === 'ch1:south-wind') s = pick(s, 'face')
   if (s.sceneId === 'crisis:dunes') s = pick(s, 'up')
   return s
 }
@@ -218,7 +223,8 @@ assert(ITEMS.dust_cloak.shell === 3 && ITEMS.hide_wrap.shell === 4, 'Dust Cloak 
 assert(ITEMS.ceremonial_cloth.slot === 'garment' && ITEMS.ceremonial_cloth.shell == null, 'Vessel Cloth is garment and adds no Shell')
 assert(!ITEMS.scrap.strike && !ITEMS.vial_drop.shell, 'currency is not Strike/Shell')
 assert(!/(\bshe\b|\bher\b)/i.test(PEOPLE.kaelen.card), 'Kaelen card is not she/her')
-assert(/\bthey\b/i.test(PEOPLE.kaelen.card), 'Kaelen card uses they')
+assert(/\bhe\b/i.test(PEOPLE.kaelen.card), 'Kaelen card uses he')
+assert(!/\bthey\b/i.test(PEOPLE.kaelen.card), 'Kaelen card is not they')
 assert(!/(\bshe\b|\bher\b)/i.test(PEOPLE.kaelen.later['thresh:kaelen'] ?? ''), 'Threshold later card is they/them')
 assert(PEOPLE.kaelen.scenes.includes('thresh:kaelen'), 'who-is Kaelen knows Cup-Shadow')
 assert(
@@ -356,6 +362,8 @@ assert(s.sceneId === 'camp:yard', 'Yard for the hoard is Map-connected travel')
 assert(ids(s).includes('relic'), 'hoard is a Yard choice after the rumor')
 s = pick(s, 'relic')
 assert(s.sceneId === 'camp:relic', 'hoard beat is local to the Yard')
+s = pick(s, 'look')
+assert(s.flags.relicLooked, 'the latch is a gear puzzle')
 s = pick(s, 'take')
 assert(s.flags.relicTaken, 'looting the hoard')
 assert(s.sceneId === 'camp:yard', 'leaving the hoard stays in the Yard')
@@ -376,6 +384,11 @@ s = applyEffect(s, { sap: 4 })
 s = applyEffect(s, { startChapter: 'cache-run', goto: 'ch1:leave', ticks: 1 })
 s = pick(s, 'go')
 assert(s.sceneId === 'ch1:p-pipe', 'prisoner beat 1 is the last Cartel fence')
+while (s.flags.encounterHere) {
+  if (ids(s).includes('enc-skip')) s = pick(s, 'enc-skip')
+  else if (ids(s).includes('enc-continue')) s = pick(s, 'enc-continue')
+  else break
+}
 assert(ids(s).includes('wrench'), 'cache run wrench branch from Oil-Tooth kit')
 assert(!ids(s).includes('silas'), 'prisoner fence has no Silas cut')
 assert(!ids(s).includes('oram'), 'prisoner fence has no Oram heading')
@@ -390,6 +403,11 @@ assert(s.sceneId === 'ch1:p-ossa', 'Ossa on escape terms')
 assert(ids(s).includes('wrench'), 'ossa wrench lash still a tool')
 s = pick(s, 'wrench')
 assert(s.flags.ossaAlly, 'wrench lash allies Ossa')
+assert(s.sceneId === 'ch1:ossa-fix', 'stilt fix offers thanks before the skiff')
+s = pick(s, 'thanks')
+assert(s.flags.ossaStillness, 'thanks passes Ossa\'s test')
+assert(s.sceneId === 'ch1:south-wind', 'the sail shows before Sybella')
+s = pick(s, 'face')
 assert(s.sceneId === 'ch1:sybella', 'prisoner skips Zafir and still spends at Sybella')
 assert(ids(s).includes('false'), 'false trail available')
 s = pick(s, 'false')
@@ -451,11 +469,14 @@ s = pick(s, 'tip')
 assert(s.items.silas_tip === 1, 'showing the scratch does not spend the tip')
 assert(s.sceneId === 'ch1:o-ossa', 'Ossa as kin, not a stranger on sticks')
 s = pick(s, 'skip')
+assert(s.sceneId === 'ch1:south-wind', 'outcast sees the sail')
+s = pick(s, 'face')
 assert(s.sceneId === 'ch1:sybella')
-assert(ids(s).includes('false'), 'tip or ossa still gates false trail')
+s = applyEffect(s, { add: { scrap: 1 } })
+assert(ids(s).includes('false'), 'scrap in hand gates the decoy')
 s = pick(s, 'false')
 assert(s.flags.climax === 'false')
-assert(s.flags.falseSpent === 'silas_tip', 'outcast spends the tip on the false trail')
+assert(s.flags.falseSpent === 'scrap', 'outcast throws scrap, not Silas\'s tip')
 
 s = newGame('outcast')
 s = pick(s, 'stand')
@@ -529,6 +550,8 @@ assert(ids(s).includes('news'), 'free news is the walk when he will not sell a h
 s = pick(s, 'oram')
 assert(s.flags.zafirCup, 'cup-hostile cairn, not a paid shop beat')
 assert(s.items.oram_map === 1, 'oram map kept')
+assert(s.sceneId === 'ch1:south-wind' || s.sceneId === 'ch1:sybella')
+if (s.sceneId === 'ch1:south-wind') s = pick(s, 'face')
 assert(s.sceneId === 'ch1:sybella')
 assert(ids(s).includes('bargain'), 'Vessel may bargain — Seekers-only')
 const flee = visibleChoices(s).find((c) => c.id === 'flee')
@@ -582,6 +605,7 @@ assert(ids(s).includes('hotwire'), 'lookout offers the hotwire cover')
   assert(covered.sceneId === 'camp:bay', 'lookout talk stays on the bay')
 }
 s = pick(s, 'hotwire')
+if (s.flags.hunterHere) s = applyEffect(s, { unsetFlag: ['hunterHere', 'hunterFrom'] })
 assert(playCoverKey(s, sceneOf(s)) === 'camp04', 'after the hotwire the bay is camp art again')
 assert(!/you are the lookout/i.test(bodyOf(s)), 'finished hotwire is not still the lookout')
 assert(ids(s).includes('ride-blind') || ids(s).includes('ride'), 'bay ride after hotwire')
@@ -643,13 +667,22 @@ assert(!ids(s).includes('hotwire'), 'hotwire stays off the bay until the station
   assert((stole.items.scrap ?? 0) === before + 1 && stole.flags.bayPikeTook, 'steal from Pike pays a scrap')
   assert(stole.heat.cartel > s.heat.cartel, 'steal from Pike costs Cartel Heat')
   assert(stole.flags.cartelNotice, 'stealing on the bay is cartel notice')
-  const again = interpret(stole, 'rob pike')
+  const clearHunt = stole.flags.hunterHere
+    ? applyEffect(stole, { unsetFlag: ['hunterHere', 'hunterFrom'] })
+    : stole
+  const again = interpret(clearHunt, 'rob pike')
   assert((again.items.scrap ?? 0) === (stole.items.scrap ?? 0), 'a second steal from Pike pays nothing')
   assert(again.pressure > stole.pressure, 'a second steal from Pike is a risk')
-  const pocket = interpret(stole, 'pickpocket sarn')
+  const pocket = interpret(
+    stole.flags.hunterHere ? applyEffect(stole, { unsetFlag: ['hunterHere', 'hunterFrom'] }) : stole,
+    'pickpocket sarn',
+  )
   assert(pocket.flags.baySarnTook && (pocket.items.scrap ?? 0) > (stole.items.scrap ?? 0), 'pickpocket Sarn pays scrap')
   const beforeSwipe = applyEffect(stole, { sap: 4 })
-  const swiped = interpret(beforeSwipe, 'swipe from vetch')
+  const swiped = interpret(
+    beforeSwipe.flags.hunterHere ? applyEffect(beforeSwipe, { unsetFlag: ['hunterHere', 'hunterFrom'] }) : beforeSwipe,
+    'swipe from vetch',
+  )
   assert(swiped.flags.bayVetchTook && swiped.sap < beforeSwipe.sap, 'swipe from Vetch costs Sap')
   assert(!ids(stole).some((id) => /pike|sarn|vetch/i.test(id)), 'bay prisoners stay off the buttons')
 }
@@ -689,7 +722,8 @@ s = walkTo(s, 'camp:wire')
 assert(bodyOf(s).includes('diminutive merchant'), 'first Kaelen sighting is the full card')
 s = interpret(s, 'who is kaelen')
 assert(s.flash?.includes('diminutive merchant'), 'who is Kaelen returns the full card')
-assert(/\bthey\b/i.test(s.flash ?? ''), 'Kaelen card uses they')
+assert(/\bhe\b/i.test(s.flash ?? ''), 'Kaelen card uses he')
+assert(!/\bthey\b/i.test(s.flash ?? ''), 'Kaelen card is not they')
 assert(!/(\bshe\b|\bher\b)/i.test(s.flash ?? ''), 'Kaelen is not she')
 s = pick(s, 'kaelen')
 assert(sceneOf(s).speaker === 'Kaelen the Sifter', 'Kaelen talk after the card')
@@ -750,6 +784,7 @@ s = interpret(s, 'take the inside job')
 assert(s.flags.jaxsonInside && s.sceneId === 'camp:lean', 'Do take-the-job accepts without leaving the stall')
 s = applyEffect(s, { sap: 4 })
 s = walkTo(s, 'camp:yard')
+if (s.flags.hunterHere) s = applyEffect(s, { unsetFlag: ['hunterHere', 'hunterFrom'] })
 assert(ids(s).includes('station'), 'Yard offers the station after the job')
 s = interpret(s, 'guard station')
 assert(s.sceneId === 'camp:guard', 'Do guard station from the Yard walks the job')
@@ -886,11 +921,11 @@ assert(s.flash && !s.flash.toLowerCase().includes('miss'), 'help Kaelen is autho
 s = interpret(s, 'threaten')
 assert(s.flash && !s.flash.toLowerCase().includes('miss'), 'threaten Kaelen is authored')
 s = interpret(s, 'who is zafir')
-assert(s.flash?.toLowerCase().includes('zafir') || s.flash?.toLowerCase().includes('heading'), 'who is Zafir returns a card')
+assert(s.flash?.toLowerCase().includes('have not met'), 'who is Zafir stays shut until you meet him')
 s = interpret(s, 'who is ossa')
-assert(s.flash?.toLowerCase().includes('stilt'), 'who is Ossa returns a card')
+assert(s.flash?.toLowerCase().includes('have not met'), 'who is Ossa stays shut until you meet her')
 s = interpret(s, 'who is sybella')
-assert(s.flash?.toLowerCase().includes('kohl') || s.flash?.toLowerCase().includes('skiff'), 'who is Sybella returns a card')
+assert(s.flash?.toLowerCase().includes('have not met'), 'who is Sybella stays shut until you meet her')
 
 s = newGame('prisoner')
 s = applyEffect(s, {
@@ -922,7 +957,7 @@ s = applyEffect(s, {
   sap: 6,
   enterHub: 'redmaw',
   goto: 'maw:market',
-  flag: { chapter1Done: true },
+  flag: { chapter1Done: true, huntQuiet: 8 },
   pressure: 8,
   ticks: 5,
 })
@@ -940,7 +975,7 @@ s = applyEffect(s, {
   sap: 6,
   enterHub: 'redmaw',
   goto: 'maw:lip',
-  flag: { chapter1Done: true },
+  flag: { chapter1Done: true, huntQuiet: 8 },
   pressure: 8,
   ticks: 5,
 })
@@ -1025,11 +1060,11 @@ assert(loss.flags.encounterHere, 'they still stand after a scratch')
 assert(/You Strike 2 vs their Shell 2 → 0/.test(bodyOf(loss)), 'Fight body is the compare, not a prose wall')
 assert(/Their Strike 4 vs your Shell 0 → 4/.test(bodyOf(loss)), 'incoming compare is on the card')
 const drop = pick(loss, 'enc-fight')
-assert(drop.flags.encounterHere && drop.flags.encounterDone, 'dropping to 0 Health holds the outcome card')
-assert(drop.health === 1, 'empty Health is a stagger, not a lock')
+assert(drop.flags.downed, 'dropping to 0 Health is a downed state')
+assert(drop.health === 0, 'empty Health stays at 0')
+assert(!drop.flags.encounterHere, 'the downed state replaces the fight card')
+assert(ids(drop).includes('wake'), 'a hand is offered when you drop')
 assert((drop.items.glints ?? 0) === beforeGlints, 'a clear loss still pays no win loot')
-const dropOn = pick(drop, 'enc-continue')
-assert(!dropOn.flags.encounterHere, 'On. clears a lost fight')
 
 for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
   let g = newGame(door)
@@ -1464,7 +1499,8 @@ s = pick(s, 'kaelen')
 assert(s.sceneId === 'thresh:kaelen', 'Vessel Kaelen card is in Cup-Shadow')
 assert(sceneOf(s).speaker === 'Kaelen the Sifter', 'Vessel Kaelen speaker')
 assert(!/\bshe\b|\bher\b/.test(sceneOf(s).body), 'Threshold Kaelen body is not she/her')
-assert(/\bthey\b/i.test(sceneOf(s).body), 'Threshold Kaelen uses they')
+assert(/\bhe\b/i.test(sceneOf(s).body), 'Threshold Kaelen uses he')
+assert(!/\bthey\b/i.test(sceneOf(s).body), 'Threshold Kaelen is not they')
 assert(ids(s).includes('shop-buy') && ids(s).includes('shop-sell'), 'Vessel Kaelen has Buy/Sell like Wire and well')
 s = openShop(s, 'buy')
 assert(ids(s).includes('cloak-glint') && ids(s).includes('cloak-scrap'), 'Vessel Kaelen cloak is Glint or scrap, two rows')
@@ -1506,7 +1542,7 @@ assert(ids(s).includes('heading-glint') && ids(s).includes('heading-scrap'), 'ca
   assert(paid.items.scrap === 1, 'heading Glint row keeps scrap')
   assert(paid.flags.zafirPaid && paid.flags.zafirCup && paid.flags.zafirMet, 'heading flags stay the same')
   assert(paid.heat.seekers === seekers + 1, 'heading still raises Seekers')
-  assert(paid.sceneId === 'ch1:sybella', 'paid heading still walks to Sybella')
+  assert(paid.sceneId === 'ch1:south-wind', 'paid heading still walks toward Sybella')
 }
 {
   let scrapOnly = applyEffect(s, { add: { scrap: 1 } })
@@ -1867,8 +1903,9 @@ s = applyEffect(s, { sap: 6, goto: 'camp:yard', enterHub: 'camp04' })
 s = { ...s, pressure: 9, ticks: 0 }
 s = applyEffect(s, { ticks: 4 })
 assert(!s.flags.hunterHere && !s.flags.cartelNotice, 'Camp roam without noise does not call the handler')
-s = applyEffect(s, { flag: { cartelNotice: true } })
-s = applyEffect(s, { ticks: 4 })
+s = dismissFight(s)
+s = applyEffect(s, { flag: { cartelNotice: true, huntQuiet: 8 } })
+s = applyEffect(s, { ticks: 1 })
 assert(s.sceneId === 'camp:yard', `Camp knock stays in the Yard (got ${s.sceneId})`)
 assert(s.sceneId !== 'camp:hunter', 'Camp knock does not open the Valerius sweep scene')
 assert(s.flags.hunterHere, 'Camp knock is an overlay')
@@ -1925,7 +1962,7 @@ s = newGame('outcast')
 s = pick(s, 'stand')
 s = applyEffect(s, { sap: 6, goto: 'spine:ridge', enterHub: 'spine' })
 s = { ...s, pressure: 9, ticks: 0 }
-s = applyEffect(s, { ticks: 4 })
+s = applyEffect(s, { ticks: 4, flag: { huntQuiet: 8 } })
 assert(s.sceneId === 'spine:ridge', `Spine knock stays on the ridge (got ${s.sceneId})`)
 assert(s.sceneId !== 'spine:hunter' && s.sceneId !== 'spine:shade', 'Spine knock does not yank to shade')
 assert(s.flags.hunterHere, 'Spine knock is an overlay')
@@ -1941,7 +1978,7 @@ s = newGame('vessel')
 s = pick(s, 'keep')
 s = applyEffect(s, { sap: 6, goto: 'thresh:court', enterHub: 'threshold' })
 s = { ...s, pressure: 9, ticks: 0 }
-s = applyEffect(s, { ticks: 4 })
+s = applyEffect(s, { ticks: 4, flag: { huntQuiet: 8 } })
 assert(s.sceneId === 'thresh:court', `Threshold knock stays in the Court (got ${s.sceneId})`)
 assert(s.sceneId !== 'thresh:hunter' && s.sceneId !== 'thresh:paddock', 'Threshold knock does not yank to the paddock')
 assert(ids(s).includes('thresh-fight') && ids(s).includes('thresh-hide'), 'Threshold knock has fight and hide')
@@ -1957,7 +1994,7 @@ s = applyEffect(s, {
   sap: 6,
   enterHub: 'redmaw',
   goto: 'maw:market',
-  flag: { chapter1Done: true },
+  flag: { chapter1Done: true, huntQuiet: 8 },
   pressure: 8,
   ticks: 5,
 })
@@ -2000,6 +2037,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
       flag: { chapter1Done: true, hungerKnown: true },
     })
     assert(rim.sceneId === 'maw:rim' && rim.hubId === 'redmaw', `${door} stands on Maw Rim`)
+    rim = dismissFight(rim)
     assert(/Hunger is open\. Run, leave, or take the Hunger/.test(bodyOf(rim)), `${door} Rim walk-line is one beat`)
     for (const typed of [
       'run',
@@ -2025,6 +2063,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 
     let shut = newGame(door)
     shut = applyEffect(shut, { sap: 4, enterHub: 'redmaw', goto: 'maw:rim' })
+    shut = dismissFight(shut)
     assert(!shut.flags.chapter1Done, `${door} Rim can stand before Hunger opens`)
     for (const typed of ['run', 'go', 'leave', 'leave the rim']) {
       const held = interpret(shut, typed)
@@ -2083,7 +2122,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v36'"), 'SW bumped so Rim leave reaches Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v37'"), 'SW bumped so Rim leave reaches Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -2105,7 +2144,7 @@ assert(/top:\s*min\(28\.125cqi,\s*46cqb\)/.test(css), 'story starts at the cover
 assert(css.includes('rgba(12, 7, 4, 0.58)'), 'story scrim stays translucent so cover art shows through')
 assert(!css.includes('rgba(12, 7, 4, 0.88)'), 'story scrim is lighter than the v32 slab')
 const playSrc = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
-assert(playSrc.includes('?v=36'), 'scene cover URLs are cache-busted with the service worker')
+assert(playSrc.includes('?v=37'), 'scene cover URLs are cache-busted with the service worker')
 assert(!css.includes('object-position: center 68%'), 'scene art no longer crops toward the ground')
 assert(!css.includes('height: 56px'), 'short phones no longer squash covers into a head-cropping strip')
 assert(css.includes('place-items: center'), 'game screen is centered on the backdrop')

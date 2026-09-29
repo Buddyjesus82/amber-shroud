@@ -64,7 +64,7 @@ export function rollScavenge(state: GameState): ScavengeResult {
     return {
       add: { glints: 1 },
       drop: false,
-      flash: 'A Glint wedged like a tooth. Spent amber. Dune money. Kaelen would call it inventory.',
+      flash: 'A Glint wedged like a tooth. Spent amber. Kaelen trades rumors for these.',
     }
   }
   if (roll === 2 || roll === 6) {
@@ -84,7 +84,7 @@ export function rollScavenge(state: GameState): ScavengeResult {
   return {
     add: { scrap: 1 },
     drop: false,
-    flash: 'Scrap. Bent metal. Things that cut or trade. Kaelen buys Drops with this.',
+    flash: 'Scrap +1. Bent metal. Things that cut or trade. Kaelen trades Drops for scrap.',
   }
 }
 
