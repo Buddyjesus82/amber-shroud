@@ -19,6 +19,69 @@ export function nodeIdForScene(map: HubMapDef, sceneId: string, fallback = false
   return fallback ? map.defaultNode : null
 }
 
+export type CompassMove = {
+  dir: 'North' | 'South' | 'East' | 'West'
+  name: string
+  sceneId: string
+}
+
+function dirOf(dx: number, dy: number): CompassMove['dir'] {
+  return Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'East' : 'West') : dy > 0 ? 'South' : 'North'
+}
+
+/** Connected roads off this exact scene. No fallback node — a talk card is not a crossroads. */
+export function compassMoves(state: GameState): CompassMove[] {
+  const map = hubMapOf(state)
+  if (!map?.ready) return []
+  const nodeId = nodeIdForScene(map, state.sceneId, false)
+  if (!nodeId) return []
+  const node = nodeById(map, nodeId)
+  if (!node) return []
+  const out: CompassMove[] = []
+  for (const link of adjacency(map).get(node.id) ?? []) {
+    const other = nodeById(map, link.id)
+    if (!other || other.sceneId === state.sceneId) continue
+    const dx = other.x - node.x
+    const dy = other.y - node.y
+    out.push({ dir: dirOf(dx, dy), name: other.name, sceneId: other.sceneId })
+  }
+  return out
+}
+
+function normMove(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/['’]/g, "'")
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+/** Typed north/south/east/west. Ambiguous directions need the place name. */
+export function matchCompass(state: GameState, text: string): CompassMove | null {
+  const hay = normMove(text)
+  if (!hay) return null
+  const moves = compassMoves(state)
+  for (const move of moves) {
+    const dir = move.dir.toLowerCase()
+    const name = normMove(move.name)
+    const named = [`go ${dir} to ${name}`, `walk ${dir} to ${name}`, `${dir} to ${name}`]
+    if (named.includes(hay)) return move
+    const same = moves.filter((m) => m.dir === move.dir)
+    if (same.length === 1 && (hay === dir || hay === `go ${dir}` || hay === `walk ${dir}` || hay === `head ${dir}`)) {
+      return move
+    }
+  }
+  return null
+}
+
+export function compassCommand(moves: CompassMove[], move: CompassMove): string {
+  const dir = move.dir.toLowerCase()
+  const same = moves.filter((m) => m.dir === move.dir)
+  if (same.length > 1) return `go ${dir} to ${move.name}`
+  return `go ${dir}`
+}
+
 /** N/S/E/W off the current map node. Plain roads, no faction lecture. */
 export function compassLine(state: GameState): string {
   const map = hubMapOf(state)
@@ -33,8 +96,7 @@ export function compassLine(state: GameState): string {
     if (!other) continue
     const dx = other.x - node.x
     const dy = other.y - node.y
-    const dir = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'East' : 'West') : dy > 0 ? 'South' : 'North'
-    bits.push(`${dir}: ${other.name}`)
+    bits.push(`${dirOf(dx, dy)}: ${other.name}`)
   }
   return bits.join('. ') + '.'
 }

@@ -128,6 +128,94 @@ const KAELEN_STOCK: StockOffer[] = [
   },
 ]
 
+const KNIFE_TONE: Record<string, { sub: string; flash: string }> = {
+  camp04: {
+    sub: 'Wire steel from the pens. Weapon · Strike 3. For bolts and resin. Equip it in Gear.',
+    flash: '"Wire steel. Thin. Mean. For resin and bolts, not for a person who is still breathing."',
+  },
+  threshold: {
+    sub: 'Cup-shadow needle. Weapon · Strike 3. Resin, not a hymn. Equip it in Gear.',
+    flash: '"A needle for resin. I do not sell a hymn, and I do not sell a throat."',
+  },
+  redmaw: {
+    sub: 'A thin Maw tooth. Weapon · Strike 3. Not Hound Hide. Equip it in Gear.',
+    flash: '"Not Zafir\'s hide. A needle. I will not sell anything that opens a survivor."',
+  },
+}
+
+/** Hub his shelf is flavored for. The traveling pack uses the hub he last passed through. */
+export function kaelenShelfHub(state: GameState): string {
+  if (state.sceneId === 'roam:kaelen') {
+    const remembered = state.flags.kaelenHub
+    if (typeof remembered === 'string' && remembered) return remembered
+    return state.hubId ?? 'camp04'
+  }
+  if (state.sceneId.startsWith('spine:')) return 'spine'
+  if (state.sceneId.startsWith('thresh:')) return 'threshold'
+  if (state.sceneId.startsWith('maw:')) return 'redmaw'
+  return 'camp04'
+}
+
+function kaelenPiece(id: string): StockOffer {
+  const found = KAELEN_STOCK.find((o) => o.id === id)
+  if (!found) throw new Error(`missing kaelen offer ${id}`)
+  return found
+}
+
+/** Shared basics (Drop, salve) plus a small set that matches the hub. */
+export function kaelenOffers(state: GameState): StockOffer[] {
+  const hub = kaelenShelfHub(state)
+  const drop = kaelenPiece('drop')
+  const salve = kaelenPiece('salve')
+  const basics = [drop, salve]
+  if (hub === 'redmaw') {
+    const tone = KNIFE_TONE.redmaw
+    return [...basics, { ...kaelenPiece('knife'), sub: tone.sub, flash: tone.flash }]
+  }
+  const wrap =
+    hub === 'spine'
+      ? { ...kaelenPiece('wrap'), sub: 'Dune rag. Armor · Shell 2. The step before a cloak. Equip it in Gear.' }
+      : hub === 'threshold'
+        ? { ...kaelenPiece('wrap'), sub: 'Hymn-shade rag. Armor · Shell 2. Not a vow. Equip it in Gear.' }
+        : { ...kaelenPiece('wrap'), sub: 'Wire and rag from the pens. Armor · Shell 2. Equip it in Gear.' }
+  const cloak =
+    hub === 'spine'
+      ? {
+          ...kaelenPiece('cloak'),
+          sub: 'Dune canvas. Armor · Shell 3. Hides a silhouette. Does not hide Heat. Pay with a Glint or with scrap.',
+        }
+      : hub === 'threshold'
+        ? {
+            ...kaelenPiece('cloak'),
+            sub: 'Hymn-dust canvas. Armor · Shell 3. Hides a silhouette. Does not hide Heat. Pay with a Glint or with scrap.',
+          }
+        : kaelenPiece('cloak')
+  const rows = [...basics, wrap, cloak]
+  if (hub !== 'spine') {
+    const tone = KNIFE_TONE[hub] ?? KNIFE_TONE.camp04
+    rows.push({ ...kaelenPiece('knife'), sub: tone.sub, flash: tone.flash })
+  }
+  return rows
+}
+
+export function kaelenBuyFlash(state: GameState): string {
+  const hub = kaelenShelfHub(state)
+  if (hub === 'spine') {
+    return 'He taps the pack. "Dry-well shelf. A Drop. Rag. A cloak if the dust has not eaten it. Salve if you are cut. The wire knife stayed on the last road."'
+  }
+  if (hub === 'threshold') {
+    return 'He taps the pack. "Cup-shadow shelf. A Drop. Hymn-shade rag. A cloak. A needle for resin. Salve if the cut is talking. I do not sell a hymn."'
+  }
+  if (hub === 'redmaw') {
+    return 'He taps the pack. "Maw shelf. A Drop. Salve. A thin knife. I am not Zafir. No hide. No cloak today."'
+  }
+  return 'He taps the pack. "Wire shelf. A Drop. A knife for bolts. Rag. A cloak if I still have one. Salve if the cut is talking. Pay on the line."'
+}
+
+function offersFor(state: GameState, vendor: Vendor): StockOffer[] {
+  return vendor.id === 'kaelen' ? kaelenOffers(state) : vendor.stock
+}
+
 const VENDORS: Vendor[] = [
   {
     id: 'kaelen',
@@ -313,7 +401,7 @@ function offerLabel(offer: StockOffer, cost: Money): string {
 
 function buyRows(state: GameState, vendor: Vendor): Choice[] {
   const rows: Choice[] = []
-  for (const offer of vendor.stock) {
+  for (const offer of offersFor(state, vendor)) {
     if (offer.onceFlag && state.flags[offer.onceFlag]) continue
     const flag = knownFlag(vendor, state.sceneId, offer.extraFlag)
     const opts = priceOptions(offer.cost)
@@ -436,7 +524,7 @@ export function shopChoices(state: GameState, authored: Choice[]): Choice[] {
       label: 'Buy',
       sub: 'His stock. Prices on the shelf.',
       group: 'buy',
-      effects: { flag: { shopShelf: 'buy' }, flash: vendor.openBuyFlash },
+      effects: { flag: { shopShelf: 'buy' }, flash: vendor.id === 'kaelen' ? kaelenBuyFlash(state) : vendor.openBuyFlash },
     },
     {
       id: 'shop-sell',
@@ -484,7 +572,7 @@ export function matchShopText(state: GameState, text: string): { effects: Effect
     return { effects: { flag: { shopShelf: 'sell' }, flash: vendor.openSellFlash }, verb: 'sell' }
   }
 
-  const offers = vendor.stock.filter((o) => !o.onceFlag || !state.flags[o.onceFlag])
+  const offers = offersFor(state, vendor).filter((o) => !o.onceFlag || !state.flags[o.onceFlag])
   const named = offers.find((o) => o.tags.some((t) => word(hay, t)))
   if (named && (wantsBuy || shelf === 'buy' || (!wantsSell && named.tags.some((t) => word(hay, t) && t !== 'scrap' && t !== 'glint')))) {
     const opts = priceOptions(named.cost)
@@ -531,7 +619,7 @@ export function matchShopText(state: GameState, text: string): { effects: Effect
 
   if (wantsBuy || /\b(trade|barter|deal|price)\b/.test(hay)) {
     if (shelf !== 'buy') {
-      return { effects: { flag: { shopShelf: 'buy' }, flash: vendor.openBuyFlash }, verb: 'buy' }
+      return { effects: { flag: { shopShelf: 'buy' }, flash: vendor.id === 'kaelen' ? kaelenBuyFlash(state) : vendor.openBuyFlash }, verb: 'buy' }
     }
   }
 

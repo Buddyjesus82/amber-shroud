@@ -78,10 +78,10 @@ export const bayHandIntents: IntentRule[] = [
     effects: { ticks: 1 },
   },
   {
-    tags: phrases(TAKE, pike),
+    tags: phrases(TAKE, pike).concat(['steal bolt from pike', 'steal the bolt', 'steal resin bolt']),
     show: { flagUnset: 'bayPikeTook' },
     reply:
-      'A resin bolt comes off the north hull. Pike does not look up. The tag on it is corporate. Cartel Heat if anyone counts inventory.',
+      'A resin bolt comes off the north hull. Pike does not look up. The tag on it is corporate. The Cartel can count that inventory.',
     effects: { add: { scrap: 1 }, heat: { cartel: 1 }, flag: { bayPikeTook: true, cartelNotice: true }, ticks: 1 },
   },
   {
@@ -91,9 +91,9 @@ export const bayHandIntents: IntentRule[] = [
     effects: { pressure: 1, flag: { cartelNotice: true }, ticks: 1 },
   },
   {
-    tags: phrases(TAKE, sarn),
+    tags: phrases(TAKE, sarn).concat(['steal scrap from sarn', 'steal scrap']),
     show: { flagUnset: 'baySarnTook' },
-    reply: 'Sarn skips a count on purpose. Scrap in your cuff. He will notice the skip before the hour does.',
+    reply: 'Sarn skips a count on purpose. Scrap in your cuff. He will notice the skip before the hour does. He does not shout yet.',
     effects: { add: { scrap: 1 }, pressure: 1, flag: { baySarnTook: true, cartelNotice: true }, ticks: 1 },
   },
   {
@@ -103,9 +103,9 @@ export const bayHandIntents: IntentRule[] = [
     effects: { heat: { cartel: 1 }, pressure: 1, flag: { cartelNotice: true }, ticks: 1 },
   },
   {
-    tags: phrases(TAKE, vetch),
+    tags: phrases(TAKE, vetch).concat(['steal wire from vetch', 'steal the wire', 'steal wire']),
     show: { flagUnset: 'bayVetchTook' },
-    reply: 'A curl of wire in the glove\'s cuff. Scrap. The wand kisses your knuckle on the way out. Sap pays.',
+    reply: 'A curl of wire from Vetch\'s cuff. Scrap. The wand kisses your knuckle on the way out. Sap pays. She does not call the bay.',
     effects: { add: { scrap: 1 }, sap: -1, flag: { bayVetchTook: true, cartelNotice: true }, ticks: 1 },
   },
   {
@@ -113,6 +113,28 @@ export const bayHandIntents: IntentRule[] = [
     show: { flag: 'bayVetchTook' },
     reply: 'She welds the air in front of your hand. You keep the fingers. You do not keep a prize.',
     effects: { pressure: 2, flag: { cartelNotice: true }, ticks: 1 },
+  },
+  {
+    tags: ['trade wrench to pike', 'trade the wrench to pike', 'trade wrench pike', 'give wrench to pike'],
+    show: { all: [{ item: 'wrench' }, { flagUnset: 'wrenchBayTrade' }, { flagUnset: 'lashCord' }] },
+    reply: 'Pike takes the wrench without stopping the scrape. The lash cord comes off the north hull into your hand. He does not shout. The Cartel does not see a theft.',
+    effects: {
+      remove: { wrench: 1 },
+      flag: { lashCord: true, wrenchBayTrade: 'pike', bayLooked: true },
+      ticks: 1,
+    },
+  },
+  {
+    tags: ['trade wrench to sarn', 'trade the wrench to sarn', 'trade wrench sarn', 'give wrench to sarn'],
+    show: { all: [{ item: 'wrench' }, { flagUnset: 'wrenchBayTrade' }] },
+    reply: 'Sarn takes the wrench and counts you one twist of scrap. Quiet. No Cartel Heat. The cord on Pike\'s hull is still a separate theft if you want it.',
+    effects: { remove: { wrench: 1 }, add: { scrap: 1 }, flag: { wrenchBayTrade: 'sarn', bayLooked: true }, ticks: 1 },
+  },
+  {
+    tags: ['trade wrench to vetch', 'trade the wrench to vetch', 'trade wrench vetch', 'give wrench to vetch'],
+    show: { all: [{ item: 'wrench' }, { flagUnset: 'wrenchBayTrade' }] },
+    reply: 'Vetch pockets the wrench. A small Drop comes out of the glove. She does not call a count.',
+    effects: { remove: { wrench: 1 }, add: { vial_drop: 1 }, flag: { wrenchBayTrade: 'vetch', bayLooked: true }, ticks: 1 },
   },
   {
     tags: TAKE,

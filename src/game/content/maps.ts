@@ -7,7 +7,7 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
     width: 100,
     height: 132,
     defaultNode: 'pens',
-    blurb: 'Cartel wire. South is Maw-country — days away. First Spires are a rumor of distance. Walk the roads. No teleport.',
+    blurb: 'Cartel wire. South is Maw-country — days away. The First Spires are still a rumor of distance. Walk only the roads that connect.',
     maw: { x: 78, y: 124, label: 'Maw / dunes' },
     nodes: [
       { id: 'tower', name: 'Overseer', sceneId: 'camp:tower', x: 68, y: 10 },
@@ -95,7 +95,7 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
     width: 100,
     height: 120,
     defaultNode: 'court',
-    blurb: 'Seeker fringe. First Spires already face the paddock. Shortest road of the three starts.',
+    blurb: 'Seeker fringe. The First Spires already face the paddock. This is the shortest road to Red Maw.',
     maw: { x: 58, y: 112, label: 'Hunger south' },
     nodes: [
       { id: 'court', name: 'Threshold Court', short: 'Court', sceneId: 'thresh:court', x: 50, y: 40 },

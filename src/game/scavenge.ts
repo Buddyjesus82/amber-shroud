@@ -1,6 +1,6 @@
 import { ITEMS } from './content/catalog'
 import { applyDelta } from './logic'
-import type { GameState, ItemId } from './types'
+import type { Faction, GameState, ItemId } from './types'
 
 const SKIM_SCENES = new Set([
   'camp:vents',
@@ -130,6 +130,16 @@ export function canSkim(state: GameState): boolean {
   return !state.flags[`skim:${state.sceneId}`]
 }
 
+/** Heat only for a faction that can see or trace the skim. The Hollow Lip is empty. */
+export function skimHeat(state: GameState): Partial<Record<Faction, number>> | undefined {
+  if (state.sceneId === 'maw:lip') return undefined
+  if (state.hubId === 'threshold' || state.sceneId.startsWith('thresh:')) return { seekers: 1 }
+  if (state.hubId === 'spine' || state.sceneId.startsWith('spine:')) return { strays: 1 }
+  if (state.hubId === 'redmaw' || state.sceneId.startsWith('maw:')) return { strays: 1 }
+  if (state.hubId === 'camp04' || state.sceneId.startsWith('camp:')) return { cartel: 1 }
+  return undefined
+}
+
 export function applySkim(state: GameState): GameState {
   if (!SKIM_SCENES.has(state.sceneId)) {
     return {
@@ -143,12 +153,7 @@ export function applySkim(state: GameState): GameState {
       flash: 'This throat is already dry. You took what it would give. Heat remembers the taking.',
     }
   }
-  const heat =
-    state.hubId === 'threshold'
-      ? { seekers: 1 }
-      : state.hubId === 'spine' || state.hubId === 'redmaw'
-        ? { strays: 1 }
-        : { cartel: 1 }
+  const heat = skimHeat(state)
   let next = applyDelta(state, {
     add: { vial_drop: 1 },
     sap: -1,
@@ -158,8 +163,9 @@ export function applySkim(state: GameState): GameState {
     flag: { [`skim:${state.sceneId}`]: true, skimmed: true },
   })
   if ((state.items.vial_empty ?? 0) > 0) next = applyDelta(next, { remove: { vial_empty: 1 } })
-  next.flash =
-    'You skim a Drop the desert had not budgeted. Hands sticky. Heat ticks. This is theft with a glass throat — not a crisis rescue.'
+  next.flash = heat
+    ? 'You skim a Drop the desert had not budgeted. Hands sticky. Someone here can trace it. Heat ticks. This is theft with a glass throat — not a crisis rescue.'
+    : 'You skim a Drop off the Hollow Lip. Nobody from the Cartel, the Seekers, or the Strays is here to see it. No Heat.'
   return next
 }
 

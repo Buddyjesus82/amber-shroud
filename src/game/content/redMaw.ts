@@ -216,9 +216,16 @@ Zafir is at the stall. He looks like a man who has watched buyers fail and kept 
     body: `"I'm alive," Ossa says, which is both greeting and warning. "The Maw wants the cache. Sybella wants whoever the sand keeps. The stilts are done. Don't steal from me twice."`,
     variants: [
       {
-        if: { flag: 'ossaStillness' },
+        if: { flag: 'ossaToldDay' },
         mode: 'replace',
-        body: `She nods the way you'd nod at a grave marker. "Stillness kept. I have not forgotten the day. Not out loud. Not here." The knot at your brow is the only proof she gives.`,
+        body: `She does not play the stranger anymore. "I already told you the day. The Great Bleed. How you were taken. The rest waits until you are ready. Ask when you can hear it."`,
+      },
+      {
+        if: { all: [{ flag: 'ossaStillness' }, { flagUnset: 'ossaToldDay' }] },
+        mode: 'replace',
+        body: `She looks at you longer than a stranger should. The knot at your brow is the only proof she gives.
+
+"I have been pretending not to know your face," Ossa says. "Stay quiet with me if you want the day. I will not shout it."`,
       },
       {
         if: { all: [{ flag: 'ossaAlly' }, { flagUnset: 'ossaStillness' }] },
@@ -252,6 +259,13 @@ Zafir is at the stall. He looks like a man who has watched buyers fail and kept 
           flash: '"It means I can find you. It means you can find me. It is not a marriage. It is a refusal to die separately if dying together is stupider."',
         },
       },
+      {
+        id: 'day',
+        label: 'Stay quiet with her',
+        sub: 'She stops pretending she does not know you.',
+        show: { all: [{ flag: 'ossaStillness' }, { flagUnset: 'ossaToldDay' }] },
+        effects: { goto: 'maw:ossa-day', ticks: 1 },
+      },
       { id: 'back', label: 'Give her the quiet', tone: 'quiet', effects: { goto: 'maw:stilt' } },
     ],
     intents: [
@@ -265,6 +279,47 @@ Zafir is at the stall. He looks like a man who has watched buyers fail and kept 
         tags: ['steal', 'vial', 'rob'],
         reply: 'She is alive, and she is done being surprised by you.',
         effects: { heat: { strays: 1 } },
+      },
+    ],
+  },
+  {
+    id: 'maw:ossa-day',
+    hubId: 'redmaw',
+    kind: 'talk',
+    title: 'The Day',
+    speaker: 'Ossa',
+    body: `Ossa sets the stilts down so you stand at the same height. The stranger voice is gone. What is left is a teacher who has lived in weather.
+
+"I raised you," she says. "I know you. I knew your face before any wire did."
+
+She does not look away. "They took you during the Great Bleed. They took you as a Bleed-Cut captive. I watched the tracks close, and I could not follow."
+
+A breath. The cord in her hands gets a second knot. "That is the day. The rest I will tell when you are ready to hear it. Ask me then. I will still be here."`,
+    variants: [
+      {
+        if: { flagUnset: 'ossaStillness' },
+        mode: 'replace',
+        body: `"I'm alive," Ossa says, and nothing more. She is a woman on stilts. She does not know you. She will not pretend she does.`,
+      },
+    ],
+    choices: [
+      {
+        id: 'back',
+        label: 'Let her stop there',
+        sub: 'She has said the day. The rest waits.',
+        show: { flag: 'ossaStillness' },
+        effects: {
+          flag: { ossaToldDay: true },
+          goto: 'maw:stilt',
+          ticks: 1,
+          flash: 'She ties the cord a second time and does not add a name. The rest waits until you ask.',
+        },
+      },
+      {
+        id: 'leave',
+        label: 'Leave the shade',
+        show: { flagUnset: 'ossaStillness' },
+        effects: { goto: 'maw:stilt', ticks: 1 },
       },
     ],
   },

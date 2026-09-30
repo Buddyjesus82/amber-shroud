@@ -7,6 +7,7 @@ import {
   HUNTER_QUIET_GAPS,
   huntGap,
   interpret,
+  KAELEN_APPEARANCE,
   isChoiceOn,
   newGame,
   scavenge,
@@ -20,6 +21,7 @@ import { DOORS, HUBS, ITEMS } from '../src/game/content/catalog.ts'
 import { getScene } from '../src/game/content/index.ts'
 import { PEOPLE } from '../src/game/people.ts'
 import { rollScavenge } from '../src/game/scavenge.ts'
+import { kaelenOffers } from '../src/game/trade.ts'
 import {
   IDLE_DOOR,
   tapDoor,
@@ -895,7 +897,7 @@ s = newGame('prisoner')
 s = applyEffect(s, { startChapter: 'cache-run', goto: 'ch1:leave', ticks: 1 })
 assert(!/carrying sap like a signal fire/i.test(bodyOf(s)), 'prisoner Cache Run title does not claim a signal fire at holding sap')
 assert(bodyOf(s).includes('Not a lantern') || bodyOf(s).includes('holding'), 'holding sap is named honestly')
-assert(bodyOf(s).includes('road is not shared') && bodyOf(s).includes('climax'), 'destination is shared; the road is not a Sap charge')
+assert(bodyOf(s).includes('road is not shared') && bodyOf(s).includes('destination'), 'destination is shared; the road is not a Sap charge')
 s = newGame('outcast')
 s = applyEffect(s, { startChapter: 'cache-run', goto: 'ch1:leave', ticks: 1 })
 assert(!/carrying sap like a signal fire/i.test(bodyOf(s)), 'thin sap is not a signal fire')
@@ -1848,7 +1850,7 @@ assert(ids(s).includes('heading-glint') && ids(s).includes('heading-scrap'), 'ca
   assert(!paid.items.glints, 'heading Glint row spends the Glint')
   assert(paid.items.scrap === 1, 'heading Glint row keeps scrap')
   assert(paid.flags.zafirPaid && paid.flags.zafirCup && paid.flags.zafirMet, 'heading flags stay the same')
-  assert(paid.heat.seekers === seekers + 1, 'heading still raises Seekers')
+  assert(paid.heat.seekers === seekers, 'Zafir selling a heading does not raise Seekers — he will not shop the cup to them')
   assert(paid.sceneId === 'ch1:south-wind', 'paid heading still walks toward Sybella')
 }
 {
@@ -2478,6 +2480,142 @@ for (const file of walkTs(new URL('../src', import.meta.url).pathname)) {
   assert(!statLabel.test(readFileSync(file, 'utf8')), `no Bite/Hide stat label in ${file}`)
 }
 assert(!statLabel.test(readFileSync(new URL('../README.md', import.meta.url), 'utf8')), 'README uses Strike/Shell')
+
+function helpCommands(flash: string): string[] {
+  const marker = 'Things you could try here:'
+  const at = flash.indexOf(marker)
+  if (at < 0) return []
+  return flash
+    .slice(at + marker.length)
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
+}
+
+function assertHelpResolves(s: GameState, where: string) {
+  const helped = interpret(s, 'help')
+  const flash = helped.flash ?? ''
+  assert(!!flash && !flash.toLowerCase().includes('miss'), `${where} help is not a miss`)
+  for (const label of visibleChoices(s).map((c) => c.label)) {
+    if (label.length >= 12) assert(!flash.includes(label), `${where} help does not repeat "${label}"`)
+  }
+  const cmds = helpCommands(flash)
+  if (!cmds.length) {
+    assert(flash.includes('Nothing hidden to type here'), `${where} says when nothing is hidden`)
+    assert(flash.toLowerCase().includes('look'), `${where} empty help still mentions look`)
+    return
+  }
+  assert(flash.includes('Things you could try here:'), `${where} help has the header`)
+  for (const cmd of cmds) {
+    let next: GameState
+    try {
+      next = interpret(s, cmd)
+    } catch (err) {
+      throw new Error(`${where} "${cmd}" threw: ${(err as Error).message}`)
+    }
+    const moved = next.sceneId !== s.sceneId || !!next.flags.encounterHere || !!next.flags.hunterHere
+    assert(moved || !(next.flash ?? '').startsWith('Miss'), `${where} "${cmd}" resolves (${next.flash ?? ''})`)
+  }
+}
+
+{
+  const quiet = { encounterAt: 9999 }
+  assertHelpResolves(newGame('prisoner'), 'prisoner opening')
+  assertHelpResolves(applyEffect(newGame('prisoner'), { goto: 'camp:cages', flag: quiet }), 'pens')
+  const bay = applyEffect(newGame('prisoner'), { goto: 'camp:bay', add: { wrench: 1 }, flag: quiet })
+  assert(!bay.flags.encounterHere, 'bay help is not standing in a fight')
+  assertHelpResolves(bay, 'bay before look')
+  assert((interpret(bay, 'help').flash ?? '').includes('trade wrench to Pike'), 'wrench trade is hidden until you look')
+  assertHelpResolves(applyEffect(bay, { flag: { bayLooked: true } }), 'bay after look')
+  assertHelpResolves(applyEffect(newGame('prisoner'), { goto: 'camp:kaelen', flag: quiet }), 'kaelen')
+  assertHelpResolves(applyEffect(newGame('prisoner'), { goto: 'camp:yard', flag: quiet }), 'yard')
+  assertHelpResolves(applyEffect(newGame('outcast'), { goto: 'spine:ridge', flag: quiet }), 'outcast ridge')
+  assertHelpResolves(applyEffect(newGame('vessel'), { goto: 'thresh:court', flag: quiet }), 'vessel court')
+  assertHelpResolves(
+    applyEffect(newGame('prisoner'), { goto: 'ch1:p-oil', startChapter: 'cache-run' }),
+    'stolen hull',
+  )
+  assertHelpResolves(
+    applyEffect(newGame('prisoner'), { goto: 'camp:yard', flag: { encounterHere: true, encounterKind: 'stray' } }),
+    'encounter',
+  )
+  assertHelpResolves(
+    applyEffect(newGame('prisoner'), { goto: 'camp:yard', health: -99, flag: { downed: true } }),
+    'downed',
+  )
+}
+
+{
+  let bay = applyEffect(newGame('prisoner'), { goto: 'camp:bay', add: { wrench: 1 }, flag: { encounterAt: 9999 } })
+  const cartel = bay.heat.cartel
+  bay = interpret(bay, 'trade wrench to Pike')
+  assert(bay.flags.lashCord, 'Pike trades the wrench for lash cord')
+  assert(!(bay.items.wrench ?? 0), 'Pike keeps the wrench')
+  assert(bay.heat.cartel === cartel, 'wrench trade does not raise Cartel Heat')
+  assert(!bay.flags.bayPikeTook, 'trading the wrench does not spend the bolt theft')
+  const stole = interpret(bay, 'steal bolt from Pike')
+  assert(stole.flags.bayPikeTook, 'steal bolt still works after the trade')
+  let vetch = applyEffect(newGame('prisoner'), { goto: 'camp:bay', add: { wrench: 1 }, flag: { encounterAt: 9999 } })
+  vetch = interpret(vetch, 'trade wrench to Vetch')
+  assert((vetch.items.vial_drop ?? 0) >= 1, 'Vetch pays a Drop for the wrench')
+  assert(!(vetch.items.wrench ?? 0), 'Vetch keeps the wrench')
+  const cord = applyEffect(newGame('prisoner'), { goto: 'camp:bay', flag: { bayLooked: true, encounterAt: 9999 } })
+  assert(ids(cord).includes('cord') || ids(applyEffect(cord, { add: { wrench: 1 } })).includes('trade-pike'), 'cord and trade stay available')
+}
+
+{
+  const campOffers = kaelenOffers(applyEffect(newGame('prisoner'), { goto: 'camp:kaelen' })).map((o) => o.id)
+  assert(campOffers.includes('knife') && campOffers.includes('wrap') && campOffers.includes('cloak'), 'camp shelf has knife, wrap, cloak')
+  const spineOffers = kaelenOffers(applyEffect(newGame('outcast'), { goto: 'spine:kaelen' })).map((o) => o.id)
+  assert(spineOffers.includes('wrap') && spineOffers.includes('cloak') && !spineOffers.includes('knife'), 'spine shelf drops the knife')
+  const threshOffers = kaelenOffers(applyEffect(newGame('vessel'), { goto: 'thresh:kaelen' })).map((o) => o.id)
+  assert(threshOffers.includes('wrap') && threshOffers.includes('cloak'), 'threshold shelf still has wrap and cloak')
+  const roam = applyEffect(newGame('prisoner'), { goto: 'roam:kaelen', flag: { kaelenHub: 'redmaw' } })
+  const roamOffers = kaelenOffers(roam).map((o) => o.id)
+  assert(roamOffers.includes('drop') && roamOffers.includes('knife') && !roamOffers.includes('wrap'), 'Red Maw shelf is Drop, salve, knife')
+  assert(KAELEN_APPEARANCE.quietScenes === 8 && KAELEN_APPEARANCE.tickMod === 11, 'Kaelen appearance stays 8 scenes / every 11th tick')
+  let pass = applyEffect(newGame('prisoner'), { goto: 'camp:yard', flag: { encounterAt: 9999 } })
+  pass = {
+    ...pass,
+    heat: { cartel: 0, seekers: 0, strays: 0 },
+    ticks: 10,
+    flags: { ...pass.flags, huntQuiet: 7, encounterAt: 10 },
+  }
+  delete pass.flags.encounterHere
+  pass = applyEffect(pass, { ticks: 1 })
+  assert(pass.flags.kaelenPassing, 'quiet yard on the tick brings Kaelen through')
+  assert(pass.flags.kaelenHub === 'camp04', 'passing Kaelen remembers Camp-04')
+}
+
+{
+  let told = applyEffect(newGame('prisoner'), {
+    goto: 'maw:ossa',
+    flag: { ossaStillness: true, ossaAlly: true, chapter1Done: true },
+  })
+  assert(ids(told).includes('day'), 'stillness opens a quiet scene with Ossa')
+  told = pick(told, 'day')
+  assert(told.sceneId === 'maw:ossa-day', 'quiet choice reaches the day')
+  const day = bodyOf(told)
+  assert(/raised you/i.test(day), 'Ossa admits she raised him')
+  assert(/Great Bleed/.test(day), 'the day was the Great Bleed')
+  assert(/Bleed-Cut/.test(day), 'he was taken as a Bleed-Cut captive')
+  told = pick(told, 'back')
+  assert(told.flags.ossaToldDay, 'she has told the day')
+  told = applyEffect(told, { goto: 'maw:ossa' })
+  assert(!ids(told).includes('day'), 'the quiet choice does not repeat')
+  assert(!/Not out loud/.test(bodyOf(told)), 'after the day she does not refuse to speak it')
+  const stranger = applyEffect(newGame('outcast'), { goto: 'maw:ossa', flag: { chapter1Done: true } })
+  assert(!ids(stranger).includes('day'), 'without stillness she stays a stranger')
+  assert(!/raised you/i.test(bodyOf(stranger)), 'the stranger body does not confess')
+}
+
+{
+  let lip = applyEffect(newGame('vessel'), { goto: 'maw:lip', flag: { chapter1Done: true } })
+  const heat = { ...lip.heat }
+  lip = skim(lip)
+  assert(lip.heat.cartel === heat.cartel && lip.heat.seekers === heat.seekers && lip.heat.strays === heat.strays, 'Hollow Lip skim raises no Heat')
+  assert(/Nobody from the Cartel/i.test(lip.flash ?? ''), 'lip skim says nobody saw it')
+}
 
 console.log('OK', {
   prisoner: Object.keys(DOORS.prisoner.items),

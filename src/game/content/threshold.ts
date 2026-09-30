@@ -252,7 +252,7 @@ Oram is here more than the Court. He prefers animals to hymns. Animals do not as
     kind: 'talk',
     title: 'Oram',
     speaker: 'Oram',
-    body: `Oram's ledger is full of feed-weights and heresies he has not reported.
+    body: `Oram is counting feed for the Striders, and writing down heresies he has not reported.
 
 "You're a better thief than a cup," he says, not looking up. "Good. Cups crack. Thieves reach Red Maw. Kallik buried a cache there. Sybella wants the person who can drink it and not die. I want the Striders alive. Those wants are about to collide."`,
     choices: [
@@ -265,7 +265,7 @@ Oram is here more than the Court. He prefers animals to hymns. Animals do not as
           add: { cache_map: 1, kallik_mark: 1 },
           ticks: 1,
           goto: 'thresh:paddock',
-          flash: 'He tears a corner off the ledger. A crime. A kindness. Red Maw in feed-pencil.',
+          flash: 'He tears a corner off the feed-list. A crime. A kindness. Red Maw, in feed-pencil.',
         },
       },
       {
@@ -286,7 +286,7 @@ Oram is here more than the Court. He prefers animals to hymns. Animals do not as
         effects: {
           add: { scrip: 2 },
           flag: { oramScrip: true },
-          heat: { cartel: 1, seekers: 1 },
+          heat: { seekers: 1 },
           ticks: 1,
           goto: 'thresh:paddock',
           flash: 'Scrip. Useless with Silas. Useful with a guard who still believes in paper.',

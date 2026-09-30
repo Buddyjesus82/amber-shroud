@@ -836,7 +836,6 @@ Bald. Scarred. Steam baton. No dog at his heel. The handler and the hound are a 
         show: { flag: 'sybellaNamed' },
         effects: {
           ticks: 1,
-          heat: { seekers: 1 },
           goto: 'camp:tower',
           flash:
             '"Sybella." He says it like a stain on corporate inventory. "If she asks for you, I will sell you. If you run, run farther than Red Maw. I hunt thieves. I do not hunt weather."',
@@ -1121,6 +1120,44 @@ Pike, Sarn, and Vetch keep their heads down on the other cradles. They are not t
           heat: { cartel: 1 },
           ticks: 1,
           flash: 'Cord. Pike does not look up. A stilt-lash will take it. Cartel Heat ticks if anyone counts the hull.',
+        },
+      },
+      {
+        id: 'trade-pike',
+        label: 'Trade the wrench to Pike for lash cord',
+        sub: 'He keeps the steel. You get the cord. He does not call the Cartel.',
+        show: { all: [{ item: 'wrench' }, { flag: 'bayLooked' }, { flagUnset: 'wrenchBayTrade' }, { flagUnset: 'lashCord' }] },
+        effects: {
+          remove: { wrench: 1 },
+          flag: { lashCord: true, wrenchBayTrade: 'pike' },
+          ticks: 1,
+          flash: 'Pike takes the wrench without stopping the scrape. The lash cord comes off the north hull into your hand. He does not shout.',
+        },
+      },
+      {
+        id: 'trade-sarn',
+        label: 'Trade the wrench to Sarn for scrap',
+        sub: 'One scrap. A quiet trade, not a theft.',
+        show: { all: [{ item: 'wrench' }, { flag: 'bayLooked' }, { flagUnset: 'wrenchBayTrade' }] },
+        effects: {
+          remove: { wrench: 1 },
+          add: { scrap: 1 },
+          flag: { wrenchBayTrade: 'sarn' },
+          ticks: 1,
+          flash: 'Sarn takes the wrench and counts you one twist of scrap. No Cartel Heat. Pike\'s cord is still there if you want to steal it.',
+        },
+      },
+      {
+        id: 'trade-vetch',
+        label: 'Trade the wrench to Vetch for a Drop',
+        sub: 'A small sip of Oasis Sap. She keeps the steel.',
+        show: { all: [{ item: 'wrench' }, { flag: 'bayLooked' }, { flagUnset: 'wrenchBayTrade' }] },
+        effects: {
+          remove: { wrench: 1 },
+          add: { vial_drop: 1 },
+          flag: { wrenchBayTrade: 'vetch' },
+          ticks: 1,
+          flash: 'Vetch pockets the wrench. A small Drop comes out of the glove. She does not call a count.',
         },
       },
       {
