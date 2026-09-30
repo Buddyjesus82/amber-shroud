@@ -381,20 +381,19 @@ Dusk on the Spine. Same pack. Same gloves. Less wire, more dust. "You're the emp
           unsetFlag: ['kaelenGlintOut'],
           ticks: 1,
           goto: 'spine:well',
-          flash: '"Heading is yours. Shade is still Silas. I do not mix invoices."',
+          flash: '"Heading is yours. Shade is still Silas. I do not mix the jobs."',
         },
       },
       {
         id: 'hound',
-        label: 'Buy side trouble — Hound on the east wash',
-        sub: '1 scrap. A heading. The wash is still a walk.',
+        label: 'Buy a heading — Hound on the east wash',
+        sub: 'Costs 1 scrap. You learn Valerius is close. You still have to walk the east wash.',
         show: { flagUnset: 'kaelenHoundRumor' },
         enable: { item: 'scrap' },
         locked: 'Need 1 scrap',
         effects: {
           remove: { scrap: 1 },
           flag: { kaelenHoundRumor: true, kaelenKnown: true },
-          heat: { cartel: 1 },
           ticks: 1,
           flash:
             '"Valerius. Shard-Hound. He hunts Sap thieves and unpermitted relic hoarders even out here. You paid to know he is close. Congratulations. I sold a heading. Map the wash."',
@@ -403,7 +402,7 @@ Dusk on the Spine. Same pack. Same gloves. Less wire, more dust. "You're the emp
       {
         id: 'hound-walk',
         label: 'Walk the east wash for the Hound',
-        sub: 'Connected roads. Kaelen does not teleport you.',
+        sub: 'Walk the east wash yourself. Kaelen only sold you the heading.',
         show: { flag: 'kaelenHoundRumor' },
         effects: {
           travel: 'spine:hound',
@@ -437,9 +436,9 @@ export const threshKaelenScenes: Scene[] = [
     hubId: 'threshold',
     kind: 'place',
     title: 'Cup-Shadow',
-    body: `Hymn-shade off the paddock, court-edge enough to hear the chant miss a beat. Not a stall. A pack leaned on a false-route wall — dust-caked canvas, amber jars, thick gloves, a merchant who buys the lie that a person can be a cup.
+    body: `Shade off the Strider paddock, close enough to the Court that you can hear the chant miss a beat. This is not a stall. It is a pack leaned against a wall: dust-caked canvas, jars of amber, thick gloves. The merchant here buys the lie that a person can be a cup.
 
-Kaelen the Sifter is here when the route says here. He plays no church and no ledger. He does not ride Striders. He does not pour anyone. He funds a way out and will not arm a hand against a survivor.`,
+Kaelen the Sifter is here when the road says he is here. He does not serve the Seekers, and he does not keep their books. He does not ride Striders. He does not pour anyone. He will pay for a way out, and he will not arm a hand against another survivor.`,
     variants: [
       {
         if: { flag: 'kaelenKnown' },
@@ -509,7 +508,7 @@ Cup-shadow. Same pack. Same gloves. Less wire, more hymn-dust. "You're the cup t
           goto: 'thresh:kaelen',
           flag: { kaelenKnown: true },
           flash:
-            '"I do not ride. Oram counts joints. Thalia counts cups. I count coin. Do not mix the invoices."',
+            '"I do not ride. Oram counts joints. Thalia counts cups. I count coin. Do not mix the jobs."',
         },
       },
       {
@@ -594,23 +593,22 @@ I do not take scrip. I do not take blessing. I do not ride."`,
           flag: { hungerKnown: true, sybellaNamed: true, kaelenHunger: true, kaelenKnown: true },
           unsetFlag: ['kaelenGlintOut'],
           ticks: 1,
-          flash: '"Heading is yours. Hymn is still Thalia. Strider is still Oram. I do not mix invoices."',
+          flash: '"The heading is yours. The hymn is still Thalia. The Strider is still Oram. I do not mix the jobs."',
         },
       },
       {
         id: 'runners',
-        label: 'Buy side trouble — Seeker runners, Heat clock',
-        sub: '1 scrap. A heading. The Court is still a walk.',
+        label: 'Buy a heading — Seeker runners on the hymn-road',
+        sub: 'Costs 1 scrap. You learn the runners are watching. The Court is still a walk from here.',
         show: { flagUnset: 'kaelenRunnerRumor' },
         enable: { item: 'scrap' },
         locked: 'Need 1 scrap',
         effects: {
           remove: { scrap: 1 },
           flag: { kaelenRunnerRumor: true, kaelenKnown: true },
-          heat: { seekers: 1 },
           ticks: 1,
           flash:
-            '"Runners on the hymn-road keep a Heat ledger. They will try to pour you. Heat is who is watching — not XP. I sold a heading. I do not sell a door."',
+            '"Seeker runners on the hymn-road are watching for a Vessel to pour. I sold you the heading. I do not open their door."',
         },
       },
       {
@@ -625,7 +623,7 @@ I do not take scrip. I do not take blessing. I do not ride."`,
           flag: { kaelenOramRumor: true, kaelenKnown: true },
           ticks: 1,
           flash:
-            '"Oram will sell you a map if you ask like a thief, not a cup. He wants Striders alive. I want coin. Map the paddock. I do not teleport you."',
+            '"Oram will give you a map if you ask like a thief, not a cup. He wants the Striders alive. I want coin. The paddock is a walk from here."',
         },
       },
       {

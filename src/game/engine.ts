@@ -11,7 +11,8 @@ import {
   RIM_NOWHERE,
 } from './hunger'
 import { GLOBAL_INTENTS, matchChoiceText, matchIntent } from './intent'
-import { compassLine, travelGate } from './map'
+import { helpText } from './help'
+import { compassLine, matchCompass, travelGate } from './map'
 import {
   atGuardStation,
   atKaelenInvoice,
@@ -26,7 +27,7 @@ import {
 import { markMetOnLeave, matchPersonQuery, personAtScene } from './people'
 import { downedNote, wakeEffect } from './downed'
 import { isPressureOverlay, pressureAppend, pressureChoices, pressureVerb } from './hunter'
-import { helpLine, offButton } from './verbs'
+import { offButton } from './verbs'
 import {
   canEncounter,
   dismissEncounter,
@@ -44,12 +45,20 @@ import {
   wantsEncounterSkip,
 } from './encounter'
 import { talkFallback, talkIntentsFor } from './talk'
-import { applyScavenge, canScavenge, canSkim } from './scavenge'
+import { applyScavenge, canScavenge, canSkim, skimHeat } from './scavenge'
 import { writeSave } from './save'
 import { repairSceneId } from './repair'
 import { isRumorCounter, matchRumorText, rumorChoices } from './rumors'
 import { matchShopText, moneyLabel, pickPay, shopChoices, vendorFor } from './trade'
 import type { Choice, DoorId, Effect, EquipSlot, FlagMap, GameState, ItemId, Scene } from './types'
+
+/**
+ * How often Kaelen's pack stops on a hub.
+ * A pass-frequency decision is pending — change this constant, not the check below.
+ * quietScenes: quiet scenes since the last hunt before he may appear.
+ * tickMod: he only stops when the scene clock divides cleanly by this.
+ */
+export const KAELEN_APPEARANCE = { quietScenes: 8, tickMod: 11 } as const
 
 export function newGame(door: DoorId): GameState {
   const d = DOORS[door]
@@ -515,6 +524,10 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   }
 
   const place = getScene(next.sceneId).kind === 'place'
+  if (next.sceneId === 'camp:kaelen' || next.sceneId === 'spine:kaelen' || next.sceneId === 'thresh:kaelen') {
+    const hub = next.sceneId.startsWith('camp') ? 'camp04' : next.sceneId.startsWith('spine') ? 'spine' : 'threshold'
+    next.flags = { ...next.flags, kaelenHub: hub }
+  }
   if (
     lingered &&
     place &&
@@ -522,10 +535,10 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     !next.flags.hunterHere &&
     !next.flags.encounterHere &&
     !next.sceneId.includes('kaelen') &&
-    Number(next.flags.huntQuiet ?? 0) >= 8 &&
-    next.ticks % 11 === 0
+    Number(next.flags.huntQuiet ?? 0) >= KAELEN_APPEARANCE.quietScenes &&
+    next.ticks % KAELEN_APPEARANCE.tickMod === 0
   ) {
-    next.flags = { ...next.flags, kaelenPassing: true }
+    next.flags = { ...next.flags, kaelenPassing: true, kaelenHub: next.hubId ?? next.flags.kaelenHub }
   }
   if (next.flags.sybellaHunting && next.heat.cartel >= 6 && !next.flags.opposedHook) {
     next.flags = { ...next.flags, opposedHook: true, heardOpposed: true }
@@ -658,12 +671,7 @@ export function skim(state: GameState): GameState {
       updatedAt: Date.now(),
     })
   }
-  const heat =
-    state.hubId === 'threshold'
-      ? { seekers: 1 }
-      : state.hubId === 'spine' || state.hubId === 'redmaw'
-        ? { strays: 1 }
-        : { cartel: 1 }
+  const heat = skimHeat(state)
   return withVerb(
     applyEffect(state, {
       add: { vial_drop: 1 },
@@ -673,8 +681,9 @@ export function skim(state: GameState): GameState {
       pressure: 2,
       ticks: 1,
       flag: { [`skim:${state.sceneId}`]: true, skimmed: true },
-      flash:
-        'You skim a Drop the desert had not budgeted. Hands sticky. Heat ticks. This is theft with a glass throat — not a crisis rescue.',
+      flash: heat
+        ? 'You skim a Drop the desert had not budgeted. Hands sticky. Someone here can trace it. Heat ticks. This is theft with a glass throat — not a crisis rescue.'
+        : 'You skim a Drop off the Hollow Lip. Nobody from the Cartel, the Seekers, or the Strays is here to see it. No Heat.',
     }),
     'skim',
   )
@@ -741,7 +750,7 @@ export function interpret(state: GameState, text: string): GameState {
         ? 'The fight is the whole ground. '
         : ''
     return withVerb(
-      persist({ ...state, flash: `${face}${helpLine(state, scene, labels)}`, updatedAt: Date.now() }),
+      persist({ ...state, flash: `${face}${helpText(state, labels)}`, updatedAt: Date.now() }),
       'help',
     )
   }
@@ -904,9 +913,19 @@ export function interpret(state: GameState, text: string): GameState {
     return withVerb(applyEffect(state, button.effects), button.id)
   }
 
+  const compass = matchCompass(state, text)
+  if (compass) {
+    return withVerb(travelTo(state, compass.sceneId), `go ${compass.dir.toLowerCase()}`)
+  }
+
   const pressed = pressureVerb(state, text)
   if (pressed) {
     return withVerb(applyEffect(state, pressed.effects), pressed.id)
+  }
+
+  if (/^(?:look(?: around)?|search|examine|inspect)\s+\S/.test(bare)) {
+    const look = offButton(state, text, scene, shown.map((c) => c.label))
+    if (look) return withVerb(applyEffect(state, look.effects), look.verb)
   }
 
   const local = matchIntent(text, [...(scene.intents ?? []), ...talkIntentsFor(scene.id)], state)

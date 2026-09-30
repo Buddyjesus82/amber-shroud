@@ -42,7 +42,7 @@ const oiltooth: IntentRule[] = [
     tags: THREAT,
     reply:
       'The smirk holds. The wrench does not. "Humor is a shield. Do not make me put it down. Valerius is the throat you want, not mine."',
-    effects: { heat: { cartel: 1 }, pressure: 1, ticks: 1 },
+    effects: { heat: { strays: 1 }, pressure: 1, ticks: 1 },
   },
   {
     tags: ['drop', 'sap', 'vial', 'thirst'],
@@ -212,23 +212,23 @@ const oiltoothRoad: IntentRule[] = [
   {
     tags: TALK,
     reply:
-      'Brass ticks. "I hotwired. I will not tour. Ride the last mile, walk the Heat, or I rip the tag in your cuff. Red Maw is south of my cowardice."',
+      'Brass ticks. "I hotwired. I will not tour. Ride the last mile and I drop you with Ossa, walk south on your own, or I cut the Cartel tag out of your cuff. Red Maw is south of where I am willing to go."',
     effects: { ticks: 1 },
   },
   {
     tags: HELP,
-    reply: '"Help is a dump at stilts or a quieter cuff. I do not sell headings. Kaelen still charges. I go west."',
+    reply: '"Help is a drop-off with Ossa, or a quieter cuff. I do not sell headings. Kaelen still charges. I go west."',
     effects: { ticks: 1 },
   },
   {
     tags: TRADE,
-    reply: '"I do not sell Drops on a stolen hull. I sell a mile you might survive. Stilts south. I go west."',
+    reply: '"I do not sell Drops on a stolen hull. I sell a mile you might survive. Ossa is south. I go west."',
     effects: { ticks: 1 },
   },
   {
     tags: THREAT,
     reply: 'The smirk holds. The wrench does not. "Humor is a shield. Do not make me put it down on my own ride."',
-    effects: { heat: { cartel: 1 }, pressure: 1, ticks: 1 },
+    effects: { heat: { strays: 1 }, pressure: 1, ticks: 1 },
   },
 ]
 
@@ -377,7 +377,7 @@ const thalia: IntentRule[] = [
   },
   {
     tags: TRADE,
-    reply: '"The Court does not sell. The Court fills. Oram keeps a ledger if you wanted a thief\'s prices."',
+    reply: '"The Court does not sell. The Court fills. If you want a thief\'s bargain, that is not my mouth."',
     effects: { ticks: 1 },
   },
   {
@@ -395,12 +395,12 @@ const oram: IntentRule[] = [
   },
   {
     tags: HELP,
-    reply: '"I already tore a heading out of the ledger. That is help. I want the Striders alive. Do not make me choose you over them twice."',
+    reply: '"I already gave you the heading. That is help. I want the Striders alive. Do not make me choose you over them twice."',
     effects: { ticks: 1 },
   },
   {
     tags: TRADE,
-    reply: '"Feed-weights, not Glints. I am not Zafir. I am not Kaelen. Take the map and leave the animals their names."',
+    reply: '"I count feed, not coin. I am not Zafir. I am not Kaelen. Take the map and leave the animals their names."',
     effects: { ticks: 1 },
   },
   {

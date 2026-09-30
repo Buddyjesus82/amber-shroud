@@ -172,7 +172,7 @@ He sells shade by the minute. Talk is not free. Drops are a fairy tale he still 
     metFlag: 'metNim',
     card: `Nim the Cut-Fee sits shade like a toll. Resin under the nails. A knife that has only ever been for minutes.
 
-Silas sells the minute. She collects it. Glint, scratch, empty glass — or she names you to the wash and lets noon finish the invoice. She is not Kaelen. She is not Silas. She is the tax on being Stray in daylight.`,
+Silas sells the minute. She collects it. A Glint, a scratch, an empty glass — or she names you to the wash and lets noon finish the job. She is not Kaelen. She is not Silas. She is the tax on being Stray in daylight.`,
     scenes: ['ch1:o-tax'],
     later: {
       'ch1:o-tax': `Resin under the nails. Shade like a till. "Noon-Empty. Pay or run noon. I tell the wash your name either way if you cheap me."`,
@@ -241,12 +241,13 @@ He is not Kaelen. Kaelen is inventory with gloves. Zafir is a man who sold the s
     card: `Ossa stands three feet above hungry sand on stilts lashed with cord repaired more times than made. A vial rides her hip, half-full, honest. She sees kit before faces.
 
 She is a living person on purpose. She falls funny. She does not die easy. A twice-tied knot means she can find you — not a marriage. A refusal to die separately if dying together is stupider.`,
-    scenes: ['ch1:p-ossa', 'ch1:o-ossa', 'ch1:ossa-talk', 'ch1:ossa-rob', 'maw:stilt', 'maw:ossa'],
+    scenes: ['ch1:p-ossa', 'ch1:o-ossa', 'ch1:ossa-talk', 'ch1:ossa-rob', 'maw:stilt', 'maw:ossa', 'maw:ossa-day'],
     later: {
       'ch1:p-ossa': `Stilts. She is counting the wire still in your cuffs. "You smell like a cage. I don't hide property."`,
       'ch1:o-ossa': `Stilts. Kin-height. Honest glass. "Family can still be cruel. Don't lunge."`,
       'maw:stilt': `Ossa is here, stilts unstrapped or not, repairing a lash or refusing shade. Alive is still the headline.`,
       'maw:ossa': `"I'm alive," she says, which is both greeting and warning. The Maw wants the cache. She wants stilts that keep working.`,
+      'maw:ossa-day': `The stranger voice is gone. She tells you she raised you, and that you were taken during the Great Bleed as a Bleed-Cut captive. The rest waits until you are ready.`,
     },
   },
   sybella: {

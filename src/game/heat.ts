@@ -1,8 +1,8 @@
 import type { Faction } from './types'
 
 export const HEAT_TIP = {
-  title: 'Heat is not XP',
-  body: `The three numbers under Sap are Heat: attention from three factions. They are not levels. They do not make you stronger. They make you visible.
+  title: 'Heat is attention',
+  body: `The three numbers under Sap are Heat: attention from three factions. They do not make you stronger. They make you visible.
 
 Tap a Heat number anytime to hear who is watching.`,
 }
@@ -30,5 +30,5 @@ export const HEAT_FACTIONS: Record<
 
 export function heatRiseLine(faction: Faction, n: number): string {
   const f = HEAT_FACTIONS[faction]
-  return `${f.name} Heat +${n} — attention, not XP. ${f.watch}.`
+  return `${f.name} Heat +${n} — someone is watching. ${f.watch}.`
 }

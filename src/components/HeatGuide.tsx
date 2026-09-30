@@ -3,7 +3,7 @@ import type { Faction } from '../game/types'
 
 export function HeatTip({ onDismiss }: { onDismiss: () => void }) {
   return (
-    <div className="map-backdrop heat-guide" role="dialog" aria-label="Heat is not XP">
+    <div className="map-backdrop heat-guide" role="dialog" aria-label="Heat is attention">
       <div className="map-sheet" onClick={(e) => e.stopPropagation()}>
         <header className="sheet-head">
           <div>
@@ -34,7 +34,7 @@ export function HeatExplainer({ faction, onClose }: { faction: Faction; onClose:
       <div className="map-sheet" onClick={(e) => e.stopPropagation()}>
         <header className="sheet-head">
           <div>
-            <p className="kicker map-kicker">Heat — not XP</p>
+            <p className="kicker map-kicker">Heat — who is watching</p>
             <h2>{f.name}</h2>
           </div>
           <button type="button" className="text-link" onClick={onClose}>

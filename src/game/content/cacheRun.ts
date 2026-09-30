@@ -20,11 +20,11 @@ export const cacheRunScenes: Scene[] = [
     kind: 'story',
     art: 'hunger',
     title: 'Cache Run',
-    body: `Want is simple: Kallik's cache at Red Maw. A pile of Drops next to a mouth.
+    body: `You want Kallik's cache at Red Maw: a pile of Drops beside a mouth that can drink them.
 
-The problem is also simple: a blonde on a sand-skiff who needs a lantern that can walk.
+Sybella wants that mouth. She rides a sand-skiff. She is looking for someone who can carry Oasis Sap and still walk.
 
-The road is not shared. Same destination. Then you spend: the climax, not a Drop from your throat.`,
+The road is not shared. The destination is. What it costs you depends on the life you already lived.`,
     variants: [
       {
         if: { sapMin: 5 },
@@ -49,7 +49,7 @@ The road is not shared. Same destination. Then you spend: the climax, not a Drop
       {
         if: { door: 'prisoner' },
         mode: 'append',
-        body: `Camp-04 sirens thin. First Spires are days south of that wire — Cartel hinterland, farthest of the three starts. Scrip will not buy dunes. Cartel Heat will.`,
+        body: `Camp-04's sirens are thinning behind you. The First Spires are days south of the wire, through Cartel country. Scrip will not buy the dunes. If the Cartel sees you leave, their Heat will.`,
       },
       {
         if: { door: 'outcast' },
@@ -59,7 +59,7 @@ The road is not shared. Same destination. Then you spend: the climax, not a Drop
       {
         if: { door: 'vessel' },
         mode: 'append',
-        body: `Oram's map is already a crime. First Spires already face the paddock you stole. Shortest Hunger-road of the three doors. Seeker Heat is a hymn with teeth.`,
+        body: `Oram's map is already a crime. The First Spires already face the paddock you left. This is the shortest road to Red Maw. If the Seekers see you, their Heat follows.`,
       },
       {
         if: { flag: 'cacheBlind' },
@@ -71,7 +71,7 @@ The road is not shared. Same destination. Then you spend: the climax, not a Drop
       {
         id: 'go',
         label: 'Crawl the last Cartel fence',
-        sub: 'Steam-culvert. Wire still singing. Hounds eat the wash behind you.',
+        sub: 'Leave Camp-04 through the steam pipe. Costs sap. Shard-Hounds are on the wash behind you.',
         tone: 'hunger',
         show: { door: 'prisoner' },
         effects: { goto: 'ch1:p-pipe', ticks: 1, sap: -1, pressure: 1 },
@@ -79,7 +79,7 @@ The road is not shared. Same destination. Then you spend: the climax, not a Drop
       {
         id: 'go',
         label: 'Walk noon country',
-        sub: 'Shade-cuts. Cut-fees. Kin who will still tax you.',
+        sub: 'Walk into noon. Costs sap. Silas, then Nim, then Ossa — each one may charge you for shade.',
         tone: 'hunger',
         show: { door: 'outcast' },
         effects: { goto: 'ch1:o-noon', ticks: 1, sap: -1, pressure: 1 },
@@ -87,7 +87,7 @@ The road is not shared. Same destination. Then you spend: the climax, not a Drop
       {
         id: 'go',
         label: 'Take the hymn-road',
-        sub: 'Runners already angling. A cup on the run is loud.',
+        sub: 'Take the road the Seekers already walk. Costs sap. Runners are looking for a Vessel.',
         tone: 'hunger',
         show: { door: 'vessel' },
         effects: { goto: 'ch1:v-hymn', ticks: 1, sap: -1, pressure: 1 },
@@ -121,26 +121,26 @@ The road is not shared. Same destination. Then you spend: the climax, not a Drop
     chapterId: 'cache-run',
     kind: 'story',
     title: 'Last Fence',
-    body: `The last Cartel fence is not a metaphor. Steam-culvert. Bolts Camp-04 cheap. Wire still singing like it owns you.
+    body: `This is the last Cartel fence: a steam culvert under the wire. The bolts are the cheap ones Camp-04 uses. The wire is still live.
 
-A payroll drone ticks somewhere behind the grate. Shard-Hound dust on the wash. Linger and Valerius writes your name in grit.`,
+A payroll drone ticks behind the grate. Shard-Hound tracks are in the wash. If you wait, Overseer Valerius writes your name in the grit.`,
     variants: [
       {
         if: { item: 'wrench' },
         mode: 'append',
-        body: `The wrench knows that language. Pry the west bolt and the pipe is a throat you can crawl without the naked wash.`,
+        body: `You have the wrench. It will pry the west bolt. Then you can crawl the pipe and stay off the open wash.`,
       },
       {
         if: { heatMin: ['cartel', 3] },
         mode: 'append',
-        body: `Cartel Heat has a smell. You are already a line that walked.`,
+        body: `The Cartel is already watching you. You are a laborer who walked off the count.`,
       },
     ],
     choices: [
       {
         id: 'wrench',
         label: 'Wrench the west bolt',
-        sub: 'Pry the grate. Stay off the naked wash. Keep the wrench.',
+        sub: 'Pry the grate and stay off the open wash. You keep the wrench. The Cartel still notices a broken bolt.',
         show: { item: 'wrench' },
         effects: {
           goto: 'ch1:p-clerk',
@@ -148,13 +148,13 @@ A payroll drone ticks somewhere behind the grate. Shard-Hound dust on the wash. 
           sap: -1,
           heat: { cartel: 1 },
           flag: { wrenchCut: true },
-          flash: 'Bolts complain. You crawl the dark. Hounds lose a minute. Cartel Heat does not.',
+          flash: 'The bolts give. You crawl the dark pipe and stay off the open wash. The Hounds lose a minute. The Cartel still marks a broken grate.',
         },
       },
       {
         id: 'crawl',
         label: 'Crawl the hot pipe anyway',
-        sub: 'No tool. Steam bites. The wash does not get you.',
+        sub: 'No wrench. The steam burns you (more sap). You stay off the open wash. Cartel Heat rises.',
         effects: {
           goto: 'ch1:p-clerk',
           ticks: 1,
@@ -167,7 +167,7 @@ A payroll drone ticks somewhere behind the grate. Shard-Hound dust on the wash. 
       {
         id: 'bolt',
         label: 'Bolt the naked wash',
-        sub: 'Fast. Exposed. A clerk with a tablet is already on the far rib.',
+        sub: 'Fast, and in the open. Clerk Rell is already waiting with a tablet. Cartel Heat rises.',
         tone: 'danger',
         effects: {
           goto: 'ch1:p-clerk',
@@ -241,45 +241,46 @@ A payroll drone ticks somewhere behind the grate. Shard-Hound dust on the wash. 
       {
         id: 'scrip',
         label: 'Flash Cartel scrip as papers',
-        sub: 'A lullaby. He wants to clock out. Heat still ticks.',
+        sub: 'He waves you through without searching you. The scrip stays hidden. Your wash-line number stays on record. Cartel Heat still rises.',
         show: { item: 'scrip' },
         effects: {
           goto: 'ch1:p-oil',
           ticks: 1,
           heat: { cartel: 1 },
           flag: { rellMet: true, rellScrip: true },
-          flash: 'He stamps a lie because the tablet is hot and he wants shade. Scrip stays in your hem. The wash still has your number.',
+          flash:
+            "Clerk Rell checks your papers, but the tablet is too hot and he wants shade. He waves you through without searching you. The scrip hidden in your hem is safe. Your wash-line number is still on record.",
         },
       },
       {
         id: 'chip',
         label: 'Flash the Overseer chip',
-        sub: 'Look like property returning itself.',
+        sub: 'He treats you as property coming back on its own. Cartel Heat drops.',
         show: { item: 'overseer_chip' },
         effects: {
           goto: 'ch1:p-oil',
           ticks: 1,
           heat: { cartel: -1 },
           flag: { rellMet: true, rellChip: true },
-          flash: 'He salutes a chip Valerius does not know is gone. You walk like inventory. The Strider coughs south of here.',
+          flash: 'He salutes a chip Overseer Valerius does not know is missing. He lets you walk as property. Oil-Tooth\'s stolen Strider is coughing farther south.',
         },
       },
       {
         id: 'stall',
         label: 'Give him a name that is not yours',
-        sub: 'Talk as theft. He writes anyway.',
+        sub: 'He writes the fake name next to your real number. Cartel Heat rises.',
         effects: {
           goto: 'ch1:p-oil',
           ticks: 1,
           heat: { cartel: 1 },
           pressure: 1,
           flag: { rellMet: true, rellLied: true },
-          flash: 'He writes the lie next to the true number. Clerks love extra ink. A stolen Strider is coughing on the far wash.',
+          flash: 'Clerk Rell writes the fake name next to your real wash-line number. He lets you pass. Cartel Heat rises. Oil-Tooth\'s stolen Strider is coughing on the far wash.',
         },
       },
       {
         id: 'bolt',
-        label: 'Bolt. Let the tablet eat dust.',
+        label: 'Run. Let him file you as escaped.',
         tone: 'danger',
         effects: {
           goto: 'ch1:p-oil',
@@ -287,7 +288,7 @@ A payroll drone ticks somewhere behind the grate. Shard-Hound dust on the wash. 
           sap: -1,
           heat: { cartel: 2 },
           flag: { rellMet: true, rellBolt: true },
-          flash: 'He does not chase. He files. Hounds read filings. The next cough on the wash is Oil-Tooth\'s stolen hull.',
+          flash: 'Clerk Rell does not chase you. He files you as escaped. Shard-Hounds read filings, so Cartel Heat rises harder. The next machine on the wash is Oil-Tooth\'s stolen hull.',
         },
       },
     ],
@@ -295,7 +296,7 @@ A payroll drone ticks somewhere behind the grate. Shard-Hound dust on the wash. 
       {
         tags: ['scrip', 'papers', 'paper', 'flash', 'pay'],
         show: { item: 'scrip' },
-        reply: 'He stamps a lullaby. You keep the paper. Heat keeps you.',
+        reply: 'He waves you through without searching you. The scrip stays hidden. Your number stays on record.',
         effects: { goto: 'ch1:p-oil', ticks: 1, heat: { cartel: 1 }, flag: { rellMet: true, rellScrip: true } },
       },
       {
@@ -322,16 +323,16 @@ A payroll drone ticks somewhere behind the grate. Shard-Hound dust on the wash. 
     kind: 'talk',
     title: 'Stolen Hull',
     speaker: 'Jaxson "Oil-Tooth" Vance',
-    body: `The stolen Strider coughs like a guilty throat. Oil-Tooth is under the hull anyway — brass jaw, welding leather, corporate tags he still has not cut off.
+    body: `The stolen Strider coughs. Jaxson "Oil-Tooth" Vance is under the hull anyway — brass jaw, welding leather, Cartel tags he still has not cut off his own clothes.
 
-"Bleed-Cut. I said I hotwire. I did not say I tour. Hounds eat the wash behind you. I go west until the brass cools. You want Red Maw, that is south of my cowardice.
+"Bleed-Cut. I said I would hotwire a machine. I did not say I would tour you to Red Maw. Shard-Hounds are on the wash behind you. I am going west until the brass cools. Red Maw is south of that.
 
-Ride the last mile and I dump you at stilts. Walk and you own the Heat. Or I rip the Cartel tag they sewed in your cuff, and you walk quieter."`,
+Ride the last mile and I drop you with Ossa. Walk, and the Cartel keeps your trail. Or I cut the Cartel tag out of your cuff, and you are harder to track."`,
     variants: [
       {
         if: { item: 'wrench' },
         mode: 'append',
-        body: `A lash on the port runner is walking itself loose. The wrench would seat it. He has not asked. He will not donate the heading.`,
+        body: `A lash on the port runner is coming loose. The wrench would seat it. He has not asked. He still will not take you all the way to Red Maw.`,
       },
       {
         if: { flag: 'jaxsonInside' },
@@ -343,43 +344,44 @@ Ride the last mile and I dump you at stilts. Walk and you own the Heat. Or I rip
       {
         id: 'ride',
         label: 'Ride the last mile',
-        sub: 'He dumps you at stilts. Cartel Heat notices a stolen hull.',
+        sub: 'Oil-Tooth drops you with Ossa. The Cartel will notice a stolen hull.',
         effects: {
           goto: 'ch1:p-ossa',
           ticks: 1,
           heat: { cartel: 1 },
           flag: { oilRoad: true, oilRide: true },
-          flash: 'The Strider screams like a guilty invoice. He dumps you where the sand starts lying. Stilts on the next rib.',
+          flash: 'The stolen Strider screams. Oil-Tooth drops you on the south road, where Ossa keeps her stilts. The Cartel will notice a stolen hull.',
         },
       },
       {
         id: 'tag',
-        label: 'Let him rip the Cartel tag',
-        sub: 'Walk quieter. He keeps the tag as a joke.',
+        label: 'Let him cut off your Cartel tag',
+        sub: 'Harder to track. He keeps the tag as a joke. Costs a little sap. Cartel Heat drops.',
         effects: {
           goto: 'ch1:p-ossa',
           ticks: 1,
           sap: -1,
           heat: { cartel: -1 },
           flag: { oilRoad: true, oilTag: true },
-          flash: 'Cuff-thread pops. He pockets Ironwood property like a souvenir. You walk. Stilts wait like a second opinion.',
+          flash: 'He cuts the Cartel tag out of your cuff and pockets it as a joke. You are harder to track. You walk on toward Ossa.',
         },
       },
       {
         id: 'wrench',
         label: 'Seat the port runner. Keep the wrench.',
-        sub: 'Help the hull. He still will not tour.',
+        sub: 'You fix the loose lash and keep the wrench. He still will not take you to Red Maw. No extra Heat.',
         show: { item: 'wrench' },
         effects: {
           goto: 'ch1:p-ossa',
           ticks: 1,
           flag: { oilRoad: true, oilWrench: true },
-          flash: 'Steel against a stolen joint. He nods like a receipt. "Stilts south. I go west. Don\'t make me famous."',
+          flash: 'You seat the loose joint with the wrench and keep the tool. He nods. "Ossa is south. I go west. Don\'t make me famous."',
         },
       },
       {
         id: 'walk',
-        label: 'Refuse the ride. Walk the Heat.',
+        label: 'Refuse the ride. Walk south.',
+        sub: 'You walk to Ossa alone. Costs sap. The Cartel does not get a stolen-hull report from this.',
         tone: 'quiet',
         effects: {
           goto: 'ch1:p-ossa',
@@ -387,30 +389,30 @@ Ride the last mile and I dump you at stilts. Walk and you own the Heat. Or I rip
           sap: -1,
           pressure: 1,
           flag: { oilRoad: true, oilRefused: true },
-          flash: 'Brass ticks. "Your funeral. Make it interesting." The stilts are a rumor that turns out to be a person.',
+          flash: 'He lets you go. "Your funeral. Make it interesting." The person on stilts ahead is Ossa. The walk costs sap.',
         },
       },
     ],
     intents: [
       {
         tags: ['ride', 'strider', 'hull', 'hotwire'],
-        reply: 'He dumps you at stilts. The hull goes west without you.',
+        reply: 'Oil-Tooth drops you with Ossa. The stolen hull goes west without you. The Cartel will notice it.',
         effects: { goto: 'ch1:p-ossa', ticks: 1, heat: { cartel: 1 }, flag: { oilRoad: true, oilRide: true } },
       },
       {
         tags: ['tag', 'cuff', 'rip', 'quiet'],
-        reply: 'Thread pops. You walk quieter. He keeps the joke.',
+        reply: 'He cuts the Cartel tag out of your cuff and keeps it as a joke. You are harder to track.',
         effects: { goto: 'ch1:p-ossa', ticks: 1, sap: -1, heat: { cartel: -1 }, flag: { oilRoad: true, oilTag: true } },
       },
       {
         tags: ['help', 'wrench', 'fix', 'seat', 'repair'],
         show: { item: 'wrench' },
-        reply: 'You seat the runner. He still will not tour.',
+        reply: 'You fix the loose lash and keep the wrench. He still will not take you to Red Maw.',
         effects: { goto: 'ch1:p-ossa', ticks: 1, flag: { oilRoad: true, oilWrench: true } },
       },
       {
         tags: ['walk', 'refuse', 'no', 'south'],
-        reply: 'Your funeral. Stilts south.',
+        reply: 'He lets you walk. Ossa is south. The Cartel does not get a stolen-hull report from this.',
         effects: { goto: 'ch1:p-ossa', ticks: 1, sap: -1, flag: { oilRoad: true, oilRefused: true } },
       },
     ],
@@ -522,14 +524,14 @@ Ride the last mile and I dump you at stilts. Walk and you own the Heat. Or I rip
     chapterId: 'cache-run',
     kind: 'story',
     title: 'Noon Country',
-    body: `Noon writes the same sentence on every slope: pay for shade or become it.
+    body: `Noon writes the same sentence on every slope: pay for shade, or bake in the open.
 
-The straight wash is a kiln. A rib of rock pretends not to have a cut. Stilt-country ticks south. No Cartel grate. No hymn. Just the culture that sells the minute you are not in the sun.`,
+The straight wash is a kiln. A rib of rock hides a cut if you know where to look. Ossa is south of here, on her stilts. No Cartel grate. No Seeker hymn. Just people who charge you for the next minute out of the sun.`,
     variants: [
       {
         if: { item: 'silas_tip' },
         mode: 'append',
-        body: `Silas's scratch matches a rib the wash pretends not to have. He is under it, selling the next minute because the tent is already behind you.`,
+        body: `Silas's scratch matches a rib the wash pretends not to have. He is under that rock, selling the next minute of shade, because his tent is already behind you.`,
       },
       {
         if: { heatMin: ['strays', 2] },
@@ -541,19 +543,19 @@ The straight wash is a kiln. A rib of rock pretends not to have a cut. Stilt-cou
       {
         id: 'silas',
         label: "Walk Silas's shade-cut",
-        sub: 'The tip keeps you off the noon slope. He is under the rib.',
+        sub: 'Use Silas\'s scratch. You stay off the noon slope and meet him under the rock. The scratch stays in your hand.',
         show: { item: 'silas_tip' },
         effects: {
           goto: 'ch1:o-silas',
           ticks: 1,
           flag: { silasCut: true },
-          flash: 'Shade like a stolen minute. The tip is still in your palm — unused, unless you spend it later. Silas is already accounting.',
+          flash: 'You take the shaded cut. The scratch stays in your palm — you can still show it later. Silas is already under the rock, counting what you owe.',
         },
       },
       {
         id: 'noon',
         label: 'Take the noon slope',
-        sub: 'Fast. The sun taxes. A cut-fee waits at the next shade anyway.',
+        sub: 'Faster, and the sun costs more sap. Nim the Cut-Fee is still waiting in the next shade.',
         effects: {
           goto: 'ch1:o-tax',
           ticks: 1,
@@ -565,7 +567,7 @@ The straight wash is a kiln. A rib of rock pretends not to have a cut. Stilt-cou
       {
         id: 'rib',
         label: 'Hug the bone-rib shade',
-        sub: 'Slower. You still owe whoever owns the next minute.',
+        sub: 'Slower, and cheaper in sap. Nim the Cut-Fee still charges you at the next shade.',
         effects: {
           goto: 'ch1:o-tax',
           ticks: 1,
@@ -599,9 +601,9 @@ The straight wash is a kiln. A rib of rock pretends not to have a cut. Stilt-cou
     kind: 'talk',
     title: 'Moving Shade',
     speaker: 'Silas',
-    body: `Silas Vane is older than the well's disappointment, and the tent is no longer a place — it is a rag on a rib. One eye milk. The other accounting.
+    body: `Silas Vane is older than the well's disappointment. The tent is gone. What he has now is a rag on a rib of rock. One eye is milk. The other is counting.
 
-"Noon-Empty. I sold you a minute. This is a different minute. Talk is not free on the road either. South is a Cut-Fee named Nim. She collects what I only sell. Pay me to sit, walk her tax, or become a story the wash tells."`,
+"Noon-Empty. I sold you one minute of shade. This is a different minute. Talk is not free on the road either. South of here is Nim the Cut-Fee. She collects what I only sell. Pay me to sit, walk on and pay her, or become a story the wash tells."`,
     variants: [
       {
         if: { item: 'vial_empty' },
@@ -613,17 +615,18 @@ The straight wash is a kiln. A rib of rock pretends not to have a cut. Stilt-cou
       {
         id: 'minute',
         label: 'Buy the next minute of shade',
-        sub: 'Sap holds. He still will not walk you to the Maw.',
+        sub: 'You rest. Sap holds. He still will not walk you to Red Maw. Nim is next.',
         effects: {
           goto: 'ch1:o-tax',
           ticks: 1,
           flag: { silasRoad: true, silasMinute: true },
-          flash: 'Shade like a loan. He does not fill the vial. He fills the minute. Nim is the next mouth.',
+          flash: 'He sells you another minute of shade. He does not fill your vial. Nim the Cut-Fee is the next person who will charge you.',
         },
       },
       {
         id: 'drop',
-        label: 'Buy a smear of Drop',
+        label: 'Buy a smear of Drop — 1 Glint',
+        sub: 'Costs 1 Glint. Sap comes back a little. Nim is still ahead.',
         show: { item: 'glints' },
         effects: {
           remove: { glints: 1 },
@@ -631,12 +634,13 @@ The straight wash is a kiln. A rib of rock pretends not to have a cut. Stilt-cou
           goto: 'ch1:o-tax',
           ticks: 1,
           flag: { silasRoad: true, silasSold: true },
-          flash: 'He wets your lip from a smear in the rag. "I still do not take Cartel scrip. Nim takes worse."',
+          flash: 'He spends your Glint and wets your lip from a smear in the rag. Sap comes back a little. "I still do not take Cartel scrip. Nim takes worse."',
         },
       },
       {
         id: 'on',
-        label: 'Walk on. Nim collects.',
+        label: 'Walk on. Nim collects the fee.',
+        sub: 'No payment here. Nim the Cut-Fee is the next person in the shade.',
         tone: 'quiet',
         effects: {
           goto: 'ch1:o-tax',
@@ -683,62 +687,64 @@ The straight wash is a kiln. A rib of rock pretends not to have a cut. Stilt-cou
       {
         if: { item: 'vial_empty' },
         mode: 'append',
-        body: `She hears the empty tick. "Honesty about thirst is a Stray password. Spend it here or spend it on stilts. Not both as a sermon."`,
+        body: `She hears the empty vial tick. "Honesty about thirst is a Stray password. Spend it here, or save it for Ossa. Not both as a speech."`,
       },
     ],
     choices: [
       {
         id: 'glint',
-        label: 'Pay a Glint for the cut',
+        label: 'Pay a Glint for the shade',
+        sub: 'Costs 1 Glint. She lets you through to Ossa. No extra Stray Heat.',
         show: { item: 'glints' },
         effects: {
           remove: { glints: 1 },
           goto: 'ch1:o-ossa',
           ticks: 1,
           flag: { nimMet: true, nimPaid: true },
-          flash: 'She pockets dune money like a priest. "Stilts south. Ossa falls funny. Don\'t make kin-crime your religion."',
+          flash: 'Nim pockets the Glint. "Ossa is south. She falls funny. Don\'t rob family."',
         },
       },
       {
         id: 'tip',
         label: "Show Silas's scratch as password",
-        sub: 'The tip stays in your palm. She still collects the minute.',
+        sub: 'The scratch stays in your hand. She lets you through because Silas sent you. No Glint spent.',
         show: { item: 'silas_tip' },
         effects: {
           goto: 'ch1:o-ossa',
           ticks: 1,
           flag: { nimMet: true, nimSilas: true },
-          flash: 'Stray-to-stray. She does not take the scratch. She takes the fact of it. Stilts south, kin-height.',
+          flash: 'She does not take the scratch. She takes the fact that Silas wrote it. Ossa is south of here.',
         },
       },
       {
         id: 'empty',
         label: 'Admit the empty vial',
-        sub: 'Thirst as a credential. She lets you pass thinner.',
+        sub: 'You admit the vial is empty. She lets you pass and gives back a little sap.',
         show: { all: [{ item: 'vial_empty' }, { not: { item: 'vial_drop' } }] },
         effects: {
           sap: 1,
           goto: 'ch1:o-ossa',
           ticks: 1,
           flag: { nimMet: true, nimEmpty: true, emptyShown: true },
-          flash: 'She does not fill you. She nods like a receipt. "Ossa likes that sound. I like not burying you."',
+          flash: 'She does not fill the vial. She nods and lets you pass. A little sap comes back. "Ossa likes that sound. I like not burying you."',
         },
       },
       {
         id: 'owe',
         label: 'Owe her a Drop later',
-        sub: 'Walk now. The Approach will collect.',
+        sub: 'You walk now. Stray Heat rises. She will collect a Drop from you later, at Red Maw.',
         effects: {
           goto: 'ch1:o-ossa',
           ticks: 1,
           heat: { strays: 1 },
           flag: { nimMet: true, nimOwed: true },
-          flash: 'She smiles with too many minutes. "I will find you at the bite. Stilts first. Try not to rob family."',
+          flash: 'She lets you walk without paying. Stray Heat rises. "I will find you at Red Maw. Ossa is first. Try not to rob family."',
         },
       },
       {
         id: 'run',
-        label: 'Run noon. Skip the tax.',
+        label: 'Run through noon. Skip the fee.',
+        sub: 'Costs sap. Stray Heat rises harder. She tells the wash your name.',
         tone: 'danger',
         effects: {
           goto: 'ch1:o-ossa',
@@ -746,7 +752,7 @@ The straight wash is a kiln. A rib of rock pretends not to have a cut. Stilt-cou
           sap: -1,
           heat: { strays: 2 },
           flag: { nimMet: true, nimRun: true },
-          flash: 'She does not chase. She names you to the wash. Stilts hear names.',
+          flash: 'Nim does not chase you. She tells the wash your name. It costs sap, and Stray Heat rises harder. Ossa will have heard it.',
         },
       },
     ],
@@ -867,31 +873,31 @@ The straight wash is a kiln. A rib of rock pretends not to have a cut. Stilt-cou
     chapterId: 'cache-run',
     kind: 'story',
     title: 'Hymn-Road',
-    body: `The hymn is already walking. Gold-dust on the wind. Runners angling the second rib like a net that thinks it is love.
+    body: `The hymn is already on this road. Gold-dust on the wind. Seeker runners are crossing the second rib like a net.
 
-A cup on the run is loud. Thalia made you loud. Oram's feed-pencil is a heresy you can still spend as a heading — not the only difference, just a tool.`,
+A Vessel on the run is easy to hear. Thalia made you easy to hear. If you still have Oram's map, it is a heading you can use.`,
     variants: [
       {
         if: { item: 'oram_map' },
         mode: 'append',
-        body: `Oram's second rib is marked. You could walk like a ledger. The skiff likes certainty. So do spears.`,
+        body: `Oram marked the second rib on the map. You could walk it like you already know the way. Sybella likes certainty. So do spears.`,
       },
       {
         if: { item: 'ceremonial_cloth' },
         mode: 'append',
-        body: `Gold thread catches noon. Hide it and you look like a thief. Wear it and you look like a hymn they are allowed to collect.`,
+        body: `The gold thread catches noon. Hide it and you look like a thief. Wear it and you look like a hymn the runners are allowed to collect.`,
       },
       {
         if: { heatMin: ['seekers', 3] },
         mode: 'append',
-        body: `Seeker Heat has a sound: runners, still far, already angling.`,
+        body: `The Seekers are already watching. You can hear runners, still far off, already turning toward you.`,
       },
     ],
     choices: [
       {
         id: 'oram',
         label: "Follow Oram's heading",
-        sub: 'Walk like a ledger. Seeker Heat notices a confident cup.',
+        sub: 'Use Oram\'s map. Seeker Heat rises: the runners notice a Vessel who knows the way.',
         show: { item: 'oram_map' },
         effects: {
           goto: 'ch1:v-runners',
@@ -899,25 +905,25 @@ A cup on the run is loud. Thalia made you loud. Oram's feed-pencil is a heresy y
           sap: -1,
           heat: { seekers: 1 },
           flag: { oramHeading: true },
-          flash: 'You walk like scripture that learned to steal. The map is still yours. Two spears like the idea of certainty.',
+          flash: 'You follow Oram\'s map. You keep it. Two Seeker runners see a Vessel who already knows the road. Seeker Heat rises.',
         },
       },
       {
         id: 'hide',
         label: 'Wrap the gold thread',
-        sub: 'Look like a thief, not a sacrament. Sap burns in the cloth-heat.',
+        sub: 'Hide the gold thread. Costs sap. The runners still find you, and they trust you less.',
         effects: {
           goto: 'ch1:v-runners',
           ticks: 1,
           sap: -1,
           flag: { clothHid: true },
-          flash: 'The cloth becomes a rag. Runners still find you. They find rag-cups faster than honest ones — suspicion is a hymn too.',
+          flash: 'You wrap the gold thread until it looks like a rag. The runners still find you. They are more suspicious of a Vessel who hides.',
         },
       },
       {
         id: 'hymn',
-        label: 'Walk like a cup',
-        sub: 'Loud. They may kneel. They may collect.',
+        label: 'Walk like a Vessel',
+        sub: 'You stay obvious. Seeker Heat rises more. They may kneel, or they may take you.',
         effects: {
           goto: 'ch1:v-runners',
           ticks: 1,
@@ -929,6 +935,7 @@ A cup on the run is loud. Thalia made you loud. Oram's feed-pencil is a heresy y
       {
         id: 'dagger',
         label: 'Keep the rusted dagger visible',
+        sub: 'They see a weapon under the hymn. Costs sap. Seeker Heat rises.',
         show: { item: 'rusted_dagger' },
         tone: 'danger',
         effects: {
@@ -937,7 +944,7 @@ A cup on the run is loud. Thalia made you loud. Oram's feed-pencil is a heresy y
           sap: -1,
           heat: { seekers: 1 },
           flag: { bladeOut: true },
-          flash: 'Steel under a sacrament. The runners see both and pick a worse religion.',
+          flash: 'You keep the rusted dagger where they can see it. The runners see a weapon under the hymn. Seeker Heat rises.',
         },
       },
     ],
@@ -972,9 +979,9 @@ A cup on the run is loud. Thalia made you loud. Oram's feed-pencil is a heresy y
     kind: 'talk',
     title: 'Runners',
     speaker: 'Brin',
-    body: `Two runners. One speaks. Brin — gold-dust on the cheek, hymn still in the mouth, a spear that thinks it is a kindness. Kesh flanks, counting your glass.
+    body: `Two Seeker runners. One speaks. Brin has gold-dust on her cheek, the hymn still in her mouth, and a spear she treats as a kindness. Kesh flanks her and counts the glass you are carrying.
 
-"Thalia's love made you loud. Pour so we know you are still a cup. Show the cloth. Lie with a paddock heresy. Or we take you to the blonde already, and that is a kindness we will not name."`,
+"Thalia's love made you loud. Pour a Drop so we know you are still a Vessel. Show the cloth. Or show us Oram's map and we will call it a lie we can live with. Otherwise we take you to Sybella now."`,
     variants: [
       {
         if: { flag: 'oramHeading' },
@@ -995,7 +1002,8 @@ A cup on the run is loud. Thalia made you loud. Oram's feed-pencil is a heresy y
     choices: [
       {
         id: 'pour',
-        label: 'Pour a Drop so they count you a furnace',
+        label: 'Pour a Drop so they count you a Vessel',
+        sub: 'Spend 1 Drop. Seeker Heat drops. They let you walk on to Zafir.',
         show: { item: 'vial_drop' },
         effects: {
           remove: { vial_drop: 1 },
@@ -1004,38 +1012,39 @@ A cup on the run is loud. Thalia made you loud. Oram's feed-pencil is a heresy y
           ticks: 1,
           heat: { seekers: -1 },
           flag: { brinMet: true, brinPour: true },
-          flash: 'They watch you pour. "Useful. Do not become a hymn yet." The cairn ahead will not shop a cup. The skiff will.',
+          flash: 'They watch you pour the Drop. "Useful. Do not become a hymn yet." Seeker Heat drops. Zafir is ahead, and he will not sell a heading to a Vessel. Sybella will.',
         },
       },
       {
         id: 'cloth',
         label: 'Show the Vessel cloth',
-        sub: 'Credential. They almost kneel. They remember the hunt.',
+        sub: 'You show the cloth. They almost kneel, then remember they are hunting you. Seeker Heat rises.',
         show: { item: 'ceremonial_cloth' },
         effects: {
           goto: 'ch1:v-zafir',
           ticks: 1,
           heat: { seekers: 1 },
           flag: { brinMet: true, brinCloth: true },
-          flash: 'Gold thread. A bow that dies mid-spine. "The blonde already knows. Walk. Zafir will not help a furnace."',
+          flash: 'You show the gold thread. Brin starts to bow and stops. "Sybella already knows. Walk. Zafir will not help a Vessel." Seeker Heat rises.',
         },
       },
       {
         id: 'map',
         label: "Lie with Oram's heading",
-        sub: 'Keep the map. They hate paddock heresy. They let it pass as speed.',
+        sub: 'You keep Oram\'s map. They dislike it and still let you pass. Seeker Heat rises.',
         show: { item: 'oram_map' },
         effects: {
           goto: 'ch1:v-zafir',
           ticks: 1,
           heat: { seekers: 1 },
           flag: { brinMet: true, brinMap: true },
-          flash: 'Kesh spits feed-dust. Brin lets a crime walk. The cairn merchant ahead looks at cups like fire in a dry stall.',
+          flash: 'Kesh spits at the feed-dust on the map. Brin lets you keep walking. Seeker Heat rises. Zafir is ahead, and he will not sell to a Vessel.',
         },
       },
       {
         id: 'dagger',
         label: 'Crowd them with the rusted dagger',
+        sub: 'You threaten them. They do not flinch. Seeker Heat rises harder. They still let you go on.',
         show: { item: 'rusted_dagger' },
         tone: 'danger',
         effects: {
@@ -1049,7 +1058,7 @@ A cup on the run is loud. Thalia made you loud. Oram's feed-pencil is a heresy y
       {
         id: 'bolt',
         label: 'Bolt the second rib',
-        sub: 'Sap burns. They do not chase. They sing your shape ahead.',
+        sub: 'You run. Costs more sap. They do not chase. They tell the road what you look like. Seeker Heat rises harder.',
         tone: 'danger',
         effects: {
           goto: 'ch1:v-zafir',
@@ -1057,7 +1066,7 @@ A cup on the run is loud. Thalia made you loud. Oram's feed-pencil is a heresy y
           sap: -2,
           heat: { seekers: 2 },
           flag: { brinMet: true, brinBolt: true },
-          flash: 'You run. They hymn. The cairn hears you coming as inventory.',
+          flash: 'You run. They do not chase. They sing your description ahead, so Zafir hears you coming. Seeker Heat rises harder.',
         },
       },
     ],
@@ -1127,19 +1136,20 @@ A cup on the run is loud. Thalia made you loud. Oram's feed-pencil is a heresy y
     choices: [
       {
         id: 'oram',
-        label: "Show Oram's map. Skip his curse.",
+        label: "Show Oram's map. Skip his price.",
+        sub: 'You already have a heading. He confirms it and takes no fee. No extra Heat.',
         show: { item: 'oram_map' },
         effects: {
           flag: { zafirMet: true, zafirCup: true, oramShown: true },
           ticks: 1,
-          heat: { seekers: 1 },
           goto: 'ch1:south-wind',
-          flash: 'He confirms the second rib with a grimace and will not take a fee from a furnace. The skiff likes people who already know the way.',
+          flash: 'Zafir checks the second rib on Oram\'s map and will not take a fee from a Vessel. You keep the map. Sybella\'s skiff is next.',
         },
       },
       {
         id: 'heading-glint',
-        label: 'Buy the cursed heading — 1 Glint',
+        label: 'Buy the heading — 1 Glint',
+        sub: 'Costs 1 Glint. You get a map to the cache. Sybella\'s name is in the margin. No extra Heat.',
         enable: { item: 'glints' },
         locked: 'Need 1 Glint',
         effects: {
@@ -1147,14 +1157,14 @@ A cup on the run is loud. Thalia made you loud. Oram's feed-pencil is a heresy y
           add: { cache_map: 1 },
           flag: { zafirMet: true, zafirCup: true, zafirPaid: true },
           ticks: 1,
-          heat: { seekers: 1 },
           goto: 'ch1:south-wind',
-          flash: 'He takes money like it is a confession. The heading he draws has her name in the margin. That is the product.',
+          flash: 'Zafir takes the Glint. The map he draws has Sybella\'s name in the margin. That is what you paid for. No faction saw the sale.',
         },
       },
       {
         id: 'heading-scrap',
-        label: 'Buy the cursed heading — 1 scrap',
+        label: 'Buy the heading — 1 scrap',
+        sub: 'Costs 1 scrap. You get a map to the cache. Sybella\'s name is in the margin. No extra Heat.',
         enable: { item: 'scrap' },
         locked: 'Need 1 scrap',
         effects: {
@@ -1162,14 +1172,14 @@ A cup on the run is loud. Thalia made you loud. Oram's feed-pencil is a heresy y
           add: { cache_map: 1 },
           flag: { zafirMet: true, zafirCup: true, zafirPaid: true },
           ticks: 1,
-          heat: { seekers: 1 },
           goto: 'ch1:south-wind',
-          flash: 'He takes money like it is a confession. The heading he draws has her name in the margin. That is the product.',
+          flash: 'Zafir takes the scrap. The map he draws has Sybella\'s name in the margin. That is what you paid for. No faction saw the sale.',
         },
       },
       {
         id: 'dagger',
         label: 'Crowd him with the rusted dagger',
+        sub: 'You threaten him. He still gives you a map. Stray Heat rises.',
         show: { item: 'rusted_dagger' },
         tone: 'danger',
         effects: {
@@ -1178,12 +1188,13 @@ A cup on the run is loud. Thalia made you loud. Oram's feed-pencil is a heresy y
           heat: { strays: 1 },
           ticks: 1,
           goto: 'ch1:south-wind',
-          flash: 'He hands you a map with a smile that will outlive a cup if he gets a vote.',
+          flash: 'You crowd Zafir with the dagger. He hands you a map anyway. Stray Heat rises. He will remember the threat.',
         },
       },
       {
         id: 'news',
         label: 'Take the free news and walk',
+        sub: 'No fee. No map. You walk on toward Sybella\'s skiff.',
         tone: 'quiet',
         effects: {
           flag: { zafirMet: true, zafirCup: true },
@@ -1235,7 +1246,7 @@ A cup on the run is loud. Thalia made you loud. Oram's feed-pencil is a heresy y
     chapterId: 'cache-run',
     kind: 'story',
     speaker: 'Ossa',
-    title: 'A Ugly Reach',
+    title: 'An Ugly Reach',
     body: `You take the vial. She takes a fall she planned for — knees, then a tumble that keeps the stilts from spearing her.
 
 She is alive. Angry. Breathing. "Walk," she says, from the ground. "If Sybella asks, I will describe your back."`,
@@ -1339,7 +1350,7 @@ I go to Red Maw because the stilts work better where the sand is honest about wa
       },
       {
         id: 'on',
-        label: 'On. The skiff is the heading.',
+        label: 'Walk on. Sybella\'s skiff is next.',
         tone: 'quiet',
         effects: { goto: 'ch1:south-wind', flag: { ossaAlive: true, ossaMet: true }, ticks: 1 },
       },

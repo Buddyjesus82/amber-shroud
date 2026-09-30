@@ -6,9 +6,9 @@ export const thresholdScenes: Scene[] = [
     hubId: 'threshold',
     kind: 'place',
     title: 'Threshold Court',
-    body: `Outer Threshold is a nave made of sand-brick and conviction. Everyone here wants to be close to a Vessel. You are wearing the cloth. Heads tilt. A chant tries to start and dies of heat.
+    body: `The Outer Threshold is a hall of sand-brick and belief. Everyone here wants to stand near a Vessel. You are wearing the cloth, so heads tilt toward you. A chant tries to start and dies in the heat.
 
-Thalia stands at the dais with gold on her cheeks that might be kohl and might be sap. Oram is not chanting. Oram is counting. That is why you might live.`,
+Thalia stands at the dais. The gold on her cheeks might be kohl and might be sap. Oram is not chanting. Oram is counting the Striders. That is why you might live.`,
     variants: [
       {
         if: { heatMin: ['seekers', 3] },
@@ -25,17 +25,19 @@ Thalia stands at the dais with gold on her cheeks that might be kohl and might b
       {
         id: 'thalia',
         label: 'Climb the dais. Speak to Thalia.',
+        sub: 'She thinks you are a true Vessel. She will talk about Kallik\'s cache and Sybella.',
         effects: { goto: 'thresh:thalia', ticks: 1 },
       },
       {
         id: 'oram',
         label: 'Find Oram counting Striders.',
+        sub: 'He cares about the animals, not the hymn. He may give you a heading.',
         effects: { goto: 'thresh:oram', ticks: 1 },
       },
       {
         id: 'kaelen',
         label: 'Walk the cup-shadow — a pack that is not a hymn',
-        sub: 'Kaelen the Sifter. Map road. He plays all sides.',
+        sub: 'Walk to Kaelen the Sifter. He sells rumors. He does not serve the Seekers.',
         effects: { travel: 'thresh:sift' },
       },
       {
@@ -55,6 +57,7 @@ Thalia stands at the dais with gold on her cheeks that might be kohl and might b
       {
         id: 'bless',
         label: 'Offer a false blessing',
+        sub: 'You pretend. Seeker Heat rises. Thalia notices.',
         effects: {
           ticks: 1,
           heat: { seekers: 1 },
@@ -71,7 +74,7 @@ Thalia stands at the dais with gold on her cheeks that might be kohl and might b
       },
       {
         tags: ['oram', 'count', 'strider'],
-        reply: 'Oram\'s ledger is the only honest scripture in the Court.',
+        reply: 'Oram\'s feed-count is the only honest thing in the Court.',
         effects: { goto: 'thresh:oram', ticks: 1 },
       },
       {
@@ -91,19 +94,21 @@ Thalia stands at the dais with gold on her cheeks that might be kohl and might b
     hubId: 'threshold',
     kind: 'place',
     title: 'False Vessel Cell',
-    body: `They gave you a cell because Vessels meditate. You used it to take the cloth off and remember your own face.
+    body: `They gave you a cell because a Vessel is supposed to meditate. You used it to take the cloth off and remember your own face.
 
-A shrine-niche holds a sacrament Drop behind a lattice. Stealing from a church that already stole you is almost tidy.`,
+A niche in the wall holds a sacrament Drop behind a lattice. Taking it from a church that already took you is almost tidy.`,
     choices: [
       {
         id: 'siphon',
         label: 'Siphon the sacrament',
+        sub: 'The Drop behind the lattice. Costs sap to reach it. The Seekers will care if you take it.',
         show: { flagUnset: 'shrineDrop' },
         effects: { goto: 'thresh:shrine', ticks: 1, sap: -1 },
       },
       {
         id: 'thalia',
-        label: 'Let Thalia find you un-clothed',
+        label: 'Let Thalia find you without the cloth',
+        sub: 'She sees you are not meditating. That is dangerous.',
         effects: { goto: 'thresh:thalia', ticks: 1, pressure: 1 },
       },
     ],
@@ -206,24 +211,26 @@ A shrine-niche holds a sacrament Drop behind a lattice. Stealing from a church t
     hubId: 'threshold',
     kind: 'place',
     title: 'Strider Paddock',
-    body: `Striders stand like bad architecture — too many joints, resin-sheen hides, mouths made for bits. Yours — the one you already stole in your head — stamps when it smells the bit in your kit.
+    body: `The Striders stand in the paddock. Too many joints. Hides with a resin shine. Mouths made for bits. The one you already mean to steal stamps when it smells the bit in your kit.
 
-Oram is here more than the Court. He prefers animals to hymns. Animals do not ask to be poured.`,
+Oram is here more often than he is in the Court. He prefers the animals to the hymns. The animals do not ask to be poured full of sap.`,
     choices: [
       {
         id: 'oram',
         label: 'Talk to Oram',
+        sub: 'He counts feed for the Striders. Ask him for a heading to Red Maw.',
         effects: { goto: 'thresh:oram', ticks: 1 },
       },
       {
         id: 'kaelen',
         label: 'The hymn-shade off the paddock',
-        sub: 'Kaelen buys false routes. He does not ride.',
+        sub: 'Walk to Kaelen. He sells a false route. He will not ride the Strider for you.',
         effects: { travel: 'thresh:sift' },
       },
       {
         id: 'ready',
         label: 'Ready the stolen Strider',
+        sub: 'Put the bit in. The beast is ready when you leave for Red Maw.',
         show: { item: 'strider_bit' },
         effects: {
           flag: { striderReady: true },
@@ -252,7 +259,7 @@ Oram is here more than the Court. He prefers animals to hymns. Animals do not as
     kind: 'talk',
     title: 'Oram',
     speaker: 'Oram',
-    body: `Oram's ledger is full of feed-weights and heresies he has not reported.
+    body: `Oram is counting feed for the Striders, and writing down heresies he has not reported.
 
 "You're a better thief than a cup," he says, not looking up. "Good. Cups crack. Thieves reach Red Maw. Kallik buried a cache there. Sybella wants the person who can drink it and not die. I want the Striders alive. Those wants are about to collide."`,
     choices: [
@@ -265,7 +272,7 @@ Oram is here more than the Court. He prefers animals to hymns. Animals do not as
           add: { cache_map: 1, kallik_mark: 1 },
           ticks: 1,
           goto: 'thresh:paddock',
-          flash: 'He tears a corner off the ledger. A crime. A kindness. Red Maw in feed-pencil.',
+          flash: 'He tears a corner off the feed-list. A crime. A kindness. Red Maw, in feed-pencil.',
         },
       },
       {
@@ -286,7 +293,7 @@ Oram is here more than the Court. He prefers animals to hymns. Animals do not as
         effects: {
           add: { scrip: 2 },
           flag: { oramScrip: true },
-          heat: { cartel: 1, seekers: 1 },
+          heat: { seekers: 1 },
           ticks: 1,
           goto: 'thresh:paddock',
           flash: 'Scrip. Useless with Silas. Useful with a guard who still believes in paper.',
@@ -307,11 +314,12 @@ Oram is here more than the Court. He prefers animals to hymns. Animals do not as
     hubId: 'threshold',
     kind: 'place',
     title: 'Guard Post',
-    body: `The guard is sunburn and dogma. A spear that has never had a conversation with a spear-maker. Beyond him: dunes, and the idea of leaving.`,
+    body: `The guard is sunburn and belief. His spear has never met the person who made it. Past him are the dunes, and the idea of leaving.`,
     choices: [
       {
         id: 'talk',
-        label: 'Address the guard as Vessel',
+        label: 'Address the guard as a Vessel',
+        sub: 'He was told to keep Vessels inside and strangers out.',
         effects: { goto: 'thresh:guard-talk', ticks: 1 },
       },
     ],

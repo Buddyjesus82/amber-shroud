@@ -1,5 +1,6 @@
 import { ITEMS } from './content/catalog'
 import { beginEncounter, roadPressureScene } from './encounter'
+import { sceneSearch } from './help'
 import { personAtScene, type Person } from './people'
 import { talkIntentsFor } from './talk'
 import { vendorFor } from './trade'
@@ -88,6 +89,8 @@ function lookHit(state: GameState, scene: Scene, hay: string, labels: string[]):
   if (!target) {
     return { effects: { flash: glance(state, scene, labels) }, verb: 'look' }
   }
+  const searched = sceneSearch(state, target)
+  if (searched) return { effects: searched, verb: 'look' }
   const who = npcHere(scene)
   if (who && who.aliases.some((a) => target.includes(a) || a.includes(target))) {
     return {
@@ -170,6 +173,25 @@ function combatHit(state: GameState, scene: Scene, hay: string): DoHit | null {
     }
   }
   return null
+}
+
+/** A bribe is seen by whoever is actually on this ground. No faction, no Heat. */
+function witnessedBribe(state: GameState): { cartel?: 1; seekers?: 1; strays?: 1 } | undefined {
+  const who = personAtScene(state.sceneId)
+  if (who?.id === 'silas' || who?.id === 'nim' || who?.id === 'zafir') return undefined
+  const id = state.sceneId
+  if (state.hubId === 'threshold' || id.startsWith('thresh:') || id.startsWith('ch1:v-')) return { seekers: 1 }
+  if (
+    state.hubId === 'spine' ||
+    state.hubId === 'redmaw' ||
+    id.startsWith('spine:') ||
+    id.startsWith('maw:') ||
+    id.startsWith('ch1:o-')
+  ) {
+    return { strays: 1 }
+  }
+  if (state.hubId === 'camp04' || id.startsWith('camp:') || id.startsWith('ch1:p-')) return { cartel: 1 }
+  return undefined
 }
 
 function spendPocket(state: GameState): { remove: Partial<Record<ItemId, number>>; name: string } | null {
@@ -264,14 +286,7 @@ function bribeHit(state: GameState, scene: Scene): DoHit {
   if (!pocket) {
     return { effects: { ticks: 1, flash: `Empty hands. ${mouthName(scene)} is not moved.` }, verb: 'bribe' }
   }
-  const heat =
-    who?.id === 'silas' || who?.id === 'nim' || who?.id === 'zafir'
-      ? undefined
-      : state.hubId === 'threshold'
-        ? { seekers: 1 as const }
-        : state.hubId === 'spine' || state.hubId === 'redmaw'
-          ? { strays: 1 as const }
-          : { cartel: 1 as const }
+  const heat = witnessedBribe(state)
   return {
     effects: {
       remove: pocket.remove,
@@ -332,22 +347,6 @@ function takeHit(scene: Scene, hay: string): DoHit | null {
   }
   if (rest === 'hunger') return null
   return { effects: { flash: `You can't take ${rest} off this beat.` }, verb: 'take' }
-}
-
-/**
- * Verbs that are not the story buttons. Shared by every door.
- * Returns null when talk, shop, or a visible choice should own the line.
- */
-export function helpLine(state: GameState, scene: Scene, labels: string[]): string {
-  const verbs = ['look']
-  if (mouthHere(scene) || scene.speaker) verbs.push('talk', 'ask')
-  if (state.flags.hunterHere || state.flags.encounterHere || roadPressureScene(scene.id)) verbs.push('fight', 'hide', 'run')
-  if (mouthHere(scene) || scene.speaker || vendorFor(scene.id)) verbs.push('bribe', 'give')
-  if (labels.length) {
-    const named = labels.slice(0, 5).map((l) => l.replace(/\s+—.*$/, '').trim())
-    verbs.push(...named)
-  }
-  return `Here: ${verbs.join(' · ')}.`
 }
 
 export function offButton(state: GameState, text: string, scene: Scene, labels: string[]): DoHit | null {

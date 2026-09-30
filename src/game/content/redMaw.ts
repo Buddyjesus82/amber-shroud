@@ -19,7 +19,7 @@ export const redMawScenes: Scene[] = [
     hubId: 'redmaw',
     kind: 'place',
     title: 'Red Maw Approach',
-    body: `Red Maw Approach. A lip of rock over a darkness that breathes warm. The Approach is a field of fossil ribs — the jaw of something ancient — littered with holes where other people dug and did not come back. The cache is under that breath.
+    body: `Red Maw Approach. A lip of rock over a darkness that breathes warm. The ground is a field of fossil ribs, the jaw of something ancient, littered with holes where other people dug and did not come back. Kallik's cache is under that breath.
 
 The ground out here takes more than the camp ever did. Sap goes faster. Hunters know the roads.`,
     variants: [
@@ -53,6 +53,7 @@ The ground out here takes more than the camp ever did. Sap goes faster. Hunters 
       {
         id: 'look',
         label: "Look for Kallik's second rib",
+        sub: 'Costs sap. You search the ribs for the gear-mark he cut.',
         show: { flagUnset: 'ribOpen' },
         effects: {
           ticks: 1,
@@ -89,18 +90,20 @@ The ground out here takes more than the camp ever did. Sap goes faster. Hunters 
     hubId: 'redmaw',
     kind: 'place',
     title: 'Bone Market',
-    body: `A few stalls that pretend this is a town. Dried strider, amber chips, maps that have killed people.
+    body: `A few stalls pretending this is a town. Dried strider meat. Amber chips. Maps that have killed the people who bought them.
 
-Zafir is at the stall. He looks like a man who has watched buyers fail and kept the tray anyway. Behind him: Drops, Hound Hide, a pawned baton, scrap for Glints.`,
+Zafir is at his stall. He has watched buyers fail and kept the tray anyway. On it: Drops of Oasis Sap, Hound Hide, a pawned shock baton, and scrap he will trade for Glints.`,
     choices: [
       {
         id: 'zafir',
         label: 'Talk to Zafir',
+        sub: 'His tray is a real shop. Buy and Sell. He does not sell a pardon.',
         effects: { goto: 'maw:zafir', ticks: 1, flag: { zafirMet: true, metZafir: true } },
       },
       {
         id: 'browse',
-        label: 'Browse like you have money',
+        label: 'Browse the stalls',
+        sub: 'Costs sap. You pick up a coil of unclaimed wire. It may be a trap.',
         show: { flagUnset: 'mawGlint' },
         effects: {
           add: { scrap: 1 },
@@ -181,28 +184,29 @@ Zafir is at the stall. He looks like a man who has watched buyers fail and kept 
     hubId: 'redmaw',
     kind: 'place',
     title: 'Stilt Shade',
-    body: `A lean of canvas where stilts can come off without sinking. Cord. Resin-smell. A vial that is not yours.`,
+    body: `A lean of canvas where Ossa can take her stilts off without sinking. Cord. The smell of resin. A vial on a hip that is not yours.`,
     variants: [
       {
         if: { flag: 'ossaAlly' },
         mode: 'replace',
-        body: `Ossa is here. The stilts are already standing. She does not repair them again. She nods the way you'd nod at a grave marker, then looks at your hands to see what you kept.`,
+        body: `Ossa is here. The stilts are already standing. She does not repair them again. She nods the way you would nod at a grave marker, then looks at your hands to see what you kept.`,
       },
       {
         if: { flag: 'ossaRobbed' },
         mode: 'replace',
-        body: `Ossa is here. Alive. That was the rule. She has a new vial from someone kinder than you. She does not offer shade. She offers a look that could strip paint.`,
+        body: `Ossa is here, and she is alive. She has a new vial, from someone kinder than you. She does not offer shade. She looks at you like she is stripping paint.`,
       },
       {
         if: { all: [{ flagUnset: 'ossaAlly' }, { flagUnset: 'ossaRobbed' }] },
         mode: 'replace',
-        body: `Ossa is here anyway — stilts, vial, alive. The Approach collects survivors whether they traveled together or not.`,
+        body: `Ossa is here anyway. Stilts, vial, alive. The Approach collects people who lived, whether you traveled with her or not.`,
       },
     ],
     choices: [
       {
         id: 'talk',
         label: 'Talk to Ossa',
+        sub: 'She is alive. What she says depends on how you left her on the road.',
         effects: { goto: 'maw:ossa', ticks: 1 },
       },
     ],
@@ -216,9 +220,16 @@ Zafir is at the stall. He looks like a man who has watched buyers fail and kept 
     body: `"I'm alive," Ossa says, which is both greeting and warning. "The Maw wants the cache. Sybella wants whoever the sand keeps. The stilts are done. Don't steal from me twice."`,
     variants: [
       {
-        if: { flag: 'ossaStillness' },
+        if: { flag: 'ossaToldDay' },
         mode: 'replace',
-        body: `She nods the way you'd nod at a grave marker. "Stillness kept. I have not forgotten the day. Not out loud. Not here." The knot at your brow is the only proof she gives.`,
+        body: `She does not play the stranger anymore. "I already told you the day. The Great Bleed. How you were taken. The rest waits until you are ready. Ask when you can hear it."`,
+      },
+      {
+        if: { all: [{ flag: 'ossaStillness' }, { flagUnset: 'ossaToldDay' }] },
+        mode: 'replace',
+        body: `She looks at you longer than a stranger should. The knot at your brow is the only proof she gives.
+
+"I have been pretending not to know your face," Ossa says. "Stay quiet with me if you want the day. I will not shout it."`,
       },
       {
         if: { all: [{ flag: 'ossaAlly' }, { flagUnset: 'ossaStillness' }] },
@@ -252,6 +263,13 @@ Zafir is at the stall. He looks like a man who has watched buyers fail and kept 
           flash: '"It means I can find you. It means you can find me. It is not a marriage. It is a refusal to die separately if dying together is stupider."',
         },
       },
+      {
+        id: 'day',
+        label: 'Stay quiet with her',
+        sub: 'She stops pretending she does not know you.',
+        show: { all: [{ flag: 'ossaStillness' }, { flagUnset: 'ossaToldDay' }] },
+        effects: { goto: 'maw:ossa-day', ticks: 1 },
+      },
       { id: 'back', label: 'Give her the quiet', tone: 'quiet', effects: { goto: 'maw:stilt' } },
     ],
     intents: [
@@ -269,13 +287,54 @@ Zafir is at the stall. He looks like a man who has watched buyers fail and kept 
     ],
   },
   {
+    id: 'maw:ossa-day',
+    hubId: 'redmaw',
+    kind: 'talk',
+    title: 'The Day',
+    speaker: 'Ossa',
+    body: `Ossa sets the stilts down so you stand at the same height. The stranger voice is gone. What is left is a teacher who has lived in weather.
+
+"I raised you," she says. "I know you. I knew your face before any wire did."
+
+She does not look away. "They took you during the Great Bleed. They took you as a Bleed-Cut captive. I watched the tracks close, and I could not follow."
+
+A breath. The cord in her hands gets a second knot. "That is the day. The rest I will tell when you are ready to hear it. Ask me then. I will still be here."`,
+    variants: [
+      {
+        if: { flagUnset: 'ossaStillness' },
+        mode: 'replace',
+        body: `"I'm alive," Ossa says, and nothing more. She is a woman on stilts. She does not know you. She will not pretend she does.`,
+      },
+    ],
+    choices: [
+      {
+        id: 'back',
+        label: 'Let her stop there',
+        sub: 'She has said the day. The rest waits.',
+        show: { flag: 'ossaStillness' },
+        effects: {
+          flag: { ossaToldDay: true },
+          goto: 'maw:stilt',
+          ticks: 1,
+          flash: 'She ties the cord a second time and does not add a name. The rest waits until you ask.',
+        },
+      },
+      {
+        id: 'leave',
+        label: 'Leave the shade',
+        show: { flagUnset: 'ossaStillness' },
+        effects: { goto: 'maw:stilt', ticks: 1 },
+      },
+    ],
+  },
+  {
     id: 'maw:smoke',
     hubId: 'redmaw',
     kind: 'place',
     title: 'Skiff Smoke',
-    body: `Sybella's skiff is parked like a threat that learned manners. Incense or resin-smoke. A ceremonial blindfold hung on the mast, not worn.
+    body: `Sybella's sand-skiff is parked like a threat that learned manners. Incense, or resin-smoke. A ceremonial blindfold hangs on the mast. She is not wearing it.
 
-She is here. Hunting. Reasonable.`,
+She is here, and she is hunting. Walk up and she will talk. You can also slip past the smoke and go on into the Approach.`,
     choices: [
       {
         id: 'on',
@@ -446,11 +505,12 @@ She is here. Hunting. Reasonable.`,
     hubId: 'redmaw',
     kind: 'place',
     title: 'Hollow Lip',
-    body: `Where the Approach meets listening sand. If you already buried something, you can hear it. If you didn't, the Lip offers a second chance at low magic — and a second bill.`,
+    body: `This is where the Approach meets sand that listens. If you already buried a Glint, you can hear it down there. If you did not, the Hollow Lip will take one now, and Seekers who are hunting you hesitate. Either way it costs sap. Nobody from the Cartel is here to see a skim.`,
     choices: [
       {
         id: 'bury',
         label: 'Bury a Glint',
+        sub: 'Spend 1 Glint. Seeker Heat drops. Costs sap. The Lip swallows it.',
         show: { all: [{ item: 'glints' }, { flagUnset: 'mawBuried' }] },
         effects: {
           remove: { glints: 1 },
@@ -464,6 +524,7 @@ She is here. Hunting. Reasonable.`,
       {
         id: 'listen',
         label: 'Listen for what you already buried',
+        sub: 'Costs sap. You check that the buried thing is still down there.',
         show: { flag: 'hollowMarked' },
         effects: {
           ticks: 1,
@@ -478,14 +539,14 @@ She is here. Hunting. Reasonable.`,
     hubId: 'redmaw',
     kind: 'place',
     title: 'Fossil Ribs',
-    body: `The Approach is a jaw that forgot how to close. Ribs of stone, and holes where other diggers went down and stayed. Kallik buried a haul under the right one and never came back up. He carved a nine-tooth gear on the second rib from the jaw so he would not lose the place.
+    body: `The Approach is a jaw that forgot how to close. Ribs of stone, and holes where other diggers went down and stayed. Kallik buried his haul under the right rib and never came back up. He carved a gear with nine teeth on the second rib from the jaw, so he would not lose the place.
 
-Blind picks cost sap. Scratches on the wrong rib almost look like a gear. They are not.`,
+A blind pick costs sap. Scratches on the wrong rib almost look like that gear. They are not the gear.`,
     choices: [
       {
         id: 'gear',
         label: 'The second rib from the jaw',
-        sub: 'Two clues agree. Mark, scratch, or the rumor.',
+        sub: 'Two clues agree: the mark, the map, or the rumor. The sealed way opens.',
         show: {
           any: [
             { all: [{ item: 'kallik_mark' }, { item: 'cache_map' }] },
@@ -504,7 +565,7 @@ Blind picks cost sap. Scratches on the wrong rib almost look like a gear. They a
       {
         id: 'narrow',
         label: 'Try the rib the one clue points at',
-        sub: 'One clue. The first rib lies.',
+        sub: 'You only have one clue. The first rib is a lie. Costs sap.',
         show: {
           all: [
             { flagUnset: 'ribDecoy' },
@@ -533,6 +594,7 @@ Blind picks cost sap. Scratches on the wrong rib almost look like a gear. They a
       {
         id: 'gear-next',
         label: 'The next rib. The gear, not the scratch.',
+        sub: 'You already wasted a rib. This one has the nine teeth. The way opens.',
         show: {
           all: [
             { flag: 'ribDecoy' },
@@ -626,9 +688,9 @@ The gear-marked rib opened a handspan and gave you what was in the mouth of it. 
     kind: 'place',
     title: "Oil-Tooth's Wreck",
     speaker: 'Oil-Tooth',
-    body: `A wreck of a skiff-strider, half-sunk in a rib's shadow. Jaxson "Oil-Tooth" Vance has made a bench of it. Hoarded parts. A way-out rig that is not a way out yet. The brass jaw ticks when he works.
+    body: `A wrecked Skiff-Strider, half sunk in a rib's shadow. Jaxson "Oil-Tooth" Vance has made a bench of it. Hoarded parts. A way-out rig that is not a way out yet. The brass jaw ticks when he works.
 
-"Repairs. A side job. A salve if you are leaking. I build exits for people the Hollows keep. You are early."`,
+"Repairs. A side job hauling parts. Salve if you are cut. I build exits for people the Hollows keep. You are early." You can bind his cut, rest, or haul. None of it opens Kallik's cache.`,
     variants: [
       {
         if: { flag: 'oilResentful' },
@@ -677,7 +739,7 @@ The gear-marked rib opened a handspan and gave you what was in the mouth of it. 
       {
         id: 'rest',
         label: 'Rest on the bench',
-        sub: 'Health back. A pip of sap.',
+        sub: 'Costs a little sap. Your health comes back a little.',
         enable: { sapMin: 1 },
         locked: 'No sap to sit on.',
         effects: {
@@ -690,6 +752,7 @@ The gear-marked rib opened a handspan and gave you what was in the mouth of it. 
       {
         id: 'job',
         label: 'Take a side job. Haul parts.',
+        sub: 'Costs sap. You get 2 scrap. The rig gets one bolt closer to finished.',
         effects: {
           add: { scrap: 2 },
           sap: -1,
