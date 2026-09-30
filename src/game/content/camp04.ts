@@ -8,13 +8,13 @@ export const campScenes: Scene[] = [
     hubId: 'camp04',
     kind: 'place',
     title: 'Bleed Yard',
-    body: `Ironwood Camp-04 does not quiet. Razor-wire. Steam-vents. Harvesters strip-mining petrified groves beyond the fence. Ironclad Skiff-Striders patrol like they own the heat.
+    body: `Ironwood Camp-04 does not get quiet. Razor wire. Steam vents. Past the fence, harvesters strip petrified groves. Ironclad Skiff-Striders patrol like they own the heat.
 
-The Yard stinks of cooked resin and unwashed iron. Vats tick toward the Great Bleed. A line of prisoners scrape amber skin into buckets like it is nothing but work.
+The Bleed Yard stinks of cooked resin and unwashed iron. The vats are ticking toward the Great Bleed. A line of prisoners scrapes amber skin into buckets. To the Cartel, that is only work.
 
-Jaxson "Oil-Tooth" Vance is not in the line. He is either in the next bunk, or under a Strider. Kaelen the Sifter is a rumor at the Wire — merchant, not inside man.
+Jaxson "Oil-Tooth" Vance is not in the line. He is in the next bunk, or under a Strider at Skiff Bay. Kaelen the Sifter works the Wire. He sells rumors. He does not hotwire the ride.
 
-Overseer Valerius is the looming shadow. First major victory: get out from under him.`,
+Overseer Valerius is the shadow over the Yard. Getting out from under him is the first thing you have to win.`,
     variants: [
       {
         if: { all: [{ flag: 'leftCamp' }, { flag: 'quietFence' }, { flagUnset: 'campLockdown' }] },
@@ -46,47 +46,47 @@ Overseer Valerius is the looming shadow. First major victory: get out from under
       {
         id: 'relic',
         label: "Hunt Kaelen's vat-shadow hoard",
-        sub: 'Third vat. You walked here.',
+        sub: 'The third vat, in the shadow. You already walked here from the Wire.',
         show: { all: [{ flag: 'relicRumor' }, { flagUnset: 'relicTaken' }, { flagUnset: 'relicSeen' }] },
         effects: { goto: 'camp:relic', ticks: 1 },
       },
       {
         id: 'vats',
         label: 'Search the cooling vats',
-        sub: 'Drips hide in seams. So do eyes.',
+        sub: 'Look for a Drop in the seams. Someone may see you. Costs sap.',
         show: { flagUnset: 'vatDripTaken' },
         effects: { goto: 'camp:vats', ticks: 1, pressure: 1, sap: -1 },
       },
       {
         id: 'line',
         label: 'Fall into the scrape-line',
-        sub: 'Look like you belong. Burn an hour.',
+        sub: 'Look like you belong. Costs sap. Cartel Heat drops, because a working prisoner looks solved.',
         effects: {
           ticks: 1,
           pressure: 1,
           sap: -1,
           heat: { cartel: -1 },
           flash:
-            'You scrape. Nobody thanks you. The Cartel heat on your name cools a degree because a working prisoner is a solved prisoner.',
+            'You scrape amber with the line. Nobody thanks you. Cartel Heat drops, because a prisoner who is working looks like a solved problem.',
         },
       },
       {
         id: 'wire',
         label: 'Walk the Wire',
-        sub: 'Kaelen the Sifter sells rumors. Not rides.',
+        sub: 'Kaelen the Sifter sells rumors at the Wire. He does not give you a ride.',
         effects: { goto: 'camp:wire', ticks: 1 },
       },
       {
         id: 'job',
         label: "Oil-Tooth's inside job is still open",
-        sub: 'Stall. Wrench. West steam-vent. Kaelen can wait, or come first.',
+        sub: 'Go to his stall. The job is the wrench and the west steam-vent. You can still see Kaelen first.',
         show: { flagUnset: 'jaxsonInside' },
         effects: { goto: 'camp:lean', ticks: 1 },
       },
       {
         id: 'station',
         label: 'West steam-vent. Sabotage the guard station.',
-        sub: 'Oil-Tooth named the bolt.',
+        sub: 'Oil-Tooth named the bolt. Walk to the Guard Station and sabotage it.',
         tone: 'hunger',
         show: { all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] },
         effects: { goto: 'camp:guard', ticks: 1 },
@@ -141,7 +141,7 @@ Take it and you are a thief twice. Leave it and noon will take it anyway.`,
       {
         if: { all: [{ flag: 'relicRumor' }, { flagUnset: 'relicTaken' }, { flagUnset: 'relicSeen' }] },
         mode: 'append',
-        body: `Kaelen's clerk-mark crate sits in this same shadow. The hoard is a different invoice from the drip.`,
+        body: `Kaelen's clerk-mark crate sits in this same shadow. The relic hoard is a different job from the Drop.`,
       },
     ],
     choices: [
@@ -197,11 +197,11 @@ Take it and you are a thief twice. Leave it and noon will take it anyway.`,
     hubId: 'camp04',
     kind: 'place',
     title: 'Steam Vents',
-    body: `West corridor. Pipes scream like a factory finding religion. The Great Bleed lives in these throats of iron.
+    body: `The west corridor. The pipes scream. The Great Bleed lives in this iron.
 
-One door back to the Yard. The other coughs toward the Skiff Bay. You cannot see the pens from here. You cannot see the dunes. Steam is a country with two roads, and Map is how you pick one.
+One door goes back toward the Bleed Yard. The other coughs toward Skiff Bay. You cannot see the pens from here, and you cannot see the dunes. Two roads. The Map is how you pick one.
 
-Oil-Tooth named a west bolt at the Guard Station. That is a different throat. This one is only weather made of rust.`,
+Oil-Tooth named a west bolt at the Guard Station. That is a different pipe. This corridor is only steam and rust.`,
     variants: [
       {
         if: { flag: 'guardDown' },
@@ -268,7 +268,7 @@ Oil-Tooth named a west bolt at the Guard Station. That is a different throat. Th
     intents: [
       {
         tags: ['bay', 'skiff', 'strider', 'south'],
-        reply: 'The bay is the next throat south-east. Open Map. Steam is not a teleport.',
+        reply: 'Skiff Bay is the next road, south-east. Open the Map. The steam does not carry you there.',
         effects: { ticks: 1 },
       },
       {
@@ -295,18 +295,18 @@ Oil-Tooth named a west bolt at the Guard Station. That is a different throat. Th
     hubId: 'camp04',
     kind: 'place',
     title: 'Holding Pens',
-    body: `Holding pens. Each cage a ribcage for a penniless laborer. Yours still smells like the last Bleed. Cartel Scrip in the hem. Nothing else.
+    body: `Holding pens. Each cage is a ribcage for a laborer with no money. Yours still smells like the last Bleed. Cartel scrip is hidden in your hem. Nothing else.
 
-Bunk next to you: Jaxson "Oil-Tooth" Vance — burly, grease-stained, permanent smirk, cybernetic brass jaw catching the steam-light. Scorched welding leathers with corporate inventory tags. An oversized wrench when he is not hiding it.
+The bunk next to you is Jaxson "Oil-Tooth" Vance. He is burly and grease-stained, with a permanent smirk and a cybernetic brass jaw in the steam-light. Scorched welding leathers. Corporate tags he never cut off. An oversized wrench, when he is not hiding it.
 
-He is the prison-break technical inside man. Reckless. Charismatic. Anti-authority. Humor as a shield. Observant of security weaknesses. He has skimmed Oasis Sap for a lifetime of repairing Ironclad Skiff-Striders.
+He is the one who can break you out. He hotwires Ironclad Skiff-Striders, and he has skimmed Oasis Sap for as long as he has repaired them. The jokes are a shield. He watches the guards more closely than he lets on.
 
-Kaelen the Sifter is not here. Kaelen sells rumors at the Wire.`,
+Kaelen the Sifter is not in the pens. Kaelen sells rumors at the Wire.`,
     choices: [
       {
         id: 'jaxson',
         label: 'Talk to Oil-Tooth in the next bunk',
-        sub: 'Inside man. Hotwire. Not the rumor counter.',
+        sub: 'He hotwires the Striders. Kaelen, at the Wire, is the one who sells rumors.',
         effects: { goto: 'camp:jaxson', ticks: 1 },
       },
       {
@@ -319,6 +319,7 @@ Kaelen the Sifter is not here. Kaelen sells rumors at the Wire.`,
       {
         id: 'bar',
         label: 'Work the loose bar',
+        sub: 'Pry it out of the cage. Costs sap. You can keep it as a weapon or break it into scrap.',
         show: { flagUnset: 'shivTaken' },
         effects: { goto: 'camp:shiv', ticks: 1, sap: -1 },
       },
@@ -346,7 +347,7 @@ Kaelen the Sifter is not here. Kaelen sells rumors at the Wire.`,
       {
         id: 'yard',
         label: 'Walk the Bleed Yard',
-        sub: 'Vats. Steam. The camp is bigger than one cage.',
+        sub: 'The vats and the steam are out there. Costs sap. The camp is bigger than this cage.',
         effects: { goto: 'camp:yard', ticks: 1, sap: -1 },
       },
       {
@@ -359,7 +360,8 @@ Kaelen the Sifter is not here. Kaelen sells rumors at the Wire.`,
       },
       {
         id: 'bay',
-        label: 'The Strider bay. He is under a hull.',
+        label: 'Skiff Bay. He is under a hull.',
+        sub: 'The station is down. Oil-Tooth is working a Strider at the bay.',
         show: { flag: 'guardDown' },
         effects: { goto: 'camp:bay', ticks: 1 },
       },
@@ -432,11 +434,11 @@ Kaelen the Sifter is not here. Kaelen sells rumors at the Wire.`,
     kind: 'place',
     title: "Oil-Tooth's Stall",
     speaker: 'Jaxson "Oil-Tooth" Vance',
-    body: `Jaxson "Oil-Tooth" Vance is a burly grease-stained mechanic with a permanent smirk and a cybernetic brass jaw. Scorched welding leathers. Corporate inventory tags he never cut off. The oversized wrench lives in his fist like a second opinion.
+    body: `Jaxson "Oil-Tooth" Vance works out of a stall off the pens. He is burly and grease-stained, with a permanent smirk and a cybernetic brass jaw. Scorched welding leathers. Corporate tags he never cut off. The oversized wrench sits in his fist like a second opinion.
 
-Lifetime labor: repairing Ironclad Skiff-Striders. He has skimmed Oasis Sap the whole time. Reckless. Charismatic. Anti-authority. Humor as a shield. He watches security weaknesses the way other men watch the sky.
+He has spent his life repairing Ironclad Skiff-Striders, and skimming Oasis Sap while he did it. The jokes are a shield. He watches the guards the way other men watch the sky.
 
-"Bleed-Cut," he says, like it is already your name. "Great Bleed is coming. You sabotage the guard station. I hotwire a Strider. That is the job. Kaelen the Sifter sells rumors at the Wire if you want news. He sells rumors. I hotwire."`,
+"Bleed-Cut," he says, as if it is already your name. "The Great Bleed is coming. You sabotage the Guard Station. I hotwire a Strider. That is the job. If you want news — Kallik, Red Maw, the woman on the skiff — Kaelen the Sifter sells rumors at the Wire. He sells rumors. I hotwire."`,
     variants: [
       {
         if: { flag: 'striderHot' },
@@ -524,7 +526,7 @@ Lifetime labor: repairing Ironclad Skiff-Striders. He has skimmed Oasis Sap the 
       },
       {
         tags: ['cache', 'kallik', 'maw', 'hunger', 'rumor', 'news'],
-        reply: '"That is Kaelen the Sifter. Wire. Rumors for Glints. I hotwire. Do not mix the invoices."',
+        reply: '"That is Kaelen the Sifter. The Wire. Rumors for Glints. I hotwire. Do not mix the jobs."',
         effects: { flag: { kaelenKnown: true }, goto: 'camp:wire' },
       },
       {
@@ -656,7 +658,7 @@ Great Bleed hits, you sabotage that station. I hotwire an Ironclad Skiff-Strider
       },
       {
         tags: ['cache', 'kallik', 'maw', 'hunger', 'red', 'rumor', 'news'],
-        reply: '"Kaelen the Sifter. Wire. Rumors for Glints. I hotwire. Do not mix the invoices."',
+        reply: '"Kaelen the Sifter. The Wire. Rumors for Glints. I hotwire. Do not mix the jobs."',
         effects: { flag: { kaelenKnown: true }, goto: 'camp:wire' },
       },
       {
@@ -698,7 +700,7 @@ Great Bleed hits, you sabotage that station. I hotwire an Ironclad Skiff-Strider
     kind: 'talk',
     speaker: 'Jaxson "Oil-Tooth" Vance',
     title: 'A Drop',
-    body: `"I skim Oasis Sap. Lifetime habit. I look like a charity?" The brass jaw ticks. "Sabotage first. Hotwire second. Then this Drop thinks about changing pockets. Kaelen will sell you one for scrap if you are impatient. Different invoice."`,
+    body: `"I skim Oasis Sap. Lifetime habit. I look like a charity?" The brass jaw ticks. "Sabotage the station first. I hotwire second. Then this Drop might change pockets. Kaelen will sell you one for scrap if you are impatient. That is a different job."`,
     choices: [
       {
         id: 'agree',
@@ -731,11 +733,11 @@ Great Bleed hits, you sabotage that station. I hotwire an Ironclad Skiff-Strider
     hubId: 'camp04',
     kind: 'place',
     title: 'Watchtower Drip',
-    body: `The tower leaks shade, steam, and authority. Overseer Valerius stands in it like a nail stands in wood. Bald, scarred, steam baton in the fist. No dog. The Hound-handler works the yard. The Overseer stays here until Cartel Heat drags him out.
+    body: `The watchtower leaks shade, steam, and orders. Overseer Valerius stands in it the way a nail stands in wood. He is bald and scarred, with a steam baton in his fist. No dog. The Hound-handler works the Yard. Valerius stays here until Cartel Heat drags him out.
 
-Imposing. Scarred. Reinforced iron plating over dust-cloaks. A steam-hissing shock baton in the fist. Cruel. Calculating. Brutal enforcer protecting corporate interests. He hunts Sap thieves and unpermitted relic hoarders. Sadistic. Arrogant. Disciplined.
+Iron plating over a dust-cloak. The baton hisses steam. He hunts people who steal Oasis Sap, and people who hoard relics without a permit.
 
-He is the immediate antagonist. The looming shadow. First major victory: get out from under him.`,
+He is the man you have to get out from under. That is the first thing you have to win.`,
     variants: [
       {
         if: { heatMin: ['cartel', 5] },
@@ -747,11 +749,13 @@ He is the immediate antagonist. The looming shadow. First major victory: get out
       {
         id: 'talk',
         label: 'Approach Valerius',
+        sub: 'You step into his shade. Cartel Heat rises. He is the man who can spend a Hound on you.',
         effects: { goto: 'camp:valerius', ticks: 1, heat: { cartel: 1 }, pressure: 1 },
       },
       {
         id: 'chip',
         label: "Palm a chip from the clerk's hook",
+        sub: 'A door-chip. Cartel Heat rises hard if the count comes due.',
         show: { flagUnset: 'overseerChip' },
         effects: {
           add: { overseer_chip: 1 },
@@ -873,11 +877,11 @@ Bald. Scarred. Steam baton. No dog at his heel. The handler and the hound are a 
     hubId: 'camp04',
     kind: 'place',
     title: 'The Wire',
-    body: `The perimeter. Razor-wire. Steam-vents coughing. Beyond it the dunes begin to have opinions.
+    body: `The perimeter. Razor wire. Steam vents coughing. Past the wire, the dunes start to have opinions.
 
-Kaelen the Sifter is here when profit says here: jittery diminutive merchant, dust-caked canvas, overstuffed pack, thick gloves. He sells rumors and Drops. He does not hotwire. He will not sell a thing that harms a fellow survivor.
+Kaelen the Sifter is here when there is a profit in it: a jittery diminutive merchant in dust-caked canvas, with an overstuffed pack and thick gloves. He sells rumors and Drops of Oasis Sap. He does not hotwire Striders. He will not sell a thing that harms another survivor.
 
-Ironclad Skiff-Striders patrol the other side of this line. The Hunger lives past it. So do Hounds.`,
+Ironclad Skiff-Striders patrol the far side of this line. Red Maw is past it. So are the Hounds.`,
     variants: [
       {
         if: { flag: 'wireCut' },
@@ -889,7 +893,7 @@ Ironclad Skiff-Striders patrol the other side of this line. The Hunger lives pas
       {
         id: 'kaelen',
         label: 'Find Kaelen the Sifter',
-        sub: 'Merchant. Rumor counter. Not the inside man.',
+        sub: 'He sells rumors and Drops. He is not the man who hotwires the Strider.',
         effects: { goto: 'camp:kaelen', ticks: 1, pressure: 1 },
       },
       {
@@ -918,9 +922,9 @@ Ironclad Skiff-Striders patrol the other side of this line. The Hunger lives pas
     hubId: 'camp04',
     kind: 'place',
     title: 'Guard Station',
-    body: `The guard station is Ironwood's fist: shock-baton racks, steam-vents, a clerk who loves a ledger more than a throat. Ironclad Skiff-Striders pass on patrol and make the wire hum.
+    body: `The Guard Station is Ironwood's fist. Racks of shock batons. Steam vents. A clerk who loves a ledger more than a throat. Ironclad Skiff-Striders pass on patrol and make the wire hum.
 
-The Great Bleed is a clock. Sabotage here, Oil-Tooth hotwires there. Valerius will take this personally. That is the point.`,
+The Great Bleed is a clock. You sabotage the west steam-vent here. Oil-Tooth hotwires a Strider at Skiff Bay. Overseer Valerius will take it personally. That is the point.`,
     variants: [
       {
         if: { flag: 'guardDown' },
@@ -937,20 +941,21 @@ The Great Bleed is a clock. Sabotage here, Oil-Tooth hotwires there. Valerius wi
       {
         id: 'inside',
         label: 'Take Oil-Tooth\'s inside job',
-        sub: 'The wrench. The west steam-vent. He still hotwires.',
+        sub: 'Take the wrench. You crack the west steam-vent. He still hotwires the Strider.',
         show: { flagUnset: 'jaxsonInside' },
         effects: { ...TAKE_INSIDE_JOB, goto: 'camp:guard' },
       },
       {
         id: 'sabotage',
         label: 'Sabotage the west steam-vent',
-        sub: 'Oil-Tooth\'s inside job. Wrench on a bolt Valerius loves.',
+        sub: 'The job Oil-Tooth gave you. The wrench on a bolt Valerius cares about. Costs sap.',
         show: { all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] },
         effects: { goto: 'camp:sabotage', ticks: 1, sap: -1 },
       },
       {
         id: 'locked',
         label: 'Study the station',
+        sub: 'Look, and do not touch it yet. Costs sap. The bolt stays shut until you take the job.',
         show: { flagUnset: 'jaxsonInside' },
         effects: {
           ticks: 1,
@@ -1054,16 +1059,16 @@ A vent patrol is in place: one clerk, shock baton, eyes on the joint. Unwatched 
     hubId: 'camp04',
     kind: 'place',
     title: 'Skiff Bay',
-    body: `Ironclad Skiff-Striders stand in separate bays — resin-sheen, too many joints, corporate tags on hulls that have outlived their mechanics.
+    body: `Ironclad Skiff-Striders stand in separate bays. Resin shine. Too many joints. Corporate tags on hulls that have outlived the people who fixed them.
 
-These cradles are not one man. Pike scrapes the north hull. Sarn counts bolts on the east cradle like the numbers might pardon him. Vetch welds the south skid in a glove that still wears someone else's tag. Prisoners. Not the inside man. Not a rumor counter.
+These cradles are not one man. Pike scrapes the north hull. Sarn counts bolts on the east cradle, as if the numbers might pardon him. Vetch welds the south skid in a glove that still wears someone else's tag. They are prisoners. None of them is Oil-Tooth, and none of them sells rumors.
 
-A word gets a short answer. A hand in a pocket gets a bolt, or a shout.`,
+Talk to one of them and you get a short answer. Put a hand in a pocket and you get a bolt, or a shout.`,
     variants: [
       {
         if: { flag: 'striderHot' },
         mode: 'append',
-        body: `One Strider ticks live. The dunes are a door.`,
+        body: `One Strider is hotwired and ticking. The dunes are open if you ride it.`,
       },
       {
         if: { flag: 'guardDown' },
@@ -1086,6 +1091,7 @@ Pike, Sarn, and Vetch keep their heads down on the other cradles. They are not t
       {
         id: 'pike',
         label: 'Talk to Pike',
+        sub: 'North hull. He scrapes and does not stop.',
         show: { flag: 'bayLooked' },
         effects: {
           ticks: 1,
@@ -1095,6 +1101,7 @@ Pike, Sarn, and Vetch keep their heads down on the other cradles. They are not t
       {
         id: 'sarn',
         label: 'Talk to Sarn',
+        sub: 'East cradle. He counts bolts out loud.',
         show: { flag: 'bayLooked' },
         effects: {
           ticks: 1,
@@ -1104,6 +1111,7 @@ Pike, Sarn, and Vetch keep their heads down on the other cradles. They are not t
       {
         id: 'vetch',
         label: 'Talk to Vetch',
+        sub: 'South skid. She welds. Talk is sparks.',
         show: { flag: 'bayLooked' },
         effects: {
           ticks: 1,
@@ -1113,7 +1121,7 @@ Pike, Sarn, and Vetch keep their heads down on the other cradles. They are not t
       {
         id: 'cord',
         label: 'Take lash-cord off Pike\'s hull',
-        sub: 'After you have looked. He does not look up.',
+        sub: 'You already looked. Pike does not look up. Cartel Heat rises if anyone counts the hull.',
         show: { all: [{ flag: 'bayLooked' }, { flagUnset: 'lashCord' }] },
         effects: {
           flag: { lashCord: true, bayPikeTook: true },
@@ -1302,7 +1310,7 @@ He hunts Sap thieves and unpermitted relic hoarders. You look like both. First m
           returnHunterFrom: true,
           unsetFlag: ['hunterHere', 'hunterFrom'],
           ticks: 1,
-          flash: 'The sweep moves on. You are back where you were — not a Yard teleport.',
+          flash: 'The sweep moves on. You are back where you were. The sweep does not move you.',
         },
       },
       {
@@ -1338,7 +1346,7 @@ He hunts Sap thieves and unpermitted relic hoarders. You look like both. First m
     title: 'The Camp Closes',
     body: `Pressure has a sound. It is the vats, the whistles, the way nobody meets your eye.
 
-You can keep playing prisoner until the Drop in you burns out. Or Oil-Tooth's Strider. Or Kaelen's heading. Do not mix the invoices — just spend them.`,
+You can stay and scrape until the Drop in you burns out. Or take Oil-Tooth's Strider. Or follow Kaelen's heading. Pick one job and spend it.`,
     choices: [
       {
         id: 'go',

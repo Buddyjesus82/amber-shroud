@@ -172,7 +172,7 @@ He sells shade by the minute. Talk is not free. Drops are a fairy tale he still 
     metFlag: 'metNim',
     card: `Nim the Cut-Fee sits shade like a toll. Resin under the nails. A knife that has only ever been for minutes.
 
-Silas sells the minute. She collects it. Glint, scratch, empty glass — or she names you to the wash and lets noon finish the invoice. She is not Kaelen. She is not Silas. She is the tax on being Stray in daylight.`,
+Silas sells the minute. She collects it. A Glint, a scratch, an empty glass — or she names you to the wash and lets noon finish the job. She is not Kaelen. She is not Silas. She is the tax on being Stray in daylight.`,
     scenes: ['ch1:o-tax'],
     later: {
       'ch1:o-tax': `Resin under the nails. Shade like a till. "Noon-Empty. Pay or run noon. I tell the wash your name either way if you cheap me."`,

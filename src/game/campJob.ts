@@ -5,7 +5,7 @@ export const TAKE_INSIDE_JOB: Effect = {
   flag: { jaxsonInside: true, wrenchPath: true, jaxsonFavor: true, cartelNotice: true },
   ticks: 1,
   flash:
-    'The oversized wrench is heavier than pride. "West steam-vent. Guard station. Bleed-hour. I hotwire. You can still pay Kaelen for a heading first. Do not mix the invoices."',
+    'The oversized wrench is heavier than pride. "West steam-vent. Guard station. Bleed-hour. I hotwire. You can still pay Kaelen for a heading first. Do not mix the jobs."',
 }
 
 export function wantsTakeJob(text: string): boolean {

@@ -25,6 +25,7 @@ Down-slope: a tent the color of old teeth. Silas Vane sells shade by the minute.
       {
         id: 'scan',
         label: 'Read the wash for a heading',
+        sub: 'Costs sap. You look east and south for the red haze of Red Maw.',
         effects: {
           ticks: 1,
           sap: -1,
@@ -49,6 +50,7 @@ Down-slope: a tent the color of old teeth. Silas Vane sells shade by the minute.
       {
         id: 'well',
         label: 'Walk the dry well',
+        sub: 'Costs sap. The well has been dry for years. Kaelen sometimes leaves a mark in the stone.',
         effects: { goto: 'spine:well', ticks: 1, sap: -1 },
       },
       {
@@ -140,13 +142,14 @@ The Hunger is a red bruise east-south. You could fill the empty vial with this s
     kind: 'place',
     title: "Silas's Shade",
     speaker: 'Silas Vane',
-    body: `Silas Vane is older than the well's disappointment. One eye is milk. The other is accounting. The tent smells of resin-chew and wet wool that has never been wet.
+    body: `Silas Vane is older than the well's disappointment. One eye is milk. The other is counting what you owe. The tent smells of resin-chew and wool that has never been wet.
 
-"Noon-Empty," he says, which means the Spine has already named you. "Shade is not free. Talk is not free. Drops are a fairy tale I still keep in stock for people who pay."`,
+"Noon-Empty," he says. That is what the Spine already calls you. "Shade is not free. Talk is not free. A Drop of Oasis Sap is a story I still keep in stock, if you pay."`,
     choices: [
       {
         id: 'talk',
         label: 'Sit in the expensive shade',
+        sub: 'You pay for the minute by sitting down to talk. He still charges for a Drop.',
         effects: { goto: 'spine:silas', ticks: 1 },
       },
       {
@@ -293,7 +296,7 @@ I will scratch you a heading. You take the Hunger when the noon gets honest."`,
           startChapter: 'cache-run',
           goto: 'ch1:leave',
           ticks: 1,
-          flash: 'He scratches. You walk. Shade does not get a second invoice.',
+          flash: 'He scratches the heading. You walk. Shade does not get a second charge.',
         },
       },
       { id: 'later', label: 'Not while the vial is this dry', tone: 'quiet', effects: { goto: 'spine:silas' } },
@@ -304,14 +307,14 @@ I will scratch you a heading. You take the Hunger when the noon gets honest."`,
     hubId: 'spine',
     kind: 'place',
     title: 'Dry Well',
-    body: `A circle of stones. A throat of dust. Someone carved KAELEN CUTS DUSK into a brick, and under it a newer line: CACHE IS BAIT.
+    body: `A circle of stones and a throat of dust. Someone carved KAELEN CUTS DUSK into a brick. Under it, a newer line: CACHE IS BAIT.
 
-You can lower a hope. You cannot lower a bucket that still believes in water.`,
+You can lower a hope into it. There is no bucket here that still believes in water.`,
     choices: [
       {
         id: 'skim',
         label: 'Skim the well-throat anyway',
-        sub: 'Risky Drop. Heat. The well may still spit once.',
+        sub: 'A risky Drop. Stray Heat rises. The well may spit once. This is theft, not a rescue.',
         tone: 'danger',
         show: { flagUnset: 'skim:spine:well' },
         effects: {
@@ -323,12 +326,13 @@ You can lower a hope. You cannot lower a bucket that still believes in water.`,
           ticks: 1,
           flag: { 'skim:spine:well': true, skimmed: true },
           flash:
-            'Dust, then a Drop that should not have been there. The well bills you in Heat. Not a rescue. A theft.',
+            'Dust, then a Drop that should not have been there. Stray Heat rises. This is theft, not a rescue.',
         },
       },
       {
         id: 'search',
         label: 'Search the brickwork',
+        sub: 'Costs sap. A Glint and a twist of scrap, if Kaelen left them.',
         show: { flagUnset: 'wellScrap' },
         effects: {
           add: { scrap: 1, glints: 1 },
@@ -342,7 +346,7 @@ You can lower a hope. You cannot lower a bucket that still believes in water.`,
       {
         id: 'kaelen',
         label: 'Wait for dusk and Kaelen the Sifter',
-        sub: 'Merchant. Rumors if you ask. Not Silas\'s shade.',
+        sub: 'He sells rumors if you ask. This is not Silas\'s shade. Costs sap.',
         effects: { goto: 'spine:kaelen', ticks: 1, sap: -1, pressure: 1 },
       },
       {
@@ -371,18 +375,20 @@ You can lower a hope. You cannot lower a bucket that still believes in water.`,
     hubId: 'spine',
     kind: 'place',
     title: 'Hound Sign',
-    body: `Prints. Not dogs. Shard-Hounds — Cartel-made, resin-jawed, loyal to whoever holds the chip.
+    body: `Prints in the dust. Not dogs. Shard-Hounds are made by the Cartel, with resin jaws, and they stay loyal to whoever holds the chip.
 
-Valerius is here in a different uniform: dust instead of cuffs, the same ledger behind the eyes. On the Spine they call him the Shard-Hound because he always finds the people who think ridges hide them.`,
+Overseer Valerius is here in a different coat: dust instead of prison cuffs, and the same ledger behind his eyes. On the Spine they call him the Shard-Hound, because he finds the people who think a ridge can hide them.`,
     choices: [
       {
         id: 'talk',
         label: 'Let him see you seeing him',
+        sub: 'You step into his view. Cartel Heat rises.',
         effects: { goto: 'spine:valerius', ticks: 1, heat: { cartel: 1 }, pressure: 1 },
       },
       {
         id: 'tooth',
         label: 'Pry a shard from an old kill',
+        sub: 'Costs sap. You pocket a spent shard worth a Glint. Cartel Heat rises.',
         show: { flagUnset: 'houndTooth' },
         effects: {
           add: { glints: 1 },
@@ -396,7 +402,7 @@ Valerius is here in a different uniform: dust instead of cuffs, the same ledger 
       {
         id: 'cut',
         label: 'Meet the Hound with equipped steel',
-        sub: 'Weapon on. Loot Hound Hide · Shell 4. No dice.',
+        sub: 'Your weapon is equipped. You take Hound Hide, Shell 4. Cartel Heat rises.',
         show: { all: [{ slot: 'weapon' }, { flagUnset: 'hideWrap' }] },
         effects: {
           add: { hide_wrap: 1 },
@@ -410,7 +416,8 @@ Valerius is here in a different uniform: dust instead of cuffs, the same ledger 
       },
       {
         id: 'hunger',
-        label: 'Leave the prints. Walk east to the Maw.',
+        label: 'Leave the prints. Walk toward Red Maw.',
+        sub: 'You leave the tracks. Cartel Heat still rises.',
         tone: 'hunger',
         show: { any: [{ flag: 'hungerKnown' }, { item: 'silas_tip' }] },
         effects: {
