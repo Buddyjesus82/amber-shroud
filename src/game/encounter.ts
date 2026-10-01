@@ -114,7 +114,7 @@ export function turfFaction(state: GameState): 'cartel' | 'seekers' | 'strays' {
 /** 0 safe (Skiff Bay), 3 common (Red Maw Approach and the first long road). */
 export function hubDanger(state: GameState): number {
   const id = state.sceneId
-  if (id === 'camp:bay' || id === 'thresh:court' || id === 'spine:shade' || id === 'thresh:cell') return 0
+  if (id.startsWith('camp:bay') || id === 'thresh:court' || id === 'spine:shade' || id === 'thresh:cell') return 0
   if (id === 'ch1:p-pipe' || id === 'ch1:o-noon' || id === 'ch1:v-hymn' || id === 'maw:rim' || id === 'maw:lip') return 3
   if (state.hubId === 'redmaw' || id.startsWith('maw:')) return 2
   if (id === 'camp:wire' || id === 'camp:guard' || id === 'spine:hound' || state.hubId === 'spine') return 2

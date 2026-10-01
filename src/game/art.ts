@@ -23,6 +23,11 @@ export type CoverKey =
   | 'brin'
   | 'rell'
   | 'handler'
+  | 'skiffbay'
+  | 'bay_pike'
+  | 'bay_sarn'
+  | 'bay_vetch'
+  | 'hotwire'
 
 const FILES: Record<CoverKey, string> = {
   world: 'world.png',
@@ -44,6 +49,11 @@ const FILES: Record<CoverKey, string> = {
   brin: 'brin.jpg',
   rell: 'rell.jpg',
   handler: 'hound.jpg',
+  skiffbay: 'skiffbay.jpg',
+  bay_pike: 'bay_pike.jpg',
+  bay_sarn: 'bay_sarn.jpg',
+  bay_vetch: 'bay_vetch.jpg',
+  hotwire: 'hotwire.jpg',
 }
 
 const PERSON_COVER: Record<PersonId, CoverKey> = {
@@ -94,7 +104,11 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   const who = npcCover(id)
   if (who) return who
 
-  if (id === 'camp:bay') return bayLookout(state) ? 'oiltooth' : 'camp04'
+  // The hotwire art is the one-time lookout beat: station down, Oil-Tooth under his skiff.
+  if (id === 'camp:bay') return bayLookout(state) ? 'hotwire' : 'skiffbay'
+  if (id === 'camp:bay-pike') return 'bay_pike'
+  if (id === 'camp:bay-sarn') return 'bay_sarn'
+  if (id === 'camp:bay-vetch') return 'bay_vetch'
 
   if (scene.art === 'hunger' || scene.chapterId === 'cache-run' || state.chapterId === 'cache-run' || state.hubId === 'redmaw' || id.startsWith('maw:') || id.startsWith('ch1:') || id.startsWith('ch2:')) {
     return 'hunger'

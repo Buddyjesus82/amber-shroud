@@ -203,7 +203,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     requestAnimationFrame(() => sayRef.current?.focus())
   }
 
-  const artSrc = `${import.meta.env.BASE_URL}covers/${playCoverFile(playCoverKey(state, scene))}?v=38`
+  const artSrc = `${import.meta.env.BASE_URL}covers/${playCoverFile(playCoverKey(state, scene))}?v=39`
 
   return (
     <div className={`screen play-screen${split ? ' play-split' : ''}`}>

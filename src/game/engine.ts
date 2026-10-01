@@ -12,6 +12,7 @@ import {
 } from './hunger'
 import { GLOBAL_INTENTS, matchChoiceText, matchIntent } from './intent'
 import { helpText } from './help'
+import { isBayScene } from './content/bayHands'
 import { classifyLook, directedLookFlash, pressureLookFlash, roomLookEffect } from './look'
 import { matchCompass, travelGate } from './map'
 import {
@@ -229,7 +230,7 @@ function hunterScene(state: GameState): string | null {
   ) {
     return null
   }
-  if (state.sceneId === 'camp:bay' && bayLookout(state)) return null
+  if (isBayScene(state.sceneId) && bayLookout(state)) return null
   if ((state.health ?? 1) <= 0) return null
   if (state.sceneId.startsWith('open:') || state.sceneId.startsWith('crisis:') || state.sceneId.startsWith('ch1:')) return null
   if (state.chapterId && state.hubId !== 'redmaw') return null
@@ -573,7 +574,7 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     !next.flags.roadFightSeen &&
     (next.chapterId === 'cache-run' || !!state.chapterId) &&
     (next.sceneId === 'ch1:p-pipe' || next.sceneId === 'ch1:o-noon' || next.sceneId === 'ch1:v-hymn')
-  const keepBayLine = state.sceneId === 'camp:bay' && typeof fx.flash === 'string'
+  const keepBayLine = isBayScene(state.sceneId) && typeof fx.flash === 'string'
   const roamBeat = lingered && (next.sceneId === state.sceneId || traveled || !!fx.travel)
   if (
     roamBeat &&

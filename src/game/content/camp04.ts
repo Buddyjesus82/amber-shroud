@@ -1,6 +1,14 @@
 import { TAKE_INSIDE_JOB } from '../campJob'
 import type { Scene } from '../types'
-import { bayHandIntents } from './bayHands'
+import {
+  bayHandIntents,
+  pikeBayChoices,
+  pikeBayIntents,
+  sarnBayChoices,
+  sarnBayIntents,
+  vetchBayChoices,
+  vetchBayIntents,
+} from './bayHands'
 
 export const campScenes: Scene[] = [
   {
@@ -1051,114 +1059,52 @@ A vent patrol is in place: one clerk, shock baton, eyes on the joint. Unwatched 
     hubId: 'camp04',
     kind: 'place',
     title: 'Skiff Bay',
-    body: `Three Skiff-Striders sit up on repair cradles, each in its own bay. Cartel tags are still bolted to the hulls, older than the men who fixed them.
+    body: `You come in through the west gate. Four Skiff-Striders stand on repair cradles, each in its own bay under a tin roof. Cartel tags are still bolted to the hulls.
 
-Three prisoners work them. Pike scrapes resin off the hull in the north bay. Sarn counts bolts out loud beside the skiff in the east bay. Vetch welds a cracked skid in the south bay, wearing a glove with someone else's name on it.
+Pike is in the north bay on your left, working a leg of his skiff. Sarn stands beside his skiff in the east bay, straight ahead, counting bolts out loud. Vetch is in the south bay on your right, kneeling with a torch and welding a cracked skid. Oil-Tooth's skiff stands in the center bay with nobody at it.
 
 Ask nicely and you get a short answer. Reach for their stuff and you get a bolt thrown at you, or a shout.`,
     variants: [
       {
         if: { flag: 'striderHot' },
         mode: 'append',
-        body: `One Strider is hotwired and ticking. The dunes are open if you ride it.`,
+        body: `Oil-Tooth's skiff in the center bay is hotwired and ticking. The dunes are open if you ride it.`,
       },
       {
         if: { flag: 'guardDown' },
         mode: 'append',
-        body: `The station behind you is coughing steam. Patrol is late. That was the sabotage.`,
+        body: `Black smoke is still coming off the guard station behind you. Patrol is late.`,
       },
       {
         if: { all: [{ flag: 'jaxsonInside' }, { flag: 'guardDown' }, { flagUnset: 'striderHot' }] },
         mode: 'replace',
-        body: `The guard station is coughing steam behind you. Patrol is late. This bay is the job.
+        body: `Black smoke is coming off the guard station behind you. Patrol is late.
 
-Jaxson "Oil-Tooth" Vance is under the hull, wrench in the joint.
+Jaxson "Oil-Tooth" Vance is on his back under his skiff in the center bay, wrench in the joint, hotwiring it.
 
-You are the lookout. He hotwires. "Cover me," he says. "Valerius eats dust if we are fast."
+You are the lookout. "Cover me," he says. "Valerius eats dust if we are fast."
 
-Pike, Sarn, and Vetch keep their heads down in the other bays, each beside their own skiff.`,
+Pike, Sarn, and Vetch keep their heads down in their own bays.`,
       },
     ],
     choices: [
       {
-        id: 'pike',
-        label: 'Talk to Pike',
-        sub: 'North bay. He scrapes his own skiff and does not stop.',
-        show: { flag: 'bayLooked' },
-        effects: {
-          ticks: 1,
-          flash: 'Pike does not stop scraping. "North bay. There is cord on the lash of my skiff. Take it and I did not see you."',
-        },
+        id: 'north-bay',
+        label: 'Walk to Pike in the north bay',
+        sub: 'On your left. He is working a leg of his skiff.',
+        effects: { goto: 'camp:bay-pike', flag: { bayLooked: true } },
       },
       {
-        id: 'sarn',
-        label: 'Talk to Sarn',
-        sub: 'East bay. He counts bolts out loud beside his own skiff.',
-        show: { flag: 'bayLooked' },
-        effects: {
-          ticks: 1,
-          flash: 'Sarn counts a bolt out loud. "East bay. I trade a count for quiet. I do not trade the wrench. That is the jaw\'s."',
-        },
+        id: 'east-bay',
+        label: 'Walk to Sarn in the east bay',
+        sub: 'Straight ahead. He counts bolts beside his skiff.',
+        effects: { goto: 'camp:bay-sarn', flag: { bayLooked: true } },
       },
       {
-        id: 'vetch',
-        label: 'Talk to Vetch',
-        sub: 'South bay. She welds her own skiff. Talk is sparks.',
-        show: { flag: 'bayLooked' },
-        effects: {
-          ticks: 1,
-          flash: 'Vetch lifts the mask a finger. "South bay. Sparks, not talk. You want cord, Pike\'s skiff in the north bay has it. You want a fight, find a guard."',
-        },
-      },
-      {
-        id: 'cord',
-        label: 'Take lash-cord off Pike\'s skiff',
-        sub: 'North bay. You already looked. Pike does not look up. Cartel Heat rises if anyone counts his skiff.',
-        show: { all: [{ flag: 'bayLooked' }, { flagUnset: 'lashCord' }] },
-        effects: {
-          flag: { lashCord: true, bayPikeTook: true },
-          heat: { cartel: 1 },
-          ticks: 1,
-          flash: 'Cord. Pike does not look up. A stilt-lash will take it. Cartel Heat ticks if anyone counts his skiff in the north bay.',
-        },
-      },
-      {
-        id: 'trade-pike',
-        label: 'Trade the wrench to Pike for lash cord',
-        sub: 'He keeps the steel. You get the cord. He does not call the Cartel.',
-        show: { all: [{ item: 'wrench' }, { flag: 'bayLooked' }, { flagUnset: 'wrenchBayTrade' }, { flagUnset: 'lashCord' }] },
-        effects: {
-          remove: { wrench: 1 },
-          flag: { lashCord: true, wrenchBayTrade: 'pike' },
-          ticks: 1,
-          flash: 'Pike takes the wrench without stopping the scrape. The lash cord comes off his skiff in the north bay into your hand. He does not shout.',
-        },
-      },
-      {
-        id: 'trade-sarn',
-        label: 'Trade the wrench to Sarn for scrap',
-        sub: 'One scrap. A quiet trade, not a theft.',
-        show: { all: [{ item: 'wrench' }, { flag: 'bayLooked' }, { flagUnset: 'wrenchBayTrade' }] },
-        effects: {
-          remove: { wrench: 1 },
-          add: { scrap: 1 },
-          flag: { wrenchBayTrade: 'sarn' },
-          ticks: 1,
-          flash: 'Sarn takes the wrench and counts you one twist of scrap. No Cartel Heat. Pike\'s cord is still there if you want to steal it.',
-        },
-      },
-      {
-        id: 'trade-vetch',
-        label: 'Trade the wrench to Vetch for a Drop',
-        sub: 'A small sip of Oasis Sap. She keeps the steel.',
-        show: { all: [{ item: 'wrench' }, { flag: 'bayLooked' }, { flagUnset: 'wrenchBayTrade' }] },
-        effects: {
-          remove: { wrench: 1 },
-          add: { vial_drop: 1 },
-          flag: { wrenchBayTrade: 'vetch' },
-          ticks: 1,
-          flash: 'Vetch pockets the wrench. A small Drop comes out of the glove. She does not call a count.',
-        },
+        id: 'south-bay',
+        label: 'Walk to Vetch in the south bay',
+        sub: 'On your right. She is welding a cracked skid.',
+        effects: { goto: 'camp:bay-vetch', flag: { bayLooked: true } },
       },
       {
         id: 'hotwire',
@@ -1202,6 +1148,36 @@ Pike, Sarn, and Vetch keep their heads down in the other bays, each beside their
       },
     ],
     intents: bayHandIntents,
+  },
+  {
+    id: 'camp:bay-pike',
+    hubId: 'camp04',
+    kind: 'place',
+    title: "Pike's Bay",
+    speaker: 'Pike',
+    body: `Pike is bent over the front leg of his skiff, scraping resin out of the joint. He does not stop when you walk up.`,
+    choices: pikeBayChoices,
+    intents: pikeBayIntents,
+  },
+  {
+    id: 'camp:bay-sarn',
+    hubId: 'camp04',
+    kind: 'place',
+    title: "Sarn's Bay",
+    speaker: 'Sarn',
+    body: `Sarn stands at a crate in front of his skiff, turning bolts in his hands and counting them out loud. He keeps counting while you stand there.`,
+    choices: sarnBayChoices,
+    intents: sarnBayIntents,
+  },
+  {
+    id: 'camp:bay-vetch',
+    hubId: 'camp04',
+    kind: 'place',
+    title: "Vetch's Bay",
+    speaker: 'Vetch',
+    body: `Vetch kneels in front of her skiff with her mask down, welding a cracked skid on the ground. She keeps welding while you stand there.`,
+    choices: vetchBayChoices,
+    intents: vetchBayIntents,
   },
   {
     id: 'camp:gate',
