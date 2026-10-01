@@ -147,7 +147,7 @@ const silas: IntentRule[] = [
   },
   {
     tags: HELP,
-    reply: '"Help is shade by the minute. Drops if you pay. Headings if you listen. I am not Kaelen. I sell the minute you are not in the sun."',
+    reply: '"Help is shade by the minute. Drops if you pay. Headings if you listen. I sell the minute you spend out of the sun."',
     effects: { ticks: 1 },
   },
   {
@@ -400,7 +400,7 @@ const oram: IntentRule[] = [
   },
   {
     tags: TRADE,
-    reply: '"I count feed, not coin. I am not Zafir. I am not Kaelen. Take the map and leave the animals their names."',
+    reply: '"I count feed. Take the map and leave the animals their names."',
     effects: { ticks: 1 },
   },
   {

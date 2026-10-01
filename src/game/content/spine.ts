@@ -375,7 +375,7 @@ You can lower a hope into it. There is no bucket here that still believes in wat
     hubId: 'spine',
     kind: 'place',
     title: 'Hound Sign',
-    body: `Prints in the dust. Not dogs. Shard-Hounds are made by the Cartel, with resin jaws, and they stay loyal to whoever holds the chip.
+    body: `Prints in the dust. Shard-Hounds are made by the Cartel, with resin jaws, and they stay loyal to whoever holds the chip.
 
 Overseer Valerius is here in a different coat: dust instead of prison cuffs, and the same ledger behind his eyes. On the Spine they call him the Shard-Hound, because he finds the people who think a ridge can hide them.`,
     choices: [
@@ -436,7 +436,7 @@ Overseer Valerius is here in a different coat: dust instead of prison cuffs, and
     kind: 'talk',
     title: 'Shard-Hound Valerius',
     speaker: 'Valerius',
-    body: `"Outcast," he says, almost kind. "Ironwood still pays for returned property. You are not property. You are a loose Drop. I can cork you or I can point you at the woman on the skiff. She pays better than bounties. She pays in not-dying."`,
+    body: `"Outcast," he says, almost kind. "Ironwood still pays for returned property. You are a loose Drop. I can cork you or I can point you at the woman on the skiff. She pays better than bounties. She pays in not-dying."`,
     choices: [
       {
         id: 'refuse',

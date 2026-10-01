@@ -31,7 +31,7 @@ export const PEOPLE: Record<PersonId, Person> = {
     name: 'Hound-handler',
     aliases: ['hound-handler', 'hound handler', 'handler', 'leash'],
     metFlag: 'metHandler',
-    card: `The Hound-handler. Not Valerius. Lean kit, shock-leash, an amber-eyed shard-hound at his heel with its eyes open. He likes a throat. The Overseer likes a diagram and stays in the tower until Cartel Heat is ugly enough to drag him out.`,
+    card: `The Hound-handler. Lean kit, shock-leash, an amber-eyed shard-hound at his heel with its eyes open. He likes a throat.`,
     scenes: [],
     later: {},
   },
@@ -42,7 +42,7 @@ export const PEOPLE: Record<PersonId, Person> = {
     metFlag: 'metOilTooth',
     card: `Jaxson "Oil-Tooth" Vance — burly, grease-stained, permanent smirk, cybernetic brass jaw catching the steam-light. Scorched welding leathers with corporate inventory tags he never cut off. An oversized wrench when he is not hiding it.
 
-Prison-break technical inside man. Reckless. Charismatic. Anti-authority. Humor as a shield. Observant of security weaknesses. He has skimmed Oasis Sap for a lifetime of repairing Ironclad Skiff-Striders. He hotwires. He does not sell headings. Headings are Kaelen's.`,
+Prison-break technical inside man. Reckless. Charismatic. Anti-authority. Humor as a shield. Observant of security weaknesses. He has skimmed Oasis Sap for a lifetime of repairing Ironclad Skiff-Striders. He hotwires. Headings are Kaelen's.`,
     scenes: [
       'camp:cages',
       'camp:lean',
@@ -55,13 +55,13 @@ Prison-break technical inside man. Reckless. Charismatic. Anti-authority. Humor 
     later: {
       'camp:cages': `Holding pens. Each cage a ribcage for a penniless laborer. Yours still smells like the last Bleed. Cartel Scrip in the hem.
 
-Oil-Tooth is still in the next bunk, brass jaw working, already talking the job: sabotage the station, he hotwires a Strider. Kaelen the Sifter is not here. Kaelen sells rumors at the Wire.`,
-      'camp:lean': `Oil-Tooth works the stall like the wrench is still in his fist. Grease. The smirk. Brass ticking.
+Oil-Tooth is still in the next bunk, brass jaw working. The job is the station, then a Strider.`,
+      'camp:lean': `The stall is hot metal and skimmed sap. The oversized wrench is in his fist.
 
-"Bleed-Cut," he says. "Great Bleed is coming. You sabotage the guard station. I hotwire a Strider. That is the job. Kaelen the Sifter sells rumors at the Wire if you want news. He sells rumors. I sell the ride."`,
-      'camp:jaxson': `"Valerius is the first major victory you have to overcome," Oil-Tooth says, smirking around the brass. "I have watched the guard station until I could draw it in grease.
+"Bleed-Cut. Great Bleed is coming. You sabotage the guard station. I hotwire a Strider."`,
+      'camp:jaxson': `"Valerius is the first thing you have to get out from under," Oil-Tooth says, smirking around the brass. "Tower. Baton. He hunts anyone skimming Sap. I have watched the guard station until I could draw it in grease.
 
-Great Bleed hits, you sabotage that station. I hotwire an Ironclad Skiff-Strider. We leave the pens. You want rumors — Kallik, the Hunger, the blonde — that is Kaelen the Sifter at the Wire. He sells leads. I sell a ride."`,
+Great Bleed hits, you sabotage that station. I hotwire a Strider. We leave the pens. Rumors are Kaelen, at the Wire."`,
       'ch1:p-oil': `The stolen Strider coughs like a guilty throat. Oil-Tooth is under the hull anyway — brass, leather, tags he still has not cut off. He hotwired. He will not tour. Red Maw is south of his cowardice.`,
     },
   },
@@ -72,7 +72,7 @@ Great Bleed hits, you sabotage that station. I hotwire an Ironclad Skiff-Strider
     metFlag: 'metKaelen',
     card: `Kaelen the Sifter jitters — a diminutive merchant in dust-caked canvas, an overstuffed pack of vials, gears, and amber jars, thick gloves on both hands. Born near the Ironwood roots in the first Great Bleed. Lost his family to a Gilded Hollow raid. He sifts memory-essence from amber sand, sells to the Seekers, and quietly funds storm-escape routes.
 
-He will not sell anything meant to harm a fellow survivor. He trades Drops for scrap and rumors for Glints. He does not hotwire Striders.`,
+He will not sell anything meant to harm a fellow survivor. He trades Drops for scrap and rumors for Glints.`,
     scenes: [
       'camp:wire',
       'camp:kaelen',
@@ -87,15 +87,15 @@ He will not sell anything meant to harm a fellow survivor. He trades Drops for s
     later: {
       'camp:wire': `The perimeter. Razor-wire. Steam-vents coughing. Beyond it the dunes begin to have opinions.
 
-Kaelen the Sifter is here when profit says here — pack, gloves, already counting. Rumors if you ask. Drops if you pay. Oil-Tooth remains the inside man.
+Kaelen the Sifter is here when profit says here — pack, gloves, already counting. Rumors if you ask. Drops if you pay.
 
 Ironclad Skiff-Striders patrol the other side of this line. The Hunger lives past it. So do Hounds.`,
-      'camp:kaelen': `Kaelen works the pack with both gloves. The Wire at his back like a second strap. "Pick a shelf," he says. "Buy. Sell. Rumors. I am not the man who hotwires."`,
+      'camp:kaelen': `Kaelen works the pack with both gloves. The Wire at his back like a second strap. "Pick a shelf," he says. "Buy. Sell. Rumors."`,
       'spine:kaelen': `Dusk on the Spine. Same pack. Same gloves. Less wire, more dust. "You're the empty vial," he says. "I fill those if you pay. Silas sold you shade. I sell what a survivor can carry."`,
       'thresh:sift': `Hymn-shade off the paddock. Not a stall. A pack on a false-route wall.
 
-Kaelen the Sifter is here when the route says here — gloves, already counting. He buys false routes. He sells what will not open a survivor. Thalia remains the church. Oram remains the animals.`,
-      'thresh:kaelen': `Kaelen works the pack with both gloves. Hymn-dust on the canvas. "Pick a shelf," he says. "Buy. Sell. Rumors that open roads. I am not a cup. I do not ride."`,
+Kaelen the Sifter is here when the route says here — gloves, already counting. He buys false routes. He sells what will not open a survivor.`,
+      'thresh:kaelen': `Kaelen works the pack with both gloves. Hymn-dust on the canvas. "Pick a shelf," he says. "Buy. Sell. Rumors that open roads."`,
     },
   },
   valerius: {
@@ -121,8 +121,8 @@ He is the immediate antagonist. The looming shadow. First major victory: get out
 "You are out of position," he says, cruel and calculating, mild as boiled water. "Escaped spends a Hound. Useful scrapes until the hands forget they were hands."`,
       'camp:hunter': `Whistles. Boots. The Yard becomes a diagram.
 
-Valerius arrives. He does not run. "The penniless laborer is upright. How optimistic." Behind him a Hound-handler checks a muzzle that is not for dogs. First major victory is leaving.`,
-      'spine:hound': `Prints. Not dogs. Shard-Hounds — Cartel-made, resin-jawed.
+Valerius arrives. He does not run. "The penniless laborer is upright. How optimistic." Behind him a Hound-handler checks a muzzle.`,
+      'spine:hound': `Prints. Shard-Hounds — Cartel-made, resin-jawed.
 
 Valerius is here in a different uniform: dust instead of cuffs, the same ledger behind the eyes. He is already counting the wash.`,
       'spine:valerius': `"Outcast," he says, almost kind. "Ironwood still pays for returned property. You are a loose Drop. I can cork you or I can point you at the woman on the skiff."`,
@@ -148,7 +148,7 @@ Cruel only as a filing. He wants shade and a cooler ledger. Scrip is a lullaby. 
     metFlag: 'metSilas',
     card: `Silas Vane is older than the well's disappointment. One eye is milk. The other is accounting. The tent smells of resin-chew and wet wool that has never been wet.
 
-He sells shade by the minute. Talk is not free. Drops are a fairy tale he still keeps in stock for people who pay. He is not Kaelen. Kaelen sells inventory. Silas sells the minute you are not in the sun.`,
+He sells shade by the minute. Talk is not free. Drops are a fairy tale he still keeps in stock for people who pay.`,
     scenes: [
       'spine:shade',
       'spine:silas',
@@ -172,7 +172,7 @@ He sells shade by the minute. Talk is not free. Drops are a fairy tale he still 
     metFlag: 'metNim',
     card: `Nim the Cut-Fee sits shade like a toll. Resin under the nails. A knife that has only ever been for minutes.
 
-Silas sells the minute. She collects it. A Glint, a scratch, an empty glass — or she names you to the wash and lets noon finish the job. She is not Kaelen. She is not Silas. She is the tax on being Stray in daylight.`,
+Silas sells the minute. She collects it. A Glint, a scratch, an empty glass — or she names you to the wash and lets noon finish the job. She is the tax on being Stray in daylight.`,
     scenes: ['ch1:o-tax'],
     later: {
       'ch1:o-tax': `Resin under the nails. Shade like a till. "Noon-Empty. Pay or run noon. I tell the wash your name either way if you cheap me."`,
@@ -225,7 +225,7 @@ Thalia's love made you loud. They want a pour, a cloth, or a confession. They wi
     metFlag: 'metZafir',
     card: `Zafir smiles in a way that costs extra. Bone-cairn merchant. Approach stall. He sells headings to Kallik's hole, news that Sybella already knows you're coming, and a small Maw shop: Drops at highway prices, Hound Hide, a shock baton somebody pawned, scrap for Glints.
 
-He is not Kaelen. Kaelen is inventory with gloves. Zafir is a man who sold the same heading twice and is waiting to see which buyer lives.`,
+Zafir is a man who sold the same heading twice and is waiting to see which buyer lives.`,
     scenes: ['ch1:v-zafir', 'maw:zafir', 'maw:market'],
     later: {
       'ch1:v-zafir': `He looks at gold thread like fire in a dry stall. "I don't sell headings to walking batteries. I sell the news that she already knows."`,

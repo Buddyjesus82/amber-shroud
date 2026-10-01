@@ -1,6 +1,7 @@
 import { ITEMS } from './content/catalog'
 import { beginEncounter, roadPressureScene } from './encounter'
 import { sceneSearch } from './help'
+import { classifyLook, directedLookFlash, roomLookEffect } from './look'
 import { personAtScene, type Person } from './people'
 import { talkIntentsFor } from './talk'
 import { vendorFor } from './trade'
@@ -40,28 +41,6 @@ function clip(text: string, n: number): string {
   return `${t.slice(0, n - 1).replace(/\s+\S*$/, '')}…`
 }
 
-function glance(state: GameState, scene: Scene, labels: string[]): string {
-  const title = scene.title ?? 'This ground'
-  const who = npcHere(scene)
-  const first = scene.body
-    .split('\n')
-    .map((s) => s.trim())
-    .find(Boolean)
-  const sentence = first ? clip(first.split(/(?<=\.)\s/)[0] ?? first, 110) : ''
-  const face = state.flags.hunterHere ? 'The knock is still on this ground. ' : ''
-  const present = who ? `${who.name} is here. ` : scene.speaker ? `${scene.speaker} is here. ` : ''
-  const screen = labels.slice(0, 3)
-  const on = screen.length ? ` On screen: ${screen.join(' · ')}.` : ''
-  return clip(`${face}${title}. ${present}${sentence}${on}`, 280)
-}
-
-function lookTarget(hay: string): string | null {
-  const m = hay.match(/^(?:look around|look at|look|search|examine|inspect|scan|check)(?:\s+around)?\s+(.+)$/)
-  const rest = m?.[1]?.replace(/^the\s+/, '').trim()
-  if (!rest || rest === 'around' || rest === 'room' || rest === 'area') return null
-  return rest
-}
-
 function wantsLook(hay: string): boolean {
   return /^(?:look|search|examine|inspect|scan|check)(?:\s+around)?$/.test(hay) || /\b(?:look around|look at|examine|inspect)\b/.test(hay) || /^(?:search|examine|inspect)\b/.test(hay)
 }
@@ -85,10 +64,14 @@ function itemHit(hay: string, state: GameState): ItemId | null {
 }
 
 function lookHit(state: GameState, scene: Scene, hay: string, labels: string[]): DoHit {
-  const target = lookTarget(hay)
-  if (!target) {
-    return { effects: { flash: glance(state, scene, labels) }, verb: 'look' }
+  const classified = classifyLook(hay)
+  if (!classified || classified.kind === 'room') {
+    return { effects: roomLookEffect(state, labels), verb: 'look' }
   }
+  if (classified.kind === 'dir') {
+    return { effects: { flash: directedLookFlash(state, classified.dir) }, verb: 'look' }
+  }
+  const target = classified.target
   const searched = sceneSearch(state, target)
   if (searched) return { effects: searched, verb: 'look' }
   const who = npcHere(scene)
@@ -108,7 +91,7 @@ function lookHit(state: GameState, scene: Scene, hay: string, labels: string[]):
     return { effects: { flash: `On screen: ${button}. Type it, or tap it.` }, verb: 'look' }
   }
   return {
-    effects: { flash: clip(`No ${target} in front of you. ${glance(state, scene, labels)}`, 220) },
+    effects: { flash: `No ${target} in front of you.` },
     verb: 'look',
   }
 }
@@ -124,7 +107,7 @@ function wantsHide(hay: string): boolean {
 function combatHit(state: GameState, scene: Scene, hay: string): DoHit | null {
   if (wantsFight(hay) && /\b(hound[- ]handler|handler)\b/.test(hay)) {
     return {
-      effects: beginEncounter(state, 'handler', 'You go for the man with the leash. The hound is not the fight.'),
+      effects: beginEncounter(state, 'handler', 'You go for the man with the leash. The hound stays on it.'),
       verb: 'fight',
     }
   }

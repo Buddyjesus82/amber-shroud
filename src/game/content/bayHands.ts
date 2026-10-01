@@ -1,6 +1,6 @@
 import type { IntentRule } from '../types'
 
-/** Other prisoners on the Skiff Bay cradles. Not quest anchors. Do is the path. */
+/** Other prisoners at Skiff Bay, each beside their own skiff. Not quest anchors. Do is the path. */
 const MOUTH = ['talk', 'speak', 'greet', 'hello', 'hi', 'chat', 'ask']
 const TAKE = ['steal', 'rob', 'pickpocket', 'pick pocket', 'lift', 'snatch', 'pinch', 'swipe', 'filch', 'mug']
 
@@ -19,9 +19,9 @@ function phrases(verbs: string[], names: string[]): string[] {
   return tags
 }
 
-const pike = ['pike', 'scraper', 'north hull', 'north bay']
-const sarn = ['sarn', 'rigger', 'east cradle', 'east bay']
-const vetch = ['vetch', 'welder', 'south skid', 'south bay']
+const pike = ['pike', 'scraper', 'north hull', 'north bay', "pike's skiff", 'his skiff']
+const sarn = ['sarn', 'rigger', 'east cradle', 'east bay', "sarn's skiff"]
+const vetch = ['vetch', 'welder', 'south skid', 'south bay', "vetch's skiff"]
 const oil = ['oil-tooth', 'oil tooth', 'oiltooth', 'jaxson', 'vance', 'brass jaw']
 
 const underHull = { all: [{ flag: 'jaxsonInside' }, { flag: 'guardDown' }, { flagUnset: 'striderHot' }] }
@@ -31,20 +31,20 @@ export const bayHandIntents: IntentRule[] = [
     tags: phrases(MOUTH, oil).concat(oil),
     show: underHull,
     reply:
-      '"Cover me," Oil-Tooth says, brass ticking under the hull. "I hotwire. You watch the bay. This cradle is the job."',
+      '"Cover me," Oil-Tooth says, brass ticking under the hull. "I hotwire. You watch the bay. This bay is the job."',
     effects: { ticks: 1 },
   },
   {
     tags: phrases(MOUTH, oil).concat(oil),
     show: { not: underHull },
     reply:
-      'Oil-Tooth is not under a hull. Not on this bay. The stall and the next bunk still have the brass jaw. Pike scrapes north. Sarn counts east. Vetch welds south.',
+      'The brass jaw is at the stall, or the next bunk.',
     effects: { ticks: 1 },
   },
   {
     tags: phrases(MOUTH, pike),
     reply:
-      'Pike does not stop scraping. "North hull. I am not your inside man. I am not a rumor. Move, or get resin on you."',
+      'Pike does not stop scraping. "North bay. Move, or get resin on you."',
     effects: { ticks: 1 },
   },
   {
@@ -56,7 +56,7 @@ export const bayHandIntents: IntentRule[] = [
   {
     tags: phrases(MOUTH, vetch),
     reply:
-      'Vetch lifts the mask a finger. The glove\'s tag is not her name. "South skid. Talk is sparks. I don\'t hotwire and I don\'t sell headings."',
+      'Vetch lifts the mask a finger. "South bay. Talk is sparks."',
     effects: { ticks: 1 },
   },
   {
@@ -74,14 +74,14 @@ export const bayHandIntents: IntentRule[] = [
   },
   {
     tags: MOUTH,
-    reply: 'Pike scrapes the north hull. Sarn counts the east cradle. Vetch welds the south skid. None of them is the job.',
+    reply: 'Pike, Sarn, or Vetch. Short answers.',
     effects: { ticks: 1 },
   },
   {
     tags: phrases(TAKE, pike).concat(['steal bolt from pike', 'steal the bolt', 'steal resin bolt']),
     show: { flagUnset: 'bayPikeTook' },
     reply:
-      'A resin bolt comes off the north hull. Pike does not look up. The tag on it is corporate. The Cartel can count that inventory.',
+      'A resin bolt comes off Pike\'s skiff in the north bay. Pike does not look up. The tag on it is corporate. The Cartel can count that inventory.',
     effects: { add: { scrap: 1 }, heat: { cartel: 1 }, flag: { bayPikeTook: true, cartelNotice: true }, ticks: 1 },
   },
   {
@@ -117,7 +117,7 @@ export const bayHandIntents: IntentRule[] = [
   {
     tags: ['trade wrench to pike', 'trade the wrench to pike', 'trade wrench pike', 'give wrench to pike'],
     show: { all: [{ item: 'wrench' }, { flagUnset: 'wrenchBayTrade' }, { flagUnset: 'lashCord' }] },
-    reply: 'Pike takes the wrench without stopping the scrape. The lash cord comes off the north hull into your hand. He does not shout. The Cartel does not see a theft.',
+    reply: 'Pike takes the wrench without stopping the scrape. The lash cord comes off his skiff in the north bay into your hand. He does not shout. The Cartel does not see a theft.',
     effects: {
       remove: { wrench: 1 },
       flag: { lashCord: true, wrenchBayTrade: 'pike', bayLooked: true },
@@ -127,7 +127,7 @@ export const bayHandIntents: IntentRule[] = [
   {
     tags: ['trade wrench to sarn', 'trade the wrench to sarn', 'trade wrench sarn', 'give wrench to sarn'],
     show: { all: [{ item: 'wrench' }, { flagUnset: 'wrenchBayTrade' }] },
-    reply: 'Sarn takes the wrench and counts you one twist of scrap. Quiet. No Cartel Heat. The cord on Pike\'s hull is still a separate theft if you want it.',
+    reply: 'Sarn takes the wrench and counts you one twist of scrap. Quiet. No Cartel Heat. The cord on Pike\'s skiff in the north bay is still a separate theft if you want it.',
     effects: { remove: { wrench: 1 }, add: { scrap: 1 }, flag: { wrenchBayTrade: 'sarn', bayLooked: true }, ticks: 1 },
   },
   {
@@ -145,13 +145,13 @@ export const bayHandIntents: IntentRule[] = [
   {
     tags: TAKE,
     show: { flagUnset: 'baySarnTook' },
-    reply: 'Pike is already short a bolt. Sarn\'s cradle is next. He miscounts. You take the difference. He will hear it.',
+    reply: 'Pike is already short a bolt. The east bay is next. He miscounts. You take the difference. He will hear it.',
     effects: { add: { scrap: 1 }, pressure: 1, flag: { baySarnTook: true, cartelNotice: true }, ticks: 1 },
   },
   {
     tags: TAKE,
     show: { flagUnset: 'bayVetchTook' },
-    reply: 'The south skid. Vetch\'s cuff hides wire. Scrap, and a kiss of the wand. Sap pays.',
+    reply: 'The south bay. Vetch\'s cuff hides wire. Scrap, and a kiss of the wand. Sap pays.',
     effects: { add: { scrap: 1 }, sap: -1, flag: { bayVetchTook: true, cartelNotice: true }, ticks: 1 },
   },
   {

@@ -14,7 +14,7 @@ export const HEAT_FACTIONS: Record<
   cartel: {
     name: 'Cartel',
     watch: 'Ironwood, Valerius, Hounds',
-    body: 'Ironwood Break writes names in ledgers. Overseer Valerius hunts Sap thieves and unpermitted relic hoarders. Shard-Hounds follow the chip. Cartel Heat is patrol, paper, and a muzzle that is not for dogs. It is not a reward.',
+    body: 'Ironwood Break writes names in ledgers. Overseer Valerius hunts Sap thieves and unpermitted relic hoarders. Shard-Hounds follow the chip. Cartel Heat is patrol, paper, and a muzzle.',
   },
   seekers: {
     name: 'Seekers',

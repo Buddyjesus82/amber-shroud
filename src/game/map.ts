@@ -82,23 +82,23 @@ export function compassCommand(moves: CompassMove[], move: CompassMove): string 
   return `go ${dir}`
 }
 
-/** N/S/E/W off the current map node. Plain roads, no faction lecture. */
+/** N/S/E/W off this scene. Shared directions stay on one label. */
 export function compassLine(state: GameState): string {
   const map = hubMapOf(state)
-  if (!map) return 'No marked road. The choices in front of you are the way.'
-  const node = currentNode(state)
-  if (!node) return 'No marked road. The choices in front of you are the way.'
-  const links = adjacency(map).get(node.id) ?? []
-  if (!links.length) return 'No marked road off this ground.'
-  const bits: string[] = []
-  for (const link of links) {
-    const other = nodeById(map, link.id)
-    if (!other) continue
-    const dx = other.x - node.x
-    const dy = other.y - node.y
-    bits.push(`${dirOf(dx, dy)}: ${other.name}`)
+  if (!map?.ready) return 'No marked road. The choices in front of you are the way.'
+  const moves = compassMoves(state)
+  if (!moves.length) {
+    const nodeId = nodeIdForScene(map, state.sceneId, false)
+    if (!nodeId) return 'No marked road. The choices in front of you are the way.'
+    return 'No marked road off this ground.'
   }
-  return bits.join('. ') + '.'
+  const grouped = new Map<CompassMove['dir'], string[]>()
+  for (const move of moves) {
+    const names = grouped.get(move.dir) ?? []
+    if (!names.includes(move.name)) names.push(move.name)
+    grouped.set(move.dir, names)
+  }
+  return [...grouped.entries()].map(([dir, names]) => `${dir}: ${names.join(', ')}`).join('. ') + '.'
 }
 
 export function currentNode(state: GameState): HubMapNode | null {
