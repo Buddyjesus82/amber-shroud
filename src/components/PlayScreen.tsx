@@ -158,8 +158,17 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
   const split = optionRows.length >= 4
   const showDo = talky || roam || overlay
 
+  const scrolledScene = useRef(state.sceneId)
   useEffect(() => {
-    storyRef.current?.scrollTo({ top: 0 })
+    const story = storyRef.current
+    if (!story) return
+    if (scrolledScene.current !== state.sceneId) {
+      scrolledScene.current = state.sceneId
+      story.scrollTo({ top: 0 })
+      return
+    }
+    const flash = story.querySelector('.flash')
+    if (flash instanceof HTMLElement) story.scrollTo({ top: Math.max(0, flash.offsetTop - 12) })
   }, [state.sceneId, state.flash])
 
   useEffect(() => {
