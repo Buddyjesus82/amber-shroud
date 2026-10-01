@@ -207,7 +207,7 @@ export function kaelenBuyFlash(state: GameState): string {
     return 'He taps the pack. "Cup-shadow shelf. A Drop. Hymn-shade rag. A cloak. A needle for resin. Salve if the cut is talking. I do not sell a hymn."'
   }
   if (hub === 'redmaw') {
-    return 'He taps the pack. "Maw shelf. A Drop. Salve. A thin knife. I am not Zafir. No hide. No cloak today."'
+    return 'He taps the pack. "Maw shelf. A Drop. Salve. A thin knife. Hide and cloak stayed with the other stall."'
   }
   return 'He taps the pack. "Wire shelf. A Drop. A knife for bolts. Rag. A cloak if I still have one. Salve if the cut is talking. Pay on the line."'
 }

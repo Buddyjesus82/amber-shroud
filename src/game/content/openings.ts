@@ -57,7 +57,7 @@ You came here because the Cartel would brand you and the Seekers would fill you.
     title: 'Vessel',
     body: `They put the cloth on you because a Vessel is a walking cup and you have a spine that can still hold liquid.
 
-You are not their Vessel. You nod like one. Outer Threshold is a church built out of dunes and bad memory. Thalia weeps gold. Oram counted Striders, then counted you, then tore a heading from his ledger because cups crack and thieves reach Red Maw. A rusted dagger sits against your ribs under the gold thread — kitchen steel, dishonest, yours.
+You wear their Vessel and nod like one. Outer Threshold is a church built out of dunes and bad memory. Thalia weeps gold. Oram counted Striders, then counted you, then tore a heading from his ledger because cups crack and thieves reach Red Maw. A rusted dagger sits against your ribs under the gold thread — kitchen steel, dishonest, yours.
 
 The sacrament on your tongue is a real Drop. The rest is theater. Seeker Heat is already a hymn.`,
     choices: [

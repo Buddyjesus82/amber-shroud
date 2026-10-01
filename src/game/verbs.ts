@@ -107,7 +107,7 @@ function wantsHide(hay: string): boolean {
 function combatHit(state: GameState, scene: Scene, hay: string): DoHit | null {
   if (wantsFight(hay) && /\b(hound[- ]handler|handler)\b/.test(hay)) {
     return {
-      effects: beginEncounter(state, 'handler', 'You go for the man with the leash. The hound is not the fight.'),
+      effects: beginEncounter(state, 'handler', 'You go for the man with the leash. The hound stays on it.'),
       verb: 'fight',
     }
   }

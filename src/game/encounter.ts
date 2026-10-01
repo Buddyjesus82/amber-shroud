@@ -49,7 +49,7 @@ const SPECS: Spec[] = [
     strike: 4,
     shell: 2,
     hp: 2,
-    line: 'A Shard-pup — not a Hound yet, already a jaw. Cartel leftovers. Fight or give the road.',
+    line: 'A Shard-pup, already a jaw. Cartel leftovers. Fight or give the road.',
   },
   {
     kind: 'scavenger',
@@ -57,7 +57,7 @@ const SPECS: Spec[] = [
     strike: 2,
     shell: 1,
     hp: 2,
-    line: 'A waste scavenger blocks the grit. Not fauna — a person who robs travelers who look alone. Stolen knife. Empty pockets. Optional throat.',
+    line: 'A waste scavenger blocks the grit. A person who robs travelers who look alone. Stolen knife. Empty pockets. Optional throat.',
   },
   {
     kind: 'patrol',
@@ -73,7 +73,7 @@ const SPECS: Spec[] = [
     strike: 3,
     shell: 2,
     hp: 2,
-    line: 'The Hound-handler. Lean kit, shock-leash, an amber-eyed shard-hound at his heel with its eyes open. He is the fight. The hound is not.',
+    line: 'The Hound-handler. Lean kit, shock-leash, an amber-eyed shard-hound at his heel with its eyes open. He is the fight. The hound stays on the leash.',
   },
   {
     kind: 'overseer',
@@ -81,7 +81,7 @@ const SPECS: Spec[] = [
     strike: 4,
     shell: 3,
     hp: 3,
-    line: 'Overseer Valerius. Bald, scarred, steam baton in the fist. No dog. He came himself.',
+    line: 'Overseer Valerius. Bald, scarred, steam baton in the fist. He came himself.',
   },
 ]
 

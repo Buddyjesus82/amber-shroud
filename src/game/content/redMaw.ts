@@ -332,7 +332,7 @@ A breath. The cord in her hands gets a second knot. "That is the day. The rest I
     hubId: 'redmaw',
     kind: 'place',
     title: 'Skiff Smoke',
-    body: `Sybella's sand-skiff is parked like a threat that learned manners. Incense, or resin-smoke. A ceremonial blindfold hangs on the mast. She is not wearing it.
+    body: `Sybella's sand-skiff is parked like a threat that learned manners. Incense, or resin-smoke. A ceremonial blindfold hangs on the mast.
 
 She is here, and she is hunting. Walk up and she will talk. You can also slip past the smoke and go on into the Approach.`,
     choices: [
@@ -361,7 +361,7 @@ She is here, and she is hunting. Walk up and she will talk. You can also slip pa
     speaker: 'Sybella',
     body: `Kohl ruined. Blindfold pushed up. Blonde hair full of grit she refuses to notice. Older than the woman who weeps gold. She was a faithful acolyte once. The war between Cartel and Dune-Stray burned that down to this.
 
-"The Approach is patient. So am I." She does not repeat what slipped out of her on the first wind. "Give the sand something to remember you by, or I leave you for what sleeps under the ribs."`,
+"The Approach is patient. So am I. Give the sand something to remember you by, or I leave you for what sleeps under the ribs."`,
     variants: [
       {
         if: { flag: 'sybellaBargain' },
@@ -541,7 +541,7 @@ She is here, and she is hunting. Walk up and she will talk. You can also slip pa
     title: 'Fossil Ribs',
     body: `The Approach is a jaw that forgot how to close. Ribs of stone, and holes where other diggers went down and stayed. Kallik buried his haul under the right rib and never came back up. He carved a gear with nine teeth on the second rib from the jaw, so he would not lose the place.
 
-A blind pick costs sap. Scratches on the wrong rib almost look like that gear. They are not the gear.`,
+A blind pick costs sap. Scratches on the wrong rib only look like that gear.`,
     choices: [
       {
         id: 'gear',

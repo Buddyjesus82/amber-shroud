@@ -134,14 +134,23 @@ function mapShowsRoads(state: GameState, scene: Scene): boolean {
 export function sceneSearch(state: GameState, target: string): Effect | null {
   const t = norm(target).replace(/^the /, '')
   const id = state.sceneId
-  if (id === 'camp:bay' && (t === 'north hull' || t === 'hull' || t === 'pike' || t.includes('lash'))) {
+  if (
+    id === 'camp:bay' &&
+    (t === 'north hull' ||
+      t === 'north bay' ||
+      t === 'hull' ||
+      t === 'pike' ||
+      t === 'skiff' ||
+      t.includes('lash') ||
+      t.includes('pike'))
+  ) {
     const cord = !!state.flags.lashCord
     const trade = (state.items.wrench ?? 0) > 0 && !state.flags.wrenchBayTrade && !cord
     const flash = cord
-      ? 'Pike is still scraping the north hull. The lash cord is already in your hand.'
+      ? "Pike is still scraping his skiff in the north bay. The lash cord is already in your hand."
       : trade
-        ? 'Pike scrapes the north hull and does not look up. A lash cord is on the runner. You can steal it, or trade him the wrench for it.'
-        : 'Pike scrapes the north hull and does not look up. A lash cord is on the runner.'
+        ? "Pike scrapes his skiff in the north bay and does not look up. A lash cord is on the runner. You can steal it, or trade him the wrench for it."
+        : "Pike scrapes his skiff in the north bay and does not look up. A lash cord is on the runner."
     return { flag: { bayLooked: true }, flash }
   }
   if (id === 'ch1:p-pipe' && (t === 'grate' || t === 'bolt' || t === 'pipe' || t === 'fence')) {
@@ -185,8 +194,8 @@ export function helpEntries(state: GameState, labels: string[]): HelpEntry[] {
   if (state.sceneId === 'camp:bay' && !state.flags.bayLooked && !state.flags.lashCord) {
     add(list, labels, {
       group: 'Look',
-      command: 'search north hull',
-      why: 'a lash cord is on the runner',
+      command: 'search north bay',
+      why: "a lash cord is on Pike's skiff",
     })
   }
 
@@ -195,7 +204,7 @@ export function helpEntries(state: GameState, labels: string[]): HelpEntry[] {
       add(list, labels, {
         group: 'Take',
         command: 'steal bolt from Pike',
-        why: 'a resin bolt comes off the north hull',
+        why: "a resin bolt comes off Pike's skiff in the north bay",
       })
     }
     if (!state.flags.baySarnTook) {
@@ -217,7 +226,7 @@ export function helpEntries(state: GameState, labels: string[]): HelpEntry[] {
         add(list, labels, {
           group: 'Take',
           command: 'trade wrench to Pike',
-          why: 'the lash cord comes off the north hull',
+          why: "the lash cord comes off Pike's skiff in the north bay",
         })
       }
       add(list, labels, {
@@ -232,9 +241,9 @@ export function helpEntries(state: GameState, labels: string[]): HelpEntry[] {
       })
     }
 
-    add(list, labels, { group: 'Talk', command: 'talk Pike', why: 'scrapes the north hull' })
-    add(list, labels, { group: 'Talk', command: 'talk Sarn', why: 'counts bolts on the east cradle' })
-    add(list, labels, { group: 'Talk', command: 'talk Vetch', why: 'welds the south skid' })
+    add(list, labels, { group: 'Talk', command: 'talk Pike', why: 'scrapes his skiff in the north bay' })
+    add(list, labels, { group: 'Talk', command: 'talk Sarn', why: 'counts bolts beside his skiff in the east bay' })
+    add(list, labels, { group: 'Talk', command: 'talk Vetch', why: 'welds a cracked skid in the south bay' })
   }
 
   for (const person of Object.values(PEOPLE)) {

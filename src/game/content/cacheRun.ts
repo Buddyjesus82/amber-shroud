@@ -34,7 +34,7 @@ The road is not shared. The destination is. What it costs you depends on the lif
       {
         if: { all: [{ sapMin: 3 }, { sapMax: 4 }] },
         mode: 'append',
-        body: `Your sap is holding. Not a lantern. Not empty. Enough to walk.`,
+        body: `Your sap is holding. Enough to walk.`,
       },
       {
         if: { all: [{ sapMin: 1 }, { sapMax: 2 }] },
@@ -44,7 +44,7 @@ The road is not shared. The destination is. What it costs you depends on the lif
       {
         if: { sapMax: 0 },
         mode: 'append',
-        body: `Your sap is empty. You are not lit. The blonde wants a lantern that can walk — you are dry wood until you drink.`,
+        body: `Your sap is empty. The blonde wants a lantern that can walk. You are dry wood until you drink.`,
       },
       {
         if: { door: 'prisoner' },
@@ -323,16 +323,16 @@ A payroll drone ticks behind the grate. Shard-Hound tracks are in the wash. If y
     kind: 'talk',
     title: 'Stolen Hull',
     speaker: 'Jaxson "Oil-Tooth" Vance',
-    body: `The stolen Strider coughs. Jaxson "Oil-Tooth" Vance is under the hull anyway — brass jaw, welding leather, Cartel tags he still has not cut off his own clothes.
+    body: `The stolen Strider coughs. Oil-Tooth is under the hull.
 
-"Bleed-Cut. I said I would hotwire a machine. I did not say I would tour you to Red Maw. Shard-Hounds are on the wash behind you. I am going west until the brass cools. Red Maw is south of that.
+"Bleed-Cut. The machine is hotwired. Shard-Hounds are on the wash behind you. I am going west until the brass cools. Red Maw is south of that.
 
 Ride the last mile and I drop you with Ossa. Walk, and the Cartel keeps your trail. Or I cut the Cartel tag out of your cuff, and you are harder to track."`,
     variants: [
       {
         if: { item: 'wrench' },
         mode: 'append',
-        body: `A lash on the port runner is coming loose. The wrench would seat it. He has not asked. He still will not take you all the way to Red Maw.`,
+        body: `A lash on the port runner is coming loose. The wrench would seat it. He has not asked.`,
       },
       {
         if: { flag: 'jaxsonInside' },
@@ -423,7 +423,7 @@ Ride the last mile and I drop you with Ossa. Walk, and the Cartel keeps your tra
     kind: 'story',
     title: 'Escaped Property',
     speaker: 'Ossa',
-    body: `Stilts. But she is not greeting a traveler. She is counting the wire still in your cuffs.
+    body: `Stilts. She is counting the wire still in your cuffs.
 
 "You smell like a cage," Ossa says. "If Valerius is behind you, I fall funny and you fall first. Hail like a person who escaped. Or pass. I don't hide property."`,
     variants: [
@@ -800,7 +800,7 @@ The straight wash is a kiln. A rib of rock hides a cut if you know where to look
       {
         if: { flag: 'nimRun' },
         mode: 'append',
-        body: `"Nim named you," she adds. "I heard it. I am still here. That is not the same as hiding you."`,
+        body: `"Nim named you," she adds. "I heard it. I am still here. Hiding you is a different promise."`,
       },
       {
         if: { flag: 'nimSilas' },

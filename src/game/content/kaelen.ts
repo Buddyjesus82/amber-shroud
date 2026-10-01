@@ -1,7 +1,5 @@
 import type { Scene } from '../types'
 
-const look = `Kaelen the Sifter jitters — a diminutive merchant in dust-caked canvas, an overstuffed pack of vials, gears, and amber jars, thick gloves on both hands. Born near the Ironwood roots. He sifts memory-essence from amber sand. He sells to the Seekers and quietly funds storm-escape routes. He will not sell a thing that harms a fellow survivor.`
-
 const rumorHook = `"News is inventory. I don't give it away. Scrap buys a Drop of Oasis Sap. Glints buy intel. Ask. Pay. Then you get a lead — side trouble, or the Hunger, or both if your pockets are honest."`
 
 export const campKaelenScenes: Scene[] = [
@@ -11,9 +9,7 @@ export const campKaelenScenes: Scene[] = [
     kind: 'talk',
     title: 'Kaelen the Sifter',
     speaker: 'Kaelen the Sifter',
-    body: `${look}
-
-He has the Wire at his back like a second pack-strap. "You're the trench story," he says. "I am not the man who hotwires. I sell. Buy. Sell. Rumors that open roads. Pick a shelf."`,
+    body: `He has the Wire at his back like a second pack-strap. "You're the trench story," he says. "Buy. Sell. Rumors that open roads. Pick a shelf."`,
     variants: [
       {
         if: { flag: 'kaelenSoldDrop' },
@@ -53,7 +49,7 @@ He has the Wire at his back like a second pack-strap. "You're the trench story,"
           goto: 'camp:kaelen',
           flag: { kaelenKnown: true, kaelenMud: true },
           flash:
-            '"I can tell a clerk you went west with a hull you do not have." He does not smile. Cartel Heat cools. He is not the man on the bolt. He is the man who lies for survivors.',
+            '"I can tell a clerk you went west with a hull you do not have." He does not smile. Cartel Heat cools. He lies for survivors.',
         },
       },
       {
@@ -97,13 +93,11 @@ He has the Wire at his back like a second pack-strap. "You're the trench story,"
     kind: 'talk',
     title: 'Rumor Counter',
     speaker: 'Kaelen the Sifter',
-    body: `"Ask. Pay. I am not a church.
+    body: `"Ask. Pay.
 
-One: a Drop of Oasis Sap for scrap — that is the shop, not this shelf.
+One: a Drop of Oasis Sap for scrap. That shelf is the shop.
 Two: Glints buy intel. Kallik's cache. The Hunger. A blonde on a skiff.
-Three: cheaper leads. Side trouble. Relics Valerius hunts. When the Great Bleed hits the guard station. A hole in the wire if you want a route that is not a Strider.
-
-Oil-Tooth hotwires. I remain the counter."`,
+Three: cheaper leads. Side trouble. Relics Valerius hunts. When the Great Bleed hits the guard station. A hole in the wire."`,
     variants: [
       {
         if: { flag: 'kaelenGlintOut' },
@@ -181,13 +175,13 @@ Oil-Tooth hotwires. I remain the counter."`,
           ticks: 1,
           goto: 'camp:kaelen-rumors',
           flash:
-            '"Steam-vent on the west bolt. Bleed-hour. Guards look at vats, not at you. Tell Oil-Tooth I do not work for him. I sold a clock."',
+            '"Steam-vent on the west bolt. Bleed-hour. Guards look at the vats. Tell Oil-Tooth I sold a clock."',
         },
       },
       {
         id: 'route-scrap',
         label: 'Buy a hole in the wire — hidden trade route',
-        sub: '2 scrap. Not a Strider. Not Oil-Tooth\'s job.',
+        sub: '2 scrap. A hole in the wire.',
         show: { flagUnset: 'wireCut' },
         enable: { itemMin: ['scrap', 2] },
         locked: 'Need 2 scrap',
@@ -197,7 +191,7 @@ Oil-Tooth hotwires. I remain the counter."`,
           ticks: 1,
           goto: 'camp:wire',
           flash:
-            'He does not cut. He points. A person-sized disloyalty in Ironwood property, already priced. "Route. Not a rescue."',
+            'He points. A person-sized gap in Ironwood property, already priced. "Route."',
         },
       },
       {
@@ -241,7 +235,7 @@ Oil-Tooth hotwires. I remain the counter."`,
     title: 'Unpermitted Hoard',
     body: `Kaelen's lead is a crate in vat-shadow, tagged with a clerk mark that is not a permit. Relics. Spent amber. Things Valerius calls unpermitted because he has not finished hurting the person who held them.
 
-You walked here. The Wire did not dump you. This is side trouble. Not the Hunger. Not a Strider. A rumor you paid for, then spent roads to touch.`,
+You walked here. This is the side trouble you paid for, then spent roads to touch.`,
     choices: [
       {
         id: 'look',
@@ -293,9 +287,7 @@ export const spineKaelenScenes: Scene[] = [
     kind: 'talk',
     title: 'Kaelen the Sifter',
     speaker: 'Kaelen the Sifter',
-    body: `${look}
-
-Dusk on the Spine. Same pack. Same gloves. Less wire, more dust. "You're the empty vial," he says. "I fill those if you pay. Buy. Sell. I also sell rumors. Silas sold you shade. I sell inventory."`,
+    body: `Dusk on the Spine. Less wire, more dust. "You're the empty vial," he says. "I fill those if you pay. Buy. Sell. Rumors, and what a survivor can carry."`,
     choices: [
       {
         id: 'rumors',
@@ -351,7 +343,7 @@ Dusk on the Spine. Same pack. Same gloves. Less wire, more dust. "You're the emp
     kind: 'talk',
     title: 'Rumor Counter',
     speaker: 'Kaelen the Sifter',
-    body: `"Silas is shade. I am the counter. Glints buy the Hunger — Kallik's cache, the blonde on the skiff. Scrap buys smaller trouble: Hound-sign on the east wash. I do not take scrip. I do not hotwire. I do not pray."`,
+    body: `"Glints buy the Hunger — Kallik's cache, the blonde on the skiff. Scrap buys smaller trouble: Hound-sign on the east wash. I do not take scrip."`,
     choices: [
       {
         id: 'hunger-glint',
@@ -436,9 +428,9 @@ export const threshKaelenScenes: Scene[] = [
     hubId: 'threshold',
     kind: 'place',
     title: 'Cup-Shadow',
-    body: `Shade off the Strider paddock, close enough to the Court that you can hear the chant miss a beat. This is not a stall. It is a pack leaned against a wall: dust-caked canvas, jars of amber, thick gloves. The merchant here buys the lie that a person can be a cup.
+    body: `Shade off the Strider paddock, close enough to the Court that you can hear the chant miss a beat. A pack leans against the wall: dust-caked canvas, jars of amber, thick gloves. The merchant here buys the lie that a person can be a cup.
 
-Kaelen the Sifter is here when the road says he is here. He does not serve the Seekers, and he does not keep their books. He does not ride Striders. He does not pour anyone. He will pay for a way out, and he will not arm a hand against another survivor.`,
+Kaelen the Sifter is here when the road says he is here. He will pay for a way out.`,
     variants: [
       {
         if: { flag: 'kaelenKnown' },
@@ -450,7 +442,7 @@ Kaelen the Sifter is here when the road says he is here. He does not serve the S
       {
         id: 'kaelen',
         label: 'Step into the pack-shade. Kaelen the Sifter.',
-        sub: 'Buy. Sell. Rumors. Not a cup buyer who believes.',
+        sub: 'Buy. Sell. Rumors.',
         effects: { goto: 'thresh:kaelen', ticks: 1, flag: { kaelenKnown: true } },
       },
     ],
@@ -468,9 +460,7 @@ Kaelen the Sifter is here when the road says he is here. He does not serve the S
     kind: 'talk',
     title: 'Kaelen the Sifter',
     speaker: 'Kaelen the Sifter',
-    body: `${look}
-
-Cup-shadow. Same pack. Same gloves. Less wire, more hymn-dust. "You're the cup the church hasn't finished pouring," he says. "I buy false routes. I sell what a survivor can carry. I am not Thalia. I am not Oram. I do not ride. Buy. Sell. Rumors. Pick a shelf."`,
+    body: `Cup-shadow. Less wire, more hymn-dust. "You're the cup the church hasn't finished pouring," he says. "I buy false routes. I sell what a survivor can carry. Buy. Sell. Rumors. Pick a shelf."`,
     variants: [
       {
         if: { flag: 'kaelenSoldDrop' },
@@ -552,13 +542,13 @@ Cup-shadow. Same pack. Same gloves. Less wire, more hymn-dust. "You're the cup t
     kind: 'talk',
     title: 'Rumor Counter',
     speaker: 'Kaelen the Sifter',
-    body: `"Ask. Pay. I am not a church.
+    body: `"Ask. Pay.
 
-One: a Drop of Oasis Sap for scrap — that is the shop, not this shelf.
+One: a Drop of Oasis Sap for scrap. That shelf is the shop.
 Two: Glints buy intel. Kallik's cache. The Hunger. A blonde on a skiff. Thalia will call it a hymn. I call it inventory.
-Three: cheaper leads. Seeker runners on the hymn-road. How Heat works here. Oram's false-route if you want a map that is not mine.
+Three: cheaper leads. Seeker runners on the hymn-road. How Heat works here. Oram's false-route, if you want his map.
 
-I do not take scrip. I do not take blessing. I do not ride."`,
+Scrip and blessing stay off the tray."`,
     variants: [
       {
         if: { flag: 'kaelenGlintOut' },

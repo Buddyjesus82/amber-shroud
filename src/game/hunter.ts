@@ -70,27 +70,27 @@ function stay(state: GameState, extra: Choice['effects']): Choice['effects'] {
   }
 }
 
-export const CAMP_HUNT_APPEND = `A muzzle knocks this ground. Not Valerius — the Hound-handler, resin gloves, a Shard-Hound on a short chip-lead. The Overseer's name is on the tag. His boots are still in the tower.
+export const CAMP_HUNT_APPEND = `A muzzle knocks this ground. The Hound-handler, resin gloves, a Shard-Hound on a short chip-lead. The Overseer's name is on the tag.
 
-"Upright labor. He likes a diagram. I like a throat." You are not moved. Pay, fight, hide, or choose a road.`
+"Upright labor. He likes a diagram. I like a throat." You stay on this ground. Pay, fight, hide, or choose a road.`
 
-export const SPINE_HUNT_APPEND = `The wash narrows on this ground. Not the Overseer — the Hound-handler, shock-leash short, amber-eyed hound awake. Valerius is still a tower somewhere.
+export const SPINE_HUNT_APPEND = `The wash narrows on this ground. The Hound-handler, shock-leash short, amber-eyed hound awake.
 
 "A Drop, a direction, or a fight." You leave only if you pick a road.`
 
-export const VALERIUS_HUNT_APPEND = `He came himself. Bald, scarred, steam baton, no dog. Cartel Heat dragged Overseer Valerius out of the tower. The skiff-woman wants the other end of you. That is a lever, later, if you live.
+export const VALERIUS_HUNT_APPEND = `He came himself. Cartel Heat dragged Overseer Valerius out of the tower. The skiff-woman wants the other end of you. That is a lever, later, if you live.
 
 "Escape already spent a Hound. This one is my feet." You are still on this ground.`
 
 export const THRESH_HUNT_APPEND = `The chant stutters on this ground. A Court guard lowers a spear. Thalia's gold is a crack in the hymn, not a hand on your collar.
 
-"Fraud." You are not dragged to the paddock. Pay, hide, fight, or run there yourself.`
+"Fraud." You stay on this ground. Pay, hide, fight, or run to the paddock yourself.`
 
 export const SYBELLA_SHADOW_APPEND = `The skiff-shadow slides over this ground without moving you. Sybella's voice, cold as stone that remembers rain:
 
 "You carry sap like a lamp in a tomb. The old roads remember that light, and so do the things that sleep under them. Give the sand something to remember you by, or I'll leave you here for it."
 
-You are still here. She is not a door. Face her smoke only if you walk it.`
+You are still here. Face her smoke only if you walk it.`
 
 function hungerOuts(heat: Choice['effects']['heat']): Choice[] {
   return [
@@ -178,7 +178,7 @@ function campHuntChoices(state: GameState): Choice[] {
     {
       id: 'hunter-fight',
       label: 'Fight the Hound-handler',
-      sub: 'The man with the leash. Not the hound. You stay.',
+      sub: 'The man with the leash. You stay.',
       tone: 'danger',
       enable: { healthMin: 1 },
       locked: 'Too hurt to fight.',
@@ -259,7 +259,7 @@ function spineHuntChoices(state: GameState): Choice[] {
     {
       id: 'spine-fight',
       label: state.heat.cartel >= 7 ? 'Fight Valerius' : 'Fight the Hound-handler',
-      sub: state.heat.cartel >= 7 ? 'He came himself. No dog. You stay.' : 'The man with the leash. Not the hound. You stay.',
+      sub: state.heat.cartel >= 7 ? 'He came himself. You stay.' : 'The man with the leash. You stay.',
       tone: 'danger',
       enable: { healthMin: 1 },
       locked: 'Too hurt to fight.',

@@ -12,8 +12,6 @@ export const campScenes: Scene[] = [
 
 The Bleed Yard stinks of cooked resin and unwashed iron. The vats are ticking toward the Great Bleed. A line of prisoners scrapes amber skin into buckets. To the Cartel, that is only work.
 
-Jaxson "Oil-Tooth" Vance is not in the line. He is in the next bunk, or under a Strider at Skiff Bay. Kaelen the Sifter works the Wire. He sells rumors. He does not hotwire the ride.
-
 Overseer Valerius is the shadow over the Yard. Getting out from under him is the first thing you have to win.`,
     variants: [
       {
@@ -112,7 +110,7 @@ Overseer Valerius is the shadow over the Yard. Getting out from under him is the
       },
       {
         tags: ['kaelen', 'sifter', 'rumor', 'news', 'merchant', 'trade'],
-        reply: 'Kaelen the Sifter works the Wire. Rumors. Drops. He does not hotwire Striders.',
+        reply: 'Kaelen the Sifter works the Wire. Rumors. Drops.',
         effects: { goto: 'camp:wire' },
       },
       {
@@ -301,7 +299,7 @@ The bunk next to you is Jaxson "Oil-Tooth" Vance. He is burly and grease-stained
 
 He is the one who can break you out. He hotwires Ironclad Skiff-Striders, and he has skimmed Oasis Sap for as long as he has repaired them. The jokes are a shield. He watches the guards more closely than he lets on.
 
-Kaelen the Sifter is not in the pens. Kaelen sells rumors at the Wire.`,
+Kaelen the Sifter sells rumors at the Wire.`,
     choices: [
       {
         id: 'jaxson',
@@ -423,7 +421,7 @@ Kaelen the Sifter is not in the pens. Kaelen sells rumors at the Wire.`,
           flag: { shivTaken: true },
           goto: 'camp:cages',
           ticks: 1,
-          flash: 'Ugly metal for ugly trades. Kaelen the Sifter trades Drops for scrap. He does not hotwire.',
+          flash: 'Ugly metal for ugly trades. Kaelen the Sifter trades Drops for scrap.',
         },
       },
     ],
@@ -434,11 +432,9 @@ Kaelen the Sifter is not in the pens. Kaelen sells rumors at the Wire.`,
     kind: 'place',
     title: "Oil-Tooth's Stall",
     speaker: 'Jaxson "Oil-Tooth" Vance',
-    body: `Jaxson "Oil-Tooth" Vance works out of a stall off the pens. He is burly and grease-stained, with a permanent smirk and a cybernetic brass jaw. Scorched welding leathers. Corporate tags he never cut off. The oversized wrench sits in his fist like a second opinion.
+    body: `The stall is hot metal and skimmed sap. The oversized wrench sits in his fist.
 
-He has spent his life repairing Ironclad Skiff-Striders, and skimming Oasis Sap while he did it. The jokes are a shield. He watches the guards the way other men watch the sky.
-
-"Bleed-Cut," he says, as if it is already your name. "The Great Bleed is coming. You sabotage the Guard Station. I hotwire a Strider. That is the job. If you want news — Kallik, Red Maw, the woman on the skiff — Kaelen the Sifter sells rumors at the Wire. He sells rumors. I hotwire."`,
+"Bleed-Cut," he says. "The Great Bleed is coming. You sabotage the Guard Station. I hotwire a Strider."`,
     variants: [
       {
         if: { flag: 'striderHot' },
@@ -547,9 +543,9 @@ He has spent his life repairing Ironclad Skiff-Striders, and skimming Oasis Sap 
     kind: 'talk',
     title: 'Jaxson "Oil-Tooth" Vance',
     speaker: 'Jaxson "Oil-Tooth" Vance',
-    body: `"Valerius is the first major victory you have to overcome," Oil-Tooth says, smirking around the brass. "Imposing. Scarred. Reinforced iron plating over dust-cloaks. Steam-hissing shock baton. Cruel. Calculating. He hunts Sap thieves and unpermitted relic hoarders. Sadistic. Arrogant. Disciplined. Looming shadow. I have watched the guard station until I could draw it in grease.
+    body: `"Valerius is the first thing you have to get out from under," Oil-Tooth says, smirking around the brass. "Tower. Baton. He hunts anyone skimming Sap. I have watched the guard station until I could draw it in grease.
 
-Great Bleed hits, you sabotage that station. I hotwire an Ironclad Skiff-Strider. We leave the pens. You want rumors — Kallik, the Hunger, the blonde — that is Kaelen the Sifter at the Wire. He sells leads. I sell a ride."`,
+Great Bleed hits, you sabotage that station. I hotwire a Strider. We leave the pens. Rumors are Kaelen, at the Wire."`,
     choices: [
       {
         id: 'inside',
@@ -733,11 +729,9 @@ Great Bleed hits, you sabotage that station. I hotwire an Ironclad Skiff-Strider
     hubId: 'camp04',
     kind: 'place',
     title: 'Watchtower Drip',
-    body: `The watchtower leaks shade, steam, and orders. Overseer Valerius stands in it the way a nail stands in wood. He is bald and scarred, with a steam baton in his fist. No dog. The Hound-handler works the Yard. Valerius stays here until Cartel Heat drags him out.
+    body: `The watchtower leaks shade, steam, and orders. Overseer Valerius stands in it the way a nail stands in wood. He is bald and scarred, with a steam baton in his fist. No dog.
 
-Iron plating over a dust-cloak. The baton hisses steam. He hunts people who steal Oasis Sap, and people who hoard relics without a permit.
-
-He is the man you have to get out from under. That is the first thing you have to win.`,
+Iron plating over a dust-cloak. The baton hisses steam. He hunts people who steal Oasis Sap, and people who hoard relics without a permit.`,
     variants: [
       {
         if: { heatMin: ['cartel', 5] },
@@ -783,9 +777,7 @@ He is the man you have to get out from under. That is the first thing you have t
     speaker: 'Overseer Valerius',
     body: `Valerius does not bother to raise the shock baton. Steam hisses in the grip anyway.
 
-"Escape, I will spend a Hound. The price will be your feet. Stay useful; scrape the line, until your hands forget they were hands. That will buy your life."
-
-Bald. Scarred. Steam baton. No dog at his heel. The handler and the hound are a different man, out in the yard. Valerius waits here. He can afford it.`,
+"Escape, I will spend a Hound. The price will be your feet. Stay useful; scrape the line, until your hands forget they were hands. That will buy your life."`,
     choices: [
       {
         id: 'useful',
@@ -879,7 +871,7 @@ Bald. Scarred. Steam baton. No dog at his heel. The handler and the hound are a 
     title: 'The Wire',
     body: `The perimeter. Razor wire. Steam vents coughing. Past the wire, the dunes start to have opinions.
 
-Kaelen the Sifter is here when there is a profit in it: a jittery diminutive merchant in dust-caked canvas, with an overstuffed pack and thick gloves. He sells rumors and Drops of Oasis Sap. He does not hotwire Striders. He will not sell a thing that harms another survivor.
+Kaelen the Sifter is here when there is a profit in it: a jittery diminutive merchant in dust-caked canvas, with an overstuffed pack and thick gloves. He sells rumors and Drops of Oasis Sap.
 
 Ironclad Skiff-Striders patrol the far side of this line. Red Maw is past it. So are the Hounds.`,
     variants: [
@@ -893,7 +885,7 @@ Ironclad Skiff-Striders patrol the far side of this line. Red Maw is past it. So
       {
         id: 'kaelen',
         label: 'Find Kaelen the Sifter',
-        sub: 'He sells rumors and Drops. He is not the man who hotwires the Strider.',
+        sub: 'Rumors and Drops.',
         effects: { goto: 'camp:kaelen', ticks: 1, pressure: 1 },
       },
       {
@@ -934,7 +926,7 @@ The Great Bleed is a clock. You sabotage the west steam-vent here. Oil-Tooth hot
       {
         if: { flag: 'bleedIntel' },
         mode: 'append',
-        body: `Kaelen sold you a clock: west bolt, Bleed-hour. The Sifter does not work for Oil-Tooth. He sold a product.`,
+        body: `Kaelen sold you a clock: west bolt, Bleed-hour.`,
       },
     ],
     choices: [
@@ -1059,11 +1051,11 @@ A vent patrol is in place: one clerk, shock baton, eyes on the joint. Unwatched 
     hubId: 'camp04',
     kind: 'place',
     title: 'Skiff Bay',
-    body: `Ironclad Skiff-Striders stand in separate bays. Resin shine. Too many joints. Corporate tags on hulls that have outlived the people who fixed them.
+    body: `Three Skiff-Striders sit up on repair cradles, each in its own bay. Cartel tags are still bolted to the hulls, older than the men who fixed them.
 
-These cradles are not one man. Pike scrapes the north hull. Sarn counts bolts on the east cradle, as if the numbers might pardon him. Vetch welds the south skid in a glove that still wears someone else's tag. They are prisoners. None of them is Oil-Tooth, and none of them sells rumors.
+Three prisoners work them. Pike scrapes resin off the hull in the north bay. Sarn counts bolts out loud beside the skiff in the east bay. Vetch welds a cracked skid in the south bay, wearing a glove with someone else's name on it.
 
-Talk to one of them and you get a short answer. Put a hand in a pocket and you get a bolt, or a shout.`,
+Ask nicely and you get a short answer. Reach for their stuff and you get a bolt thrown at you, or a shout.`,
     variants: [
       {
         if: { flag: 'striderHot' },
@@ -1078,56 +1070,56 @@ Talk to one of them and you get a short answer. Put a hand in a pocket and you g
       {
         if: { all: [{ flag: 'jaxsonInside' }, { flag: 'guardDown' }, { flagUnset: 'striderHot' }] },
         mode: 'replace',
-        body: `The guard station is coughing steam behind you. Patrol is late. This cradle is the job.
+        body: `The guard station is coughing steam behind you. Patrol is late. This bay is the job.
 
-Jaxson "Oil-Tooth" Vance is under the hull — burly, grease-stained, permanent smirk, cybernetic brass jaw in the weld-light. Scorched welding leathers. Corporate tags he has not cut off. The oversized wrench is in the joint.
+Jaxson "Oil-Tooth" Vance is under the hull, wrench in the joint.
 
 You are the lookout. He hotwires. "Cover me," he says. "Valerius eats dust if we are fast."
 
-Pike, Sarn, and Vetch keep their heads down on the other cradles. They are not this job.`,
+Pike, Sarn, and Vetch keep their heads down in the other bays, each beside their own skiff.`,
       },
     ],
     choices: [
       {
         id: 'pike',
         label: 'Talk to Pike',
-        sub: 'North hull. He scrapes and does not stop.',
+        sub: 'North bay. He scrapes his own skiff and does not stop.',
         show: { flag: 'bayLooked' },
         effects: {
           ticks: 1,
-          flash: 'Pike does not stop scraping. "North hull. There is cord on the lash. Take it and I did not see you. I am not your man."',
+          flash: 'Pike does not stop scraping. "North bay. There is cord on the lash of my skiff. Take it and I did not see you."',
         },
       },
       {
         id: 'sarn',
         label: 'Talk to Sarn',
-        sub: 'East cradle. He counts bolts out loud.',
+        sub: 'East bay. He counts bolts out loud beside his own skiff.',
         show: { flag: 'bayLooked' },
         effects: {
           ticks: 1,
-          flash: 'Sarn counts a bolt out loud. "East cradle. I trade a count for quiet. I do not trade the wrench. That is the jaw\'s."',
+          flash: 'Sarn counts a bolt out loud. "East bay. I trade a count for quiet. I do not trade the wrench. That is the jaw\'s."',
         },
       },
       {
         id: 'vetch',
         label: 'Talk to Vetch',
-        sub: 'South skid. She welds. Talk is sparks.',
+        sub: 'South bay. She welds her own skiff. Talk is sparks.',
         show: { flag: 'bayLooked' },
         effects: {
           ticks: 1,
-          flash: 'Vetch lifts the mask a finger. "South skid. Sparks, not talk. You want cord, Pike\'s hull has it. You want a fight, find a guard."',
+          flash: 'Vetch lifts the mask a finger. "South bay. Sparks, not talk. You want cord, Pike\'s skiff in the north bay has it. You want a fight, find a guard."',
         },
       },
       {
         id: 'cord',
-        label: 'Take lash-cord off Pike\'s hull',
-        sub: 'You already looked. Pike does not look up. Cartel Heat rises if anyone counts the hull.',
+        label: 'Take lash-cord off Pike\'s skiff',
+        sub: 'North bay. You already looked. Pike does not look up. Cartel Heat rises if anyone counts his skiff.',
         show: { all: [{ flag: 'bayLooked' }, { flagUnset: 'lashCord' }] },
         effects: {
           flag: { lashCord: true, bayPikeTook: true },
           heat: { cartel: 1 },
           ticks: 1,
-          flash: 'Cord. Pike does not look up. A stilt-lash will take it. Cartel Heat ticks if anyone counts the hull.',
+          flash: 'Cord. Pike does not look up. A stilt-lash will take it. Cartel Heat ticks if anyone counts his skiff in the north bay.',
         },
       },
       {
@@ -1139,7 +1131,7 @@ Pike, Sarn, and Vetch keep their heads down on the other cradles. They are not t
           remove: { wrench: 1 },
           flag: { lashCord: true, wrenchBayTrade: 'pike' },
           ticks: 1,
-          flash: 'Pike takes the wrench without stopping the scrape. The lash cord comes off the north hull into your hand. He does not shout.',
+          flash: 'Pike takes the wrench without stopping the scrape. The lash cord comes off his skiff in the north bay into your hand. He does not shout.',
         },
       },
       {
@@ -1216,7 +1208,7 @@ Pike, Sarn, and Vetch keep their heads down on the other cradles. They are not t
     hubId: 'camp04',
     kind: 'story',
     title: 'Lockdown Gate',
-    body: `The gates are counted. Sabotage is still in their teeth. A Hound-handler has the shock-leash out, amber-eyed hound at his heel. Valerius is not on the gate. He is in the tower.
+    body: `The gates are counted. Sabotage is still in their teeth. A Hound-handler has the shock-leash out, amber-eyed hound at his heel.
 
 Walking in is a fight, or a collar.`,
     choices: [
@@ -1262,7 +1254,7 @@ Walking in is a fight, or a collar.`,
     speaker: 'Overseer Valerius',
     body: `Whistles. Boots. The Yard becomes a diagram.
 
-Valerius does not run. He arrives, iron plating over dust-cloaks, shock baton hissing steam. "The penniless laborer is upright. How optimistic." Behind him a Hound-handler checks a muzzle that is not for dogs.
+Valerius does not run. He arrives, iron plating over dust-cloaks, shock baton hissing steam. "The penniless laborer is upright. How optimistic." Behind him a Hound-handler checks a muzzle.
 
 He hunts Sap thieves and unpermitted relic hoarders. You look like both. First major victory is leaving.`,
     choices: [

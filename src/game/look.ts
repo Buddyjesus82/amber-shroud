@@ -27,7 +27,7 @@ const DIR_WORD: Record<string, LookDir> = {
 const WAY: Record<string, string> = {
   'camp:guard': 'steam, batons, and the west bolt',
   'camp:vents': 'screaming pipes, not the station bolt',
-  'camp:bay': 'the cradles, with Pike, Sarn, and Vetch',
+  'camp:bay': 'three skiffs, Pike in the north bay, Sarn east, Vetch south',
   'camp:yard': 'the vats and the scrape-line',
   'camp:cages': 'the pens and Oil-Tooth\'s bunk',
   'camp:lean': 'Oil-Tooth\'s stall',
@@ -105,7 +105,7 @@ export function overlayLook(state: GameState): string {
   if (face === 'Sybella') return 'Sybella is the one on this ground. Stay, defy, or run. The rock under her can wait.'
   if (face === 'Valerius') return 'Valerius is here himself. Pay, fight, or hide. The handler was the warning.'
   if (face === 'Court Guard') return 'A court guard has you in the hymn. Fight, hide, or answer him.'
-  return 'The Hound-handler has the leash. The hound is not the fight. Pay, fight, or hide.'
+  return 'The Hound-handler has the leash. The hound stays on it. Pay, fight, or hide.'
 }
 
 export function pressureLookFlash(state: GameState): string {
@@ -130,27 +130,25 @@ function authored(state: GameState, scene: Scene): string[] {
   const door = state.door
 
   if (id === 'camp:bay') {
-    const lookout = on(state, 'jaxsonInside') && on(state, 'guardDown') && !on(state, 'striderHot')
-    if (lookout) push(lines, 'Oil-Tooth has the wrench in the joint. The other cradles are still working.')
-    else if (on(state, 'striderHot')) push(lines, 'One Strider is already ticking. It will take the dunes.')
+    if (on(state, 'striderHot')) push(lines, 'The ride is the dunes, heading or not.')
     if (!on(state, 'lashCord') && !on(state, 'bayPikeTook')) {
-      push(lines, "A lash cord sits on the runner of Pike\'s north hull, and a resin bolt there will come free.")
+      push(lines, "A lash cord sits on the runner of Pike's skiff, and a resin bolt there will come free.")
     } else if (!on(state, 'lashCord')) {
-      push(lines, "A lash cord sits on the runner of Pike\'s north hull.")
+      push(lines, "A lash cord sits on the runner of Pike's skiff.")
     } else if (!on(state, 'bayPikeTook')) {
-      push(lines, 'A resin bolt on Pike\'s north hull will come free if you take it.')
+      push(lines, "A resin bolt on Pike's skiff will come free if you take it.")
     }
-    if (!on(state, 'baySarnTook')) push(lines, "Sarn\'s count will skip if you take the difference.")
-    if (!on(state, 'bayVetchTook')) push(lines, "Vetch\'s cuff hides a curl of wire.")
+    if (!on(state, 'baySarnTook')) push(lines, "Sarn's count will skip if you take the difference.")
+    if (!on(state, 'bayVetchTook')) push(lines, "Vetch's cuff hides a curl of wire.")
     if (has(state, 'wrench') && !on(state, 'wrenchBayTrade') && lines.length < 4) {
       push(
         lines,
         on(state, 'lashCord')
           ? 'The wrench will still buy scrap from Sarn, or a small Drop from Vetch.'
-          : "The wrench will buy Pike\'s cord, scrap from Sarn, or a small Drop from Vetch.",
+          : "The wrench will buy Pike's cord, scrap from Sarn, or a small Drop from Vetch.",
       )
     }
-    if (!lines.length) push(lines, 'Pike, Sarn, and Vetch are still on the cradles. Their pockets are already lighter.')
+    if (!lines.length) push(lines, 'Their pockets are already lighter.')
     return lines.slice(0, 4)
   }
 
@@ -187,7 +185,7 @@ function authored(state: GameState, scene: Scene): string[] {
 
   if (id === 'camp:vents') {
     if (!on(state, 'skim:camp:vents')) push(lines, 'A drip in the pipe-scream will fill a glass. The Cartel can trace it.')
-    if (!on(state, 'jaxsonInside')) push(lines, "Oil-Tooth\'s job is not this weather. It is the bolt at the station.")
+    if (!on(state, 'jaxsonInside')) push(lines, "The bolt at the guard station is Oil-Tooth's job.")
     else if (!on(state, 'guardDown')) push(lines, 'The west bolt at the guard station is the job throat.')
     else push(lines, 'The station is already coughing into this corridor.')
     return lines
@@ -214,7 +212,7 @@ function authored(state: GameState, scene: Scene): string[] {
   }
 
   if (id === 'camp:jaxson-cache') {
-    push(lines, 'Headings are not on this counter. The Wire is where rumors are sold.')
+    push(lines, 'Rumors are at the Wire.')
     return lines
   }
 
@@ -226,20 +224,18 @@ function authored(state: GameState, scene: Scene): string[] {
 
   if (id === 'camp:tower') {
     if (!on(state, 'overseerChip')) push(lines, "A clerk\'s chip hangs where a palm can take it. The count will miss it.")
-    else push(lines, 'The chip hook is already empty.')
-    push(lines, 'The Hound-handler works the yard. This room is only the man with the baton.')
+    else push(lines, 'The chip hook is empty.')
     return lines
   }
 
   if (id === 'camp:valerius') {
-    if (has(state, 'shiv')) push(lines, 'The shiv in your sleeve is a language he already speaks.')
+    if (has(state, 'shiv')) push(lines, 'The shiv in your sleeve is a language he speaks.')
     if (has(state, 'scrip')) push(lines, 'Ironwood paper in your hem is the kind of leash he trusts.')
-    if (!lines.length) push(lines, 'Step back out and you are in the tower shade again, not off his page.')
+    if (!lines.length) push(lines, 'Step back and you are in the tower shade again.')
     return lines
   }
 
   if (id === 'camp:wire') {
-    push(lines, 'Kaelen works this line when there is a profit in standing here. He sells rumors. He does not hotwire.')
     if (on(state, 'wireCut')) push(lines, 'The hole you paid for is still in the wire.')
     else push(lines, 'Past the wire the haze goes red if you stare it down.')
     return lines
@@ -261,7 +257,7 @@ function authored(state: GameState, scene: Scene): string[] {
   }
 
   if (id === 'camp:gate') {
-    push(lines, 'The handler has the shock-leash out. Walking in is a fight or a collar. Valerius is not on this gate.')
+    push(lines, 'The handler has the shock-leash out. Walking in is a fight or a collar.')
     return lines
   }
 
@@ -271,8 +267,7 @@ function authored(state: GameState, scene: Scene): string[] {
   }
 
   if (id === 'camp:kaelen' || id === 'spine:kaelen' || id === 'thresh:kaelen' || id === 'roam:kaelen') {
-    push(lines, 'Kaelen keeps the gloves on while he works the pack. Buy, sell, or ask him for a rumor.')
-    push(lines, 'He will not sell a thing meant to harm a survivor, and he does not hotwire.')
+    push(lines, 'Buy, sell, or ask him for a rumor.')
     return lines
   }
 
@@ -295,7 +290,7 @@ function authored(state: GameState, scene: Scene): string[] {
       push(lines, 'Silas sells minutes down-slope. The ridge itself does not.')
     }
     if (!on(state, 'sawMawHaze')) push(lines, 'Reading the wash shows a red bruise to the east and south.')
-    else push(lines, 'You have already seen that red bruise. It is Maw-country.')
+    else push(lines, 'The bruise east and south is the Maw road.')
     if (state.sap <= 2) push(lines, 'Your sight is fraying. A drink matters more than another look at the rock.')
     return lines
   }
@@ -332,12 +327,12 @@ function authored(state: GameState, scene: Scene): string[] {
     if (!on(state, 'skim:spine:well')) push(lines, 'The throat can be skimmed once. Strays will notice a theft.')
     if (!on(state, 'wellScrap')) push(lines, 'The brickwork still hides a Glint and a twist of scrap.')
     else push(lines, 'The bricks have already given up what Kaelen left.')
-    push(lines, 'Dusk is when Kaelen stands here. He is not Silas.')
+    push(lines, 'Dusk is when Kaelen stands here.')
     return lines
   }
 
   if (id === 'spine:hound') {
-    push(lines, 'The prints are resin jaws, not dogs. A tooth in the dust is a separate find from the man who follows them.')
+    push(lines, 'A tooth in the dust is a separate find from the man who follows the prints.')
     return lines
   }
 
@@ -371,19 +366,19 @@ function authored(state: GameState, scene: Scene): string[] {
   }
 
   if (id === 'thresh:paddock') {
-    push(lines, 'Oram counts the animals here. Kaelen\'s pack is the cup-shadow, not this pen.')
+    push(lines, "Oram counts the animals here. Kaelen's pack is in the cup-shadow.")
     if (!on(state, 'skim:thresh:paddock')) push(lines, 'A Strider trough will give up a drip once. The Seekers can trace it.')
     return lines
   }
 
   if (id === 'thresh:oram') {
     if (!has(state, 'oram_map')) push(lines, 'He will give you a heading if you ask like a thief, not a cup.')
-    else push(lines, 'You already have his heading. The animals are what he will still talk about.')
+    else push(lines, 'The animals are what he will still talk about.')
     return lines
   }
 
   if (id === 'thresh:sift') {
-    push(lines, 'The pack against the wall is Kaelen. He buys false routes. He does not pour hymns.')
+    push(lines, 'The pack against the wall is Kaelen. He buys false routes.')
     return lines
   }
 
@@ -404,19 +399,19 @@ function authored(state: GameState, scene: Scene): string[] {
       push(lines, 'One rib carries a gear-mark. Searching the ribs is how you find the sealed way.')
       push(lines, 'Digging at random is how people fail to come back.')
     }
-    else push(lines, 'The gear-marked rib is the sealed way you already found.')
+    else push(lines, 'The sealed way is open.')
     if (on(state, 'chapter1Done')) push(lines, 'The cache stays under the lip. The open dark is a separate step from this rock.')
     return lines
   }
 
   if (id === 'maw:market') {
-    push(lines, 'Zafir\'s tray is a real shop. Buy and sell are the counter, not a pardon.')
+    push(lines, "Zafir's tray is a real shop. Buy and sell are on the counter.")
     if (!on(state, 'mawGlint')) push(lines, 'Another stall has a coil of wire nobody has claimed.')
     return lines
   }
 
   if (id === 'maw:zafir') {
-    push(lines, 'He will talk news. He will not sell you a way out of what you already are.')
+    push(lines, 'He will talk news.')
     return lines
   }
 
@@ -520,7 +515,7 @@ function authored(state: GameState, scene: Scene): string[] {
   }
 
   if (id === 'ch1:o-silas') {
-    push(lines, 'This minute is not the one he already sold you. South of him is the tax.')
+    push(lines, 'South of him is the tax.')
     return lines
   }
 

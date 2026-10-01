@@ -660,6 +660,8 @@ assert(s.sceneId === 'camp:bay', 'Map reaches Skiff Bay after the first talk')
 assert(playCoverKey(s, sceneOf(s)) === 'camp04', 'Skiff Bay uses camp art after the first talk')
 assert(!/under a hull/i.test(bodyOf(s)), 'Skiff Bay does not stage Oil-Tooth after the first talk')
 assert(/Pike/.test(bodyOf(s)) && /Sarn/.test(bodyOf(s)) && /Vetch/.test(bodyOf(s)), 'bay names the other prisoners')
+assert(!/None of them is Oil-Tooth/i.test(bodyOf(s)), 'Skiff Bay does not say who the prisoners are not')
+assert(/Ask nicely and you get a short answer/i.test(bodyOf(s)), 'Skiff Bay keeps the short-answer warning')
 assert(!ids(s).includes('hotwire'), 'hotwire stays off the bay until the station is down')
 {
   const talked = interpret(s, 'talk to pike')
@@ -668,7 +670,7 @@ assert(!ids(s).includes('hotwire'), 'hotwire stays off the bay until the station
   const named = interpret(s, 'hello sarn')
   assert(/sarn/i.test(named.flash ?? '') && !/miss/i.test(named.flash ?? ''), 'Do hello Sarn is authored')
   const absent = interpret(s, 'talk to oil-tooth')
-  assert(/not under a hull/i.test(absent.flash ?? ''), 'Oil-Tooth is not working the bay after the first talk')
+  assert(/stall|next bunk/i.test(absent.flash ?? ''), 'Oil-Tooth is at the stall or the bunk, not the bay')
   const before = s.items.scrap ?? 0
   const stole = interpret(s, 'steal from pike')
   assert((stole.items.scrap ?? 0) === before + 1 && stole.flags.bayPikeTook, 'steal from Pike pays a scrap')
@@ -1437,7 +1439,7 @@ function gearGained(before: GameState, after: GameState): string[] {
 for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
   const card = primedFight(door, 4, 'scavenger', { taught: false, arm: false })
   assert(/waste scavenger/i.test(bodyOf(card)), `${door} scavenger card names the robber`)
-  assert(/Not fauna/.test(bodyOf(card)), `${door} scavenger card is a person, not fauna`)
+  assert(/a person who robs/i.test(bodyOf(card)), `${door} scavenger card is a person`)
   assert(/Strike has to beat Shell/i.test(bodyOf(card)), `${door} first scavenger still teaches`)
   assert(/You Strike \d+ vs their Shell 1/.test(bodyOf(card)), `${door} scavenger Shell is on the card`)
   assert(/Their Strike 2 vs your Shell/.test(bodyOf(card)), `${door} scavenger Strike is on the card`)
