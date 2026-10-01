@@ -1,10 +1,40 @@
-import { getScene } from './content'
+import { bayLookout } from './campJob'
+import { getScene, resolveBody } from './content'
 import { roadPressureScene } from './encounter'
 import { isPressureOverlay } from './hunter'
-import { compassCommand, compassMoves } from './map'
-import { personAtScene } from './people'
+import { check } from './logic'
+import { compassMoves, hubMapOf, nodeIdForScene } from './map'
+import { PEOPLE, personAtScene, personKnown, type Person } from './people'
 import { talkIntentsFor } from './talk'
-import type { Effect, GameState } from './types'
+import type { Effect, GameState, Scene } from './types'
+
+export type HelpGroup = 'Look' | 'Take' | 'Talk' | 'Go' | 'Fight'
+
+export type HelpEntry = {
+  group: HelpGroup
+  command: string
+  why: string
+}
+
+export const HELP_GROUPS: HelpGroup[] = ['Look', 'Take', 'Talk', 'Go', 'Fight']
+
+/** Aliases that show up in prose without naming that person. */
+const GENERIC = new Set([
+  'skiff',
+  'merchant',
+  'shade',
+  'leash',
+  'handler',
+  'clerk',
+  'payroll',
+  'runner',
+  'runners',
+  'stilts',
+  'stilt',
+  'blonde',
+  'sifter',
+  'overseer',
+])
 
 function norm(text: string): string {
   return text
@@ -27,18 +57,77 @@ function covered(command: string, labels: string[]): boolean {
   })
 }
 
-function push(list: string[], labels: string[], command: string) {
-  const key = norm(command)
-  if (!key || list.some((c) => norm(c) === key) || covered(command, labels)) return
-  list.push(command)
+function add(list: HelpEntry[], labels: string[], entry: HelpEntry) {
+  const key = norm(entry.command)
+  const why = entry.why.replace(/\s+/g, ' ').trim()
+  if (!key || !why || list.some((e) => norm(e.command) === key) || covered(entry.command, labels)) return
+  list.push({ ...entry, why })
 }
 
-function blocked(state: GameState): boolean {
-  return !!(state.flags.downed || (state.health ?? 1) <= 0 || state.flags.encounterHere || isPressureOverlay(state))
+function proseOf(state: GameState, scene: Scene): string {
+  return resolveBody(scene, (c) => check(c, state), scene.body)
 }
 
-function underHull(state: GameState): boolean {
-  return !!(state.flags.jaxsonInside && state.flags.guardDown && !state.flags.striderHot)
+function nameKeys(person: Person): string[] {
+  const keys = [person.name, ...person.aliases]
+    .map(norm)
+    .filter((k) => k && !GENERIC.has(k))
+  return [...new Set(keys)]
+}
+
+function mentioned(prose: string, person: Person): boolean {
+  const words = new Set(norm(prose).split(' ').filter(Boolean))
+  return nameKeys(person).some((key) => key.split(' ').every((part) => words.has(part)))
+}
+
+/** The mouth already on this beat. Help should not reintroduce them. */
+function partnerId(state: GameState, scene: Scene): string | null {
+  if (scene.kind === 'talk') {
+    const who = personAtScene(scene.id)
+    if (who) return who.id
+  }
+  if (scene.speaker) {
+    const speaker = norm(scene.speaker)
+    for (const person of Object.values(PEOPLE)) {
+      if (nameKeys(person).some((key) => speaker.includes(key))) return person.id
+    }
+  }
+  if (scene.id === 'camp:bay' && bayLookout(state)) return 'oiltooth'
+  return null
+}
+
+function alreadyTalked(state: GameState, person: Person): boolean {
+  return !!(state.flags[person.metFlag] || state.flags[`asked:${person.id}`])
+}
+
+function cardWhy(card: string): string {
+  const clean = card.replace(/["“”]/g, '').replace(/\s+/g, ' ').trim()
+  const parts = clean.split(/\s[—–]\s/)
+  const source = parts.length > 1 ? parts.slice(1).join(' ').trim() : clean
+  const sentence = (source.split(/(?<=\.)\s/)[0] ?? source).replace(/[.]+$/, '').trim()
+  const words = sentence.split(' ').filter(Boolean)
+  let cut = -1
+  for (let i = 0; i < words.length && i < 8; i++) {
+    if (i >= 3 && /[,;]$/.test(words[i] ?? '')) cut = i
+  }
+  const picked = cut >= 0 ? words.slice(0, cut + 1) : words.length <= 12 ? words : words.slice(0, 6)
+  return picked.join(' ').replace(/[,:;]+$/, '')
+}
+
+/** Scene talk already answers "fight", so a road-fight line would describe the wrong result. */
+function sceneSwallowsFight(scene: Scene, state: GameState): boolean {
+  const rules = [...(scene.intents ?? []), ...talkIntentsFor(scene.id)]
+  return rules.some((rule) => {
+    if (!check(rule.show, state)) return false
+    return rule.tags.some((tag) => /\b(fight|attack|stab|bite|strike)\b/i.test(tag))
+  })
+}
+
+function mapShowsRoads(state: GameState, scene: Scene): boolean {
+  if (!state.hubId || scene.kind === 'crisis' || state.chapterId === 'cache-run') return false
+  const map = hubMapOf(state)
+  if (!map?.ready) return false
+  return !!nodeIdForScene(map, state.sceneId, false)
 }
 
 /** Concrete `search <thing>` lines. Only targets that resolve on this scene. */
@@ -80,69 +169,129 @@ export function sceneSearch(state: GameState, target: string): Effect | null {
 }
 
 /**
- * Hidden typed actions for this scene: things that work and are not already buttons.
- * Every string here must resolve through interpret without a Miss.
+ * Hidden typed actions for this scene: discoveries that work and are not already buttons.
+ * Every command here must resolve through interpret without a Miss.
  */
-export function hiddenCommands(state: GameState, labels: string[]): string[] {
-  const list: string[] = []
-  const scene = getScene(state.sceneId, state.door)
-  const down = !!(state.flags.downed || (state.health ?? 1) <= 0)
-  const fight = !!state.flags.encounterHere
-  const press = isPressureOverlay(state)
-
-  if (!down && !fight) {
-    push(list, labels, 'look around')
+export function helpEntries(state: GameState, labels: string[]): HelpEntry[] {
+  if (state.flags.downed || (state.health ?? 1) <= 0 || state.flags.encounterHere || isPressureOverlay(state)) {
+    return []
   }
 
-  if (blocked(state)) return list
+  const list: HelpEntry[] = []
+  const scene = getScene(state.sceneId, state.door)
+  const partner = partnerId(state, scene)
+  const prose = proseOf(state, scene)
 
-  const who = personAtScene(scene.id)
-  if (who && talkIntentsFor(scene.id).length) {
-    push(list, labels, `talk ${who.name}`)
-    push(list, labels, `who is ${who.name}`)
+  if (state.sceneId === 'camp:bay' && !state.flags.bayLooked && !state.flags.lashCord) {
+    add(list, labels, {
+      group: 'Look',
+      command: 'search north hull',
+      why: 'a lash cord is on the runner',
+    })
   }
 
   if (state.sceneId === 'camp:bay') {
-    push(list, labels, 'talk Pike')
-    push(list, labels, 'talk Sarn')
-    push(list, labels, 'talk Vetch')
-    if (underHull(state)) push(list, labels, 'talk Oil-Tooth')
-    push(list, labels, 'search north hull')
-    if (!state.flags.bayPikeTook) push(list, labels, 'steal bolt from Pike')
-    if (!state.flags.baySarnTook) push(list, labels, 'steal scrap from Sarn')
-    if (!state.flags.bayVetchTook) push(list, labels, 'steal wire from Vetch')
+    if (!state.flags.bayPikeTook) {
+      add(list, labels, {
+        group: 'Take',
+        command: 'steal bolt from Pike',
+        why: 'a resin bolt comes off the north hull',
+      })
+    }
+    if (!state.flags.baySarnTook) {
+      add(list, labels, {
+        group: 'Take',
+        command: 'steal scrap from Sarn',
+        why: 'Sarn skips a count on purpose',
+      })
+    }
+    if (!state.flags.bayVetchTook) {
+      add(list, labels, {
+        group: 'Take',
+        command: 'steal wire from Vetch',
+        why: "a curl of wire from Vetch's cuff",
+      })
+    }
     if ((state.items.wrench ?? 0) > 0 && !state.flags.wrenchBayTrade) {
-      if (!state.flags.lashCord) push(list, labels, 'trade wrench to Pike')
-      push(list, labels, 'trade wrench to Sarn')
-      push(list, labels, 'trade wrench to Vetch')
+      if (!state.flags.lashCord) {
+        add(list, labels, {
+          group: 'Take',
+          command: 'trade wrench to Pike',
+          why: 'the lash cord comes off the north hull',
+        })
+      }
+      add(list, labels, {
+        group: 'Take',
+        command: 'trade wrench to Sarn',
+        why: 'one twist of scrap',
+      })
+      add(list, labels, {
+        group: 'Take',
+        command: 'trade wrench to Vetch',
+        why: 'a small Drop comes out of the glove',
+      })
+    }
+
+    add(list, labels, { group: 'Talk', command: 'talk Pike', why: 'scrapes the north hull' })
+    add(list, labels, { group: 'Talk', command: 'talk Sarn', why: 'counts bolts on the east cradle' })
+    add(list, labels, { group: 'Talk', command: 'talk Vetch', why: 'welds the south skid' })
+  }
+
+  for (const person of Object.values(PEOPLE)) {
+    if (person.id === partner || alreadyTalked(state, person) || !personKnown(state, person)) continue
+    const present = personAtScene(scene.id)?.id === person.id
+    if (!present && !mentioned(prose, person)) continue
+    const why = cardWhy(person.card)
+    if (!why) continue
+    add(list, labels, { group: 'Talk', command: `who is ${person.name}`, why })
+  }
+
+  if (!mapShowsRoads(state, scene)) {
+    const moves = compassMoves(state)
+    const byDir = new Map<string, typeof moves>()
+    for (const move of moves) {
+      const group = byDir.get(move.dir) ?? []
+      group.push(move)
+      byDir.set(move.dir, group)
+    }
+    for (const group of byDir.values()) {
+      if (group.length !== 1) continue
+      const move = group[0]
+      add(list, labels, {
+        group: 'Go',
+        command: `go ${move.dir.toLowerCase()} to ${move.name}`,
+        why: 'connected road',
+      })
     }
   }
 
-  if (state.sceneId === 'ch1:p-pipe') push(list, labels, 'search the grate')
-  if (state.sceneId === 'ch1:p-clerk') push(list, labels, 'search the tablet')
-  if (state.sceneId === 'ch1:p-oil') push(list, labels, 'search the hull')
-
-  const mouth = !!(who || scene.speaker || talkIntentsFor(scene.id).length)
+  const mouth = !!(personAtScene(scene.id) || scene.speaker || talkIntentsFor(scene.id).length)
+  const fightButton = labels.some((label) => /\b(fight|attack)\b/i.test(label) || /\bscrap the\b/i.test(label))
   if (
     !mouth &&
+    !fightButton &&
+    !sceneSwallowsFight(scene, state) &&
     roadPressureScene(scene.id) &&
     scene.kind !== 'talk' &&
     scene.kind !== 'crisis' &&
     scene.kind !== 'ending'
   ) {
-    push(list, labels, 'fight the road')
-  }
-
-  if (!press) {
-    const moves = compassMoves(state)
-    for (const move of moves) push(list, labels, compassCommand(moves, move))
+    add(list, labels, {
+      group: 'Fight',
+      command: 'fight the road',
+      why: 'something steps into the grit',
+    })
   }
 
   return list
 }
 
+export function hiddenCommands(state: GameState, labels: string[]): string[] {
+  return helpEntries(state, labels).map((entry) => entry.command)
+}
+
 export function helpText(state: GameState, labels: string[]): string {
-  const cmds = hiddenCommands(state, labels)
-  if (!cmds.length) return 'Nothing hidden to type here. Try look.'
-  return `Things you could try here:\n${cmds.join('\n')}`
+  const cmds = helpEntries(state, labels)
+  if (!cmds.length) return 'Nothing hidden here. Try look.'
+  return ['Things you could try:'].concat(cmds.map((entry) => entry.command)).join('\n')
 }

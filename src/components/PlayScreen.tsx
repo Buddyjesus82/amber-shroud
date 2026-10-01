@@ -25,7 +25,9 @@ import { bayLookout } from '../game/campJob'
 import { isPressureOverlay, pressureFace } from '../game/hunter'
 import { isShopOpen } from '../game/trade'
 import type { Choice, Faction, GameState } from '../game/types'
+import { helpEntries } from '../game/help'
 import { HeatExplainer, HeatTip } from './HeatGuide'
+import { HelpCard } from './HelpCard'
 import { InventorySheet } from './InventorySheet'
 import { JournalSheet } from './JournalSheet'
 import { MapSheet } from './MapSheet'
@@ -54,7 +56,9 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
   const scene = sceneOf(state)
   const hub = state.hubId ? HUBS[state.hubId] : null
   const storyRef = useRef<HTMLDivElement>(null)
+  const sayRef = useRef<HTMLInputElement>(null)
   const [draft, setDraft] = useState('')
+  const [helpOpen, setHelpOpen] = useState(false)
   const [kit, setKit] = useState(false)
   const [mapOpen, setMapOpen] = useState(false)
   const [journalOpen, setJournalOpen] = useState(false)
@@ -175,8 +179,19 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
   function submitIntent() {
     const t = draft.trim()
     if (!t) return
+    if (/^(help|\?)$/i.test(t)) {
+      setDraft('')
+      setHelpOpen(true)
+      return
+    }
     setDraft('')
     onChange(interpret(state, t))
+  }
+
+  function pickHelp(command: string) {
+    setDraft(command)
+    setHelpOpen(false)
+    requestAnimationFrame(() => sayRef.current?.focus())
   }
 
   const artSrc = `${import.meta.env.BASE_URL}covers/${playCoverFile(playCoverKey(state, scene))}?v=37`
@@ -333,6 +348,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
             }}
           >
             <input
+              ref={sayRef}
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               placeholder={
@@ -362,6 +378,16 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
         ) : null}
       </div>
 
+      {helpOpen ? (
+        <HelpCard
+          entries={helpEntries(
+            state,
+            optionRows.map((row) => row.label),
+          )}
+          onClose={() => setHelpOpen(false)}
+          onPick={pickHelp}
+        />
+      ) : null}
       {kit ? <InventorySheet state={state} onClose={() => setKit(false)} onChange={onChange} /> : null}
       {mapOpen ? <MapSheet state={state} onClose={() => setMapOpen(false)} onChange={onChange} /> : null}
       {journalOpen ? <JournalSheet state={state} onClose={() => setJournalOpen(false)} /> : null}

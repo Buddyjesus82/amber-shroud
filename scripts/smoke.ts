@@ -31,6 +31,7 @@ import {
 } from '../src/game/doorPick.ts'
 import type { GameState } from '../src/game/types.ts'
 import { playCoverKey } from '../src/game/art.ts'
+import { helpEntries, helpText } from '../src/game/help.ts'
 import { equippedShell } from '../src/game/kit.ts'
 import { repairLoadedState } from '../src/game/repair.ts'
 import { pressureFace } from '../src/game/hunter.ts'
@@ -2481,40 +2482,36 @@ for (const file of walkTs(new URL('../src', import.meta.url).pathname)) {
 }
 assert(!statLabel.test(readFileSync(new URL('../README.md', import.meta.url), 'utf8')), 'README uses Strike/Shell')
 
-function helpCommands(flash: string): string[] {
-  const marker = 'Things you could try here:'
-  const at = flash.indexOf(marker)
-  if (at < 0) return []
-  return flash
-    .slice(at + marker.length)
-    .split('\n')
-    .map((line) => line.trim())
-    .filter(Boolean)
-}
-
 function assertHelpResolves(s: GameState, where: string) {
   const helped = interpret(s, 'help')
   const flash = helped.flash ?? ''
   assert(!!flash && !flash.toLowerCase().includes('miss'), `${where} help is not a miss`)
-  for (const label of visibleChoices(s).map((c) => c.label)) {
-    if (label.length >= 12) assert(!flash.includes(label), `${where} help does not repeat "${label}"`)
+  const labels = visibleChoices(s).map((c) => c.label)
+  const entries = helpEntries(s, labels)
+  for (const label of labels) {
+    if (label.length < 12) continue
+    for (const entry of entries) {
+      const line = `${entry.command}: ${entry.why}`
+      assert(!line.includes(label), `${where} help does not repeat "${label}"`)
+    }
   }
-  const cmds = helpCommands(flash)
-  if (!cmds.length) {
-    assert(flash.includes('Nothing hidden to type here'), `${where} says when nothing is hidden`)
+  if (!entries.length) {
+    assert(flash.includes('Nothing hidden here'), `${where} says when nothing is hidden`)
     assert(flash.toLowerCase().includes('look'), `${where} empty help still mentions look`)
+    assert(helpText(s, labels).includes('Nothing hidden here. Try look.'), `${where} empty help copy`)
     return
   }
-  assert(flash.includes('Things you could try here:'), `${where} help has the header`)
-  for (const cmd of cmds) {
+  assert(flash.includes('Things you could try'), `${where} help has the header`)
+  for (const entry of entries) {
+    assert(entry.why.trim().length > 0, `${where} "${entry.command}" has a why`)
     let next: GameState
     try {
-      next = interpret(s, cmd)
+      next = interpret(s, entry.command)
     } catch (err) {
-      throw new Error(`${where} "${cmd}" threw: ${(err as Error).message}`)
+      throw new Error(`${where} "${entry.command}" threw: ${(err as Error).message}`)
     }
     const moved = next.sceneId !== s.sceneId || !!next.flags.encounterHere || !!next.flags.hunterHere
-    assert(moved || !(next.flash ?? '').startsWith('Miss'), `${where} "${cmd}" resolves (${next.flash ?? ''})`)
+    assert(moved || !(next.flash ?? '').startsWith('Miss'), `${where} "${entry.command}" resolves (${next.flash ?? ''})`)
   }
 }
 
@@ -2525,7 +2522,18 @@ function assertHelpResolves(s: GameState, where: string) {
   const bay = applyEffect(newGame('prisoner'), { goto: 'camp:bay', add: { wrench: 1 }, flag: quiet })
   assert(!bay.flags.encounterHere, 'bay help is not standing in a fight')
   assertHelpResolves(bay, 'bay before look')
-  assert((interpret(bay, 'help').flash ?? '').includes('trade wrench to Pike'), 'wrench trade is hidden until you look')
+  const bayHelp = helpEntries(bay, visibleChoices(bay).map((c) => c.label)).map((e) => e.command)
+  assert(bayHelp.includes('trade wrench to Pike'), 'wrench trade is hidden until you look')
+  assert(!bayHelp.some((c) => /^go\b/.test(c)), 'bay help does not list map exits')
+  const lookedHelp = helpEntries(
+    applyEffect(bay, { flag: { bayLooked: true } }),
+    visibleChoices(applyEffect(bay, { flag: { bayLooked: true } })).map((c) => c.label),
+  ).map((e) => e.command)
+  assert(!lookedHelp.includes('trade wrench to Pike'), 'wrench trade leaves help once the button shows')
+  const oil = applyEffect(newGame('prisoner'), { goto: 'camp:jaxson', flag: { encounterAt: 9999 } })
+  const oilHelp = helpEntries(oil, visibleChoices(oil).map((c) => c.label)).map((e) => e.command)
+  assert(!oilHelp.some((c) => /oil-tooth/i.test(c)), 'Oil-Tooth conversation does not list him again')
+  assert(!oilHelp.some((c) => /^go\b/.test(c)), 'Oil-Tooth conversation does not list map exits')
   assertHelpResolves(applyEffect(bay, { flag: { bayLooked: true } }), 'bay after look')
   assertHelpResolves(applyEffect(newGame('prisoner'), { goto: 'camp:kaelen', flag: quiet }), 'kaelen')
   assertHelpResolves(applyEffect(newGame('prisoner'), { goto: 'camp:yard', flag: quiet }), 'yard')
