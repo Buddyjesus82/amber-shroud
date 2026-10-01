@@ -61,6 +61,28 @@ import type { Choice, DoorId, Effect, EquipSlot, FlagMap, GameState, ItemId, Sce
  */
 export const KAELEN_APPEARANCE = { quietScenes: 8, tickMod: 11 } as const
 
+/**
+ * Opening cells and pens. His pack does not stop in these, on any door.
+ * Naming him in dialogue is still allowed. Once the player is out, the usual pass applies.
+ */
+export const KAELEN_HELD_SCENES = [
+  'open:prisoner',
+  'camp:cages',
+  'camp:shiv',
+  'camp:jaxson',
+  'camp:jaxson-cache',
+  'camp:jaxson-drop',
+  'open:outcast',
+  'open:vessel',
+  'thresh:cell',
+  'thresh:shrine',
+  'crisis:camp',
+] as const
+
+export function kaelenHeld(sceneId: string): boolean {
+  return (KAELEN_HELD_SCENES as readonly string[]).includes(sceneId)
+}
+
 export function newGame(door: DoorId): GameState {
   const d = DOORS[door]
   const state: GameState = {
@@ -532,6 +554,7 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   if (
     lingered &&
     place &&
+    !kaelenHeld(next.sceneId) &&
     !next.flags.kaelenPassing &&
     !next.flags.hunterHere &&
     !next.flags.encounterHere &&
@@ -1050,7 +1073,7 @@ export function visibleChoices(state: GameState): Choice[] {
 }
 
 function withKaelenPass(state: GameState, rows: Choice[]): Choice[] {
-  if (!state.flags.kaelenPassing || state.sceneId === 'roam:kaelen') return rows
+  if (!state.flags.kaelenPassing || state.sceneId === 'roam:kaelen' || kaelenHeld(state.sceneId)) return rows
   return [
     ...rows,
     {

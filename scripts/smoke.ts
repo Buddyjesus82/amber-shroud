@@ -8,6 +8,7 @@ import {
   huntGap,
   interpret,
   KAELEN_APPEARANCE,
+  KAELEN_HELD_SCENES,
   isChoiceOn,
   newGame,
   scavenge,
@@ -2670,6 +2671,40 @@ function assertHelpResolves(s: GameState, where: string) {
   pass = applyEffect(pass, { ticks: 1 })
   assert(pass.flags.kaelenPassing, 'quiet yard on the tick brings Kaelen through')
   assert(pass.flags.kaelenHub === 'camp04', 'passing Kaelen remembers Camp-04')
+  const heldDoors = {
+    'open:prisoner': 'prisoner',
+    'camp:cages': 'prisoner',
+    'camp:shiv': 'prisoner',
+    'camp:jaxson': 'prisoner',
+    'camp:jaxson-cache': 'prisoner',
+    'camp:jaxson-drop': 'prisoner',
+    'open:outcast': 'outcast',
+    'open:vessel': 'vessel',
+    'thresh:cell': 'vessel',
+    'thresh:shrine': 'vessel',
+    'crisis:camp': 'prisoner',
+  } as const
+  assert(
+    KAELEN_HELD_SCENES.length === Object.keys(heldDoors).length &&
+      KAELEN_HELD_SCENES.every((id) => id in heldDoors),
+    'Kaelen is held out of every opening cell and pen',
+  )
+  for (const sceneId of KAELEN_HELD_SCENES) {
+    let held = applyEffect(newGame(heldDoors[sceneId]), { goto: sceneId, flag: { encounterAt: 9999 } })
+    held = {
+      ...held,
+      heat: { cartel: 0, seekers: 0, strays: 0 },
+      ticks: 10,
+      flags: { ...held.flags, huntQuiet: 7, encounterAt: 10 },
+    }
+    delete held.flags.encounterHere
+    delete held.flags.kaelenPassing
+    held = applyEffect(held, { ticks: 1 })
+    assert(!held.flags.kaelenPassing, `Kaelen does not spawn in ${sceneId}`)
+    const showing = { ...held, flags: { ...held.flags, kaelenPassing: true, kaelenHub: held.hubId } }
+    assert(!ids(showing).includes('kaelen-pass'), `Kaelen does not stop in ${sceneId}`)
+  }
+  assert(/Kaelen/.test(bodyOf(applyEffect(newGame('prisoner'), { goto: 'camp:jaxson' }))), 'Oil-Tooth may still name Kaelen')
 }
 
 {
