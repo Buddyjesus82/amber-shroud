@@ -12,7 +12,8 @@ import {
 } from './hunger'
 import { GLOBAL_INTENTS, matchChoiceText, matchIntent } from './intent'
 import { helpText } from './help'
-import { compassLine, matchCompass, travelGate } from './map'
+import { classifyLook, directedLookFlash, pressureLookFlash, roomLookEffect } from './look'
+import { matchCompass, travelGate } from './map'
 import {
   atGuardStation,
   atKaelenInvoice,
@@ -742,6 +743,7 @@ const REST_SCENES = new Set(['camp:bay', 'camp:lean', 'camp:cages', 'maw:tuner',
 export function interpret(state: GameState, text: string): GameState {
   const scene = sceneOf(state)
   const bare = text.trim().toLowerCase()
+  const said = bare === 'l' || /^l\s/.test(bare) ? bare.replace(/^l\b/, 'look') : bare
   if (bare === 'help' || bare === '?') {
     const labels = visibleChoices(state).map((c) => c.label)
     const face = isPressureOverlay(state)
@@ -832,9 +834,22 @@ export function interpret(state: GameState, text: string): GameState {
     if (pressed && isChoiceOn(state, pressed.enable)) {
       return withVerb(applyEffect(state, pressed.effects), pressed.id)
     }
-    if (/\blook\b/.test(bare)) {
-      const knock = pressureAppend(state) ?? 'The interrupt is the ground.'
-      return withVerb(persist({ ...state, flash: `${knock}\n\n${compassLine(state)}`, updatedAt: Date.now() }), 'look')
+    const knockLook = classifyLook(said)
+    if (knockLook?.kind === 'room') {
+      return withVerb(persist({ ...state, flash: pressureLookFlash(state), updatedAt: Date.now() }), 'look')
+    }
+    if (knockLook?.kind === 'dir') {
+      return withVerb(persist({ ...state, flash: directedLookFlash(state, knockLook.dir), updatedAt: Date.now() }), 'look')
+    }
+    if (knockLook) {
+      return withVerb(
+        persist({
+          ...state,
+          flash: 'The one in front of you is the conversation. The ground under them can wait.',
+          updatedAt: Date.now(),
+        }),
+        'look',
+      )
     }
     return withVerb(
       persist({
@@ -871,15 +886,13 @@ export function interpret(state: GameState, text: string): GameState {
     }
   }
 
-  if (/^(look|look around|search|examine|inspect)$/.test(bare)) {
-    const prose = sceneProse(state)
-    return withVerb(
-      applyEffect(state, {
-        flag: state.sceneId === 'camp:bay' ? { bayLooked: true } : undefined,
-        flash: `${prose}\n\n${compassLine(state)}`,
-      }),
-      'look',
-    )
+  const aimed = classifyLook(said)
+  if (aimed?.kind === 'room') {
+    const labels = visibleChoices(state).map((c) => c.label)
+    return withVerb(applyEffect(state, roomLookEffect(state, labels)), 'look')
+  }
+  if (aimed?.kind === 'dir') {
+    return withVerb(persist({ ...state, flash: directedLookFlash(state, aimed.dir), updatedAt: Date.now() }), 'look')
   }
 
   if (!isPressureOverlay(state)) {
@@ -923,7 +936,7 @@ export function interpret(state: GameState, text: string): GameState {
     return withVerb(applyEffect(state, pressed.effects), pressed.id)
   }
 
-  if (/^(?:look(?: around)?|search|examine|inspect)\s+\S/.test(bare)) {
+  if (/^(?:look(?: around)?|search|examine|inspect)\s+\S/.test(said)) {
     const look = offButton(state, text, scene, shown.map((c) => c.label))
     if (look) return withVerb(applyEffect(state, look.effects), look.verb)
   }

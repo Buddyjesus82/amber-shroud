@@ -12,13 +12,14 @@ import {
   newGame,
   scavenge,
   sceneOf,
+  sceneProse,
   skim,
   travelTo,
   unequipSlot,
   visibleChoices,
 } from '../src/game/engine.ts'
 import { DOORS, HUBS, ITEMS } from '../src/game/content/catalog.ts'
-import { getScene } from '../src/game/content/index.ts'
+import { ALL_SCENES, getScene } from '../src/game/content/index.ts'
 import { PEOPLE } from '../src/game/people.ts'
 import { rollScavenge } from '../src/game/scavenge.ts'
 import { kaelenOffers } from '../src/game/trade.ts'
@@ -29,7 +30,7 @@ import {
   tapOverwriteConfirm,
   tapResume,
 } from '../src/game/doorPick.ts'
-import type { GameState } from '../src/game/types.ts'
+import type { DoorId, GameState } from '../src/game/types.ts'
 import { playCoverKey } from '../src/game/art.ts'
 import { helpEntries, helpText } from '../src/game/help.ts'
 import { equippedShell } from '../src/game/kit.ts'
@@ -2207,6 +2208,80 @@ s = pick(s, 'keep')
   assert(!looked.flags.encounterHere, 'examine does not start a fight')
 }
 
+{
+  const squash = (text: string) => text.replace(/\s+/g, ' ').trim()
+  const exitsOf = (flash: string) => {
+    const parts = flash.split('\n').map((line) => line.trim()).filter(Boolean)
+    return parts[parts.length - 1] ?? ''
+  }
+  const dupDirs = (line: string) => {
+    const labels = [...line.matchAll(/\b(North|South|East|West):/g)].map((hit) => hit[1])
+    return labels.filter((label, index) => labels.indexOf(label) !== index)
+  }
+  for (const door of ['prisoner', 'outcast', 'vessel'] as const satisfies readonly DoorId[]) {
+    for (const scene of ALL_SCENES) {
+      const stood: GameState = {
+        ...newGame(door),
+        sceneId: scene.id,
+        hubId: scene.hubId ?? null,
+        chapterId: scene.chapterId ?? null,
+        ticks: 1,
+        pressure: 0,
+        flags: { ...newGame(door).flags, encounterAt: 9999 },
+      }
+      const body = squash(sceneProse(stood))
+      const raw = squash(scene.body)
+      const looked = interpret(stood, 'look')
+      const flash = looked.flash ?? ''
+      const flat = squash(flash)
+      assert(flash.length > 0, `${door} ${scene.id} look has text`)
+      assert(flat !== body && !flat.includes(body), `${door} ${scene.id} look repeats the scene prose`)
+      assert(!raw || !flat.includes(raw), `${door} ${scene.id} look contains the raw scene body`)
+      const dup = dupDirs(exitsOf(flash))
+      assert(dup.length === 0, `${door} ${scene.id} look repeats direction ${dup.join(', ')}: ${exitsOf(flash)}`)
+      assert(looked.sceneId === scene.id, `${door} ${scene.id} look stays put`)
+    }
+  }
+
+  let bay = newGame('prisoner')
+  bay = applyEffect(bay, { sap: 6, goto: 'camp:bay', enterHub: 'camp04', add: { wrench: 1 }, flag: { encounterAt: 9999 } })
+  const bayLook = interpret(bay, 'look')
+  assert(/lash cord/i.test(bayLook.flash ?? ''), 'Skiff Bay look points at the lash cord')
+  assert(/resin bolt/i.test(bayLook.flash ?? ''), 'Skiff Bay look points at Pike’s bolt')
+  assert(/Sarn/i.test(bayLook.flash ?? '') && /Vetch/i.test(bayLook.flash ?? ''), 'Skiff Bay look points at Sarn and Vetch')
+  assert(/wrench/i.test(bayLook.flash ?? ''), 'Skiff Bay look points at the wrench trade')
+  assert(/South: Oil-Tooth's Stall, The Wire/.test(bayLook.flash ?? ''), 'Skiff Bay south exits share one label')
+  assert(!/South:[\s\S]*South:/.test(exitsOf(bayLook.flash ?? '')), 'Skiff Bay exits do not repeat South')
+  assert(bayLook.flags.bayLooked, 'room look still reveals the bay')
+  const spent = applyEffect(bay, {
+    flag: { lashCord: true, bayPikeTook: true, baySarnTook: true, bayVetchTook: true, wrenchBayTrade: 'pike' },
+    remove: { wrench: 1 },
+  })
+  const spentLook = interpret(spent, 'look')
+  assert(!/sits on the runner/i.test(spentLook.flash ?? ''), 'taken lash cord leaves the look')
+  assert(!/resin bolt/i.test(spentLook.flash ?? ''), 'taken bolt leaves the look')
+  assert(!/wrench will buy/i.test(spentLook.flash ?? ''), 'spent wrench trade leaves the look')
+  const north = interpret(bay, 'look north')
+  assert(/Guard Station/i.test(north.flash ?? ''), 'look north names the Guard Station')
+  assert(!squash(north.flash ?? '').includes(squash(sceneProse(bay))), 'look north does not paste the bay')
+  assert(!north.flags.bayLooked, 'look north does not spend the room look')
+  const alias = interpret(
+    applyEffect(newGame('prisoner'), { goto: 'camp:cages', enterHub: 'camp04', flag: { encounterAt: 9999 } }),
+    'l',
+  )
+  assert(/cage|Oil-Tooth/i.test(alias.flash ?? ''), 'l is a room look')
+  const here = interpret(
+    applyEffect(newGame('prisoner'), { goto: 'camp:cages', enterHub: 'camp04', flag: { encounterAt: 9999 } }),
+    'look here',
+  )
+  assert(/cage|Oil-Tooth/i.test(here.flash ?? ''), 'look here is a room look')
+  const room = interpret(
+    applyEffect(newGame('prisoner'), { goto: 'camp:cages', enterHub: 'camp04', flag: { encounterAt: 9999 } }),
+    'examine room',
+  )
+  assert(/cage|Oil-Tooth/i.test(room.flash ?? ''), 'examine room is a room look')
+}
+
 s = newGame('prisoner')
 s = pick(s, 'pens')
 s = applyEffect(s, { sap: 6, goto: 'camp:yard', enterHub: 'camp04' })
@@ -2433,7 +2508,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v37'"), 'SW bumped so Rim leave reaches Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v38'"), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -2455,7 +2530,7 @@ assert(/top:\s*min\(28\.125cqi,\s*46cqb\)/.test(css), 'story starts at the cover
 assert(css.includes('rgba(12, 7, 4, 0.58)'), 'story scrim stays translucent so cover art shows through')
 assert(!css.includes('rgba(12, 7, 4, 0.88)'), 'story scrim is lighter than the v32 slab')
 const playSrc = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
-assert(playSrc.includes('?v=37'), 'scene cover URLs are cache-busted with the service worker')
+assert(playSrc.includes('?v=38'), 'scene cover URLs are cache-busted with the service worker')
 assert(!css.includes('object-position: center 68%'), 'scene art no longer crops toward the ground')
 assert(!css.includes('height: 56px'), 'short phones no longer squash covers into a head-cropping strip')
 assert(css.includes('place-items: center'), 'game screen is centered on the backdrop')
