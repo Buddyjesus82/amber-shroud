@@ -131,15 +131,16 @@ function authored(state: GameState, scene: Scene): string[] {
 
   if (id === 'camp:bay') {
     if (on(state, 'striderHot')) push(lines, 'The ride is the dunes, heading or not.')
-    if (!on(state, 'lashCord') && !on(state, 'bayPikeTook')) {
-      push(lines, "A lash cord sits on the runner of Pike's skiff, and a resin bolt there will come free.")
+    const bolt = !on(state, 'bayPikeTook') && has(state, 'wrench')
+    if (!on(state, 'lashCord') && bolt) {
+      push(lines, "A lash cord hangs on a post in Pike's bay, and the wrench will turn a resin bolt out of his skiff's rear leg.")
     } else if (!on(state, 'lashCord')) {
-      push(lines, "A lash cord sits on the runner of Pike's skiff.")
-    } else if (!on(state, 'bayPikeTook')) {
-      push(lines, "A resin bolt on Pike's skiff will come free if you take it.")
+      push(lines, "A lash cord hangs on a post in Pike's bay.")
+    } else if (bolt) {
+      push(lines, "The wrench will turn a resin bolt out of the rear leg of Pike's skiff.")
     }
-    if (!on(state, 'baySarnTook')) push(lines, "Sarn's count will skip if you take the difference.")
-    if (!on(state, 'bayVetchTook')) push(lines, "Vetch's cuff hides a curl of wire.")
+    if (!on(state, 'baySarnTook')) push(lines, "Sarn's crate has a pile of scrap twists beside the counted bolts.")
+    if (!on(state, 'bayVetchTook')) push(lines, "Vetch has copper wire on a crate in her bay.")
     if (has(state, 'wrench') && !on(state, 'wrenchBayTrade') && lines.length < 4) {
       push(
         lines,
@@ -150,6 +151,39 @@ function authored(state: GameState, scene: Scene): string[] {
     }
     if (!lines.length) push(lines, 'Their pockets are already lighter.')
     return lines.slice(0, 4)
+  }
+
+  if (id === 'camp:bay-pike') {
+    if (!on(state, 'lashCord')) push(lines, 'A lash cord hangs coiled on a post at the left of the bay.')
+    if (!on(state, 'bayPikeTook')) {
+      if (has(state, 'wrench')) {
+        push(lines, 'A resin bolt with a corporate tag sits in the knee joint of a rear leg, on the side Pike is not working. The wrench will turn it out.')
+      } else if (!on(state, 'wrenchBayTrade')) {
+        push(lines, 'A resin bolt with a corporate tag sits in the knee joint of a rear leg, on the side Pike is not working. It is threaded tight and needs a wrench.')
+      }
+    }
+    if (has(state, 'wrench') && !on(state, 'wrenchBayTrade') && !on(state, 'lashCord')) {
+      push(lines, 'Pike will trade the cord for the wrench.')
+    }
+    if (!lines.length) push(lines, 'Pike keeps scraping. Nothing else in his bay is loose.')
+    return lines
+  }
+
+  if (id === 'camp:bay-sarn') {
+    if (!on(state, 'baySarnTook')) push(lines, 'Counted rows of bolts and a small pile of scrap twists sit on his crate.')
+    else push(lines, 'The rows of bolts on his crate are counted again. The scrap pile is one twist short.')
+    if (has(state, 'wrench') && !on(state, 'wrenchBayTrade')) push(lines, 'Sarn will count you a twist of scrap for the wrench.')
+    return lines
+  }
+
+  if (id === 'camp:bay-vetch') {
+    if (state.flags.wrenchBayTrade !== 'vetch') {
+      push(lines, 'A Drop vial sits under her skiff, by a leg.')
+      if (has(state, 'wrench') && !on(state, 'wrenchBayTrade')) push(lines, 'Vetch will trade the vial for the wrench.')
+    }
+    if (!on(state, 'bayVetchTook')) push(lines, 'A coil of copper wire sits on a crate at the right.')
+    if (!lines.length) push(lines, 'Vetch keeps welding. Nothing else in her bay is loose.')
+    return lines
   }
 
   if (id === 'camp:cages') {
@@ -649,7 +683,7 @@ export function roomLookFlash(state: GameState, labels: string[]): string {
 
 export function roomLookEffect(state: GameState, labels: string[]): Effect {
   return {
-    flag: state.sceneId === 'camp:bay' ? { bayLooked: true } : undefined,
+    flag: state.sceneId.startsWith('camp:bay') ? { bayLooked: true } : undefined,
     flash: roomLookFlash(state, labels),
   }
 }

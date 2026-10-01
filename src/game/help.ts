@@ -134,24 +134,63 @@ function mapShowsRoads(state: GameState, scene: Scene): boolean {
 export function sceneSearch(state: GameState, target: string): Effect | null {
   const t = norm(target).replace(/^the /, '')
   const id = state.sceneId
-  if (
-    id === 'camp:bay' &&
-    (t === 'north hull' ||
-      t === 'north bay' ||
-      t === 'hull' ||
-      t === 'pike' ||
-      t === 'skiff' ||
-      t.includes('lash') ||
-      t.includes('pike'))
-  ) {
-    const cord = !!state.flags.lashCord
-    const trade = (state.items.wrench ?? 0) > 0 && !state.flags.wrenchBayTrade && !cord
-    const flash = cord
-      ? "Pike is still scraping his skiff in the north bay. The lash cord is already in your hand."
-      : trade
-        ? "Pike scrapes his skiff in the north bay and does not look up. A lash cord is on the runner. You can steal it, or trade him the wrench for it."
-        : "Pike scrapes his skiff in the north bay and does not look up. A lash cord is on the runner."
-    return { flag: { bayLooked: true }, flash }
+  if (id === 'camp:bay') {
+    if (t === 'north hull' || t === 'north bay' || t === 'pike' || t.includes('pike') || t.includes('lash') || t === 'cord') {
+      return { goto: 'camp:bay-pike', flag: { bayLooked: true } }
+    }
+    if (t === 'east bay' || t === 'sarn' || t.includes('sarn')) {
+      return { goto: 'camp:bay-sarn', flag: { bayLooked: true } }
+    }
+    if (t === 'south bay' || t === 'vetch' || t.includes('vetch')) {
+      return { goto: 'camp:bay-vetch', flag: { bayLooked: true } }
+    }
+    if (t === 'center bay' || t === 'centre bay' || t.includes('oil')) {
+      return {
+        flash: bayLookout(state)
+          ? 'Oil-Tooth is on his back under his skiff in the center bay, hotwiring it.'
+          : "Oil-Tooth's skiff stands in the center bay with nobody at it.",
+      }
+    }
+  }
+  if (id === 'camp:bay-pike') {
+    if (t.includes('cord') || t.includes('lash') || t === 'post') {
+      return {
+        flash: state.flags.lashCord
+          ? 'The post is bare. The lash cord is already in your hand.'
+          : 'A lash cord hangs coiled on a post at the left of the bay.',
+      }
+    }
+    if (t.includes('bolt') || t.includes('leg') || t.includes('joint') || t.includes('tag')) {
+      if (state.flags.bayPikeTook) return { flash: 'Pike watches his rear leg now. Nothing more comes off it without a shout.' }
+      if ((state.items.wrench ?? 0) > 0) {
+        return { flash: 'A resin bolt with a corporate tag sits in the knee joint of a rear leg, on the side Pike is not working. The wrench will turn it out.' }
+      }
+      return { flash: 'A resin bolt with a corporate tag sits in the knee joint of a rear leg. It is threaded tight and needs a wrench.' }
+    }
+  }
+  if (id === 'camp:bay-sarn' && (t.includes('crate') || t.includes('bolt') || t.includes('scrap') || t.includes('twist'))) {
+    return {
+      flash: state.flags.baySarnTook
+        ? 'The rows of bolts on his crate are counted again. The scrap pile is one twist short.'
+        : 'Counted rows of bolts and a small pile of scrap twists sit on his crate.',
+    }
+  }
+  if (id === 'camp:bay-vetch') {
+    if (t.includes('vial') || t.includes('drop')) {
+      return {
+        flash:
+          state.flags.wrenchBayTrade === 'vetch'
+            ? 'The spot under her skiff is empty. The vial is yours now.'
+            : 'A Drop vial sits under her skiff, by a leg. Vetch keeps it for trade.',
+      }
+    }
+    if (t.includes('wire') || t.includes('crate') || t.includes('copper')) {
+      return {
+        flash: state.flags.bayVetchTook
+          ? 'The crate is bare. The copper wire is gone.'
+          : 'A coil of copper wire sits on a crate at the right.',
+      }
+    }
   }
   if (id === 'ch1:p-pipe' && (t === 'grate' || t === 'bolt' || t === 'pipe' || t === 'fence')) {
     const wrench = (state.items.wrench ?? 0) > 0
@@ -191,20 +230,13 @@ export function helpEntries(state: GameState, labels: string[]): HelpEntry[] {
   const partner = partnerId(state, scene)
   const prose = proseOf(state, scene)
 
-  if (state.sceneId === 'camp:bay' && !state.flags.bayLooked && !state.flags.lashCord) {
-    add(list, labels, {
-      group: 'Look',
-      command: 'search north bay',
-      why: "a lash cord is on Pike's skiff",
-    })
-  }
-
+  const wrench = (state.items.wrench ?? 0) > 0
   if (state.sceneId === 'camp:bay') {
-    if (!state.flags.bayPikeTook) {
+    if (!state.flags.bayPikeTook && wrench) {
       add(list, labels, {
         group: 'Take',
         command: 'steal bolt from Pike',
-        why: "a resin bolt comes off Pike's skiff in the north bay",
+        why: "the wrench turns a resin bolt out of Pike's rear leg",
       })
     }
     if (!state.flags.baySarnTook) {
@@ -218,32 +250,39 @@ export function helpEntries(state: GameState, labels: string[]): HelpEntry[] {
       add(list, labels, {
         group: 'Take',
         command: 'steal wire from Vetch',
-        why: "a curl of wire from Vetch's cuff",
+        why: "copper wire sits on a crate in Vetch's bay",
       })
     }
-    if ((state.items.wrench ?? 0) > 0 && !state.flags.wrenchBayTrade) {
+    if (wrench && !state.flags.wrenchBayTrade) {
       if (!state.flags.lashCord) {
         add(list, labels, {
           group: 'Take',
           command: 'trade wrench to Pike',
-          why: "the lash cord comes off Pike's skiff in the north bay",
+          why: 'Pike hands over the lash cord off his post',
         })
       }
-      add(list, labels, {
-        group: 'Take',
-        command: 'trade wrench to Sarn',
-        why: 'one twist of scrap',
-      })
-      add(list, labels, {
-        group: 'Take',
-        command: 'trade wrench to Vetch',
-        why: 'a small Drop comes out of the glove',
-      })
+      add(list, labels, { group: 'Take', command: 'trade wrench to Sarn', why: 'one twist of scrap' })
+      add(list, labels, { group: 'Take', command: 'trade wrench to Vetch', why: 'the Drop vial under her skiff' })
     }
-
-    add(list, labels, { group: 'Talk', command: 'talk Pike', why: 'scrapes his skiff in the north bay' })
+    add(list, labels, { group: 'Talk', command: 'talk Pike', why: 'works a leg of his skiff in the north bay' })
     add(list, labels, { group: 'Talk', command: 'talk Sarn', why: 'counts bolts beside his skiff in the east bay' })
     add(list, labels, { group: 'Talk', command: 'talk Vetch', why: 'welds a cracked skid in the south bay' })
+  }
+
+  if (state.sceneId === 'camp:bay-pike') {
+    if (!state.flags.lashCord) add(list, labels, { group: 'Look', command: 'look cord', why: 'coiled on a post at the left' })
+    if (!state.flags.bayPikeTook && (wrench || !state.flags.wrenchBayTrade)) {
+      add(list, labels, { group: 'Look', command: 'look bolt', why: 'a resin bolt in a rear knee joint' })
+    }
+  }
+  if (state.sceneId === 'camp:bay-sarn') {
+    add(list, labels, { group: 'Look', command: 'look crate', why: 'counted bolts and scrap twists' })
+  }
+  if (state.sceneId === 'camp:bay-vetch') {
+    if (state.flags.wrenchBayTrade !== 'vetch') {
+      add(list, labels, { group: 'Look', command: 'look vial', why: 'a Drop vial under her skiff' })
+    }
+    if (!state.flags.bayVetchTook) add(list, labels, { group: 'Look', command: 'look wire', why: 'copper wire on a crate' })
   }
 
   for (const person of Object.values(PEOPLE)) {
