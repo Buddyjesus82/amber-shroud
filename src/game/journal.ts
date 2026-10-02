@@ -24,7 +24,7 @@ export const RUMORS: Rumor[] = [
     id: 'sybella',
     title: 'The woman on the skiff',
     flag: 'heardSybellaRumor',
-    body: 'A Seeker on a sand-skiff. Cold of faith. She follows sap the way old roads follow light. Cartel mouths call her an enemy. Jaxson calls her a reason to run. Kaelen calls her a fact.',
+    body: 'A Seeker on a sand-skiff. Cold of faith. She follows sap the way old roads follow light. Cartel mouths call her an enemy. Strays call her a reason to run.',
   },
   {
     id: 'opposed',

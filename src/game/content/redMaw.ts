@@ -678,14 +678,20 @@ The gear-marked rib opened a handspan and gave you what was in the mouth of it. 
     id: 'maw:tuner',
     hubId: 'redmaw',
     kind: 'place',
-    title: "Oil-Tooth's Wreck",
-    speaker: 'Oil-Tooth',
-    body: `A wrecked Skiff-Strider, half sunk in a rib's shadow. Jaxson "Oil-Tooth" Vance has made a bench of it. Hoarded parts. A way-out rig that is not a way out yet. The brass jaw ticks when he works.
+    title: 'The Wreck',
+    body: `A wrecked Skiff-Strider lies half sunk in a rib's shadow. Someone has made a bench of it. A big man with a brass jaw works on hoarded parts at the far end and does not look up. He waves a hand at the bench: sit if you want.
 
-"Repairs. A side job hauling parts. Salve if you are cut. I build exits for people the Hollows keep. You are early." You can bind his cut, rest, or haul. None of it opens Kallik's cache.`,
+You can rest here or haul parts for him. None of it opens Kallik's cache.`,
     variants: [
       {
-        if: { flag: 'oilResentful' },
+        if: { door: 'prisoner' },
+        mode: 'replace',
+        body: `A wrecked Skiff-Strider, half sunk in a rib's shadow. Jaxson "Oil-Tooth" Vance has made a bench of it. Hoarded parts. A way-out rig that is not a way out yet. The brass jaw ticks when he works.
+
+"Repairs. A side job hauling parts. Salve if you are cut. I build exits for people the Hollows keep. You are early." You can bind his cut, rest, or haul. None of it opens Kallik's cache.`,
+      },
+      {
+        if: { all: [{ door: 'prisoner' }, { flag: 'oilResentful' }] },
         mode: 'replace',
         body: `He is here, and he is hurt. The jaw is fused wrong from a fall he took alone. You skipped the station. He did not.
 
@@ -706,7 +712,7 @@ The gear-marked rib opened a handspan and gave you what was in the mouth of it. 
       {
         id: 'heal',
         label: 'Bind his cut with salve',
-        show: { all: [{ flag: 'oilResentful' }, { item: 'salve' }] },
+        show: { all: [{ door: 'prisoner' }, { flag: 'oilResentful' }, { item: 'salve' }] },
         effects: {
           remove: { salve: 1 },
           unsetFlag: ['oilResentful'],
@@ -718,7 +724,7 @@ The gear-marked rib opened a handspan and gave you what was in the mouth of it. 
       {
         id: 'heal-drop',
         label: 'Pour a Drop on the cut',
-        show: { all: [{ flag: 'oilResentful' }, { item: 'vial_drop' }] },
+        show: { all: [{ door: 'prisoner' }, { flag: 'oilResentful' }, { item: 'vial_drop' }] },
         effects: {
           remove: { vial_drop: 1 },
           add: { vial_empty: 1 },

@@ -11,9 +11,17 @@ function nearOil(state: GameState): boolean {
   return friend && (id.startsWith('maw:tuner') || id.startsWith('camp:bay') || id.startsWith('camp:lean') || id === 'ch1:p-oil')
 }
 
+/** Outcast: once you have helped Corvin Pryce, he pulls you up anywhere on Spine ground. */
+export function nearCorvin(state: GameState): boolean {
+  return !!state.flags.corvinHelped && (state.hubId === 'spine' || state.sceneId.startsWith('spine:'))
+}
+
 export function downedNote(state: GameState): string {
   if (nearOssa(state)) {
     return `You collapse. Too hurt to fight. Ossa's stilts plant beside your head and she hauls you up. It costs — a Drop if you have one, sap if you don't. "Get somewhere that is not the ground."`
+  }
+  if (nearCorvin(state)) {
+    return `You collapse. Too hurt to fight. Boots in the grit, then Corvin's hands under your arms. He drags you behind rock and keeps watch until you can stand. It costs a minute of sap.`
   }
   if (nearOil(state)) {
     return `You collapse. Too hurt to fight. Oil-Tooth swears through the brass and drags you under cover. The pull costs scrap or sap. He is not gentle. You are not dead.`
@@ -51,6 +59,15 @@ export function wakeEffect(state: GameState): Effect {
       flash: payDrop
         ? 'Ossa takes the Drop and pours a little back into you. Health returns. The vial is empty.'
         : 'Ossa spends a minute and a finger of your sap. Health returns. She does not name the cost.',
+    }
+  }
+  if (nearCorvin(state)) {
+    return {
+      health: 2,
+      sap: state.sap > 0 ? -1 : undefined,
+      unsetFlag: ['downed', 'downedNote', 'downedKind', 'hunterHere', 'hunterFrom'],
+      flag: { corvinPulled: true },
+      flash: 'Corvin gets you upright behind the rock. Health returns. The minute on the ground cost sap. "Walk soft," he says.',
     }
   }
   if (nearOil(state)) {

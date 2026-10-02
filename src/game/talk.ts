@@ -136,7 +136,7 @@ const rell: IntentRule[] = [
 const silas: IntentRule[] = [
   {
     tags: TALK,
-    reply: 'Milk eye. Accounting eye. "Talk is not free. Shade is not free. Ask like you mean to pay, Noon-Empty."',
+    reply: 'Milk eye. Accounting eye. He does not look at the brand. "Talk is not free. Shade is not free. Ask like you mean to pay, Noon-Empty."',
     effects: { ticks: 1 },
   },
   {
@@ -152,7 +152,7 @@ const silas: IntentRule[] = [
   },
   {
     tags: TRADE,
-    reply: '"A Drop for a Glint, or scrap enough to patch a tent. I do not take Cartel scrip. Scrip tastes like a leash."',
+    reply: '"Drops, salve, a wrap, a cloak, a needle for resin. Glints or scrap. I do not take Cartel scrip. Scrip tastes like a leash."',
     effects: { ticks: 1 },
   },
   {
@@ -165,7 +165,7 @@ const silas: IntentRule[] = [
 const nim: IntentRule[] = [
   {
     tags: TALK,
-    reply: '"Shade-road is not free. Silas sells the minute. I collect it. Pay or run noon."',
+    reply: 'She talks to the air beside your head. "You know what you did. I collect anyway. Pay or run noon."',
     effects: { ticks: 1 },
   },
   {
@@ -292,6 +292,12 @@ const zafir: IntentRule[] = [
 const ossa: IntentRule[] = [
   {
     tags: TALK,
+    show: { all: [{ door: 'outcast' }, { flagUnset: 'ossaAlly' }] },
+    reply: 'She looks past the brand at the sand. "You know what you did. Ask me for water, not for talk."',
+    effects: { ticks: 1 },
+  },
+  {
+    tags: TALK,
     reply: '"I\'m alive. That is the greeting and the warning. Stilts. Vial. I might walk the lip next Hunger. I might not."',
     effects: { ticks: 1 },
   },
@@ -414,6 +420,79 @@ function match(sceneId: string, tests: (string | ((id: string) => boolean))[]): 
   return tests.some((t) => (typeof t === 'string' ? sceneId === t || sceneId.startsWith(t) : t(sceneId)))
 }
 
+const korvan: IntentRule[] = [
+  {
+    tags: TALK,
+    show: { flagUnset: 'korvanTook' },
+    reply: '"Ask me about Red Maw, the east wash, or the amber. Not about your mark."',
+    effects: { ticks: 1 },
+  },
+  {
+    tags: TALK,
+    show: { flag: 'korvanTook' },
+    reply: 'He keeps his back to you.',
+    effects: { ticks: 1 },
+  },
+  {
+    tags: HELP,
+    reply: '"Water helps me. Scrap helps me. I help you with what I know."',
+    effects: { ticks: 1 },
+  },
+  {
+    tags: TRADE,
+    reply: '"A Drop or two scrap for the Hunger lead. One scrap for the east wash. Silas has the shelf."',
+    effects: { ticks: 1 },
+  },
+  {
+    tags: THREAT,
+    reply: '"The Cartel already did worse to my face than you can." He does not move.',
+    effects: { heat: { strays: 1 }, pressure: 1, ticks: 1 },
+  },
+]
+
+const mira: IntentRule[] = [
+  {
+    tags: [...TALK, ...HELP, ...TRADE],
+    reply: 'She does not answer. She keeps sifting.',
+    effects: { ticks: 1 },
+  },
+  {
+    tags: THREAT,
+    reply: 'She sets the sand down and looks at you until you stop.',
+    effects: { heat: { strays: 1 }, pressure: 1, ticks: 1 },
+  },
+]
+
+const corvin: IntentRule[] = [
+  {
+    tags: TALK,
+    reply: '"I don\'t ask what the mark is for. I ask if you need a way through."',
+    effects: { ticks: 1 },
+  },
+  {
+    tags: HELP,
+    show: { flagUnset: 'corvinHelped' },
+    reply: '"Water, or my prints gone from the wash. Either one, and I walk you past the ford traps."',
+    effects: { ticks: 1 },
+  },
+  {
+    tags: HELP,
+    show: { flag: 'corvinHelped' },
+    reply: '"Find me at the dry ford when you walk east. If you go down on this ridge, I\'ll come get you."',
+    effects: { ticks: 1 },
+  },
+  {
+    tags: TRADE,
+    reply: '"I have nothing to sell. I know where the traps are."',
+    effects: { ticks: 1 },
+  },
+  {
+    tags: THREAT,
+    reply: 'He holds his empty hands up. "I put the rifle down. I\'m not picking anything up for you."',
+    effects: { pressure: 1, ticks: 1 },
+  },
+]
+
 const BY_PERSON: Record<PersonId, IntentRule[]> = {
   oiltooth,
   kaelen,
@@ -427,6 +506,9 @@ const BY_PERSON: Record<PersonId, IntentRule[]> = {
   thalia,
   oram,
   brin,
+  korvan,
+  mira,
+  corvin,
   handler: [
     {
       tags: TALK,
@@ -447,7 +529,7 @@ export function talkIntentsFor(sceneId: string): IntentRule[] {
   const here = personAtScene(sceneId)
   if (here) return BY_PERSON[here.id]
   if (match(sceneId, ['camp:jaxson', 'camp:lean', 'camp:cages'])) return oiltooth
-  if (match(sceneId, ['camp:kaelen', 'spine:kaelen', 'camp:wire', 'spine:well', 'thresh:kaelen', 'thresh:sift'])) {
+  if (match(sceneId, ['camp:kaelen', 'camp:wire', 'thresh:kaelen', 'thresh:sift'])) {
     return kaelen
   }
   if (match(sceneId, ['camp:valerius', 'camp:tower', 'camp:hunter', 'spine:valerius', 'spine:hound', 'spine:hunter'])) {

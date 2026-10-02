@@ -43,6 +43,7 @@ const FIGHT_SECTIONS: HelpSection[] = [
     title: 'WIN',
     rows: [
       { text: 'Their Health hits 0 and they drop. Loot only comes then.' },
+      { text: 'People sometimes carry a Resin Salve on them. Beasts never do.' },
       { text: 'If you both hit 0 in the same exchange, you get the loot and go Down.' },
     ],
   },
@@ -58,12 +59,13 @@ const FIGHT_SECTIONS: HelpSection[] = [
       },
       {
         bullet: true,
-        text: "At Oil-Tooth's stall, Skiff Bay, or his Maw bench, once you work with him: he pulls you up. 2 Health. Costs 1 scrap, or 1 Sap if you have no scrap.",
+        text: "Prisoner, at Oil-Tooth's stall, Skiff Bay, or his Maw bench, once you work with him: he pulls you up. 2 Health. Costs 1 scrap, or 1 Sap if you have no scrap.",
       },
+      { bullet: true, text: 'Outcast, on the Noon Spine, once you have helped Corvin Pryce: he pulls you up. 2 Health. Costs 1 Sap.' },
       { bullet: true, text: 'In Red Maw with Ossa as an ally: she pulls you up. 2 Health. Costs a Drop, or 1 Sap if you have no Drop.' },
       { text: 'If that Sap was your last, the dry-out crisis follows.' },
       {
-        text: 'By door: Prisoner starts in Camp-04, so a Cartel fight there ends in the Yard. Outcast (Noon Spine) and Vessel (Threshold) use the most-ground rule until they reach Camp-04 or Red Maw.',
+        text: 'By door: Prisoner starts in Camp-04, so a Cartel fight there ends in the Yard. Outcast uses the most-ground rule on the Noon Spine until Corvin owes you, and Vessel uses it on the Threshold. In Red Maw, every door uses the Ossa rule once she is an ally, and the most-ground rule otherwise.',
       },
     ],
   },
@@ -74,7 +76,7 @@ const SCAVENGE_SECTIONS: HelpSection[] = [
     rows: [
       { key: 'WHERE', text: 'Any hub ground off the Hunger road. Not in a crisis, an opening, or a chapter beat.' },
       { key: 'ONCE', text: 'You can scavenge once per fresh scene. Trying again right away says the patch is already in your hands.' },
-      { key: 'FINDS', text: 'Scrap most often. Sometimes 2 scrap, a Glint, a Drop, or Cartel Scrip in Camp-04. Vats, vents, and wells turn up Drops more often.' },
+      { key: 'FINDS', text: 'Scrap most often. Sometimes 2 scrap, a Glint, a Drop, or Cartel Scrip in Camp-04. Vats, vents, and wells turn up Drops more often. Rarely, a Resin Salve turns up with the find.' },
       { key: 'COST', text: 'Each scavenge passes time and adds 1 Pressure. Hunters use the hours you spend lingering.' },
     ],
   },
@@ -135,10 +137,10 @@ const GO_SECTIONS: HelpSection[] = [
 const TRADE_SECTIONS: HelpSection[] = [
   {
     rows: [
-      { key: 'WHO', text: 'Kaelen the Sifter, Zafir at the Maw stall, and Silas in the shade open Buy and Sell shelves.' },
+      { key: 'WHO', text: 'Buy and Sell shelves: Kaelen the Sifter in Camp-04 and the Threshold, Silas Vane in his shade on the Spine, and Zafir at the Maw stall.' },
       { key: 'BUY', text: 'buy <item>, for example buy a drop. Prices are on the shelf.' },
       { key: 'SELL', text: 'Unequipped items only. Keys never. They pay less than they charge.' },
-      { key: 'RUMORS', text: 'Kaelen also sells rumors: Glints buy intel, scrap buys side trouble.' },
+      { key: 'RUMORS', text: 'Kaelen sells rumors in Camp-04 and the Threshold: Glints buy intel, scrap buys side trouble. On the Spine, Korvan Drell trades leads for a Drop or scrap.' },
     ],
   },
 ]
@@ -160,7 +162,7 @@ const HEAT_SECTIONS: HelpSection[] = [
       { key: 'HEAT', text: 'Attention from three factions: Cartel, Seekers, Strays. Tap a Heat number to see who is watching.' },
       { key: 'RISES', text: 'When someone can see or trace what you did: skims, thefts, some fights and choices.' },
       { key: 'EFFECT', text: "High Heat on a faction's ground shortens the quiet between road fights: 5 actions normally, 3 at Heat 4+, 2 at Heat 7+." },
-      { key: 'COOLS', text: "Some choices lower it, like Kaelen muddying your name with the Cartel." },
+      { key: 'COOLS', text: "Some choices lower it. In Camp-04, Kaelen can muddy your name with the Cartel." },
     ],
   },
 ]

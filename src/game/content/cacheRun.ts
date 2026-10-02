@@ -553,6 +553,20 @@ The straight wash is a kiln. A rib of rock hides a cut if you know where to look
         },
       },
       {
+        id: 'ford',
+        label: 'Meet Corvin at the dry ford',
+        sub: 'He walks you past the traps to Ossa. Costs sap. Nim\'s shade is off this line.',
+        show: { flag: 'corvinHelped' },
+        effects: {
+          goto: 'ch1:o-ossa',
+          ticks: 1,
+          sap: -1,
+          flag: { corvinRoad: true },
+          flash:
+            'Corvin is waiting where the wash drops into the dry ford. He walks ahead and points: wire buried under the sand, a resin pit crusted over, a Cartel snare staked flat. At the far side he stops. "Ossa keeps her stilts south of here. Go easy on her. I don\'t go further."',
+        },
+      },
+      {
         id: 'noon',
         label: 'Take the noon slope',
         sub: 'Faster, and the sun costs more sap. Nim the Cut-Fee is still waiting in the next shade.',
@@ -677,7 +691,7 @@ The straight wash is a kiln. A rib of rock hides a cut if you know where to look
     speaker: 'Nim',
     body: `Nim the Cut-Fee sits the shade like a toll. Resin under the nails. A knife that has only ever been for minutes.
 
-"Noon-Empty. Shade-road is not free. Silas sells the minute. I collect it. Glint, scratch, empty glass, or you run noon and I tell the wash your name."`,
+She looks at the brand once and then talks to the air beside your head. "Shade-road is not free. I collect from anyone, even you. Glint, scratch, empty glass, or you run noon and I tell the wash your name."`,
     variants: [
       {
         if: { flag: 'silasCut' },
@@ -782,7 +796,7 @@ The straight wash is a kiln. A rib of rock hides a cut if you know where to look
       },
       {
         tags: ['owe', 'later', 'debt', 'ask', 'talk', 'hello'],
-        reply: '"Walk. I collect at the bite."',
+        reply: 'She talks past your head. "You know what you did. Walk. I collect at the bite."',
         effects: { goto: 'ch1:o-ossa', ticks: 1, heat: { strays: 1 }, flag: { nimMet: true, nimOwed: true } },
       },
     ],
@@ -795,7 +809,7 @@ The straight wash is a kiln. A rib of rock hides a cut if you know where to look
     speaker: 'Ossa',
     body: `Stilts. Kin-height. The vial on her hip is half-full, honest, the way Stray throats are supposed to be.
 
-"Silas still selling shade to thirsty people," she says. "That means you might be family. Family can still be cruel. Show empty glass if you have it. Don't lunge. Kin-crime is a worse religion than noon."`,
+She sees the brand, and her face closes. "You know what you did," she says. She does not say what it was. "I still don't let thirsty people die on my sand. Show empty glass if you have it. Don't lunge."`,
     variants: [
       {
         if: { flag: 'nimRun' },
@@ -806,6 +820,11 @@ The straight wash is a kiln. A rib of rock hides a cut if you know where to look
         if: { flag: 'nimSilas' },
         mode: 'append',
         body: `"You showed his scratch. Good. Passwords are cheaper than blood."`,
+      },
+      {
+        if: { flag: 'corvinRoad' },
+        mode: 'append',
+        body: `She saw Corvin turn back at the ford. "He brought you," she says to the sand beside you. That is all she says about it.`,
       },
     ],
     choices: [
@@ -861,7 +880,7 @@ The straight wash is a kiln. A rib of rock hides a cut if you know where to look
       },
       {
         tags: ['help', 'hail', 'hello', 'talk', 'friend', 'kin'],
-        reply: 'You show empty hands. She shows you a life that still has a Drop in it.',
+        reply: 'She looks at the brand before she looks at your hands. "You know what you did. I will still hear you out."',
         effects: { goto: 'ch1:ossa-talk', flag: { ossaMet: true, ossaKin: true } },
       },
     ],
@@ -1466,7 +1485,12 @@ The skiff is coming. What you have heard about the woman on it is all you get be
         body: `He is not on this sand. The warning from the hull still sits in the ear: Seeker, run.`,
       },
       {
-        if: { flag: 'kaelenKnown' },
+        if: { flag: 'korvanStory' },
+        mode: 'append',
+        body: `Korvan kept the Seekers' records until they named him heretic. He said her name slowly, like it cost him.`,
+      },
+      {
+        if: { all: [{ flag: 'kaelenKnown' }, { not: { door: 'outcast' } }] },
         mode: 'append',
         body: `Kaelen called her a Seeker of old roads, old ruins, old magiks. He does not scare easy. He was careful with her name. That is the reliable telling.`,
       },
@@ -1515,7 +1539,12 @@ Sybella steps down. Older than the hymns. Blindfold pushed up, kohl ruined on pu
         body: `She smelled the stolen hull. "Cartel mouths arrive loud. The desert does not keep loud."`,
       },
       {
-        if: { flag: 'kaelenKnown' },
+        if: { flag: 'korvanHunger' },
+        mode: 'append',
+        body: `Korvan's lead sits in your mouth: she hunts people who carry sap and keep walking. Use it or waste it.`,
+      },
+      {
+        if: { all: [{ flag: 'kaelenKnown' }, { not: { door: 'outcast' } }] },
         mode: 'append',
         body: `Kaelen's telling sits in your mouth: old roads, old faith, not a clerk's enemy. Use it or waste it.`,
       },

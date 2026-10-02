@@ -128,6 +128,63 @@ const KAELEN_STOCK: StockOffer[] = [
   },
 ]
 
+/** Silas's shelf on the Spine: the Outcast's Buy/Sell counter. */
+const SILAS_STOCK: StockOffer[] = [
+  {
+    id: 'drop',
+    item: 'vial_drop',
+    label: 'Buy a Drop',
+    sub: 'First Drop prices. Pay with a Glint or with scrap. He does not take scrip.',
+    cost: { glints: 1, scrap: 2 },
+    extraRemove: { vial_empty: 1 },
+    extraFlag: { firstDrop: true, silasGave: true, silasSoldDrop: true },
+    flash: 'He sets a Drop in your hands. It looks like a captured noon. First Drop. Your hands remember hope, which is irritating.',
+    tags: ['drop', 'vial', 'sap', 'oasis', 'glint', 'scrap'],
+  },
+  {
+    id: 'salve',
+    item: 'salve',
+    label: 'Buy Resin Salve — one scrap',
+    sub: 'Binds a cut. Health, not sap.',
+    cost: { scrap: 1 },
+    flash: '"Resin for the blood. Put it on the cut, not in your mouth."',
+    tags: ['salve', 'bandage', 'heal', 'resin'],
+  },
+  {
+    id: 'knife',
+    item: 'needle_knife',
+    label: 'Buy a Needle Knife — two scrap',
+    sub: 'Dry-well needle. Weapon · Strike 3. Scrapes hard resin and meets a Hound. Equip it in Gear.',
+    cost: { scrap: 2 },
+    onceFlag: 'silasSoldKnife',
+    extraFlag: { silasSoldKnife: true },
+    flash: '"Thin and mean. For resin and Hounds." He counts the scrap twice.',
+    tags: ['knife', 'needle', 'blade'],
+  },
+  {
+    id: 'wrap',
+    item: 'scav_wrap',
+    label: 'Buy a Scav Wrap — one scrap',
+    sub: 'Dune rag. Armor · Shell 2. The step before a cloak. Equip it in Gear.',
+    cost: { scrap: 1 },
+    onceFlag: 'silasSoldWrap',
+    extraFlag: { silasSoldWrap: true },
+    flash: '"Rag and wire. Shell 2. Wear it until a better shell turns up."',
+    tags: ['wrap', 'scav', 'rag'],
+  },
+  {
+    id: 'cloak',
+    item: 'dust_cloak',
+    label: 'Buy a Dust Cloak',
+    sub: 'Dune canvas. Armor · Shell 3. Hides a silhouette. Does not hide Heat. Pay with a Glint or with scrap.',
+    cost: { glints: 1, scrap: 2 },
+    onceFlag: 'silasSoldCloak',
+    extraFlag: { silasSoldCloak: true },
+    flash: '"Canvas that outlived three owners. It keeps the noon off. It does not keep the Strays from knowing you."',
+    tags: ['cloak', 'dust', 'canvas'],
+  },
+]
+
 const KNIFE_TONE: Record<string, { sub: string; flash: string }> = {
   spine: {
     sub: 'Dry-well needle. Weapon · Strike 3. Scrapes hard resin and meets a Hound. Equip it in Gear.',
@@ -221,7 +278,7 @@ function offersFor(state: GameState, vendor: Vendor): StockOffer[] {
 const VENDORS: Vendor[] = [
   {
     id: 'kaelen',
-    scenes: ['camp:kaelen', 'spine:kaelen', 'thresh:kaelen', 'roam:kaelen'],
+    scenes: ['camp:kaelen', 'thresh:kaelen', 'roam:kaelen'],
     knownFlag: 'kaelenKnown',
     stock: KAELEN_STOCK,
     changeScrap: true,
@@ -275,21 +332,10 @@ const VENDORS: Vendor[] = [
   {
     id: 'silas',
     scenes: ['spine:silas', 'spine:silas-drop'],
-    stock: [
-      {
-        id: 'drop',
-        item: 'vial_drop',
-        label: 'Buy a Drop',
-        sub: 'First Drop prices. Pay with a Glint or with scrap. He does not take scrip.',
-        cost: { glints: 1, scrap: 2 },
-        extraRemove: { vial_empty: 1 },
-        extraFlag: { firstDrop: true, silasGave: true },
-        flash: 'He sets a Drop in your hands. It looks like a captured noon. First Drop. Your hands remember hope, which is irritating.',
-        tags: ['drop', 'vial', 'sap', 'oasis', 'glint', 'scrap'],
-      },
-    ],
+    stock: SILAS_STOCK,
     changeScrap: true,
-    openBuyFlash: '"A Drop for a Glint, or scrap enough to patch a tent. I do not take Cartel scrip. Scrip tastes like a leash."',
+    openBuyFlash:
+      '"A Drop. Salve. A rag wrap, a dust cloak, a needle for hard resin. Glints or scrap. I do not take Cartel scrip. Scrip tastes like a leash."',
     openSellFlash: '"I am shade, not a pawn shop. Unequipped junk I will still weigh. Keys stay yours."',
     sellFlash: '"I am shade, not a pawn shop. Still. Noon is uglier with a heavier pack."',
   },
@@ -367,7 +413,7 @@ export function saleableCount(state: GameState, id: ItemId): number {
 function knownFlag(vendor: Vendor, sceneId: string, extra?: FlagMap): FlagMap {
   const flag: FlagMap = { ...(extra ?? {}) }
   if (vendor.knownFlag) flag[vendor.knownFlag] = true
-  if (vendor.id === 'kaelen' && extra && 'kaelenSoldDrop' in extra && sceneId === 'spine:kaelen') {
+  if (vendor.id === 'silas' && extra && 'silasSoldDrop' in extra && sceneId.startsWith('spine:')) {
     flag.firstDrop = true
   }
   return flag

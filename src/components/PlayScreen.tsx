@@ -17,7 +17,7 @@ import {
   skim,
   visibleChoices,
 } from '../game/engine'
-import { HEAT_FACTIONS, heatRiseLine } from '../game/heat'
+import { heatFactions, heatRiseLine } from '../game/heat'
 import { effectPills, listedKit } from '../game/kit'
 import { isMawExit } from '../game/map'
 import { encounterSpeaker, isEncounterResult } from '../game/encounter'
@@ -87,6 +87,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     : (state.flags.encounterHere ? encounterSpeaker(state) : null) ??
     pressureFace(state) ??
     (scene.id === 'camp:bay' && bayLookout(state) ? 'Jaxson "Oil-Tooth" Vance' : null) ??
+    (scene.id === 'maw:tuner' && state.door === 'prisoner' ? 'Oil-Tooth' : null) ??
     scene.speaker
   const shopOpen = isShopOpen(state)
   const hookRow = !!(!overlay && !shopOpen && hub && hookOn && hook && showNav)
@@ -180,14 +181,14 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     const bits: string[] = []
     for (const f of ['cartel', 'seekers', 'strays'] as const) {
       const d = state.heat[f] - prev[f]
-      if (d > 0) bits.push(heatRiseLine(f, d))
+      if (d > 0) bits.push(heatRiseLine(f, d, state.door))
     }
     prevHeat.current = state.heat
     if (!bits.length) return
     setToast(bits.join(' '))
     const t = window.setTimeout(() => setToast(null), 3200)
     return () => window.clearTimeout(t)
-  }, [state.heat, state.updatedAt])
+  }, [state.heat, state.updatedAt, state.door])
 
   function submitIntent() {
     const t = draft.trim()
@@ -266,7 +267,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
               key={f}
               className={`heat ${heatTone(state.heat[f])}`}
               onClick={() => setHeatInfo(f)}
-              aria-label={`${HEAT_FACTIONS[f].name} Heat ${state.heat[f]}. Not XP. Tap for who is watching.`}
+              aria-label={`${heatFactions(state.door)[f].name} Heat ${state.heat[f]}. Not XP. Tap for who is watching.`}
             >
               {f} {state.heat[f]}
             </button>
@@ -384,7 +385,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
                   ? 'on'
                   : overlay
                     ? 'talk / fight / bribe / run'
-                    : 'look / talk / fight / bribe / help / who is kaelen'
+                    : `look / talk / fight / bribe / help / who is ${state.door === 'outcast' ? 'silas' : state.door === 'vessel' ? 'oram' : 'kaelen'}`
               }
               enterKeyHint="go"
               autoComplete="off"
@@ -424,9 +425,9 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
       {kit ? <InventorySheet state={state} onClose={() => setKit(false)} onChange={onChange} /> : null}
       {mapOpen ? <MapSheet state={state} onClose={() => setMapOpen(false)} onChange={onChange} /> : null}
       {journalOpen ? <JournalSheet state={state} onClose={() => setJournalOpen(false)} /> : null}
-      {heatInfo ? <HeatExplainer faction={heatInfo} onClose={() => setHeatInfo(null)} /> : null}
+      {heatInfo ? <HeatExplainer faction={heatInfo} door={state.door} onClose={() => setHeatInfo(null)} /> : null}
       {!state.flags.heatTaught ? (
-        <HeatTip onDismiss={() => onChange(applyEffect(state, { flag: { heatTaught: true } }))} />
+        <HeatTip door={state.door} onDismiss={() => onChange(applyEffect(state, { flag: { heatTaught: true } }))} />
       ) : null}
     </div>
   )

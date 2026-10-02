@@ -31,11 +31,11 @@ Overseer Valerius is the shadow in the tower. Getting out from under him is the 
     kind: 'story',
     art: 'world',
     title: 'First Drop',
-    body: `The vial is empty. It has been empty since yesterday's lie. Silas Vane pressed a shade-cut scratch into your palm before noon finished sentencing you — Stray-to-stray, on credit.
+    body: `You wake on the Bleached Spine with no memory. You do not know your name or the road that brought you here.
 
-Noon on the Bleached Spine is not weather. It is a bill. Your tongue sits like cloth. Two walks will empty you. The tip might save a walk. Spend it later and it might save your life.
+The left side of your face hurts. Your fingers find a brand there, burned into the skin, still raw at the edges. Every Dune-Stray knows that mark. It tells them not to speak to you, and when they see it, they turn away. Nobody will tell you what you did. You only know that you did something.
 
-You came here because the Cartel would brand you and the Seekers would fill you. The Spine only asks that you empty.`,
+Someone scratched a shade-cut into your palm while you were out. It is Silas Vane's mark. Silas sells shade by the minute on this ridge, and he trades with anyone who pays. The vial on your belt is empty. Noon on the Spine is a bill: your tongue sits like cloth, and two walks will empty you.`,
     choices: [
       {
         id: 'stand',

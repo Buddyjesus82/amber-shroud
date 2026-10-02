@@ -32,7 +32,7 @@ You go to your knees in resin-slick dust. Oil-Tooth is suddenly there — burly,
     title: 'Noon Takes Its Cut',
     body: `The Spine whites out.
 
-You wake with sand in your teeth and a Drop in your vial you did not earn. Silas's shade, or Kaelen the Sifter's thick gloves, or a Hollow that smelled like both.
+You wake with sand in your teeth and a Drop in your vial you did not earn. Whoever poured it did not stay to be thanked. With that brand on your face, nobody would.
 
 "First Drop," a voice says. "Last warning. East is the Maw. Stay and you become a story the well tells."`,
     choices: [
@@ -120,7 +120,7 @@ Valerius's Hound-handler is already there — not kind. A Drop forced against yo
         mode: 'replace',
         body: `You go down on the Rim with nothing left in the glass.
 
-Silas's shade, or Kaelen's gloves — Stray arithmetic. A Drop you will owe. Sybella's skiff is a brass line on the horizon. She does not come. She does not feed Dune-Strays. She hunts.`,
+Some Stray poured it and looked away from the brand while they did. A Drop you will owe. Sybella's skiff is a brass line on the horizon. She does not come. She does not feed Dune-Strays. She hunts.`,
       },
       {
         if: { door: 'vessel' },

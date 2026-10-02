@@ -35,6 +35,9 @@ const RENAMES: Record<string, (door: DoorId) => string> = {
   'ch1:bargain': () => 'ch1:land',
   'ch1:flee': () => 'ch1:land',
   'ch1:false': () => 'ch1:land',
+  // Kaelen's Spine counter moved to Korvan in Silas's shade.
+  'spine:kaelen': () => 'spine:korvan',
+  'spine:kaelen-rumors': () => 'spine:korvan',
 }
 
 const PRISONER_SPOKE = new Set(['ch1:p-pipe', 'ch1:p-clerk', 'ch1:p-oil', 'ch1:p-ossa'])

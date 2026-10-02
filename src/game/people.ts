@@ -14,6 +14,9 @@ export type PersonId =
   | 'ossa'
   | 'sybella'
   | 'handler'
+  | 'korvan'
+  | 'mira'
+  | 'corvin'
 
 export type Person = {
   id: PersonId
@@ -26,6 +29,41 @@ export type Person = {
 }
 
 export const PEOPLE: Record<PersonId, Person> = {
+  korvan: {
+    id: 'korvan',
+    name: 'Korvan Drell',
+    aliases: ['korvan', 'drell', 'korvan drell', 'amber man', 'archivist'],
+    metFlag: 'metKorvan',
+    card: `Korvan Drell. Hardened amber seals his mouth and both eyes; he breathes and speaks through a gap at one corner. He kept records for the Seekers until he found a memory-fragment in the First Spires that contradicted their doctrine. They branded him a heretic. The Cartel sealed his face with molten sap, which they call amber-waxing. A Dune-Stray smuggled him out.
+
+Wary. Ostracized. He lives at the edge of Silas's shade and trades fragments of forbidden history for water and shelter. The amber on his face is full of voices. He is the one person on the Spine who will talk to you. He will not say what your brand is for.`,
+    scenes: ['spine:korvan'],
+    later: {
+      'spine:korvan': `Korvan sits where the canvas runs out, amber over his mouth and eyes. He moves over to make room. "Ask me anything else," he says.`,
+    },
+  },
+  mira: {
+    id: 'mira',
+    name: 'Mira Thorn',
+    aliases: ['mira', 'thorn', 'mira thorn', 'one-handed woman'],
+    metFlag: 'metMira',
+    card: `Mira Thorn. Her left hand is gone; she lost it pulling her brother out of a Gilded Hollow. Cartel overseers branded her a coward for it. She joined the Dune-Strays. She reads memory-residue in amber sand and knows the old ruins.
+
+She does not speak. She guards people who are looking for the truth, and she has no use for people looking for profit.`,
+    scenes: ['spine:mira'],
+    later: {},
+  },
+  corvin: {
+    id: 'corvin',
+    name: 'Corvin Pryce',
+    aliases: ['corvin', 'pryce', 'corvin pryce', 'deserter'],
+    metFlag: 'metCorvin',
+    card: `Corvin Pryce. A Cartel security conscript who guarded ironwood harvesters out by the Gilded Hollows. He watched the Cartel execute Dune-Stray refugees for siphoning sap. When they ordered him to fire on the families, he dropped his rifle and deserted into the deep sand. The Cartel and the Seekers both hunt him.
+
+He knows the traps on the dry ford and uses them to protect Dune-Strays, as penance. He does not ask what your brand is for.`,
+    scenes: ['spine:corvin'],
+    later: {},
+  },
   handler: {
     id: 'handler',
     name: 'Hound-handler',
@@ -77,8 +115,6 @@ He will not sell anything meant to harm a fellow survivor. He trades Drops for s
       'camp:wire',
       'camp:kaelen',
       'camp:kaelen-rumors',
-      'spine:kaelen',
-      'spine:kaelen-rumors',
       'thresh:sift',
       'thresh:kaelen',
       'thresh:kaelen-rumors',
@@ -91,7 +127,6 @@ Kaelen the Sifter is here when profit says here — pack, gloves, already counti
 
 Ironclad Skiff-Striders patrol the other side of this line. The Hunger lives past it. So do Hounds.`,
       'camp:kaelen': `Kaelen works the pack with both gloves. The Wire at his back like a second strap. "Pick a shelf," he says. "Buy. Sell. Rumors."`,
-      'spine:kaelen': `Dusk on the Spine. Same pack. Same gloves. Less wire, more dust. "You're the empty vial," he says. "I fill those if you pay. Silas sold you shade. I sell what a survivor can carry."`,
       'thresh:sift': `Hymn-shade off the paddock. Not a stall. A pack on a false-route wall.
 
 Kaelen the Sifter is here when the route says here — gloves, already counting. He buys false routes. He sells what will not open a survivor.`,
