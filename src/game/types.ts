@@ -106,7 +106,7 @@ export type Effect = {
   equip?: ItemId
   returnHunterFrom?: boolean
   returnCrisisFrom?: boolean
-  /** Optional roam fight. Strike/Shell compare — no dice. */
+  /** Optional roam fight. Strike + 0-2 swing vs Shell, min 1 damage. */
   resolveEncounter?: 'fight' | 'skip'
 }
 

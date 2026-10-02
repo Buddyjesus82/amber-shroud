@@ -117,7 +117,7 @@ export const GLOBAL_INTENTS: IntentRule[] = [
   },
   {
     tags: ['inventory', 'pack', 'pocket', 'items', 'gear', 'kit'],
-    reply: 'You pat the pack. Whatever you have, it is listed in Gear — not across the screen. Equip a weapon, armor, or garment if it has a slot. Strike and Shell compare gear. No dice.',
+    reply: 'You pat the pack. Whatever you have, it is listed in Gear — not across the screen. Equip a weapon, armor, or garment if it has a slot. Strike and Shell compare gear. Fights add a 0 to 2 swing.',
     effects: {},
   },
   {

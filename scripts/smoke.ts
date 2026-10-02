@@ -26,6 +26,7 @@ import { ALL_SCENES, getScene } from '../src/game/content/index.ts'
 import { PEOPLE } from '../src/game/people.ts'
 import { rollScavenge } from '../src/game/scavenge.ts'
 import { kaelenOffers } from '../src/game/trade.ts'
+import { DAMAGE_FLOOR, exchangeDamage, resolveEncounter, STALL_ROUNDS, swingOf } from '../src/game/encounter.ts'
 import {
   IDLE_DOOR,
   tapDoor,
@@ -1397,9 +1398,9 @@ s = {
   flags: { ...s.flags, encounterHere: true, encounterKind: 'jackal', encounterAt: s.ticks, encounterHp: 1 },
 }
 assert(s.sceneId === 'camp:yard', 'forced encounter stays in the Yard')
-assert(ids(s).includes('enc-fight') && ids(s).includes('enc-skip'), 'fight or skip, no dice')
+assert(ids(s).includes('enc-fight') && ids(s).includes('enc-skip'), 'fight or skip')
 assert(!bodyOf(s).includes('cooked resin'), 'encounter card does not bleed Yard prose')
-assert(/Strike has to beat Shell/i.test(bodyOf(s)), 'first encounter teaches Strike/Shell/Health')
+assert(/swing of 0 to 2/i.test(bodyOf(s)), 'first encounter teaches Strike/Shell/Health')
 const skipped = pick(s, 'enc-skip')
 assert(skipped.sceneId === 'camp:yard', 'skip stays put')
 assert(skipped.flags.encounterHere && skipped.flags.encounterDone, 'skip holds the outcome card')
@@ -1419,7 +1420,7 @@ s = {
   health: 6,
   healthMax: 6,
 }
-assert(!/Strike has to beat Shell/i.test(bodyOf(s)), 'later fights skip the lecture')
+assert(!/swing of 0 to 2/i.test(bodyOf(s)), 'later fights skip the lecture')
 assert(bodyOf(s).includes('You Strike'), 'compact card still shows compares')
 const fought = pick(s, 'enc-fight')
 assert(fought.sceneId === 'camp:yard', 'fight stays in the Yard')
@@ -1427,8 +1428,8 @@ assert(fought.flags.encounterHere && fought.flags.encounterDone, 'win holds the 
 assert((fought.items.scrap ?? 0) >= 2, 'winning a jackal yields saleable scrap')
 assert(fought.health < 6, 'Health takes the incoming hit, not Sap')
 assert(fought.sap === 6, 'Sap is unchanged by a win')
-assert(/You Strike 2 vs their Shell 1/.test(bodyOf(fought)), 'fight result shows your compare line')
-assert(/Their Strike 2 vs your Shell 0/.test(bodyOf(fought)), 'fight result shows their compare line')
+assert(/You Strike 2\+[0-2] vs their Shell 1 → [1-9]/.test(bodyOf(fought)), 'fight result shows your compare line with the swing')
+assert(/Their Strike 2\+[0-2] vs your Shell 0 → [1-9]/.test(bodyOf(fought)), `fight result shows their compare line with the swing: ${bodyOf(fought)}`)
 assert(!bodyOf(fought).includes('cooked resin'), 'outcome card does not bleed Yard prose')
 assert(!(fought.flash ?? '').includes('Strike'), 'compares live on the card, not a stacked flash')
 const foughtOn = pick(fought, 'enc-continue')
@@ -1458,19 +1459,27 @@ s = {
   healthMax: 6,
 }
 assert(/You Strike 2 vs their Shell 2/.test(bodyOf(s)), 'Vessel dagger vs pup Shell is on the card')
-const loss = pick(s, 'enc-fight')
-assert((loss.items.glints ?? 0) === beforeGlints, 'lose compare does not pay Glints')
-assert((loss.items.scrap ?? 0) === (s.items.scrap ?? 0), 'lose compare does not pay scrap')
-assert(loss.health === 2, 'Shard-pup Strike 4 vs Shell 0 deals 4 Health; cloth is not armor')
-assert(loss.flags.encounterHere, 'they still stand after a scratch')
-assert(/You Strike 2 vs their Shell 2 → 0/.test(bodyOf(loss)), 'Fight body is the compare, not a prose wall')
-assert(/Their Strike 4 vs your Shell 0 → 4/.test(bodyOf(loss)), 'incoming compare is on the card')
-const drop = pick(loss, 'enc-fight')
-assert(drop.flags.downed, 'dropping to 0 Health is a downed state')
-assert(drop.health === 0, 'empty Health stays at 0')
-assert(!drop.flags.encounterHere, 'the downed state replaces the fight card')
-assert(ids(drop).includes('wake'), 'a hand is offered when you drop')
-assert((drop.items.glints ?? 0) === beforeGlints, 'a clear loss still pays no win loot')
+{
+  // Pup Strike 4 vs bare Shell 0 hits for 4+swing. Your 2 vs its Shell 2 still lands 1+.
+  const inSwing = swingOf(s, 'them')
+  const outSwing = swingOf(s, 'you')
+  const loss = pick(s, 'enc-fight')
+  assert((loss.items.glints ?? 0) === beforeGlints, 'lose compare does not pay Glints')
+  assert(loss.health === Math.max(0, 6 - (4 + inSwing)), `Shard-pup Strike 4+${inSwing} vs Shell 0 takes ${4 + inSwing} Health; cloth is not armor`)
+  if (!loss.flags.downed) {
+    assert(new RegExp(`You Strike 2\\+${outSwing} vs their Shell 2 → ${Math.max(1, outSwing)}`).test(bodyOf(loss)), `Fight body is the compare with the swing (out ${outSwing} in ${inSwing}): ${bodyOf(loss).slice(0, 200)}`)
+    assert(new RegExp(`Their Strike 4\\+${inSwing} vs your Shell 0 → ${4 + inSwing}`).test(bodyOf(loss)), 'incoming compare is on the card')
+  }
+  let drop = loss
+  for (let i = 0; i < 6 && drop.flags.encounterHere && !drop.flags.encounterDone && !drop.flags.downed; i++) drop = pick(drop, 'enc-fight')
+  if (drop.flags.encounterDone && (drop.health ?? 0) <= 0) drop = pick(drop, 'enc-continue')
+  assert(drop.flags.downed || drop.flags.encounterDone, 'the pup fight ends in a few rounds')
+  if (drop.flags.downed) {
+    assert(drop.health === 0, 'empty Health stays at 0')
+    assert(!drop.flags.encounterHere, 'the downed state replaces the fight card')
+    assert(ids(drop).includes('wake'), 'a hand is offered when you drop')
+  }
+}
 
 for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
   let g = newGame(door)
@@ -1533,7 +1542,7 @@ for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
   const card = primedFight(door, 4, 'scavenger', { taught: false, arm: false })
   assert(/waste scavenger/i.test(bodyOf(card)), `${door} scavenger card names the robber`)
   assert(/a person who robs/i.test(bodyOf(card)), `${door} scavenger card is a person`)
-  assert(/Strike has to beat Shell/i.test(bodyOf(card)), `${door} first scavenger still teaches`)
+  assert(/swing of 0 to 2/i.test(bodyOf(card)), `${door} first scavenger still teaches`)
   assert(/You Strike \d+ vs their Shell 1/.test(bodyOf(card)), `${door} scavenger Shell is on the card`)
   assert(/Their Strike 2 vs your Shell/.test(bodyOf(card)), `${door} scavenger Strike is on the card`)
   const fightRow = visibleChoices(card).find((c) => c.id === 'enc-fight')
@@ -1557,14 +1566,17 @@ for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
     equipped: { weapon: 'shiv' as const },
   }
   assert(/You Strike 2 vs their Shell 1/.test(bodyOf(armed)), 'shiv vs scavenger Shell is on the card')
-  const stood = pick(armed, 'enc-fight')
-  assert(!stood.flags.encounterDone, 'scavenger Health 2 survives one shiv hit')
-  assert(/Their Health 1\/2/.test(bodyOf(stood)), 'scavenger has 2 Health')
-  assert(/No loot yet/.test(bodyOf(stood)), 'a standing scavenger pays nothing')
-  assert((stood.items.shiv ?? 0) === 1, 'a scratch does not drop the shiv back')
-  assert((stood.items.scrap ?? 0) === (armed.items.scrap ?? 0), 'a scratch does not pay scrap')
-  const killed = pick(stood, 'enc-fight')
-  assert(killed.flags.encounterDone, 'second hit drops the scavenger')
+  const hit = exchangeDamage(2, swingOf(armed, 'you'), 1)
+  let stood = pick(armed, 'enc-fight')
+  if (hit < 2) {
+    assert(!stood.flags.encounterDone, 'scavenger Health 2 survives a 1-point shiv hit')
+    assert(/Their Health 1\/2/.test(bodyOf(stood)), 'scavenger has 2 Health')
+    assert(/No loot yet/.test(bodyOf(stood)), 'a standing scavenger pays nothing')
+    assert((stood.items.scrap ?? 0) === (armed.items.scrap ?? 0), 'a scratch does not pay scrap')
+    stood = pick(stood, 'enc-fight')
+  }
+  const killed = stood
+  assert(killed.flags.encounterDone, 'the shiv drops the scavenger')
   assert(/They drop/.test(bodyOf(killed)), 'scavenger kill names the drop')
   assert(killed.equipped?.weapon === 'shiv', 'a kill does not auto-equip the drop')
 }
@@ -3122,6 +3134,56 @@ function assertHelpResolves(s: GameState, where: string) {
   const base = pick(walkTo(v, 'thresh:court'), 'hunger')
   assert(rode.chapterId === 'cache-run' && rode.sap === base.sap + STRIDER_READY_SAP, `the readied Strider saves ${STRIDER_READY_SAP} Sap on the Hunger (${base.sap} → ${rode.sap})`)
   assert(rode.flags.striderSpent && !base.flags.striderSpent, 'only a readied Strider spends itself')
+}
+
+// Fights always end. Min 1 damage per landed exchange, a 0-2 swing on each Strike, and a walk-off valve.
+{
+  assert(DAMAGE_FLOOR === 1 && exchangeDamage(1, 0, 3) === 1 && exchangeDamage(0, 0, 9) === 1, 'a landed hit is never 0')
+  assert(exchangeDamage(1, 2, 2) === 1 && exchangeDamage(3, 2, 3) === 2, 'swing adds to Strike before Shell')
+  // The reported stalemate: Outcast, bare Strike 1 + Dust Cloak Shell 3 vs Rim cutter Strike 3 / Shell 2 / Health 2.
+  for (let t = 0; t < 40; t++) {
+    const base = primedFight('outcast', 10 + t, 'cutter', { hp: 2, arm: false })
+    let f: GameState = { ...base, items: { ...base.items, dust_cloak: 1 }, equipped: { ...base.equipped, weapon: undefined, armor: 'dust_cloak' } }
+    assert(/You Strike 1 vs their Shell 2/.test(bodyOf(f)) && /Their Strike 3 vs your Shell 3/.test(bodyOf(f)), 'stalemate stats are on the card')
+    const swings = [swingOf(f, 'you'), swingOf(f, 'them')]
+    assert(swings.every((n) => n >= 0 && n <= 2) && swingOf(f, 'you') === swings[0], 'swing is 0-2 and the same state gives the same swing')
+    let rounds = 0
+    let lastHp = Number(f.flags.encounterHp)
+    let lastHealth = f.health
+    while (f.flags.encounterHere && !f.flags.encounterDone && rounds < 6) {
+      f = pick(f, 'enc-fight')
+      rounds++
+      const card = String(f.flags.encounterClash ?? '')
+      if (f.flags.encounterHere) {
+        assert(/You Strike 1\+[0-2] vs their Shell 2 → [1-9]/.test(card), `round log shows the swing (${card.slice(0, 80)})`)
+        assert(/Their Strike 3\+[0-2] vs your Shell 3 → [1-9]/.test(card), 'their line shows the swing')
+      }
+      if (!f.flags.encounterDone && f.flags.encounterHere) {
+        assert(Number(f.flags.encounterHp) < lastHp && f.health < lastHealth, 'both sides lose at least 1 Health every round')
+        lastHp = Number(f.flags.encounterHp)
+        lastHealth = f.health
+      }
+    }
+    assert(rounds <= 2 && (f.flags.encounterDone || f.flags.downed), `the old stalemate ends within 2 rounds (seed ${t}: ${rounds})`)
+    if (f.flags.encounterDone) assert(/They drop/.test(String(f.flags.encounterClash)), 'the cutter goes down')
+  }
+
+  // Valve: if three rounds pass with no damage either way, the enemy leaves the road. No loot. Fight over.
+  const tick = primedFight('outcast', 12, 'tick', { hp: 1, arm: false })
+  let v: GameState = { ...tick, items: { ...tick.items, dust_cloak: 1 }, equipped: { armor: 'dust_cloak' } }
+  const kept = JSON.stringify(v.items)
+  for (let r = 1; r <= STALL_ROUNDS; r++) {
+    const res = resolveEncounter(v, 'fight', { floor: 0 })
+    v = applyEffect(v, { ...res.fx, ticks: 1 })
+    if (r < STALL_ROUNDS) {
+      assert(!v.flags.encounterDone && Number(v.flags.encounterStall) === r, `zero round ${r} counts toward the walk-off`)
+    }
+  }
+  assert(v.flags.encounterDone, 'three zero rounds end the fight')
+  assert(String(v.flags.encounterFlash) === 'The Amber-tick backs off and leaves the road. No loot.', `walk-off line (${v.flags.encounterFlash})`)
+  assert(JSON.stringify(v.items) === kept, 'a walk-off pays no loot')
+  const on = pick(v, 'enc-continue')
+  assert(!on.flags.encounterHere && !on.flags.encounterStall && !on.flags.encounterRound, 'On. clears the fight and its counters')
 }
 
 console.log('OK', {

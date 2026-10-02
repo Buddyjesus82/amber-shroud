@@ -46,7 +46,7 @@ export function DoorSelect({ savedDoors, onResume, onStart, onBack }: Props) {
         </button>
         <h2>Choose a start door</h2>
         <p>
-          Same Maw. Different Hunger roads. No dice — only what you carry. Each door keeps its own save. Add to Home
+          Same Maw. Different Hunger roads. What you carry decides most of it. Each door keeps its own save. Add to Home
           Screen for stronger saves on iPhone.
         </p>
       </header>
