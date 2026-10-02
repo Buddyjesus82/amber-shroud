@@ -147,7 +147,7 @@ He cannot see through the amber. He heard the shade go quiet when you walked in,
         flag: { korvanHoundRumor: true },
         ticks: 1,
         flash:
-          '"Hound prints on the east wash. Valerius walks behind them. Out here the Cartel calls him the Shard-Hound. He hunts sap thieves. He also hunts a deserter who hides in that wash, a boy named Corvin. If you find Corvin first, be kind to him. He is kinder than the rest of us."',
+          '"Hound prints on the east wash. Overseer Valerius walks behind them. He hunts sap thieves. He also hunts a deserter who hides in that wash, a boy named Corvin. If you find Corvin first, be kind to him. He is kinder than the rest of us."',
       },
     },
     {

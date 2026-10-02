@@ -383,7 +383,7 @@ You can lower a hope into it. There is no bucket here that still believes in wat
     title: 'Hound Sign',
     body: `Prints in the dust. Shard-Hounds are made by the Cartel, with resin jaws, and they stay loyal to whoever holds the chip.
 
-Overseer Valerius is here in a different coat: dust instead of prison cuffs, and the same ledger behind his eyes. On the Spine they call him the Shard-Hound, because he finds the people who think a ridge can hide them.`,
+Overseer Valerius has come out from Ironwood in a dust coat. He walks behind the Hound, following its prints. He is looking for a Cartel deserter who hides somewhere in this wash. When he sees you, he looks at you the way he looks at loose property.`,
     choices: [
       {
         id: 'talk',
@@ -446,7 +446,7 @@ Overseer Valerius is here in a different coat: dust instead of prison cuffs, and
     id: 'spine:valerius',
     hubId: 'spine',
     kind: 'talk',
-    title: 'Shard-Hound Valerius',
+    title: 'Overseer Valerius',
     speaker: 'Valerius',
     body: `"Outcast," he says, almost kind. "Ironwood still pays for returned property. You are a loose Drop. I can cork you or I can point you at the woman on the skiff. She pays better than bounties. She pays in not-dying."`,
     choices: [
@@ -469,7 +469,7 @@ Overseer Valerius is here in a different coat: dust instead of prison cuffs, and
           ticks: 1,
           goto: 'spine:hound',
           flash:
-            '"Sybella. Wants walking amber. Red Maw is her current church. If you go, go useful or go buried." He almost smiles. "I will be behind you either way."',
+            '"Sybella. Wants walking amber. Red Maw is her current church. If you go, go useful or go buried." He almost smiles. "Ironwood will be behind you either way."',
         },
       },
       { id: 'back', label: 'Back onto the ridge', tone: 'quiet', effects: { goto: 'spine:ridge' } },
@@ -499,11 +499,10 @@ Overseer Valerius is here in a different coat: dust instead of prison cuffs, and
     id: 'spine:hunter',
     hubId: 'spine',
     kind: 'story',
-    title: 'Hound Close',
-    speaker: 'Valerius',
-    body: `The Shard-Hound does not bark. The air just gets narrower.
+    title: 'Hunted Ground',
+    body: `Someone on the Spine has your name. The Strays who turned their backs on you are watching this stretch of ridge now, and the one who comes for you will not be the last.
 
-Valerius stands on the Spine with the sun behind him like he rented it. "This wash is finished. You can be a Drop in my vial or a rumor heading east."`,
+You can run east, or get back under Silas's canvas.`,
     choices: [
       {
         id: 'east',
@@ -531,7 +530,7 @@ Valerius stands on the Spine with the sun behind him like he rented it. "This wa
           ticks: 1,
           sap: -1,
           pressure: 1,
-          flash: 'Shade takes you. Valerius lets it. For a price he has not named.',
+          flash: 'You get under the canvas. Whoever was coming for you stops at the edge of the shade.',
         },
       },
     ],

@@ -3730,6 +3730,39 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(old.flags.firstDropMarked, 'old saves with a Drop are marked quietly')
 }
 
+{
+  // Shard-hounds are beasts. No person carries "Shard-Hound" as a title or name.
+  const srcDir = new URL('../src/game/', import.meta.url).pathname
+  const files: string[] = []
+  const walk = (dir: string) => {
+    for (const ent of readdirSync(dir, { withFileTypes: true })) {
+      const full = join(dir, ent.name)
+      if (ent.isDirectory()) walk(full)
+      else if (ent.name.endsWith('.ts')) files.push(full)
+    }
+  }
+  walk(srcDir)
+  const asTitle = [
+    /\bthe Shard-Hound\b(?!s)/i,
+    /\b(call|calls|called|named)\s+(him|her|them)?\s*(the\s+)?Shard-Hound\b/i,
+    /Shard-Hound\s+(Valerius|Korvan|Corvin|Silas|[A-Z][a-z]+ius)\b/,
+  ]
+  for (const f of files) {
+    const text = readFileSync(f, 'utf8')
+    for (const re of asTitle) assert(!re.test(text), `${f} uses Shard-Hound as a person's title (${re})`)
+  }
+  for (const sc of ALL_SCENES) {
+    assert(!/Shard-Hound/i.test(`${sc.title ?? ''} ${sc.speaker ?? ''}`), `${sc.id} title/speaker is not Shard-Hound`)
+  }
+  for (const p of Object.values(PEOPLE)) {
+    assert(!/shard-hound/i.test(`${p.name} ${p.aliases.join(' ')}`), `${p.id} is not named Shard-Hound`)
+    assert(!/(him|her) the Shard-Hound|the Shard-Hound,/i.test(p.card), `${p.id} card does not title anyone Shard-Hound`)
+  }
+  assert(getScene('spine:valerius').title === 'Overseer Valerius', 'Valerius keeps his own title on the Spine')
+  assert(!getScene('spine:hunter').speaker && !/Valerius/.test(getScene('spine:hunter').body), 'the Spine hunt ground is not Valerius')
+  assert(/deserter/.test(getScene('spine:hound').body), 'on the Spine Valerius is after the deserter')
+}
+
 console.log('OK', {
   prisoner: Object.keys(DOORS.prisoner.items),
   outcast: Object.keys(DOORS.outcast.items),
