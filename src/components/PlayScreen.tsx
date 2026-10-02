@@ -27,7 +27,7 @@ import { isPressureOverlay, pressureFace } from '../game/hunter'
 import { isShopOpen } from '../game/trade'
 import type { Choice, Faction, GameState } from '../game/types'
 import { helpEntries } from '../game/help'
-import { fightHelpAuto, helpRoute, helpTopic, markFightHelpSeen } from '../game/helpTopics'
+import { fightHelpAuto, fightTopicMidFight, helpRoute, helpTopic, markFightHelpSeen } from '../game/helpTopics'
 import { HelpTopicCard } from './HelpTopicCard'
 import { HeatExplainer, HeatTip } from './HeatGuide'
 import { HelpCard } from './HelpCard'
@@ -210,7 +210,9 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
 
   const fightAuto = fightHelpAuto(state)
 
-  const shownTopic = helpTopic(topicOpen ?? (fightAuto ? 'fight' : ''))
+  const typedTopic = topicOpen ? helpTopic(topicOpen) : undefined
+  const autoTopic = !topicOpen && fightAuto ? helpTopic('fight') : undefined
+  const shownTopic = typedTopic ?? (autoTopic ? fightTopicMidFight(autoTopic) : undefined)
 
   function closeTopic() {
     setTopicOpen(null)
@@ -224,7 +226,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
   }
 
   const coverKey = playCoverKey(state, scene)
-  const artSrc = `${import.meta.env.BASE_URL}covers/${playCoverFile(coverKey)}?v=42`
+  const artSrc = `${import.meta.env.BASE_URL}covers/${playCoverFile(coverKey)}?v=43`
   const [bandTop, bandBot] = coverBand(coverKey)
   const artBand = { '--band-top': bandTop, '--band-bot': bandBot } as CSSProperties
 

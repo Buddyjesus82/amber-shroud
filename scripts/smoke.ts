@@ -33,7 +33,7 @@ import { AMBER_WARM, HANDS_LOOK, HOLLOW_PULL, SAND_DOWN, SAND_LOW, SAND_SIGN_FLA
 import type { Cond, Scene } from '../src/game/types.ts'
 import { rollScavenge, SCAVENGE_SALVE_PCT, scavengeSalve } from '../src/game/scavenge.ts'
 import { kaelenOffers } from '../src/game/trade.ts'
-import { FIGHT_HELP_LINES, fightHelpAuto, fightHelpText, HELP_TOPICS, helpRoute, isFightHelpAsk, markFightHelpSeen, topicListText, topicText } from '../src/game/helpTopics.ts'
+import { FIGHT_HELP_LINES, fightHelpAuto, fightHelpText, fightTopicMidFight, HELP_TOPICS, helpRoute, topicLines, isFightHelpAsk, markFightHelpSeen, topicListText, topicText } from '../src/game/helpTopics.ts'
 import { BEAST_KINDS, carriesSalve, HUMAN_KINDS, HUMAN_SALVE_PCT, beginEncounter, DAMAGE_FLOOR, encounterCard, encounterChoices, exchangeDamage, fightStartFlags, resolveEncounter, runChance, STALL_ROUNDS, swingOf } from '../src/game/encounter.ts'
 import {
   IDLE_DOOR,
@@ -2631,7 +2631,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v42'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v43'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -2653,7 +2653,7 @@ assert(css.includes('--story-top: min(calc(56.25cqi * var(--band-bot, 0.5)), 50c
 assert(css.includes('rgba(12, 7, 4, 0.58)'), 'story scrim stays translucent so cover art shows through')
 assert(!css.includes('rgba(12, 7, 4, 0.88)'), 'story scrim is lighter than the v32 slab')
 const playSrc = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
-assert(playSrc.includes('?v=42'), 'scene cover URLs are cache-busted with the service worker')
+assert(playSrc.includes('?v=43'), 'scene cover URLs are cache-busted with the service worker')
 assert(!css.includes('object-position: center 68%'), 'scene art no longer crops toward the ground')
 assert(!css.includes('height: 56px'), 'short phones no longer squash covers into a head-cropping strip')
 assert(css.includes('place-items: center'), 'game screen is centered on the backdrop')
@@ -3976,6 +3976,41 @@ function assertHelpResolves(s: GameState, where: string) {
   // Seekers: no special tricks until the lore lands as an encounter kind.
   assert(!encSrc.includes("'seeker'"), 'no Seeker encounter kind or trick yet')
   assert(readFileSync(new URL('../src/game/fightTricks.ts', import.meta.url), 'utf8').includes('TODO(seekers)'), 'Seeker tricks left as a TODO')
+}
+
+// ---- Crit text only when a crit lands ----
+{
+  const CRIT_WORDS = /crit|double damage|lands clean|1 in 10|2 in 10|twice as/i
+  const CRIT_LINE = /Critical hit(?: against you)?\. [^.]* lands clean: double damage\./g
+  const kinds = ['jackal', 'cutter', 'tick', 'pup', 'scavenger', 'patrol', 'handler', 'overseer', 'collector', 'carapace']
+  const moves = ['fight', 'guard', 'feint', 'trick', 'run']
+  let crits = 0
+  for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
+    for (const kind of kinds) {
+      for (let t = 0; t < 25; t++) {
+        const s0 = primedFight(door, t, kind, { hp: 9, taught: t % 2 === 0 })
+        const s = { ...s0, flags: { ...s0.flags, ...fightStartFlags(s0, kind as Parameters<typeof fightStartFlags>[1]) } as GameState['flags'] }
+        const before = [encounterCard(s), ...encounterChoices(s).flatMap((c) => [c.label, c.sub ?? '', String(c.locked ?? '')])].join('\n')
+        assert(!CRIT_WORDS.test(before), `${door} ${kind}: no crit text on the fight card or buttons`)
+        for (const how of moves) {
+          const fx = resolveEncounter(s, how as 'fight').fx
+          const card = String(fx.flag?.encounterClash ?? '')
+          const found = card.match(CRIT_LINE) ?? []
+          crits += found.length
+          assert(!CRIT_WORDS.test(card.replace(CRIT_LINE, '')), `${door} ${kind} ${how}: only the crit log line mentions crits`)
+          if (fx.flag?.encounterHere && !fx.flag?.encounterDone) {
+            const next = applyEffect(s, { resolveEncounter: how as 'fight', ticks: 1 })
+            const rows = encounterChoices(next).flatMap((c) => [c.label, c.sub ?? '', String(c.locked ?? '')]).join('\n')
+            assert(!CRIT_WORDS.test(rows), `${door} ${kind} ${how}: no crit text on the move buttons`)
+          }
+        }
+      }
+    }
+  }
+  assert(crits > 0, 'crit log lines still show when a crit lands')
+  const auto = fightTopicMidFight(HELP_TOPICS.find((t) => t.id === 'fight')!)
+  assert(!CRIT_WORDS.test(topicLines(auto).join('\n')), 'the fight card that opens itself mid-fight has no crit text')
+  assert(/CRIT:/.test(topicText(HELP_TOPICS.find((t) => t.id === 'fight')!)), 'typed help fight still explains crits')
 }
 
 console.log('OK', {

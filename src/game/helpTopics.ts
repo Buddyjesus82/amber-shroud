@@ -5,7 +5,7 @@ import type { GameState } from './types'
  * Every line here is checked against the rules in code (see scripts/smoke.ts).
  */
 
-export type HelpRow = { key?: string; text: string; bullet?: boolean; secret?: boolean }
+export type HelpRow = { key?: string; text: string; bullet?: boolean; secret?: boolean; /** Left off the card that opens itself mid-fight. */ crit?: boolean }
 export type HelpSection = { title?: string; rows: HelpRow[] }
 export type HelpTopic = {
   id: string
@@ -49,7 +49,7 @@ const FIGHT_SECTIONS: HelpSection[] = [
   {
     title: 'LUCK AND GROUND',
     rows: [
-      { key: 'CRIT', text: 'About 1 in 10 exchanges, a side lands clean for double damage. It can happen to either of you. The log says so.' },
+      { key: 'CRIT', crit: true, text: 'About 1 in 10 exchanges, a side lands clean for double damage. It can happen to either of you. The log says so.' },
       { key: 'GROUND', text: 'Every fight has ground, named on the card: a slope, loose sand, blowing sand, a steam vent, rock shade, or open flat. It moves a swing, a Strike, or the Run odds.' },
     ],
   },
@@ -60,7 +60,7 @@ const FIGHT_SECTIONS: HelpSection[] = [
       { key: 'Dust-jackal', text: 'Sometimes two. A bite can grab a scrap; kill it that exchange or the scrap is gone.' },
       { key: 'Scavenger', text: 'Grabs a carried item and tries to run. Kill it to get it back. Hurt, it offers a scrap to be let go.' },
       { key: 'Rim cutter', text: 'Hurt, it runs for the shade. Hit it that exchange or it gets away.' },
-      { key: 'Shard-pup', text: 'Crits twice as often.' },
+      { key: 'Shard-pup', crit: true, text: 'Crits twice as often.' },
       { key: 'Vent patrol', text: 'The shock baton can numb your arm. Your next swing is 0.' },
       { key: 'Hound-handler', text: 'Running is harder. A failed run lets the hound bite too.' },
       { key: 'Valerius', text: 'Guard only takes 1 off his baton.' },
@@ -274,6 +274,19 @@ export function helpRoute(text: string): HelpRoute | null {
 /** Opens by itself once: the first fight card of this run. Old saves that already fought skip it. */
 export function fightHelpAuto(state: Pick<GameState, 'flags'>): boolean {
   return !!state.flags.encounterHere && !state.flags.encounterDone && !state.flags.fightHelpSeen && !state.flags.fightTaught
+}
+
+/**
+ * The fight card as it opens by itself on the first fight: no crit rows. Crit text only shows
+ * in a fight when one lands. Typed help fight still explains crits.
+ */
+export function fightTopicMidFight(topic: HelpTopic): HelpTopic {
+  return {
+    ...topic,
+    sections: topic.sections
+      .map((section) => ({ ...section, rows: section.rows.filter((row) => !row.crit) }))
+      .filter((section) => section.rows.length > 0),
+  }
 }
 
 /** Dismissing the card marks it seen for this run. Saved with the rest of the flags. */
