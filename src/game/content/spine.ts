@@ -1,4 +1,6 @@
+import { WELL_SKIM_LOCKED } from '../scavenge'
 import type { Scene } from '../types'
+import { shadeHandChoices } from './shadeHands'
 
 export const spineScenes: Scene[] = [
   {
@@ -56,9 +58,9 @@ Down-slope: a tent the color of old teeth. Silas Vane sells shade by the minute.
       {
         id: 'hunger',
         label: 'Walk the Hunger toward Red Maw',
-        sub: "Silas's scratch is a heading. Noon will not get kinder.",
+        sub: 'You have a heading. Noon will not get kinder.',
         tone: 'hunger',
-        show: { any: [{ flag: 'hungerKnown' }, { item: 'silas_tip' }] },
+        show: { flag: 'hungerKnown' },
         effects: {
           startChapter: 'cache-run',
           goto: 'ch1:leave',
@@ -98,7 +100,7 @@ The Hunger is a red bruise east-south. You could fill the empty vial with this s
           remove: { vial_empty: 1 },
           add: { vial_drop: 1 },
           sap: 2,
-          flag: { firstDrop: true, silasCutUsed: true, hungerKnown: true },
+          flag: { firstDrop: true, silasCutUsed: true },
           ticks: 1,
           goto: 'spine:ridge',
           flash: 'The glass stops ticking. First Drop, stolen from a crack Silas already sold. The tip is still in your palm.',
@@ -110,7 +112,7 @@ The Hunger is a red bruise east-south. You could fill the empty vial with this s
         show: { flagUnset: 'silasSmear' },
         effects: {
           sap: 1,
-          flag: { silasCutUsed: true, silasSmear: true, hungerKnown: true },
+          flag: { silasCutUsed: true, silasSmear: true },
           ticks: 1,
           goto: 'spine:ridge',
           flash: 'A taste. Not a future. The empty vial still argues. The tip is still spendable.',
@@ -120,14 +122,15 @@ The Hunger is a red bruise east-south. You could fill the empty vial with this s
         id: 'back',
         label: 'Back to the Spine',
         tone: 'quiet',
-        effects: { goto: 'spine:ridge', flag: { silasCutUsed: true, hungerKnown: true } },
+        effects: { goto: 'spine:ridge', flag: { silasCutUsed: true } },
       },
       {
         id: 'hunger',
         label: 'The cut already points at the Maw. Walk it.',
         tone: 'hunger',
+        show: { flag: 'hungerKnown' },
         effects: {
-          flag: { silasCutUsed: true, hungerKnown: true },
+          flag: { silasCutUsed: true },
           startChapter: 'cache-run',
           goto: 'ch1:leave',
           ticks: 1,
@@ -157,7 +160,7 @@ The Hunger is a red bruise east-south. You could fill the empty vial with this s
         label: 'Leave the shade. Walk the Hunger.',
         sub: 'Red Maw. Kallik. The blonde on the skiff.',
         tone: 'hunger',
-        show: { any: [{ flag: 'hungerKnown' }, { item: 'silas_tip' }] },
+        show: { flag: 'hungerKnown' },
         effects: {
           startChapter: 'cache-run',
           goto: 'ch1:leave',
@@ -165,6 +168,8 @@ The Hunger is a red bruise east-south. You could fill the empty vial with this s
           flash: 'Silas does not bless the road. Shade ends. The wash begins.',
         },
       },
+      // Walk-up Strays in the shade. Empty until shadeHands.ts goes live.
+      ...shadeHandChoices(),
     ],
   },
   {
@@ -183,7 +188,7 @@ The Hunger is a red bruise east-south. You could fill the empty vial with this s
         show: { all: [{ flagUnset: 'silasMercy' }, { sapMax: 3 }] },
         effects: {
           add: { vial_drop: 1 },
-          flag: { firstDrop: true, silasMercy: true, silasGave: true },
+          flag: { firstDrop: true, silasMercy: true, silasGave: true, silasOwed: true, silasOwedDrop: true },
           heat: { strays: 1 },
           ticks: 1,
           goto: 'spine:shade',
@@ -217,7 +222,7 @@ The Hunger is a red bruise east-south. You could fill the empty vial with this s
         id: 'hunger',
         label: 'Walk the Hunger toward Red Maw',
         tone: 'hunger',
-        show: { any: [{ flag: 'hungerKnown' }, { item: 'silas_tip' }] },
+        show: { flag: 'hungerKnown' },
         effects: {
           startChapter: 'cache-run',
           goto: 'ch1:leave',
@@ -253,7 +258,7 @@ The Hunger is a red bruise east-south. You could fill the empty vial with this s
         show: { all: [{ flagUnset: 'silasMercy' }, { sapMax: 3 }] },
         effects: {
           add: { vial_drop: 1 },
-          flag: { firstDrop: true, silasMercy: true, silasGave: true },
+          flag: { firstDrop: true, silasMercy: true, silasGave: true, silasOwed: true, silasOwedDrop: true },
           heat: { strays: 1 },
           ticks: 1,
           goto: 'spine:shade',
@@ -272,13 +277,17 @@ The Hunger is a red bruise east-south. You could fill the empty vial with this s
     title: "Kallik's Hole",
     body: `"Kallik thought the Maw was a lock. Buried Drops, Glints, a tin mark. He carved a nine-tooth gear on the second rib from the jaw and never came back up. Cache is still there. So is Sybella. She wants whoever the sand should not have let walk. You have the empty look of someone who might qualify.
 
-I will scratch you a heading. You take the Hunger when the noon gets honest."`,
+A heading costs a Glint. Or I put it on your tab, and the Spine hears that you owe me."`,
     choices: [
       {
-        id: 'take',
-        label: 'Take the heading',
+        id: 'pay',
+        label: 'Pay a Glint for the heading',
+        sub: 'Costs 1 Glint. Nobody hears about it.',
+        enable: { item: 'glints' },
+        locked: 'Need 1 Glint',
         effects: {
-          flag: { hungerKnown: true, sybellaNamed: true },
+          pay: { glints: 1 },
+          flag: { hungerKnown: true, sybellaNamed: true, silasHeadingPaid: true },
           add: { kallik_mark: 1 },
           ticks: 1,
           goto: 'spine:shade',
@@ -286,17 +295,16 @@ I will scratch you a heading. You take the Hunger when the noon gets honest."`,
         },
       },
       {
-        id: 'now',
-        label: 'Take the heading. Walk it now.',
-        sub: 'Kallik. Cache. The skiff. Do not bounce back to shade.',
-        tone: 'hunger',
+        id: 'tab',
+        label: 'Put the heading on his tab',
+        sub: 'Silas will want it back. Stray Heat rises, and the Strays start asking about you.',
         effects: {
-          flag: { hungerKnown: true, sybellaNamed: true },
+          flag: { hungerKnown: true, sybellaNamed: true, silasOwed: true, silasOwedHeading: true },
+          heat: { strays: 1 },
           add: { kallik_mark: 1 },
-          startChapter: 'cache-run',
-          goto: 'ch1:leave',
           ticks: 1,
-          flash: 'He scratches the heading. You walk. Shade does not get a second charge.',
+          goto: 'spine:shade',
+          flash: 'Silas scratches the heading into your palm. "On the tab," he says. "Paid later is still paid." Stray Heat rises.',
         },
       },
       { id: 'later', label: 'Not while the vial is this dry', tone: 'quiet', effects: { goto: 'spine:silas' } },
@@ -313,10 +321,12 @@ You can lower a hope into it. There is no bucket here that still believes in wat
     choices: [
       {
         id: 'skim',
-        label: 'Skim the well-throat anyway',
-        sub: 'A risky Drop. Stray Heat rises. The well may spit once. This is theft, not a rescue.',
+        label: 'Scrape a Drop out of the well-throat',
+        sub: 'The resin is hard. Costs sap. Stray Heat rises, and the Strays notice the theft.',
         tone: 'danger',
         show: { flagUnset: 'skim:spine:well' },
+        enable: { slot: 'weapon' },
+        locked: WELL_SKIM_LOCKED,
         effects: {
           add: { vial_drop: 1 },
           remove: { vial_empty: 1 },
@@ -324,9 +334,8 @@ You can lower a hope into it. There is no bucket here that still believes in wat
           heat: { strays: 1 },
           pressure: 2,
           ticks: 1,
-          flag: { 'skim:spine:well': true, skimmed: true },
-          flash:
-            'Dust, then a Drop that should not have been there. Stray Heat rises. This is theft, not a rescue.',
+          flag: { 'skim:spine:well': true, skimmed: true, strayNotice: true },
+          flash: 'You scrape resin off the inside of the well-throat until a Drop runs into the glass. Stray Heat rises.',
         },
       },
       {
@@ -353,7 +362,7 @@ You can lower a hope into it. There is no bucket here that still believes in wat
         id: 'hunger',
         label: 'The brick says CACHE IS BAIT. Walk anyway.',
         tone: 'hunger',
-        show: { any: [{ flag: 'hungerKnown' }, { item: 'silas_tip' }] },
+        show: { flag: 'hungerKnown' },
         effects: {
           startChapter: 'cache-run',
           goto: 'ch1:leave',
@@ -419,7 +428,7 @@ Overseer Valerius is here in a different coat: dust instead of prison cuffs, and
         label: 'Leave the prints. Walk toward Red Maw.',
         sub: 'You leave the tracks. Cartel Heat still rises.',
         tone: 'hunger',
-        show: { any: [{ flag: 'hungerKnown' }, { item: 'silas_tip' }] },
+        show: { flag: 'hungerKnown' },
         effects: {
           startChapter: 'cache-run',
           goto: 'ch1:leave',
@@ -465,7 +474,7 @@ Overseer Valerius is here in a different coat: dust instead of prison cuffs, and
         id: 'hunger',
         label: 'Take the woman on the skiff as a heading',
         tone: 'hunger',
-        show: { any: [{ flag: 'hungerKnown' }, { item: 'silas_tip' }] },
+        show: { flag: 'hungerKnown' },
         effects: {
           startChapter: 'cache-run',
           goto: 'ch1:leave',

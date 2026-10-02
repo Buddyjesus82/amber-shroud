@@ -40,12 +40,14 @@ You wake with sand in your teeth and a Drop in your vial you did not earn. Silas
         id: 'up',
         label: 'Hold the Drop. Stand.',
         effects: {
-          sap: 3,
+          // Not a free refill: less sap than before, Stray Heat, and the Strays notice.
+          sap: 2,
           add: { vial_drop: 1 },
-          flag: { hungerKnown: true, crisisSpine: true, firstDrop: true },
+          heat: { strays: 1 },
+          flag: { hungerKnown: true, crisisSpine: true, firstDrop: true, noonDebt: true, strayNotice: true },
           pressure: 2,
           goto: 'spine:ridge',
-          flash: 'Noon returns. So does thirst, on a delay. The Hunger is no longer optional.',
+          flash: 'Noon returns. So does thirst, on a delay. Somebody on the Spine poured that Drop, and the Strays are asking who drank it. Stray Heat rises.',
         },
       },
     ],

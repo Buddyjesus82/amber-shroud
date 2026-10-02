@@ -124,9 +124,20 @@ export function applyScavenge(state: GameState): GameState {
   return next
 }
 
+/** Skims that need gear. Same rule as the scene button: locked actions name the requirement. */
+export const WELL_SKIM_LOCKED = 'Needs a weapon equipped'
+
+export function skimLocked(state: GameState): string | null {
+  if (state.sceneId === 'spine:well' && !state.equipped?.weapon) {
+    return 'The resin in the well-throat is too hard to scrape by hand. It needs a weapon equipped.'
+  }
+  return null
+}
+
 export function canSkim(state: GameState): boolean {
   if (!canScavenge(state)) return false
   if (!SKIM_SCENES.has(state.sceneId)) return false
+  if (skimLocked(state)) return false
   return !state.flags[`skim:${state.sceneId}`]
 }
 
@@ -153,6 +164,8 @@ export function applySkim(state: GameState): GameState {
       flash: 'This throat is already dry. You took what it would give. Heat remembers the taking.',
     }
   }
+  const locked = skimLocked(state)
+  if (locked) return { ...state, flash: locked }
   const heat = skimHeat(state)
   let next = applyDelta(state, {
     add: { vial_drop: 1 },
@@ -160,7 +173,11 @@ export function applySkim(state: GameState): GameState {
     heat,
     pressure: 2,
     ticks: 1,
-    flag: { [`skim:${state.sceneId}`]: true, skimmed: true },
+    flag: {
+      [`skim:${state.sceneId}`]: true,
+      skimmed: true,
+      ...(heat?.strays && (state.hubId === 'spine' || state.sceneId.startsWith('spine:')) ? { strayNotice: true } : {}),
+    },
   })
   if ((state.items.vial_empty ?? 0) > 0) next = applyDelta(next, { remove: { vial_empty: 1 } })
   next.flash = heat

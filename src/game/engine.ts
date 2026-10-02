@@ -28,7 +28,7 @@ import {
 } from './campJob'
 import { markMetOnLeave, matchPersonQuery, personAtScene } from './people'
 import { downedNote, wakeEffect } from './downed'
-import { isPressureOverlay, pressureAppend, pressureChoices, pressureVerb } from './hunter'
+import { isPressureOverlay, pressureAppend, pressureChoices, pressureVerb, spineGround, straysHeard } from './hunter'
 import { offButton } from './verbs'
 import {
   canEncounter,
@@ -47,7 +47,7 @@ import {
   wantsEncounterSkip,
 } from './encounter'
 import { talkFallback, talkIntentsFor } from './talk'
-import { applyScavenge, canScavenge, canSkim, skimHeat } from './scavenge'
+import { applyScavenge, canScavenge, canSkim, skimHeat, skimLocked } from './scavenge'
 import { writeSave } from './save'
 import { repairSceneId } from './repair'
 import { isRumorCounter, matchRumorText, rumorChoices } from './rumors'
@@ -175,6 +175,8 @@ function spendFalse(state: GameState): GameState {
 }
 
 function huntHeat(state: GameState): number {
+  // Spine hub and the Outcast road: the Strays are the ones looking.
+  if (spineGround(state)) return state.heat.strays
   const seekersGround =
     state.hubId === 'redmaw' ||
     state.hubId === 'threshold' ||
@@ -252,8 +254,21 @@ function hunterScene(state: GameState): string | null {
   const id = state.hubId ? map[state.hubId] : null
   if (!id || state.sceneId === id) return null
   if (id === 'camp:hunter' && !campHeard(state)) return null
-  if (id === 'spine:hunter' && state.heat.cartel < 2 && state.pressure < 6) return null
+  // Spine wakes when the Strays have a reason to look (theft, debt, a run past Nim), or a long linger.
+  if (id === 'spine:hunter' && !straysHeard(state) && state.pressure < 6) return null
   return id
+}
+
+/**
+ * Strays noticed you. Mirrors markCartelNotice: any Stray-raising act on Spine ground
+ * (well skim, Silas's mercy or tab, a theft, a run past Nim) gives the Spine hunt a reason.
+ */
+function markStrayNotice(prev: GameState, next: GameState, fx: Effect): GameState {
+  if (next.flags.strayNotice) return next
+  if (!spineGround(prev) && !spineGround(next)) return next
+  const raised = (fx.heat?.strays ?? 0) > 0 || !!fx.flag?.skimmed || !!fx.flag?.strayNotice
+  if (!raised) return next
+  return { ...next, flags: { ...next.flags, strayNotice: true } }
 }
 
 function markCartelNotice(prev: GameState, next: GameState, fx: Effect): GameState {
@@ -514,6 +529,7 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   }
 
   next = markCartelNotice(state, next, fx)
+  next = markStrayNotice(state, next, fx)
   if (next.sceneId === 'camp:sabotage' && state.sceneId !== 'camp:sabotage' && !next.flags.guardDown) {
     next.flags = { ...next.flags, ventPatrol: ventPatrolInPlace(next) }
   }
@@ -688,6 +704,10 @@ export function skim(state: GameState): GameState {
       flash: 'This throat is already dry. You took what it would give. Heat remembers the taking.',
       updatedAt: Date.now(),
     })
+  }
+  const locked = skimLocked(state)
+  if (locked) {
+    return persist({ ...state, flash: locked, updatedAt: Date.now() })
   }
   if (!canSkim(state)) {
     return persist({

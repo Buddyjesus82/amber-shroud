@@ -129,6 +129,10 @@ const KAELEN_STOCK: StockOffer[] = [
 ]
 
 const KNIFE_TONE: Record<string, { sub: string; flash: string }> = {
+  spine: {
+    sub: 'Dry-well needle. Weapon · Strike 3. Scrapes hard resin and meets a Hound. Equip it in Gear.',
+    flash: '"Thin and mean. For resin and Hounds." He counts the scrap twice.',
+  },
   camp04: {
     sub: 'Wire steel from the pens. Weapon · Strike 3. For bolts and resin. Equip it in Gear.',
     flash: '"Wire steel. Thin. Mean. For resin and bolts, not for a person who is still breathing."',
@@ -191,17 +195,15 @@ export function kaelenOffers(state: GameState): StockOffer[] {
           }
         : kaelenPiece('cloak')
   const rows = [...basics, wrap, cloak]
-  if (hub !== 'spine') {
-    const tone = KNIFE_TONE[hub] ?? KNIFE_TONE.camp04
-    rows.push({ ...kaelenPiece('knife'), sub: tone.sub, flash: tone.flash })
-  }
+  const tone = KNIFE_TONE[hub] ?? KNIFE_TONE.camp04
+  rows.push({ ...kaelenPiece('knife'), sub: tone.sub, flash: tone.flash })
   return rows
 }
 
 export function kaelenBuyFlash(state: GameState): string {
   const hub = kaelenShelfHub(state)
   if (hub === 'spine') {
-    return 'He taps the pack. "Dry-well shelf. A Drop. Rag. A cloak if the dust has not eaten it. Salve if you are cut. The wire knife stayed on the last road."'
+    return 'He taps the pack. "Dry-well shelf. A Drop. Rag. A cloak if the dust has not eaten it. A needle for resin. Salve if you are cut."'
   }
   if (hub === 'threshold') {
     return 'He taps the pack. "Cup-shadow shelf. A Drop. Hymn-shade rag. A cloak. A needle for resin. Salve if the cut is talking. I do not sell a hymn."'

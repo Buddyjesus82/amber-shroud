@@ -1,5 +1,6 @@
 import { getScene, resolveBody } from './content'
 import { helpEntries } from './help'
+import { SPINE_HUNTER } from './content/spineHunter'
 import { pressureFace } from './hunter'
 import { check } from './logic'
 import { compassLine, compassMoves, type CompassMove } from './map'
@@ -105,6 +106,7 @@ export function overlayLook(state: GameState): string {
   if (face === 'Sybella') return 'Sybella is the one on this ground. Stay, defy, or run. The rock under her can wait.'
   if (face === 'Valerius') return 'Valerius is here himself. Pay, fight, or hide. The handler was the warning.'
   if (face === 'Court Guard') return 'A court guard has you in the hymn. Fight, hide, or answer him.'
+  if (face === SPINE_HUNTER.face) return SPINE_HUNTER.look
   return 'The Hound-handler has the leash. The hound stays on it. Pay, fight, or hide.'
 }
 
@@ -342,7 +344,7 @@ function authored(state: GameState, scene: Scene): string[] {
   }
 
   if (id === 'spine:silas') {
-    if (!on(state, 'silasMercy') && state.sap <= 3) push(lines, 'Tell him noon will kill you and he may part with one Drop. Once.')
+    if (!on(state, 'silasMercy') && state.sap <= 3) push(lines, 'Tell him noon will kill you and he may part with one Drop, once, on his tab.')
     push(lines, 'Ask what people bury at Red Maw if you want the hole, not the shade.')
     return lines
   }
@@ -353,12 +355,19 @@ function authored(state: GameState, scene: Scene): string[] {
   }
 
   if (id === 'spine:silas-cache') {
-    push(lines, 'He will name the cache if you take the rumor. Walking it now is a different choice from hearing it.')
+    push(lines, 'The heading costs a Glint, or a debt on his tab that the Strays will hear about.')
     return lines
   }
 
   if (id === 'spine:well') {
-    if (!on(state, 'skim:spine:well')) push(lines, 'The throat can be skimmed once. Strays will notice a theft.')
+    if (!on(state, 'skim:spine:well')) {
+      push(
+        lines,
+        state.equipped?.weapon
+          ? 'Hard resin lines the well-throat. Your weapon will scrape one Drop out of it. Strays will notice a theft.'
+          : 'Hard resin lines the well-throat. Scraping a Drop out of it needs a weapon equipped.',
+      )
+    }
     if (!on(state, 'wellScrap')) push(lines, 'The brickwork still hides a Glint and a twist of scrap.')
     else push(lines, 'The bricks have already given up what Kaelen left.')
     push(lines, 'Dusk is when Kaelen stands here.')

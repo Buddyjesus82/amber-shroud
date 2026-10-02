@@ -37,6 +37,10 @@ import { helpEntries, helpText } from '../src/game/help.ts'
 import { equippedShell } from '../src/game/kit.ts'
 import { repairLoadedState } from '../src/game/repair.ts'
 import { pressureFace } from '../src/game/hunter.ts'
+import { SPINE_HUNTER } from '../src/game/content/spineHunter.ts'
+import { SHADE_HANDS_LIVE } from '../src/game/content/shadeHands.ts'
+import { SILAS_JOB_FLAGS, SILAS_JOB_LIVE } from '../src/game/content/silasJob.ts'
+import { canSkim } from '../src/game/scavenge.ts'
 import { canTravelTo, edgeSap, HUB_MAPS, nodeIdForScene, route } from '../src/game/map.ts'
 import {
   clearAllSaves,
@@ -453,7 +457,7 @@ assert(s.sap === 2, 'outcast starts thin')
 s = pick(s, 'stand')
 assert(s.hubId === 'spine')
 assert(ids(s).includes('tip'), 'silas tip on ridge')
-assert(ids(s).includes('hunger'), 'First Drop offers Hunger on the ridge card — no hook-chip required')
+assert(!ids(s).includes('hunger'), "Silas's Tip alone does not open the Hunger on the ridge")
 s = pick(s, 'tip')
 assert(s.sceneId === 'spine:tip')
 s = pick(s, 'fill')
@@ -487,8 +491,9 @@ assert(s.flags.falseSpent === 'scrap', 'outcast throws scrap, not Silas\'s tip')
 
 s = newGame('outcast')
 s = pick(s, 'stand')
+s = applyEffect(s, { flag: { hungerKnown: true } })
 s = pick(s, 'hunger')
-assert(s.chapterId === 'cache-run' && s.sceneId === 'ch1:leave', 'ridge Hunger button starts Cache Run')
+assert(s.chapterId === 'cache-run' && s.sceneId === 'ch1:leave', 'ridge Hunger button starts Cache Run once the heading is known')
 s = outcastToSybella(s)
 assert(s.sceneId === 'ch1:sybella', 'outcast reaches Sybella poker')
 assert(ids(s).includes('maw'), 'Approach is a first-class Sybella exit')
@@ -510,9 +515,18 @@ s = pick(s, 'stand')
 s = pick(s, 'shade')
 s = pick(s, 'talk')
 s = pick(s, 'cache')
-assert(ids(s).includes('now'), 'Silas Maw talk can start Cache Run without returning to shade')
-s = pick(s, 'now')
-assert(s.chapterId === 'cache-run' && s.sceneId === 'ch1:leave', 'Kallik heading walks now')
+assert(!ids(s).includes('now'), 'Silas no longer hands out a free walk-now heading')
+assert(visibleChoices(s).find((c) => c.id === 'pay')?.locked === 'Need 1 Glint', 'paid heading shows a named lock without a Glint')
+assert(!isChoiceOn(s, visibleChoices(s).find((c) => c.id === 'pay')?.enable), 'paid heading is locked without a Glint')
+{
+  const strays = s.heat.strays
+  s = pick(s, 'tab')
+  assert(s.flags.hungerKnown && s.flags.silasOwed && s.flags.silasOwedHeading, 'tab heading: heading known, debt on Silas')
+  assert(s.heat.strays === strays + 1 && s.flags.strayNotice, 'tab heading raises Stray Heat and the Strays notice')
+  assert(s.sceneId === 'spine:shade' && ids(s).includes('hunger'), 'shade offers the Hunger after the tab heading')
+}
+s = pick(s, 'hunger')
+assert(s.chapterId === 'cache-run' && s.sceneId === 'ch1:leave', 'Kallik heading walks from the shade')
 s = outcastToSybella(s)
 assert(s.sceneId === 'ch1:sybella', 'outcast spoke still lands at Sybella')
 s = interpret(s, 'take the maw approach')
@@ -584,8 +598,11 @@ s = travelTo(s, 'spine:hound')
 assert(sceneOf(s).kind === 'crisis' || s.sap === 0, 'second walk empties or crises')
 if (sceneOf(s).kind === 'crisis') {
   assert(s.sceneId === 'crisis:spine', 'authored spine crisis')
+  const strays = s.heat.strays
   s = pick(s, 'up')
-  assert(s.sap === 3, 'crisis restores sap')
+  assert(s.sap === 2, 'Spine crisis restores less sap than a free refill')
+  assert(s.heat.strays === strays + 1 && s.flags.strayNotice && s.flags.noonDebt, 'Spine crisis costs Stray Heat and wakes the Strays')
+  assert(s.flags.hungerKnown, 'Spine crisis still guarantees a heading (no soft-lock)')
 }
 
 s = newGame('prisoner')
@@ -1177,11 +1194,20 @@ assert(s.flags.hunterFrom === 'maw:lip', 'facing her smoke keeps the ground unde
   assert(!backNext.flags.hunterHere, 'Heat 8 does not re-arm on the next scene')
   assert(applyEffect(backNext, { ticks: 1, flag: { encounterAt: 999 } }).flags.hunterHere, 'Heat 8 re-arms after 2 quiet scenes')
 
-  const spineVal = knockAt('outcast', 'spine', 'spine:ridge', 7, 0)
-  assert(spineVal.flags.hunterHere && pressureFace(spineVal) === 'Valerius', 'Spine Heat 7 is Valerius')
+  let spineVal = knockAt('outcast', 'spine', 'spine:ridge', 7, 0)
+  assert(!spineVal.flags.hunterHere, 'Spine ignores Cartel Heat: Cartel 7 with Strays 0 does not field a hunter')
+  spineVal = { ...spineVal, heat: { ...spineVal.heat, cartel: 0, strays: 7 }, flags: { ...spineVal.flags, strayNotice: true, huntQuiet: 8 } }
+  spineVal = applyEffect(spineVal, { ticks: 1 })
+  assert(spineVal.flags.hunterHere && pressureFace(spineVal) === SPINE_HUNTER.face, 'Spine Stray Heat 7 fields the Spine hunter')
+  assert(pressureFace(spineVal) !== 'Valerius', 'Spine hunter is not Valerius in a different coat')
+  assert(ids(spineVal).includes('spine-fight') && ids(spineVal).includes('spine-hide'), 'Spine hunt offers fight and hide')
+  const spineGlint = pick(applyEffect(spineVal, { add: { glints: 1 } }), 'spine-glint')
+  assert(spineGlint.heat.strays === 6 && spineGlint.heat.cartel === 0, 'paying the collector a Glint cools Stray Heat, not Cartel')
   const spineHeld = pick(spineVal, 'spine-scrap')
   assert(!spineHeld.flags.hunterHere && spineHeld.sceneId === 'spine:ridge', 'Spine dismiss stays on the ridge')
-  assert(!applyEffect(spineHeld, { ticks: 1 }).flags.hunterHere, 'Spine Valerius does not re-arm on the next scene at Heat 7')
+  assert(!applyEffect(spineHeld, { ticks: 1 }).flags.hunterHere, 'Spine hunter does not re-arm on the next scene at Heat 7')
+  const spineFight = pick(spineVal, 'spine-fight')
+  assert(spineFight.flags.encounterHere && spineFight.flags.encounterKind === 'collector', 'Spine hunt fight is the collector')
 
   const court = knockAt('vessel', 'threshold', 'thresh:court', 0, 5)
   assert(court.flags.hunterHere && court.sceneId === 'thresh:court', 'Heat 5 calls the Court guard')
@@ -1274,17 +1300,40 @@ assert(s.flags.hunterFrom === 'maw:lip', 'facing her smoke keeps the ground unde
     goto: 'spine:ridge',
     flag: { huntQuiet: 30, encounterAt: 999 },
   })
-  ridge = armed(ridge, { cartel: 0, strays: 8 })
-  ridge = { ...ridge, pressure: 9, flags: { ...ridge.flags, huntQuiet: 30 } }
-  assert(!stepQuiet(ridge).flags.hunterHere, 'Stray Heat does not field a hunter, and Cartel Heat 0 stays quiet')
-  ridge = armed(ridge, { cartel: 1 })
+  ridge = armed(ridge, { cartel: 8, strays: 0 })
+  ridge = { ...ridge, pressure: 9, flags: { ...ridge.flags, huntQuiet: 30, strayNotice: true } }
+  assert(!stepQuiet(ridge).flags.hunterHere, 'Spine reads Stray Heat: Strays 0 stays quiet even at Cartel 8')
+  ridge = armed(ridge, { cartel: 0, strays: 4 })
   ridge = { ...ridge, pressure: 0, flags: { ...ridge.flags, huntQuiet: 30 } }
-  assert(!stepQuiet(ridge).flags.hunterHere, 'Spine still waits for Cartel Heat 2 or pressure 6')
-  ridge = armed(ridge, { cartel: 1 })
-  ridge = { ...ridge, pressure: 6 }
+  delete ridge.flags.strayNotice
+  assert(!stepQuiet(ridge).flags.hunterHere, 'Spine waits for the Strays to notice you (or pressure 6)')
+  ridge = armed(ridge, { strays: 2 })
+  ridge = { ...ridge, flags: { ...ridge.flags, strayNotice: true } }
   const ridgeEarly = passQuiet(ridge, 7)
-  assert(!ridgeEarly.flags.hunterHere, 'Spine Heat 1 still uses the low-Heat gap of 8')
-  assert(stepQuiet(ridgeEarly).flags.hunterHere, 'Spine Heat 1 with pressure 6 re-arms after 8 quiet scenes')
+  assert(!ridgeEarly.flags.hunterHere, 'Spine Stray Heat 2 uses the low-Heat gap of 8')
+  assert(stepQuiet(ridgeEarly).flags.hunterHere, 'Spine Stray Heat 2, noticed, re-arms after 8 quiet scenes')
+  ridge = armed(ridge, { strays: 2 })
+  delete ridge.flags.strayNotice
+  ridge = { ...ridge, pressure: 6 }
+  assert(stepQuiet(passQuiet(ridge, 7)).flags.hunterHere, 'a long linger (pressure 6) still wakes the Spine without a notice')
+
+  // Stray-raising acts are what make the Strays notice.
+  {
+    const base = applyEffect(newGame('outcast'), { goto: 'spine:ridge', enterHub: 'spine', flag: { encounterAt: 999 } })
+    assert(!base.flags.strayNotice, 'a fresh Outcast is not noticed yet')
+    const mercy = pick(applyEffect(base, { goto: 'spine:silas' }), 'mercy')
+    assert(mercy.flags.strayNotice && mercy.flags.silasOwed && mercy.flags.silasOwedDrop, "Silas's mercy Drop is a debt and the Strays notice")
+    const cut = applyEffect(base, { goto: 'spine:tip' })
+    assert(!pick(cut, 'fill').flags.strayNotice, "using Silas's shade-cut is not a theft")
+    const armedWell = applyEffect(base, { goto: 'spine:well', add: { needle_knife: 1 } })
+    const withKnife = { ...armedWell, equipped: { ...armedWell.equipped, weapon: 'needle_knife' as const } }
+    assert(pick(withKnife, 'skim').flags.strayNotice, 'scraping the well wakes the Strays')
+    assert(skim(withKnife).flags.strayNotice, 'the Skim verb on the well also wakes the Strays')
+    const robbed = interpret(applyEffect(base, { goto: 'spine:silas' }), 'steal from silas')
+    assert(robbed.flags.strayNotice, 'trying to rob Silas wakes the Strays')
+    const road = applyEffect(base, { startChapter: 'cache-run', goto: 'ch1:o-tax', add: { glints: 0 } })
+    assert(pick(road, 'run').flags.strayNotice, 'running past Nim gets you noticed')
+  }
 
   let courtLow = newGame('vessel')
   courtLow = applyEffect(courtLow, {
@@ -2500,6 +2549,9 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 
   let ridge = newGame('outcast')
   ridge = pick(ridge, 'stand')
+  const noHeading = interpret(ridge, 'take hunger')
+  assert(noHeading.chapterId !== 'cache-run', 'Outcast cannot type past the heading gate on the ridge')
+  ridge = applyEffect(ridge, { flag: { hungerKnown: true } })
   const ridgeButton = pick(ridge, 'hunger')
   const ridgeDo = interpret(ridge, 'take hunger')
   assert(ridgeDo.sceneId === ridgeButton.sceneId && ridgeDo.flash === ridgeButton.flash, 'Outcast take hunger is the ridge button')
@@ -2693,7 +2745,7 @@ function assertHelpResolves(s: GameState, where: string) {
   const campOffers = kaelenOffers(applyEffect(newGame('prisoner'), { goto: 'camp:kaelen' })).map((o) => o.id)
   assert(campOffers.includes('knife') && campOffers.includes('wrap') && campOffers.includes('cloak'), 'camp shelf has knife, wrap, cloak')
   const spineOffers = kaelenOffers(applyEffect(newGame('outcast'), { goto: 'spine:kaelen' })).map((o) => o.id)
-  assert(spineOffers.includes('wrap') && spineOffers.includes('cloak') && !spineOffers.includes('knife'), 'spine shelf drops the knife')
+  assert(spineOffers.includes('wrap') && spineOffers.includes('cloak') && spineOffers.includes('knife'), 'spine shelf sells a knife so the Hound fight is reachable')
   const threshOffers = kaelenOffers(applyEffect(newGame('vessel'), { goto: 'thresh:kaelen' })).map((o) => o.id)
   assert(threshOffers.includes('wrap') && threshOffers.includes('cloak'), 'threshold shelf still has wrap and cloak')
   const roam = applyEffect(newGame('prisoner'), { goto: 'roam:kaelen', flag: { kaelenHub: 'redmaw' } })
@@ -2775,6 +2827,110 @@ function assertHelpResolves(s: GameState, where: string) {
   lip = skim(lip)
   assert(lip.heat.cartel === heat.cartel && lip.heat.seekers === heat.seekers && lip.heat.strays === heat.strays, 'Hollow Lip skim raises no Heat')
   assert(/Nobody from the Cartel/i.test(lip.flash ?? ''), 'lip skim says nobody saw it')
+}
+
+
+// ── Outcast: Stray hunt, heading gate, well lock, knife, help/look, scaffolds ──
+{
+  const quiet = { encounterAt: 9999 }
+  const fresh = pick(newGame('outcast'), 'stand')
+  assert(fresh.sceneId === 'spine:ridge' && !fresh.flags.hungerKnown, 'Outcast starts on the ridge without a heading')
+  const ridgeHook = HUBS.spine.hungerHook
+  assert(ridgeHook && !isChoiceOn(fresh, ridgeHook.show), "Spine hub hook stays shut on Silas's Tip alone")
+  for (const scene of ['spine:ridge', 'spine:shade', 'spine:silas', 'spine:well', 'spine:kaelen', 'spine:kaelen-rumors', 'spine:hound', 'spine:tip']) {
+    const at = applyEffect(fresh, { goto: scene, flag: quiet })
+    assert(!visibleChoices(at).some((c) => c.effects.startChapter === 'cache-run' && c.tone !== 'danger'), `${scene}: no Hunger exit before a heading`)
+  }
+
+  // Well skim: a visible lock that names the requirement.
+  const well = applyEffect(fresh, { goto: 'spine:well', flag: quiet, sap: 4 })
+  const skimRow = visibleChoices(well).find((c) => c.id === 'skim')
+  assert(skimRow && skimRow.locked === 'Needs a weapon equipped', 'well skim stays visible and names what it needs')
+  assert(!isChoiceOn(well, skimRow.enable), 'well skim is locked bare-handed')
+  assert(!canSkim(well), 'Skim chip is off at the well bare-handed')
+  const bare = skim(well)
+  assert(!bare.flags['skim:spine:well'] && /weapon equipped/.test(bare.flash ?? ''), 'typed skim at the well names the weapon')
+
+  // Kaelen's Spine shelf sells the knife; the knife opens the well and the Hound fight.
+  let shop = applyEffect(fresh, { goto: 'spine:kaelen', add: { scrap: 2 }, flag: quiet, sap: 4 })
+  shop = pick(shop, 'shop-buy')
+  shop = pick(shop, 'knife')
+  assert((shop.items.needle_knife ?? 0) === 1, 'Spine Kaelen sells a Needle Knife')
+  shop = equipItem(shop, 'needle_knife')
+  assert(shop.equipped.weapon === 'needle_knife', 'knife equips')
+  const armedWell = applyEffect(shop, { goto: 'spine:well', flag: quiet })
+  assert(isChoiceOn(armedWell, visibleChoices(armedWell).find((c) => c.id === 'skim')?.enable), 'knife unlocks the well skim')
+  const scraped = pick(armedWell, 'skim')
+  assert((scraped.items.vial_drop ?? 0) >= 1 && scraped.flags.strayNotice, 'scraping the well yields a Drop and wakes the Strays')
+  const houndGround = applyEffect(shop, { goto: 'spine:hound', flag: quiet })
+  assert(ids(houndGround).includes('cut'), 'equipped knife reaches the Hound fight')
+
+  // hungerKnown sources on the Spine.
+  const paidCache = applyEffect(fresh, { goto: 'spine:silas-cache', add: { glints: 1 }, flag: quiet })
+  const paid = pick(paidCache, 'pay')
+  assert(paid.flags.hungerKnown && !paid.items.glints && !paid.flags.silasOwed, 'a Glint buys the heading with no debt')
+  assert(paid.heat.strays === paidCache.heat.strays, 'paid heading adds no Stray Heat')
+  const kae = pick(pick(applyEffect(fresh, { goto: 'spine:kaelen-rumors', add: { glints: 1 }, flag: quiet }), 'rumor-intel'), 'hunger-glint')
+  assert(kae.flags.hungerKnown, 'Kaelen still sells the heading')
+  const val = pick(applyEffect(fresh, { goto: 'spine:valerius', flag: quiet }), 'ask')
+  assert(val.flags.hungerKnown, 'asking at Hound Sign still names the skiff')
+
+  // Help and look on Spine ground.
+  for (const scene of ['spine:ridge', 'spine:well', 'spine:hound', 'spine:shade', 'spine:silas', 'spine:silas-cache', 'spine:kaelen']) {
+    const at = applyEffect(fresh, { goto: scene, flag: quiet })
+    assertHelpResolves(at, `outcast ${scene}`)
+    const looked = interpret(at, 'look')
+    assert(!!looked.flash && !/^Miss/.test(looked.flash), `${scene} look answers`)
+  }
+  const wellHelp = helpEntries(well, visibleChoices(well).map((c) => c.label)).map((e) => e.command)
+  assert(wellHelp.includes('look at throat') && wellHelp.includes('look at bricks'), 'well help lists the throat and the bricks')
+  assert(/weapon equipped/.test(interpret(well, 'look at throat').flash ?? ''), 'look throat names the weapon')
+  const ridgeHelp = helpEntries(fresh, visibleChoices(fresh).map((c) => c.label)).map((e) => e.command)
+  assert(ridgeHelp.includes('look at tracks'), 'ridge help lists the tracks')
+  assert(/Hound Sign/.test(interpret(fresh, 'look at tracks').flash ?? ''), 'look tracks points at Hound Sign')
+
+  // The hunter face is generic and lives in one place.
+  assert(!/valerius/i.test(JSON.stringify(SPINE_HUNTER)), 'Spine hunter copy does not name Valerius')
+  assert(!/\bthis is not\b|\bnot a\b/i.test(JSON.stringify(SPINE_HUNTER)), 'Spine hunter copy has no "this is not X" lines')
+
+  // Scaffolds never reach a player.
+  assert(!SHADE_HANDS_LIVE && !SILAS_JOB_LIVE, 'shade walk-ups and the Silas job are scaffolds, off')
+  const shade = applyEffect(fresh, { goto: 'spine:shade', flag: quiet })
+  assert(!visibleChoices(shade).some((c) => /TODO/.test(c.label)), 'shade shows no placeholder walk-ups')
+  for (const scene of ALL_SCENES) {
+    const text = JSON.stringify(scene)
+    assert(!/TODO_STRAY/.test(text), `${scene.id} carries no walk-up placeholder`)
+    assert(!scene.id.startsWith('spine:shade-'), `${scene.id} is a scaffold scene that should not be live`)
+  }
+  assert(!ALL_SCENES.some((sc) => JSON.stringify(sc).includes(SILAS_JOB_FLAGS.taken)), 'no scene reads the Silas job flags yet')
+}
+
+// ── Outcast no-soft-lock: choices only, zero Glints, Spine to the Maw ──
+{
+  let run = newGame('outcast')
+  run = pick(run, 'stand')
+  run = { ...run, flags: { ...run.flags, encounterAt: 9999 } }
+  assert(!run.items.glints, 'no-soft-lock run starts with no Glints')
+  run = travelTo(run, 'spine:shade')
+  run = pick(run, 'talk')
+  run = pick(run, 'cache')
+  run = pick(run, 'tab')
+  assert(run.flags.hungerKnown && run.sceneId === 'spine:shade', 'a broke Outcast can still earn the heading on the tab')
+  run = pick(run, 'hunger')
+  assert(run.chapterId === 'cache-run' && run.sceneId === 'ch1:leave', 'heading opens the Cache Run')
+  run = { ...run, sap: Math.max(run.sap, 4) }
+  run = outcastToSybella(run)
+  run = pick(run, 'maw')
+  assert(run.sceneId === 'ch1:land' && run.flags.chapter1Done, 'Outcast lands the chapter')
+  run = pick(run, 'hub')
+  assert(run.hubId === 'redmaw' && run.sceneId === 'maw:rim', 'Outcast reaches the Red Maw Approach')
+
+  // Running dry is still a way out, at a price.
+  let dry = pick(newGame('outcast'), 'stand')
+  dry = applyEffect(dry, { sap: -9, goto: 'spine:ridge' })
+  assert(dry.sceneId === 'crisis:spine', 'running dry on the Spine is the authored crisis')
+  dry = pick(dry, 'up')
+  assert(dry.flags.hungerKnown && ids(dry).includes('hunger'), 'the crisis still leaves a road to the Maw')
 }
 
 console.log('OK', {
