@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import {
   applyEffect,
   bodyOf,
+  drinkDrop,
   equipItem,
   HUNTER_QUIET_GAPS,
   huntGap,
@@ -2931,6 +2932,102 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(dry.sceneId === 'crisis:spine', 'running dry on the Spine is the authored crisis')
   dry = pick(dry, 'up')
   assert(dry.flags.hungerKnown && ids(dry).includes('hunger'), 'the crisis still leaves a road to the Maw')
+}
+
+// Typed "drink a drop" on a merchant screen drinks (same as the Drink a Drop row). It never buys.
+{
+  const VENDOR_SCENES = ['camp:kaelen', 'spine:kaelen', 'thresh:kaelen', 'roam:kaelen', 'maw:zafir', 'maw:market', 'spine:silas', 'spine:silas-drop']
+  const sig = (x: GameState) => JSON.stringify([x.sceneId, x.items, x.sap, x.heat, x.flags.shopShelf ?? null, x.flash])
+  const at = (door: DoorId, id: string, shelf: 'buy' | 'sell' | undefined, drops: number) => {
+    const sc = getScene(id)
+    let x = applyEffect(newGame(door), {
+      goto: id,
+      enterHub: sc.hubId,
+      startChapter: sc.chapterId,
+      add: { glints: 3, scrap: 4, vial_empty: 1 },
+      flag: { encounterAt: 99999, ...(shelf ? { shopShelf: shelf } : {}) },
+    })
+    x = applyEffect(x, { remove: { vial_drop: x.items.vial_drop ?? 0 } })
+    x = { ...x, sap: 2 } // low sap, like the report
+    if (drops) x = applyEffect(x, { add: { vial_drop: drops } })
+    x = { ...x, flags: { ...x.flags } }
+    delete x.flags.hunterHere
+    delete x.flags.encounterHere
+    assert(x.sceneId === id && (x.items.vial_drop ?? 0) === drops, `${door} reaches ${id} with ${drops} Drops`)
+    return x
+  }
+  let covered = 0
+  for (const door of ['prisoner', 'outcast', 'vessel'] as DoorId[]) {
+    for (const id of VENDOR_SCENES) {
+      for (const shelf of [undefined, 'buy', 'sell'] as const) {
+        const held = at(door, id, shelf, 5)
+        const button = drinkDrop(held)
+        assert(button.items.vial_drop === 4 && button.sap === held.sap + 3, `${door} ${id} Drink a Drop button drinks one`)
+        for (const line of ['drink a drop', 'drink drop', 'use a drop', 'Drink a Drop', 'sip a drop']) {
+          const typed = interpret(held, line)
+          assert(sig(typed) === sig(button), `${door} ${id}${shelf ? `[${shelf}]` : ''} typed "${line}" matches the Drink a Drop button (got ${typed.flash})`)
+          assert(typed.items.glints === held.items.glints && typed.items.scrap === held.items.scrap, `${door} ${id} typed "${line}" spends nothing`)
+          assert((typed.items.vial_empty ?? 0) === (held.items.vial_empty ?? 0) + 1, `${door} ${id} typed "${line}" leaves an empty vial`)
+        }
+        const dry = at(door, id, shelf, 0)
+        for (const line of ['drink a drop', 'drink drop', 'use a drop']) {
+          const typed = interpret(dry, line)
+          assert(typed.flash === 'You have no Drop to drink.', `${door} ${id} typed "${line}" with no Drops says so (got ${typed.flash})`)
+          assert(sig({ ...typed, flash: '' }) === sig({ ...dry, flash: '' }), `${door} ${id} typed "${line}" with no Drops buys nothing and opens no shelf`)
+        }
+        assert(sig({ ...drinkDrop(dry), flash: '' }) === sig({ ...dry, flash: '' }) && drinkDrop(dry).flash === 'You have no Drop to drink.', `${door} ${id} empty Drink button says the same`)
+        if (shelf !== 'sell') {
+          // Silas takes a Glint or scrap, so a bare buy asks which; naming the price buys.
+          const pay = id.startsWith('spine:silas') ? ' with a glint' : ''
+          for (const line of ['buy vial', 'buy a drop', 'purchase a drop'].map((l) => l + pay)) {
+            const bought = interpret(dry, line)
+            assert((bought.items.vial_drop ?? 0) === 1, `${door} ${id}${shelf ? `[${shelf}]` : ''} typed "${line}" still buys a Drop (got ${bought.flash})`)
+            assert((bought.items.glints ?? 0) + (bought.items.scrap ?? 0) < (dry.items.glints ?? 0) + (dry.items.scrap ?? 0), `${door} ${id} "${line}" costs something`)
+          }
+        }
+        const cut = applyEffect(held, { add: { salve: 1 } })
+        const salveCount = cut.items.salve ?? 0
+        const bind = interpret(cut, 'use salve')
+        assert((bind.items.salve ?? 0) === salveCount - 1 && bind.items.glints === cut.items.glints && bind.items.scrap === cut.items.scrap, `${door} ${id} typed "use salve" binds a carried salve, never buys one`)
+        const noSalve = applyEffect(held, { remove: { salve: salveCount } })
+        const none = interpret(noSalve, 'use salve')
+        assert(none.flash === 'You have no salve to use.' && (none.items.salve ?? 0) === 0, `${door} ${id} "use salve" with none says so`)
+        covered++
+      }
+    }
+  }
+  assert(covered === 72, `merchant drink checks cover every door and shelf (${covered})`)
+
+  // Typing any visible, enabled button's label does what tapping it does, everywhere.
+  const bsig = (x: GameState) => JSON.stringify([x.sceneId, x.items, x.sap, x.heat, x.health, x.flags.shopShelf ?? null, x.flags.rumorShelf ?? null])
+  const off: string[] = []
+  let rows = 0
+  for (const door of ['prisoner', 'outcast', 'vessel'] as DoorId[]) {
+    for (const sc of ALL_SCENES) {
+      if (sc.id.startsWith('open:')) continue
+      for (const shelf of [undefined, 'buy', 'sell'] as const) {
+        let x = applyEffect(newGame(door), {
+          goto: sc.id,
+          enterHub: sc.hubId,
+          startChapter: sc.chapterId,
+          sap: 4,
+          add: { vial_drop: 2, glints: 2, scrap: 3, salve: 1 },
+          flag: { encounterAt: 99999, ...(shelf ? { shopShelf: shelf } : {}) },
+        })
+        x = { ...x, flags: { ...x.flags } }
+        delete x.flags.hunterHere
+        delete x.flags.encounterHere
+        if (x.sceneId !== sc.id) continue
+        for (const c of visibleChoices(x)) {
+          if (!isChoiceOn(x, c.enable)) continue
+          rows++
+          if (bsig(interpret(x, c.label)) !== bsig(applyEffect(x, c.effects))) off.push(`${door} ${sc.id} "${c.label}"`)
+        }
+        if (bsig(interpret(x, 'drink a drop')) !== bsig(drinkDrop(x))) off.push(`${door} ${sc.id} "drink a drop"`)
+      }
+    }
+  }
+  assert(rows > 1000 && off.length === 0, `typed button labels match the tap (${rows} rows): ${off.slice(0, 5).join(' | ')}`)
 }
 
 console.log('OK', {

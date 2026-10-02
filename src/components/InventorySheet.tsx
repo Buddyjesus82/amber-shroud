@@ -1,4 +1,4 @@
-import { applyEffect, drinkDrop, equipItem, sapLabel, unequipSlot } from '../game/engine'
+import { bindSalve, drinkDrop, equipItem, sapLabel, unequipSlot } from '../game/engine'
 import { gearStat, isWorn, listedKit } from '../game/kit'
 import { ITEMS } from '../game/content/catalog'
 import type { EquipSlot, GameState, ItemId } from '../game/types'
@@ -144,14 +144,7 @@ function ItemActs({
         type="button"
         className="btn btn-gold btn-tiny"
         onClick={() => {
-          onChange(
-            applyEffect(state, {
-              remove: { salve: 1 },
-              health: 3,
-              ticks: 1,
-              flash: 'Resin salve on the cut. Health comes back a few pips. The tin is lighter.',
-            }),
-          )
+          onChange(bindSalve(state))
           onClose()
         }}
       >

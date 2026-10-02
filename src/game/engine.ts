@@ -10,7 +10,8 @@ import {
   RIM_HUNGER_OPEN,
   RIM_NOWHERE,
 } from './hunger'
-import { GLOBAL_INTENTS, matchChoiceText, matchIntent } from './intent'
+import { GLOBAL_INTENTS, matchChoiceText, matchIntent, scoreChoiceText, STRONG_BUTTON } from './intent'
+import { consumeAsk, NONE_TO_USE } from './consume'
 import { helpText } from './help'
 import { isBayScene } from './content/bayHands'
 import { classifyLook, directedLookFlash, pressureLookFlash, roomLookEffect } from './look'
@@ -658,7 +659,7 @@ export function travelTo(state: GameState, sceneId: string): GameState {
 
 export function drinkDrop(state: GameState): GameState {
   if (!(state.items.vial_drop ?? 0)) {
-    return persist({ ...state, flash: 'Nothing in the glass.' })
+    return persist({ ...state, flash: NONE_TO_USE.vial_drop })
   }
   return applyEffect(state, {
     sap: 3,
@@ -667,6 +668,21 @@ export function drinkDrop(state: GameState): GameState {
     ticks: 1,
     flash: 'The Drop hits like a nail of honey and heat. The vial is a dry throat again.',
   })
+}
+
+/** Same effect as the Gear sheet's Bind button. */
+export const BIND_SALVE: Effect = {
+  remove: { salve: 1 },
+  health: 3,
+  ticks: 1,
+  flash: 'Resin salve on the cut. Health comes back a few pips. The tin is lighter.',
+}
+
+export function bindSalve(state: GameState): GameState {
+  if (!(state.items.salve ?? 0)) {
+    return persist({ ...state, flash: NONE_TO_USE.salve })
+  }
+  return applyEffect(state, BIND_SALVE)
 }
 
 function withVerb(state: GameState, verb: string): GameState {
@@ -734,9 +750,19 @@ export function skim(state: GameState): GameState {
   )
 }
 
+/** A visible, enabled button the typed line clearly names (exact label/id or label substring). */
+function strongButton(state: GameState, text: string): Choice | null {
+  const enabledNow = visibleChoices(state).filter((c) => isChoiceOn(state, c.enable))
+  const named = scoreChoiceText(text, enabledNow)
+  return named && named.score >= STRONG_BUTTON ? named.choice : null
+}
+
 function tryCampSabotageJob(state: GameState, text: string): GameState | null {
   if (!campJobOpen(state) || !wantsCampSabotage(text)) return null
   if (sceneOf(state).kind === 'crisis') return null
+  // A visible button that names this line wins (e.g. "Oil-Tooth's inside job is still open" walks to him).
+  const named = strongButton(state, text)
+  if (named) return withVerb(applyEffect(state, named.effects), named.id)
   const stayWithKaelen = atKaelenInvoice(state)
   const atStation = atGuardStation(state)
   const going = wantsDoSabotage(text)
@@ -810,6 +836,14 @@ export function interpret(state: GameState, text: string): GameState {
       'down',
     )
   }
+  // Using something you carry is inventory, not a shelf or a scene guess. Same result as the
+  // on-screen Drink a Drop row and the Gear sheet's Drink / Bind buttons, on every screen.
+  const consume = consumeAsk(text)
+  if (consume) {
+    const next = consume.item === 'salve' ? bindSalve(state) : drinkDrop(state)
+    return withVerb(next, consume.verb)
+  }
+
   const who = matchPersonQuery(text, state)
   if (who === 'unknown') {
     return withVerb(
@@ -908,12 +942,7 @@ export function interpret(state: GameState, text: string): GameState {
   if (/\b(rest|sleep|bind|bandage|heal)\b/.test(bare) && (REST_SCENES.has(state.sceneId) || (state.items.salve ?? 0) > 0)) {
     if ((state.items.salve ?? 0) > 0 && /\b(bind|bandage|salve|heal)\b/.test(bare)) {
       return withVerb(
-        applyEffect(state, {
-          remove: { salve: 1 },
-          health: 3,
-          ticks: 1,
-          flash: 'Resin salve on the cut. Health comes back a few pips. The tin is lighter.',
-        }),
+        applyEffect(state, BIND_SALVE),
         'heal',
       )
     }
@@ -937,6 +966,12 @@ export function interpret(state: GameState, text: string): GameState {
   }
   if (aimed?.kind === 'dir') {
     return withVerb(persist({ ...state, flash: directedLookFlash(state, aimed.dir), updatedAt: Date.now() }), 'look')
+  }
+
+  // A line that names a visible, enabled button is that button. Shelf and rumor guesses come after.
+  {
+    const named = strongButton(state, text)
+    if (named) return withVerb(applyEffect(state, named.effects), named.id)
   }
 
   if (!isPressureOverlay(state)) {
