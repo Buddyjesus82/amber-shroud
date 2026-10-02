@@ -36,11 +36,13 @@ const SAND_TOUCH_LATER = 'Sand. Hot on top, cooler a finger down.'
 const HANDS_LOOK_LATER = 'Dry, cracked hands with amber dust in the lines.'
 const AMBER_LATER = 'Spent amber. It sits in your palm like any stone.'
 
-export const SAND_SIGN_FLAGS = ['sandLowSeen', 'sandDownSeen', 'amberWarmSeen', 'hollowPullSeen', 'sandTouchSeen', 'handsLookSeen'] as const
+export const SAND_SIGN_FLAGS = ['sandLowSeen', 'sandDownSeen', 'amberWarmSeen', 'hollowPullSeen', 'sandTouchSeen', 'handsLookSeen', 'sandGripSeen'] as const
 
 export function sandSignsSeen(state: GameState): number {
   return SAND_SIGN_FLAGS.filter((f) => state.flags[f] != null && state.flags[f] !== false).length
 }
+
+/** In a fight that is going badly the sand takes one hit for him (fightTricks.ts `sandGripLine`). Flag: sandGripSeen. */
 
 /** Spine ground and the Outcast's Noon Country road. */
 export function sandGround(state: Pick<GameState, 'door' | 'hubId' | 'sceneId' | 'chapterId'>): boolean {

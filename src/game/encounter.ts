@@ -3,7 +3,8 @@ import { getScene } from './content'
 import { check } from './logic'
 import { equippedShell, equippedStrike } from './kit'
 import { CARAPACE_HUNTER, SPINE_HUNTER } from './content/spineHunter'
-import type { Choice, Effect, GameState, ItemId } from './types'
+import type { Choice, Effect, FlagMap, GameState, ItemId } from './types'
+import { hash, OPENERS, sandAnswers, PAIR_LINE, sandGripLine, TERRAINS, terrainPool, type Terrain, type TerrainId } from './fightTricks'
 
 export type EncounterKind = 'jackal' | 'cutter' | 'tick' | 'pup' | 'scavenger' | 'patrol' | 'handler' | 'overseer' | 'collector' | 'carapace'
 
@@ -284,8 +285,19 @@ function compareLines(c: Clash): string {
   return `You Strike ${c.strike} vs their Shell ${c.spec.shell}\n\nTheir Strike ${c.spec.strike} vs your Shell ${c.shell}`
 }
 
-function compareHit(c: Clash): string {
-  return `You Strike ${c.strike}+${c.swingOut} vs their Shell ${c.spec.shell} → ${c.dmgOut}\n\nTheir Strike ${c.spec.strike}+${c.swingIn} vs your Shell ${c.shell} → ${c.dmgIn}`
+
+/** Fight ground, picked once when the fight opens. */
+export function terrainOf(state: GameState): Terrain {
+  const id = state.flags.encounterTerrain
+  if (typeof id === 'string' && id in TERRAINS) return TERRAINS[id as TerrainId]
+  return TERRAINS.open
+}
+
+function openerOf(state: GameState, spec: Spec): string {
+  const list = OPENERS[spec.kind] ?? []
+  const i = Number(state.flags.encounterOpen ?? 0)
+  const line = list[i] || spec.line
+  return state.flags.encounterPair ? `${line} ${PAIR_LINE}` : line
 }
 
 /** Encounter interrupt body only — never the place underneath. */
@@ -294,10 +306,11 @@ export function encounterCard(state: GameState): string {
   if (typeof clashText === 'string' && clashText) return clashText
   const c = clashOf(state)
   const compares = compareLines(c)
+  const head = `${openerOf(state, c.spec)}\n\n${terrainOf(state).line}`
   if (!state.flags.fightTaught) {
-    return `${c.spec.line}\n\n${compares}\n\n${TEACH}`
+    return `${head}\n\n${compares}\n\n${TEACH}`
   }
-  return `${c.spec.line}\n\n${compares}`
+  return `${head}\n\n${compares}`
 }
 
 export function encounterAppend(state: GameState): string {
@@ -324,30 +337,92 @@ export function encounterChoices(state: GameState): Choice[] {
     ]
   }
   const spec = encounterSpec(state)
+  const f = state.flags
+  const runLock = f.encounterPinned
+    ? 'The harpoon line has you. Land a hit first.'
+    : f.encounterLatched
+      ? 'The tick is on you. Pull it off first.'
+      : ''
   const rows: Choice[] = [
     {
       id: 'enc-fight',
       label: `Fight the ${spec.name}`,
-      sub: 'Strike vs Shell. Health takes the hits.',
+      sub: f.encounterFeint ? 'Strike. Your feint is set: swing +2.' : 'Strike vs Shell. Health takes the hits.',
       tone: 'danger',
       enable: { healthMin: 1 },
       locked: 'Too hurt to fight.',
       effects: { resolveEncounter: 'fight', ticks: 1 },
     },
     {
+      id: 'enc-guard',
+      label: 'Guard',
+      sub: spec.kind === 'overseer' ? 'No attack. His baton hits 1 lighter this round.' : 'No attack. Their hit is 2 lighter this round.',
+      enable: { healthMin: 1 },
+      locked: 'Too hurt to fight.',
+      effects: { resolveEncounter: 'guard', ticks: 1 },
+    },
+    {
+      id: 'enc-feint',
+      label: 'Feint',
+      sub: 'No attack. Their hit is 1 lighter, and your next Strike gets +2.',
+      enable: { all: [{ healthMin: 1 }, { flagUnset: 'encounterFeint' }] },
+      locked: 'Your feint is already set. Strike now.',
+      effects: { resolveEncounter: 'feint', ticks: 1 },
+    },
+    {
+      id: 'enc-trick',
+      label: 'Throw sand in their eyes',
+      sub: 'Once a fight. No attack. 4 in 10: they miss this round and the next.',
+      enable: { all: [{ healthMin: 1 }, { flagUnset: 'encounterTrickUsed' }] },
+      locked: 'Already used this fight.',
+      effects: { resolveEncounter: 'trick', ticks: 1 },
+    },
+    {
+      id: 'enc-pull',
+      label: 'Pull the tick off',
+      sub: 'No attack. Stops the Sap drain.',
+      show: { flag: 'encounterLatched' },
+      effects: { resolveEncounter: 'pull', ticks: 1 },
+    },
+    {
+      id: 'enc-deal',
+      label: spec.kind === 'collector' ? 'Call it square' : 'Take the scrap and let it go',
+      sub: spec.kind === 'collector' ? 'The fight ends. Stray Heat cools by 1. No loot.' : 'The fight ends. Scrap +1. No more hits.',
+      show: { flag: 'encounterOffer' },
+      effects: { resolveEncounter: 'deal', ticks: 1 },
+    },
+    {
+      id: 'enc-run',
+      label: 'Run',
+      sub: `${runChance(state)} in 100 you get away, no loot. If not, they hit you.`,
+      enable: runLock ? { flag: '__never__' } : { healthMin: 1 },
+      locked: runLock || 'Too hurt to fight.',
+      effects: { resolveEncounter: 'run', ticks: 1 },
+    },
+    {
       id: 'enc-skip',
       label: 'Give the road. No loot.',
       tone: 'quiet',
+      show: { flagUnset: 'encounterRound' },
       effects: { resolveEncounter: 'skip' },
     },
     {
       id: 'enc-cloak',
       label: 'Let the cloak eat the glance. Skip.',
-      show: { slot: 'armor' },
+      show: { all: [{ slot: 'armor' }, { flagUnset: 'encounterRound' }] },
       effects: { resolveEncounter: 'skip' },
     },
   ]
   return rows.filter((c) => check(c.show, state))
+}
+
+/** Percent chance a Run gets away. */
+export function runChance(state: GameState): number {
+  const spec = encounterSpec(state)
+  let p = 60 + terrainOf(state).run
+  if (spec.kind === 'handler') p -= 20
+  if (state.flags.encounterPair && Number(state.flags.encounterHp ?? 0) >= 2) p -= 10
+  return Math.max(10, Math.min(90, p))
 }
 
 export function encounterSpeaker(state: GameState): string {
@@ -431,6 +506,22 @@ export const ENCOUNTER_FLAGS = [
   'encounterFlash',
   'encounterRound',
   'encounterStall',
+  'encounterTerrain',
+  'encounterOpen',
+  'encounterPair',
+  'encounterLatched',
+  'encounterFeint',
+  'encounterStun',
+  'encounterShocked',
+  'encounterPinned',
+  'encounterSnatch',
+  'encounterSnatchTried',
+  'encounterFleeing',
+  'encounterFleeShown',
+  'encounterOffer',
+  'encounterOfferShown',
+  'encounterTrickUsed',
+  'encounterGrip',
 ] as const
 
 export function isEncounterResult(state: Pick<GameState, 'flags'>): boolean {
@@ -465,29 +556,178 @@ function holdCard(state: GameState, spec: Spec, card: string, short: string, ext
   }
 }
 
+export type FightMove = 'fight' | 'guard' | 'feint' | 'trick' | 'run' | 'pull' | 'deal'
+
+/** 1 in 10 landed hits, both sides. The Shard-pup lands them twice as often. */
+export const CRIT_IN_10 = 1
+
+/** Seeded 0..n-1 roll for this round, so a save replays the same fight. */
+function roll(state: GameState, salt: string, n: number): number {
+  return hash(state, `${salt}:${state.flags.encounterKind ?? ''}`, Number(state.flags.encounterRound ?? 0) + 1) % n
+}
+
+function whoOf(spec: Spec): string {
+  return spec.kind === 'overseer' ? spec.name : `the ${spec.name}`
+}
+
+function cap(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1)
+}
+
+/** What a scavenger or jackal grabs. Jackals only take scrap. Worn gear is never grabbed. */
+function grabbable(state: GameState, kind: EncounterKind): ItemId | null {
+  const order: ItemId[] = kind === 'jackal' ? ['scrap'] : ['glints', 'vial_drop', 'salve', 'scrap']
+  for (const id of order) if ((state.items[id] ?? 0) > 0) return id
+  return null
+}
+
 /**
  * The one fight resolver for every door and every fight. `floor` exists for tests of the stall valve;
  * the game always plays with DAMAGE_FLOOR.
  */
 export function resolveEncounter(
   state: GameState,
-  how: 'fight' | 'skip',
+  how: FightMove | 'skip',
   opts: { floor?: number } = {},
 ): { fx: Effect; flash: string } {
   const spec = encounterSpec(state)
+  const f = state.flags
+  const who = whoOf(spec)
   if (how === 'skip') {
     const line = `You give the ${spec.name} the road. No loot. No bill.`
     return holdCard(state, spec, line, line)
   }
+  const snatched = typeof f.encounterSnatch === 'string' && f.encounterSnatch ? (f.encounterSnatch as ItemId) : null
+  if (how === 'deal' && f.encounterOffer) {
+    if (spec.kind === 'collector') {
+      const line = 'The collector puts the knife away. "Square," he says, and walks back down-slope. Stray Heat cools by 1. No loot.'
+      return holdCard(state, spec, line, line, { heat: { strays: -1 } })
+    }
+    const line = `${cap(who)} drops a twist of scrap and backs away into the grit. Scrap +1. No more hits.`
+    return holdCard(state, spec, line, line, { add: { scrap: 1 } })
+  }
+  const move: FightMove = how === 'deal' ? 'fight' : how
 
-  const c = clashOf(state, opts.floor ?? DAMAGE_FLOOR)
-  const round = Number(state.flags.encounterRound ?? 0) + 1
-  const stall = c.dmgOut === 0 && c.dmgIn === 0 ? Number(state.flags.encounterStall ?? 0) + 1 : 0
-  const theirHp = Math.max(0, c.theirHp - c.dmgOut)
-  const yourHp = Math.max(0, c.yourHp - c.dmgIn)
+  const floor = opts.floor ?? DAMAGE_FLOOR
+  const c = clashOf(state, floor)
+  const ground = terrainOf(state)
+  const round = Number(f.encounterRound ?? 0) + 1
   const max = state.healthMax ?? HEALTH_MAX
+  const notes: string[] = []
+  const attacking = move === 'fight'
+
+  // Swings after ground, feint, and a numb arm.
+  let swingOut = c.swingOut
+  let swingIn = c.swingIn
+  if (attacking && f.encounterFeint) {
+    swingOut += 2
+    notes.push('Your feint pays off. Swing +2.')
+  }
+  if (attacking && f.encounterShocked) {
+    swingOut = 0
+    notes.push('Your arm is still numb from the baton. Swing 0.')
+  }
+  swingOut = Math.max(0, swingOut + ground.you)
+  swingIn = Math.max(0, swingIn + ground.them)
+  if (ground.cap != null) {
+    swingOut = Math.min(ground.cap, swingOut)
+    swingIn = Math.min(ground.cap, swingIn)
+  }
+  let theirStrike = Math.max(0, spec.strike + ground.strike)
+  let pinned = !!f.encounterPinned
+  if (spec.kind === 'carapace' && round === 1) {
+    theirStrike += 1
+    pinned = true
+    notes.push('His first shot is the harpoon. Strike +1, and the line pins you: no Run until you land a hit.')
+  }
+
+  let dmgOut = attacking ? exchangeDamage(c.strike, swingOut, spec.shell, floor) : 0
+  let dmgIn = exchangeDamage(theirStrike, swingIn, c.shell, floor)
+
+  if (attacking && dmgOut > 0 && roll(state, 'critYou', 10) < CRIT_IN_10) {
+    dmgOut *= 2
+    notes.push('Critical hit. Yours lands clean: double damage.')
+  }
+  const critOdds = spec.kind === 'pup' ? CRIT_IN_10 * 2 : CRIT_IN_10
+  if (dmgIn > 0 && roll(state, 'critThem', 10) < critOdds) {
+    dmgIn *= 2
+    // A crit never takes you from full Health to Down in one exchange.
+    if (c.yourHp >= max) dmgIn = Math.min(dmgIn, max - 1)
+    notes.push(`Critical hit against you. ${cap(who)} lands clean: double damage.`)
+  }
+  if (f.encounterPair && c.theirHp >= 2) {
+    dmgIn += 1
+    notes.push('The second jackal bites at your flank. +1.')
+  }
+  let stunNext = false
+  if (f.encounterStun) {
+    dmgIn = 0
+    notes.push(`${cap(who)} is still clawing sand out of their eyes. They miss.`)
+  }
+
+  let feintNext = false
+  let trickUsed = !!f.encounterTrickUsed
+  let latched = !!f.encounterLatched
+  if (move === 'guard') {
+    const cut = spec.kind === 'overseer' ? 1 : 2
+    dmgIn = Math.max(0, dmgIn - cut)
+    notes.push(`You guard. Their hit is ${cut} lighter.`)
+  } else if (move === 'feint') {
+    dmgIn = Math.max(0, dmgIn - 1)
+    feintNext = true
+    notes.push('You feint and slip back. Their hit is 1 lighter. Your next Strike gets +2.')
+  } else if (move === 'trick') {
+    trickUsed = true
+    if (roll(state, 'trick', 10) < 4) {
+      dmgIn = 0
+      stunNext = true
+      notes.push(`You throw a fistful of sand into ${who}'s eyes. They miss this round and the next.`)
+    } else {
+      notes.push(`You throw a fistful of sand. ${cap(who)} turns away and it misses.`)
+    }
+  } else if (move === 'pull' && latched) {
+    latched = false
+    notes.push('You tear the tick off your arm. The Sap drain stops.')
+  } else if (move === 'run') {
+    if (pinned || latched) {
+      notes.push(pinned ? 'The harpoon line holds you. You cannot run.' : 'The tick holds on. You cannot run with it on you.')
+    } else if (roll(state, 'run', 100) < runChance(state)) {
+      const line = `You break away and run. ${cap(who)} does not follow. No loot.`
+      return holdCard(state, spec, line, line)
+    } else {
+      notes.push(`You try to run. ${cap(who)} catches you.`)
+      if (spec.kind === 'handler') {
+        dmgIn += 1
+        notes.push('The hound gets a bite in while you turn. +1.')
+      }
+    }
+  }
+
+  // Outcast only, once a fight: when it is going badly, the sand takes the hit for him. Never explained.
+  let grip = !!f.encounterGrip
+  if (sandAnswers(state) && !grip && c.yourHp <= 2 && dmgIn > 0 && roll(state, 'grip', 10) < 6) {
+    dmgIn = 0
+    grip = true
+    notes.push(sandGripLine(spec.name, BEAST_KINDS.includes(spec.kind), roll(state, 'gripForm', 2) ? 'mirage' : 'slide'))
+  }
+
+  const sapLoss = latched && move !== 'pull' && f.encounterLatched ? 1 : 0
+  if (sapLoss) notes.push('The tick drinks. Sap -1.')
+
+  const theirHp = Math.max(0, c.theirHp - dmgOut)
+  const yourHp = Math.max(0, c.yourHp - dmgIn)
   const healthDelta = yourHp - c.yourHp
-  const hitCard = compareHit(c)
+  if (dmgOut > 0) pinned = false
+  if (f.encounterPair && c.theirHp >= 2 && theirHp === 1) notes.push('One jackal drops. The other keeps coming.')
+
+  const youLine = attacking
+    ? `You Strike ${c.strike}+${swingOut} vs their Shell ${spec.shell} → ${dmgOut}`
+    : 'You do not attack this round.'
+  const themLine = f.encounterStun
+    ? `Their Strike ${theirStrike} → 0`
+    : `Their Strike ${theirStrike}+${swingIn} vs your Shell ${c.shell} → ${dmgIn}`
+  const hitCard = `${youLine}\n\n${themLine}${notes.length ? `\n\n${notes.join(' ')}` : ''}`
+  const sap = sapLoss ? -sapLoss : undefined
 
   if (theirHp <= 0 && spec.kind === 'patrol') {
     const stagger = yourHp <= 0
@@ -501,21 +741,26 @@ export function resolveEncounter(
       add: salve ? { scrap: 1, salve: 1 } : { scrap: 1 },
       heat: { cartel: 1 },
       pressure: 1,
-      flag: { guardDown: true, ventLoot: true },
+      sap,
+      flag: { guardDown: true, ventLoot: true, encounterGrip: grip },
     })
   }
 
   if (theirHp <= 0) {
     const add = lootFor(state, spec.kind)
+    if (snatched) add[snatched] = (add[snatched] ?? 0) + 1
     const loot = lootLine(add)
+    const back = snatched ? ` You take back your ${ITEMS[snatched]?.name ?? snatched}.` : ''
     const stagger = yourHp <= 0
     const outcome = stagger
-      ? `They drop. You drop with them. ${loot}. Health 0/${max}.`
-      : `They drop. ${loot}.`
+      ? `They drop. You drop with them. ${loot}. Health 0/${max}.${back}`
+      : `They drop. ${loot}.${back}`
     return holdCard(state, spec, `${hitCard}\n\n${outcome}`, outcome, {
       health: stagger ? -c.yourHp : healthDelta,
       add,
-      pressure: c.dmgIn > 0 ? 1 : undefined,
+      sap,
+      pressure: dmgIn > 0 ? 1 : undefined,
+      flag: { encounterGrip: grip },
     })
   }
 
@@ -523,31 +768,96 @@ export function resolveEncounter(
     const outcome = `You drop. No loot. Health 0/${max}. Too hurt to fight.`
     return holdCard(state, spec, `${hitCard}\n\n${outcome}`, outcome, {
       health: -c.yourHp,
+      sap,
       pressure: 2,
     })
   }
 
-  if (stall >= STALL_ROUNDS) {
-    const who = spec.kind === 'overseer' ? spec.name : `The ${spec.name}`
-    const outcome = `${who} backs off and leaves the road. No loot.`
-    return holdCard(state, spec, `${hitCard}\n\n${outcome}`, outcome, { health: healthDelta })
+  // A grab or a limp from last round: still standing means they got away.
+  if (snatched) {
+    const outcome = `${cap(who)} gets away with your ${ITEMS[snatched]?.name ?? snatched}. No loot.`
+    return holdCard(state, spec, `${hitCard}\n\n${outcome}`, outcome, { health: healthDelta, sap })
+  }
+  if (f.encounterFleeing) {
+    const outcome = `${cap(who)} gets back into the scrap-shade. No loot.`
+    return holdCard(state, spec, `${hitCard}\n\n${outcome}`, outcome, { health: healthDelta, sap })
   }
 
-  const standing = `${hitCard}\n\nThey still stand. Their Health ${theirHp}/${spec.hp}. Yours ${yourHp}/${max}. No loot yet.`
+  // Only plain exchanges count toward a stall, so guarding cannot wait an enemy out.
+  const stall = attacking && dmgOut === 0 && dmgIn === 0 && !sapLoss ? Number(f.encounterStall ?? 0) + 1 : 0
+  if (stall >= STALL_ROUNDS) {
+    const outcome = `${cap(who)} backs off and leaves the road. No loot.`
+    return holdCard(state, spec, `${hitCard}\n\n${outcome}`, outcome, { health: healthDelta, sap })
+  }
+
+  // New tricks for next round.
+  const events: string[] = []
+  const flag: FlagMap = {
+    encounterHere: true,
+    encounterKind: spec.kind,
+    encounterHp: theirHp,
+    encounterRound: round,
+    encounterStall: stall,
+    fightTaught: true,
+    encounterAt: state.ticks,
+    encounterFeint: feintNext,
+    encounterStun: stunNext,
+    encounterShocked: false,
+    encounterPinned: pinned,
+    encounterLatched: latched,
+    encounterTrickUsed: trickUsed,
+    encounterGrip: grip,
+  }
+  const remove: Partial<Record<ItemId, number>> = {}
+  if (spec.kind === 'tick' && !latched && move !== 'pull' && dmgIn > 0) {
+    flag.encounterLatched = true
+    events.push('The tick latches onto your arm. It drinks 1 Sap every round until you pull it off or kill it.')
+  }
+  if ((spec.kind === 'scavenger' || spec.kind === 'jackal') && !f.encounterSnatchTried && dmgIn > 0) {
+    const grab = grabbable(state, spec.kind)
+    if (grab) {
+      flag.encounterSnatch = grab
+      flag.encounterSnatchTried = true
+      remove[grab] = 1
+      const name = ITEMS[grab]?.name ?? grab
+      events.push(
+        spec.kind === 'jackal'
+          ? `The jackal snaps up a twist of your ${name} and turns to bolt. Kill it this round or the ${name} is gone.`
+          : `${cap(who)} grabs your ${name} and backs off. Drop them this round or it is gone.`,
+      )
+    }
+  }
+  if (spec.kind === 'patrol' && dmgIn > 0 && roll(state, 'shock', 4) === 0) {
+    flag.encounterShocked = true
+    events.push('The baton shocks your arm numb. Your next swing is 0.')
+  }
+  if (theirHp === 1 && !flag.encounterSnatch) {
+    if ((spec.kind === 'scavenger' || spec.kind === 'collector') && !f.encounterOfferShown) {
+      flag.encounterOffer = true
+      flag.encounterOfferShown = true
+      events.push(
+        spec.kind === 'collector'
+          ? 'The collector lowers the knife. "Call it square," he says. "You walk, I walk, and the Spine forgets a little."'
+          : 'The scavenger holds up a twist of scrap. It will drop it and go if you let it.',
+      )
+    }
+    if (spec.kind === 'cutter' && !f.encounterFleeShown) {
+      flag.encounterFleeing = true
+      flag.encounterFleeShown = true
+      events.push('The rim cutter limps back toward the scrap-shade. Hit it this round or it gets away.')
+    }
+  }
+
+  const tail = events.length ? `\n\n${events.join(' ')}` : ''
+  const standing = `${hitCard}${tail}\n\nThey still stand. Their Health ${theirHp}/${f.encounterPair ? 2 : Math.max(spec.hp, c.theirHp)}. Yours ${yourHp}/${max}. No loot yet.`
+  flag.encounterClash = standing
   return {
     fx: {
       health: healthDelta,
+      sap,
+      remove: Object.keys(remove).length ? remove : undefined,
       ticks: 0,
-      flag: {
-        encounterHere: true,
-        encounterKind: spec.kind,
-        encounterHp: theirHp,
-        encounterRound: round,
-        encounterStall: stall,
-        encounterClash: standing,
-        fightTaught: true,
-        encounterAt: state.ticks,
-      },
+      flag,
     },
     flash: '',
   }
@@ -561,6 +871,30 @@ export function wantsEncounterHide(text: string): boolean {
   return /\b(hide|cloak|crouch|duck|conceal)\b/i.test(text)
 }
 
+export function wantsEncounterGuard(text: string): boolean {
+  return /\b(guard|block|parry|defend|brace)\b/i.test(text)
+}
+
+export function wantsEncounterFeint(text: string): boolean {
+  return /\b(feint|fake|dodge)\b/i.test(text)
+}
+
+export function wantsEncounterTrick(text: string): boolean {
+  return /\b(sand|dirt|dust in|throw|trick|blind)\b/i.test(text)
+}
+
+export function wantsEncounterPull(text: string): boolean {
+  return /\b(pull|rip|tear|peel)\b/i.test(text)
+}
+
+export function wantsEncounterDeal(text: string): boolean {
+  return /\b(deal|square|accept|let it go|let him go|take the scrap|bargain)\b/i.test(text)
+}
+
+export function wantsEncounterRun(text: string): boolean {
+  return /\b(run|flee|escape|bolt)\b/i.test(text)
+}
+
 export function wantsEncounterSkip(text: string): boolean {
   return /\b(skip|leave|run|flee|walk|pass|ignore|back|go)\b/i.test(text)
 }
@@ -569,17 +903,34 @@ export function roadPressureScene(sceneId: string): boolean {
   return ENCOUNTER_SCENES.has(sceneId) || sceneId.startsWith('maw:') || sceneId.startsWith('ch1:')
 }
 
+/** Per-fight state set when a fight opens: ground, opener, and a jackal pair. */
+export function fightStartFlags(state: GameState, kind: EncounterKind): FlagMap {
+  const pool = terrainPool(state)
+  const terrain = pool[hash(state, `ground:${kind}`) % pool.length]
+  const open = hash(state, `open:${kind}`) % 3
+  const pair = kind === 'jackal' && hash(state, 'pair') % 10 < 4
+  return {
+    encounterHere: true,
+    encounterKind: kind,
+    encounterHp: pair ? 2 : enemyHealth(kind),
+    encounterAt: state.ticks,
+    encounterTerrain: terrain,
+    encounterOpen: open,
+    encounterPair: pair,
+  }
+}
+
+/** Every per-fight flag except the ones a new fight sets. */
+export const FIGHT_RESET = ENCOUNTER_FLAGS.filter(
+  (k) => !['encounterHere', 'encounterKind', 'encounterHp', 'encounterTerrain', 'encounterOpen', 'encounterPair'].includes(k),
+)
+
 /** Open a road fight on the current ground. Strike vs Shell stays in the encounter card. */
 export function beginEncounter(state: GameState, kind?: EncounterKind, flash?: string): Effect {
   const k = kind ?? pickEncounterKind(state)
   return {
-    unsetFlag: ['hunterHere', 'hunterFrom', 'encounterDone', 'encounterClash', 'encounterFlash', 'encounterRound', 'encounterStall'],
-    flag: {
-      encounterHere: true,
-      encounterKind: k,
-      encounterHp: enemyHealth(k),
-      encounterAt: state.ticks,
-    },
+    unsetFlag: ['hunterHere', 'hunterFrom', ...FIGHT_RESET],
+    flag: fightStartFlags(state, k),
     ticks: 1,
     flash: flash ?? 'The road answers.',
   }

@@ -33,10 +33,39 @@ const FIGHT_SECTIONS: HelpSection[] = [
   {
     title: 'OPTIONS',
     rows: [
-      { key: 'Fight', text: 'One exchange per tap.' },
-      { key: 'Give the road', text: 'Ends the fight. No loot. No cost.' },
-      { key: 'Cloak skip', text: 'With armor on. Same as giving the road.' },
+      { key: 'Fight', text: 'One exchange per tap. Plain Strike against Strike.' },
+      { key: 'Guard', text: 'You do not hit this exchange. Their hit on you is 2 less.' },
+      { key: 'Feint', text: 'You do not hit this exchange. Their hit on you is 1 less, and your next Fight gets swing +2. You cannot feint again until you Fight.' },
+      { key: 'Throw sand', text: 'Once per fight. You do not hit. 4 in 10 they miss this exchange and the next. If it fails, they hit as normal.' },
+      { key: 'Run', text: 'About 6 in 10 to get away. Ground, a hound, or a pin changes the odds. A failed run gives them a free hit. No loot.' },
+      { key: 'Pull the tick', text: 'Only while an amber-tick is latched on. Stops the Sap drain.' },
+      { key: 'Deal', text: 'Only when a hurt enemy offers one. Ends the fight on their terms.' },
+      { key: 'Give the road', text: 'Before the first exchange only. Ends the fight. No loot. No cost.' },
+      { key: 'Cloak skip', text: 'With armor on, before the first exchange. Same as giving the road.' },
+      { text: 'A move that cannot be used right now stays on the list, greyed, with the reason.' },
       { text: 'Bribes and talk do nothing once a fight starts.' },
+    ],
+  },
+  {
+    title: 'LUCK AND GROUND',
+    rows: [
+      { key: 'CRIT', text: 'About 1 in 10 exchanges, a side lands clean for double damage. It can happen to either of you. The log says so.' },
+      { key: 'GROUND', text: 'Every fight has ground, named on the card: a slope, loose sand, blowing sand, a steam vent, rock shade, or open flat. It moves a swing, a Strike, or the Run odds.' },
+    ],
+  },
+  {
+    title: 'ENEMIES',
+    rows: [
+      { key: 'Amber-tick', text: 'Latches on when it bites. 1 Sap a round until you pull it or kill it.' },
+      { key: 'Dust-jackal', text: 'Sometimes two. A bite can grab a scrap; kill it that exchange or the scrap is gone.' },
+      { key: 'Scavenger', text: 'Grabs a carried item and tries to run. Kill it to get it back. Hurt, it offers a scrap to be let go.' },
+      { key: 'Rim cutter', text: 'Hurt, it runs for the shade. Hit it that exchange or it gets away.' },
+      { key: 'Shard-pup', text: 'Crits twice as often.' },
+      { key: 'Vent patrol', text: 'The shock baton can numb your arm. Your next swing is 0.' },
+      { key: 'Hound-handler', text: 'Running is harder. A failed run lets the hound bite too.' },
+      { key: 'Valerius', text: 'Guard only takes 1 off his baton.' },
+      { key: 'Stray collector', text: 'Hurt, he offers to call it square: Stray Heat -1, no loot.' },
+      { key: 'Carapace hunter', text: 'Opens with the harpoon: +1 and you are pinned. No Run until you land a hit.' },
     ],
   },
   {

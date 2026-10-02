@@ -107,7 +107,7 @@ export type Effect = {
   returnHunterFrom?: boolean
   returnCrisisFrom?: boolean
   /** Optional roam fight. Strike + 0-2 swing vs Shell, min 1 damage. */
-  resolveEncounter?: 'fight' | 'skip'
+  resolveEncounter?: 'fight' | 'skip' | 'guard' | 'feint' | 'trick' | 'run' | 'pull' | 'deal'
 }
 
 export type Choice = {

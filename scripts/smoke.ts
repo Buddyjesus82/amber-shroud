@@ -34,7 +34,7 @@ import type { Cond, Scene } from '../src/game/types.ts'
 import { rollScavenge, SCAVENGE_SALVE_PCT, scavengeSalve } from '../src/game/scavenge.ts'
 import { kaelenOffers } from '../src/game/trade.ts'
 import { FIGHT_HELP_LINES, fightHelpAuto, fightHelpText, HELP_TOPICS, helpRoute, isFightHelpAsk, markFightHelpSeen, topicListText, topicText } from '../src/game/helpTopics.ts'
-import { BEAST_KINDS, carriesSalve, HUMAN_KINDS, HUMAN_SALVE_PCT, beginEncounter, DAMAGE_FLOOR, exchangeDamage, resolveEncounter, STALL_ROUNDS, swingOf } from '../src/game/encounter.ts'
+import { BEAST_KINDS, carriesSalve, HUMAN_KINDS, HUMAN_SALVE_PCT, beginEncounter, DAMAGE_FLOOR, encounterCard, encounterChoices, exchangeDamage, fightStartFlags, resolveEncounter, runChance, STALL_ROUNDS, swingOf } from '../src/game/encounter.ts'
 import {
   IDLE_DOOR,
   tapDoor,
@@ -2631,7 +2631,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v41'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v42'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -2653,7 +2653,7 @@ assert(css.includes('--story-top: min(calc(56.25cqi * var(--band-bot, 0.5)), 50c
 assert(css.includes('rgba(12, 7, 4, 0.58)'), 'story scrim stays translucent so cover art shows through')
 assert(!css.includes('rgba(12, 7, 4, 0.88)'), 'story scrim is lighter than the v32 slab')
 const playSrc = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
-assert(playSrc.includes('?v=41'), 'scene cover URLs are cache-busted with the service worker')
+assert(playSrc.includes('?v=42'), 'scene cover URLs are cache-busted with the service worker')
 assert(!css.includes('object-position: center 68%'), 'scene art no longer crops toward the ground')
 assert(!css.includes('height: 56px'), 'short phones no longer squash covers into a head-cropping strip')
 assert(css.includes('place-items: center'), 'game screen is centered on the backdrop')
@@ -3681,7 +3681,7 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(interpret(a1, 'hold the glint').flash !== AMBER_WARM, 'held amber is cold after that')
   assert(interpret(applyEffect(newGame('prisoner'), { goto: 'camp:yard' }), 'touch the sand').flash !== SAND_TOUCH, 'the sand does not move for other doors')
   assert(sandSignsSeen({ ...h1, flags: { ...h1.flags, sandTouchSeen: true, amberWarmSeen: true } }) === 3, 'signs seen are counted for the later reveal')
-  assert(SAND_SIGN_FLAGS.length === 6, 'six signs')
+  assert(SAND_SIGN_FLAGS.length === 7, 'seven signs, with the fight grip')
 
   const lines = [SAND_LOW, SAND_DOWN, AMBER_WARM, HOLLOW_PULL, SAND_TOUCH, HANDS_LOOK].join('\n')
   assert(!/\b(power|magic|gift|curse|heart|shard|runners?|Spires|you did)\b/i.test(lines), 'signs never name or explain it')
@@ -3779,6 +3779,203 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(/\.scene-img \{[\s\S]*?height: var\(--img-h\)/.test(css2), 'the cover scales to fit its band')
   const play2 = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
   assert(play2.includes('coverBand(coverKey)') && play2.includes("'--band-bot'"), 'PlayScreen passes the band to the stage')
+}
+
+// ---- Fight variety: moves, crits, ground, enemy tricks ----
+{
+  const fv = (door: 'prisoner' | 'outcast' | 'vessel', t: number, kind: string, flags: Record<string, unknown> = {}, hp = 3): GameState => {
+    const s = primedFight(door, t, kind, { hp })
+    return { ...s, flags: { ...s.flags, ...flags } as GameState['flags'] }
+  }
+  const go = (s: GameState, how: string) => applyEffect(s, { resolveEncounter: how as 'fight', ticks: 1 })
+  const ids = (s: GameState) => encounterChoices(s).map((c) => c.id)
+
+  // Moves on the card, with locks that say why.
+  const fresh = fv('prisoner', 3, 'jackal')
+  for (const id of ['enc-fight', 'enc-guard', 'enc-feint', 'enc-trick', 'enc-run', 'enc-skip']) assert(ids(fresh).includes(id), `fight card offers ${id}`)
+  assert(!ids(fresh).includes('enc-pull') && !ids(fresh).includes('enc-deal'), 'pull and deal only show when they apply')
+  const midFight = fv('prisoner', 3, 'jackal', { encounterRound: 1, encounterFeint: true, encounterTrickUsed: true })
+  assert(!ids(midFight).includes('enc-skip'), 'Give the road only before the first exchange')
+  const feintRow = encounterChoices(midFight).find((c) => c.id === 'enc-feint')!
+  const trickRow = encounterChoices(midFight).find((c) => c.id === 'enc-trick')!
+  assert(!isChoiceOn(feintRow, midFight) && /already set/.test(String(feintRow.locked)), 'feint locks with a reason')
+  assert(!isChoiceOn(trickRow, midFight) && /Already used/.test(String(trickRow.locked)), 'sand trick locks with a reason')
+
+  // Guard takes 2 off, 1 off against Valerius; you do not hit.
+  for (let t = 0; t < 30; t++) {
+    const s = fv('prisoner', t, 'cutter')
+    const plain = resolveEncounter(s, 'fight').fx
+    const guard = resolveEncounter(s, 'guard').fx
+    if (/Critical hit against/.test(String(plain.flag?.encounterClash ?? ''))) continue
+    const pin = -(plain.health ?? 0)
+    assert(-(guard.health ?? 0) === Math.max(0, pin - 2), 'Guard takes 2 off the hit')
+    assert(guard.flag?.encounterHp === 3, 'Guard does not hit back')
+  }
+  for (let t = 0; t < 30; t++) {
+    const s = fv('prisoner', t, 'overseer')
+    const a = resolveEncounter(s, 'fight').fx
+    const b = resolveEncounter(s, 'guard').fx
+    if (/Critical hit against/.test(String(a.flag?.encounterClash ?? '')) || a.flag == null || b.flag == null) continue
+    assert(-(b.health ?? 0) === Math.max(0, -(a.health ?? 0) - 1), 'Valerius: Guard takes only 1 off')
+  }
+  // Feint: 1 lighter now, +2 swing next.
+  const feinted = go(fv('vessel', 4, 'cutter'), 'feint')
+  assert(feinted.flags.encounterFeint === true, 'feint sets up the next strike')
+  assert(/swing \+2/i.test(bodyOf(go({ ...feinted, health: 6 }, 'fight'))), 'the next Fight says the feint paid off')
+
+  // Crits about 1 in 10, both sides, with their own log line.
+  let critYou = 0
+  let critThem = 0
+  let critPup = 0
+  for (let t = 0; t < 400; t++) {
+    const card = String(resolveEncounter(fv('prisoner', t, 'cutter', {}, 20), 'fight').fx.flag?.encounterClash ?? '')
+    if (/Critical hit\. Yours/.test(card)) critYou++
+    if (/Critical hit against you/.test(card)) critThem++
+    const pup = String(resolveEncounter(fv('prisoner', t, 'pup', {}, 20), 'fight').fx.flag?.encounterClash ?? '')
+    if (/Critical hit against you/.test(pup)) critPup++
+  }
+  assert(critYou > 15 && critYou < 70, `your crits near 1 in 10 (${critYou}/400)`)
+  assert(critThem > 15 && critThem < 70, `their crits near 1 in 10 (${critThem}/400)`)
+  assert(critPup > critThem, `the Shard-pup crits more often (${critPup} vs ${critThem})`)
+  for (let t = 0; t < 200; t++) {
+    const r = resolveEncounter(fv('prisoner', t, 'cutter', {}, 20), 'fight').fx
+    if (/Critical hit against you/.test(String(r.flag?.encounterClash ?? ''))) assert(6 + (r.health ?? 0) > 0, 'a crit never drops you from full Health in one exchange')
+  }
+
+  // Ground: named on the card and moves the numbers.
+  const grounds = new Set<string>()
+  for (let t = 0; t < 40; t++) {
+    const s0 = primedFight('outcast', t, 'jackal')
+    const st = { ...s0, flags: { ...s0.flags, ...fightStartFlags(s0, 'jackal') } as GameState['flags'] }
+    const card = encounterCard(st)
+    assert(/^Ground: /m.test(card), 'fight card names the ground')
+    grounds.add(String(st.flags.encounterTerrain))
+  }
+  assert(grounds.size >= 3, 'ground varies fight to fight')
+  assert(runChance(fv('prisoner', 1, 'cutter', { encounterTerrain: 'slope' })) === 70, 'slope makes running easier')
+  assert(runChance(fv('prisoner', 1, 'cutter', { encounterTerrain: 'loose' })) === 50, 'loose sand makes running harder')
+  assert(runChance(fv('prisoner', 1, 'handler')) === 40, 'the Hound-handler makes running harder')
+  for (let t = 0; t < 20; t++) {
+    const card = String(resolveEncounter(fv('prisoner', t, 'cutter', { encounterTerrain: 'wind' }), 'fight').fx.flag?.encounterClash ?? '')
+    const swings = [...card.matchAll(/(\d+)\+(\d+) vs/g)].map((m) => Number(m[2]))
+    assert(swings.every((n) => n <= 1), 'blowing sand caps both swings at 1')
+  }
+
+  // Varied openers.
+  const opens = new Set<string>()
+  for (let t = 0; t < 30; t++) {
+    const s0 = primedFight('prisoner', t, 'cutter')
+    const st = { ...s0, flags: { ...s0.flags, ...fightStartFlags(s0, 'cutter') } as GameState['flags'] }
+    opens.add(encounterCard(st).split('\n')[0])
+  }
+  assert(opens.size >= 2, 'fight openers vary')
+
+  // Amber-tick latches, drains Sap, locks Run; Pull clears it.
+  const latched = fv('prisoner', 2, 'tick', { encounterLatched: true, encounterRound: 1 }, 5)
+  assert(ids(latched).includes('enc-pull'), 'Pull shows while the tick is on')
+  const runRow = encounterChoices(latched).find((c) => c.id === 'enc-run')!
+  assert(!isChoiceOn(runRow, latched) && /tick/i.test(String(runRow.locked)), 'Run locks while latched, with a reason')
+  assert(go(latched, 'guard').sap === latched.sap - 1, 'a latched tick drinks 1 Sap a round')
+  const pulled = go(latched, 'pull')
+  assert(pulled.sap === latched.sap && !pulled.flags.encounterLatched, 'pulling the tick stops the drain')
+
+  // Dust-jackal pair flanks for +1 while both stand.
+  let flank = false
+  for (let t = 0; t < 20 && !flank; t++) flank = /second jackal bites/.test(bodyOf(go(fv('prisoner', t, 'jackal', { encounterPair: true }, 2), 'fight')))
+  assert(flank, 'the jackal pair flanks')
+
+  // Scavenger snatch, return on a kill, escape otherwise, and the deal.
+  let snatchSeen = false
+  for (let t = 0; t < 40 && !snatchSeen; t++) {
+    const s = { ...fv('prisoner', t, 'scavenger', {}, 4), items: { ...fv('prisoner', t, 'scavenger').items, scrap: 2 } }
+    const a = go(s, 'fight')
+    if (typeof a.flags.encounterSnatch !== 'string' || a.flags.encounterHp === 0 || a.health <= 0) continue
+    snatchSeen = true
+    const grabbed = a.flags.encounterSnatch as keyof typeof ITEMS
+    assert((a.items[grabbed] ?? 0) === (s.items[grabbed] ?? 0) - 1, 'the scavenger takes the item')
+    const killed = go({ ...a, health: 6, flags: { ...a.flags, encounterHp: 1 } }, 'fight')
+    assert((killed.items[grabbed] ?? 0) >= (s.items[grabbed] ?? 0), 'killing it gets the item back')
+    const left = go({ ...a, health: 6, flags: { ...a.flags, encounterHp: 9 } }, 'guard')
+    assert(/gets away with your/.test(bodyOf(left)), 'still standing next round, it gets away')
+  }
+  assert(snatchSeen, 'the scavenger snatch fires')
+  const offerS = fv('prisoner', 5, 'scavenger', { encounterOffer: true, encounterOfferShown: true, encounterRound: 2 }, 1)
+  assert(ids(offerS).includes('enc-deal'), 'a standing offer shows the deal')
+  assert(go(offerS, 'deal').items.scrap === (offerS.items.scrap ?? 0) + 1, 'scavenger deal: scrap +1')
+  const offerC = fv('outcast', 5, 'collector', { encounterOffer: true, encounterOfferShown: true, encounterRound: 2 }, 1)
+  const offerCs = { ...offerC, heat: { ...offerC.heat, strays: 3 } }
+  assert(go(offerCs, 'deal').heat.strays === 2, 'collector call it square: Stray Heat -1')
+
+  // Rim cutter flees at 1 Health.
+  const flee = resolveEncounter(fv('prisoner', 6, 'cutter', {}, 1), 'guard').fx
+  assert(flee.flag?.encounterFleeing === true, 'a hurt cutter limps for the shade')
+  const fled = go(fv('prisoner', 6, 'cutter', { encounterFleeing: true, encounterFleeShown: true, encounterRound: 2 }, 1), 'guard')
+  assert(/scrap-shade/.test(bodyOf(fled)), 'not hit, the cutter gets away')
+
+  // Vent patrol shock numbs the next swing.
+  let shocked = false
+  for (let t = 0; t < 40 && !shocked; t++) shocked = resolveEncounter(fv('prisoner', t, 'patrol', {}, 9), 'fight').fx.flag?.encounterShocked === true
+  assert(shocked, 'the patrol baton can numb your arm')
+  assert(/numb from the baton\. Swing 0/.test(String(resolveEncounter(fv('prisoner', 1, 'patrol', { encounterShocked: true }, 9), 'fight').fx.flag?.encounterClash ?? '')), 'a numb arm swings 0')
+
+  // Carapace hunter harpoon pins you.
+  const harp = resolveEncounter(fv('outcast', 1, 'carapace', {}, 9), 'guard').fx
+  assert(harp.flag?.encounterPinned === true, 'the harpoon pins you')
+  const pinnedS = fv('outcast', 1, 'carapace', { encounterPinned: true, encounterRound: 1 }, 9)
+  const pinRun = encounterChoices(pinnedS).find((c) => c.id === 'enc-run')!
+  assert(!isChoiceOn(pinRun, pinnedS) && /harpoon/.test(String(pinRun.locked)), 'Run locks while pinned, with a reason')
+
+  // Handler: a failed run lets the hound bite.
+  let houndBite = false
+  for (let t = 0; t < 40 && !houndBite; t++) houndBite = /hound gets a bite/.test(bodyOf(go(fv('prisoner', t, 'handler', {}, 9), 'run')))
+  assert(houndBite, 'a failed run from the handler lets the hound bite')
+
+  // Sand trick: sometimes they miss this round and the next.
+  let blinded = false
+  for (let t = 0; t < 30 && !blinded; t++) {
+    const a = go(fv('vessel', t, 'cutter', {}, 9), 'trick')
+    if (a.flags.encounterStun) {
+      blinded = true
+      assert(a.flags.encounterTrickUsed === true, 'the sand trick is spent')
+      assert(/→ 0$/m.test(bodyOf(go(a, 'fight'))), 'blinded, they miss the next round')
+    }
+  }
+  assert(blinded, 'the sand trick can land')
+
+  // Outcast-only sand grip, once a fight, never explained.
+  const gripOf = (door: 'prisoner' | 'outcast' | 'vessel') => {
+    let n = 0
+    for (let t = 0; t < 60; t++) {
+      const s = { ...fv(door, t, 'cutter', {}, 9), health: 2 }
+      if (go(s, 'fight').flags.encounterGrip) n++
+    }
+    return n
+  }
+  assert(gripOf('outcast') > 0, 'the sand grips for the Outcast')
+  assert(gripOf('prisoner') === 0 && gripOf('vessel') === 0, 'no sand grip for other doors')
+  for (let t = 0; t < 60; t++) {
+    const s = { ...fv('outcast', t, 'cutter', {}, 9), health: 2 }
+    const a = go(s, 'fight')
+    if (!a.flags.encounterGrip) continue
+    assert(a.flags.sandGripSeen === true, 'the grip counts as a sand sign')
+    assert(!/\b(power|magic|gift|you made|your will|chosen)\b/i.test(bodyOf(a)), 'the grip is never explained')
+    const again = go({ ...a, health: 2, flags: { ...a.flags, encounterHp: 9 } }, 'fight')
+    assert(!/slides out from under|two of you/.test(bodyOf(again)), 'the grip happens once a fight')
+    break
+  }
+  const forms = new Set<string>()
+  for (let t = 0; t < 80; t++) {
+    const a = go({ ...fv('outcast', t, 'cutter', {}, 9), health: 2 }, 'fight')
+    if (!a.flags.encounterGrip) continue
+    const body = bodyOf(a)
+    if (/slides out from under/.test(body)) forms.add('slide')
+    if (/two of you/.test(body)) forms.add('mirage')
+  }
+  assert(forms.has('slide') && forms.has('mirage'), 'the grip comes as a sand slide or a mirage')
+
+  // Seekers: no special tricks until the lore lands as an encounter kind.
+  assert(!encSrc.includes("'seeker'"), 'no Seeker encounter kind or trick yet')
+  assert(readFileSync(new URL('../src/game/fightTricks.ts', import.meta.url), 'utf8').includes('TODO(seekers)'), 'Seeker tricks left as a TODO')
 }
 
 console.log('OK', {
