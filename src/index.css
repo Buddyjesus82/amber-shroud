@@ -1673,3 +1673,61 @@ h2 {
 }
 
 
+
+/* help <topic> cards: same look as the help card. */
+.topic-row {
+  display: grid;
+  grid-template-columns: 5.6rem 1fr;
+  column-gap: 0.6rem;
+  margin: 0 0 0.4rem;
+  line-height: 1.4;
+  font-size: 0.95rem;
+}
+
+.topic-key {
+  color: var(--amber-2);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  padding-top: 0.2rem;
+}
+
+.topic-val,
+.topic-line {
+  color: var(--paper);
+}
+
+.topic-line {
+  margin: 0 0 0.4rem;
+  line-height: 1.4;
+  font-size: 0.95rem;
+}
+
+.topic-bullet {
+  padding-left: 0.9rem;
+  text-indent: -0.9rem;
+}
+
+.topic-bullet::before {
+  content: '- ';
+  color: var(--amber-dim);
+}
+
+.topic-secret {
+  border-left: 2px solid var(--amber-dim);
+  padding-left: 0.6rem;
+  color: var(--dust);
+}
+
+.topic-ok {
+  display: block;
+  margin: 0.9rem auto 0;
+  min-width: 8rem;
+  min-height: 44px;
+}
+
+.help-hint {
+  margin: 0 0 0.35rem;
+  color: var(--dust);
+  font-size: 0.9rem;
+}

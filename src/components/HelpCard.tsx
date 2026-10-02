@@ -1,13 +1,15 @@
 import { useEffect, useRef } from 'react'
 import { HELP_GROUPS, type HelpEntry } from '../game/help'
+import { HELP_HINT, HELP_TOPICS } from '../game/helpTopics'
 
 type Props = {
   entries: HelpEntry[]
   onClose: () => void
   onPick: (command: string) => void
+  onTopic: (id: string) => void
 }
 
-export function HelpCard({ entries, onClose, onPick }: Props) {
+export function HelpCard({ entries, onClose, onPick, onTopic }: Props) {
   const closeRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
@@ -61,6 +63,20 @@ export function HelpCard({ entries, onClose, onPick }: Props) {
         ) : (
           <p className="help-empty">Nothing hidden here. Try look.</p>
         )}
+        <section className="help-group">
+          <h3>Topics</h3>
+          <p className="help-hint">{HELP_HINT}</p>
+          <ul>
+            {HELP_TOPICS.map((topic) => (
+              <li key={topic.id}>
+                <button type="button" className="help-entry" onClick={() => onTopic(topic.id)}>
+                  <span className="help-cmd">help {topic.id}</span>
+                  <span className="help-why">: {topic.blurb}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
       </div>
     </div>
   )

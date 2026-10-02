@@ -26,7 +26,8 @@ import { ALL_SCENES, getScene } from '../src/game/content/index.ts'
 import { PEOPLE } from '../src/game/people.ts'
 import { rollScavenge } from '../src/game/scavenge.ts'
 import { kaelenOffers } from '../src/game/trade.ts'
-import { DAMAGE_FLOOR, exchangeDamage, resolveEncounter, STALL_ROUNDS, swingOf } from '../src/game/encounter.ts'
+import { FIGHT_HELP_LINES, fightHelpAuto, fightHelpText, HELP_TOPICS, helpRoute, isFightHelpAsk, markFightHelpSeen, topicListText, topicText } from '../src/game/helpTopics.ts'
+import { beginEncounter, DAMAGE_FLOOR, exchangeDamage, resolveEncounter, STALL_ROUNDS, swingOf } from '../src/game/encounter.ts'
 import {
   IDLE_DOOR,
   tapDoor,
@@ -1400,7 +1401,7 @@ s = {
 assert(s.sceneId === 'camp:yard', 'forced encounter stays in the Yard')
 assert(ids(s).includes('enc-fight') && ids(s).includes('enc-skip'), 'fight or skip')
 assert(!bodyOf(s).includes('cooked resin'), 'encounter card does not bleed Yard prose')
-assert(/swing of 0 to 2/i.test(bodyOf(s)), 'first encounter teaches Strike/Shell/Health')
+assert(/The rules: help fight/i.test(bodyOf(s)), 'first encounter teaches Strike/Shell/Health')
 const skipped = pick(s, 'enc-skip')
 assert(skipped.sceneId === 'camp:yard', 'skip stays put')
 assert(skipped.flags.encounterHere && skipped.flags.encounterDone, 'skip holds the outcome card')
@@ -1420,7 +1421,7 @@ s = {
   health: 6,
   healthMax: 6,
 }
-assert(!/swing of 0 to 2/i.test(bodyOf(s)), 'later fights skip the lecture')
+assert(!/The rules: help fight/i.test(bodyOf(s)), 'later fights skip the lecture')
 assert(bodyOf(s).includes('You Strike'), 'compact card still shows compares')
 const fought = pick(s, 'enc-fight')
 assert(fought.sceneId === 'camp:yard', 'fight stays in the Yard')
@@ -1542,7 +1543,7 @@ for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
   const card = primedFight(door, 4, 'scavenger', { taught: false, arm: false })
   assert(/waste scavenger/i.test(bodyOf(card)), `${door} scavenger card names the robber`)
   assert(/a person who robs/i.test(bodyOf(card)), `${door} scavenger card is a person`)
-  assert(/swing of 0 to 2/i.test(bodyOf(card)), `${door} first scavenger still teaches`)
+  assert(/The rules: help fight/i.test(bodyOf(card)), `${door} first scavenger still teaches`)
   assert(/You Strike \d+ vs their Shell 1/.test(bodyOf(card)), `${door} scavenger Shell is on the card`)
   assert(/Their Strike 2 vs your Shell/.test(bodyOf(card)), `${door} scavenger Strike is on the card`)
   const fightRow = visibleChoices(card).find((c) => c.id === 'enc-fight')
@@ -3184,6 +3185,126 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(JSON.stringify(v.items) === kept, 'a walk-off pays no loot')
   const on = pick(v, 'enc-continue')
   assert(!on.flags.encounterHere && !on.flags.encounterStall && !on.flags.encounterRound, 'On. clears the fight and its counters')
+}
+
+// Fight help card: opens by itself on the first fight of a run, once per door, then only from help.
+{
+  const starts: Record<DoorId, string> = { prisoner: 'camp:yard', outcast: 'spine:ridge', vessel: 'thresh:court' }
+  const hubs: Record<DoorId, string> = { prisoner: 'camp04', outcast: 'spine', vessel: 'threshold' }
+  const kinds: Record<DoorId, string> = { prisoner: 'jackal', outcast: 'collector', vessel: 'scavenger' }
+  for (const door of ['prisoner', 'outcast', 'vessel'] as DoorId[]) {
+    let g = applyEffect(newGame(door), { goto: starts[door], enterHub: hubs[door] })
+    g = { ...g, sap: 6, health: 6, flags: { ...g.flags, encounterHere: false } }
+    delete g.flags.encounterHere
+    delete g.flags.hunterHere
+    assert(!fightHelpAuto(g), `${door} no fight card before a fight`)
+    let f = applyEffect(g, beginEncounter(g, kinds[door] as never))
+    assert(f.flags.encounterHere && fightHelpAuto(f), `${door} first fight opens the fight card`)
+    assert(/The rules: help fight/.test(bodyOf(f)) && !/Strike \+ swing/.test(bodyOf(f)), `${door} first fight log points at help fight without restating the formula`)
+    f = markFightHelpSeen(f)
+    assert(!fightHelpAuto(f), `${door} dismissing the card closes it`)
+    const saved = repairLoadedState(JSON.parse(JSON.stringify(f)))
+    assert(saved.flags.fightHelpSeen === true, `${door} the seen flag is saved`)
+    let n = 0
+    while (f.flags.encounterHere && !f.flags.encounterDone && !f.flags.downed && n < 8) {
+      f = pick(f, 'enc-fight')
+      n++
+      assert(!fightHelpAuto(f), `${door} the card stays shut mid-fight`)
+    }
+    if (f.flags.encounterDone) f = pick(f, 'enc-continue')
+    if (f.flags.downed) f = pick(f, 'wake')
+    f = { ...f, health: 6, sap: 6, sceneId: starts[door], hubId: hubs[door] }
+    const second = applyEffect(f, beginEncounter(f, 'jackal'))
+    assert(second.flags.encounterHere && !fightHelpAuto(second), `${door} second fight does not open the card`)
+    // A different door is its own run: it still gets the card once.
+    const other = applyEffect(newGame(door === 'vessel' ? 'prisoner' : 'vessel'), { flag: { encounterHere: true, encounterKind: 'jackal', encounterHp: 1 } })
+    assert(fightHelpAuto(other), `${door}: a fresh run of another door still gets its first card`)
+  }
+  // An old save that already fought does not get a surprise card.
+  const veteran = applyEffect(newGame('outcast'), { flag: { fightTaught: true, encounterHere: true, encounterKind: 'jackal', encounterHp: 1 } })
+  assert(!fightHelpAuto(veteran), 'saves that already fought skip the auto card')
+
+  // Reachable afterward: typed help fight, and the topic list in the help card.
+  for (const t of ['help fight', 'HELP FIGHT', '? fight', 'help combat']) assert(isFightHelpAsk(t), `"${t}" opens the fight card`)
+  for (const t of ['fight', 'help', 'fight the road', 'help scavenge']) assert(!isFightHelpAsk(t), `"${t}" is not the fight card`)
+  const helpSrc = readFileSync('src/components/HelpCard.tsx', 'utf8')
+  assert(/HELP_TOPICS\.map/.test(helpSrc) && /onTopic\(topic\.id\)/.test(helpSrc) && /HELP_HINT/.test(helpSrc), 'the help card lists tappable topics with the hint')
+  const playSrc = readFileSync('src/components/PlayScreen.tsx', 'utf8')
+  assert(/helpRoute\(t\)/.test(playSrc) && /fightHelpAuto\(state\)/.test(playSrc) && /markFightHelpSeen/.test(playSrc) && /setTopicOpen\(id\)/.test(playSrc), 'PlayScreen routes typed help <topic>, taps, the first-fight pop, and the seen flag')
+  assert(!/dos-|#7dff8a/.test(readFileSync('src/index.css', 'utf8')), 'topic cards keep the normal help-card style')
+
+  // help routing
+  assert(helpRoute('help')?.kind === 'list' && helpRoute('?')?.kind === 'list', 'bare help is the list')
+  assert(helpRoute('look') === null && helpRoute('helpful hint') === null, 'other lines are not help')
+  const topicIds = HELP_TOPICS.map((t) => t.id)
+  assert(JSON.stringify(topicIds) === JSON.stringify(['fight', 'scavenge', 'skim', 'look', 'talk', 'go', 'trade', 'drink', 'heat', 'gear']), `topic list (${topicIds})`)
+  for (const t of HELP_TOPICS) {
+    const r = helpRoute(`help ${t.id}`)
+    assert(r?.kind === 'topic' && r.topic.id === t.id, `help ${t.id} opens its card`)
+    for (const alias of t.aliases) {
+      const ra = helpRoute(`help ${alias}`)
+      assert(ra?.kind === 'topic' && ra.topic.id === t.id, `help ${alias} opens ${t.id}`)
+    }
+    const typed = interpret(newGame('prisoner'), `help ${t.id}`)
+    assert(typed.flash === topicText(t), `typed help ${t.id} answers with the card text`)
+  }
+  const unknown = helpRoute('help xyzzy')
+  assert(unknown?.kind === 'unknown' && unknown.reply.includes(topicListText()) && unknown.reply.startsWith('No help topic "xyzzy".'), 'unknown help lists the topics')
+  assert(interpret(newGame('vessel'), 'help xyzzy').flash?.includes('help scavenge:'), 'typed unknown help replies with the list')
+  assert(/Try: help <topic>\. Topics: fight, scavenge/.test(interpret(newGame('outcast'), 'help').flash ?? ''), 'plain help names the topics')
+
+  // Card content: formula once, options, and the Down rules last.
+  const text = fightHelpText()
+  assert(text.startsWith('help fight'), 'fight card header')
+  assert(/DAMAGE: Strike \+ swing - Shell\. Never less than 1\./.test(text) && /add 0, 1, or 2 to Strike/.test(text), 'formula and swing on the card')
+  assert(text.indexOf('AT 0 HEALTH') > text.indexOf('OPTIONS') && /Give the road/.test(text), 'options come before the Down rules')
+  assert(/Outcast \(Noon Spine\) and Vessel \(Threshold\)/.test(FIGHT_HELP_LINES[FIGHT_HELP_LINES.length - 1]), 'the card ends with the per-door Down note')
+
+  // help scavenge says what the code does: once per fresh scene, and the refresh secret.
+  const scavText = topicText(HELP_TOPICS[1])
+  assert(/once per fresh scene/.test(scavText) && /SECRET TIP/.test(scavText), 'scavenge card states the rule and the secret tip')
+  assert(/two more actions that pass time, or walk away and come back/.test(scavText) && /Look does not pass time/.test(scavText), 'secret tip names the refresh')
+  {
+    let y = applyEffect(newGame('prisoner'), { goto: 'camp:yard', enterHub: 'camp04', flag: { encounterAt: 99999 } })
+    y = { ...y, sap: 8, pressure: 0, flags: { ...y.flags } }
+    delete y.flags.hunterHere
+    delete y.flags.encounterHere
+    const calm = (x: GameState) => {
+      const c = { ...x, flags: { ...x.flags } }
+      delete c.flags.hunterHere
+      delete c.flags.encounterHere
+      return c
+    }
+    const took = (a: GameState, b: GameState) => JSON.stringify(a.items) !== JSON.stringify(b.items)
+    const first = scavenge(y)
+    assert(took(y, first), 'first scavenge finds something')
+    const again = scavenge(first)
+    assert(!took(first, again) && /already in your hands/.test(again.flash ?? ''), 'right away: the patch is already in your hands')
+    const looked = interpret(first, 'look')
+    assert(looked.ticks === first.ticks && !took(looked, scavenge(looked)), 'look does not refresh the patch')
+    const line = visibleChoices(first).find((c) => c.id === 'line')!
+    const one = calm(applyEffect(first, line.effects))
+    assert(!took(one, scavenge(one)), 'one action is not enough')
+    const two = calm(applyEffect(one, line.effects))
+    assert(took(two, scavenge(two)), 'two actions that pass time refresh the patch')
+    const away = calm(travelTo(first, 'camp:cages'))
+    const back = calm(travelTo(away, 'camp:yard'))
+    assert(back.sceneId === 'camp:yard' && took(back, scavenge(back)), 'walking away and back refreshes the patch')
+  }
+
+  // The Down rules on the card match the game: a Cartel fight in Camp-04 wakes you in the Yard with +2 Cartel Heat.
+  let down = applyEffect(newGame('prisoner'), { goto: 'camp:yard', enterHub: 'camp04' })
+  down = { ...down, sap: 4, health: 1, flags: { ...down.flags, encounterHere: true, encounterKind: 'handler', encounterHp: 9, fightTaught: true } }
+  delete down.flags.hunterHere
+  const fell = pick(down, 'enc-fight')
+  assert(fell.flags.downed && fell.flags.downedKind === 'handler', 'going down remembers who did it')
+  const woke = pick(fell, 'wake')
+  assert(woke.sceneId === 'camp:yard' && woke.health === 1 && woke.heat.cartel === down.heat.cartel + 2 && !woke.flags.downedKind, 'Cartel Down in Camp-04: Yard, 1 Health, +2 Cartel Heat')
+  let road = applyEffect(newGame('outcast'), { goto: 'spine:ridge', enterHub: 'spine' })
+  road = { ...road, sap: 4, health: 1, flags: { ...road.flags, encounterHere: true, encounterKind: 'cutter', encounterHp: 9, fightTaught: true } }
+  delete road.flags.hunterHere
+  const up = pick(pick(road, 'enc-fight'), 'wake')
+  assert(up.health === 1 && up.sap === 3 && JSON.stringify(up.items) === JSON.stringify(road.items), 'most ground: 1 Health, 1 Sap, gear kept')
 }
 
 console.log('OK', {
