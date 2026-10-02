@@ -192,6 +192,33 @@ export function sceneSearch(state: GameState, target: string): Effect | null {
       }
     }
   }
+  if (id === 'spine:ridge' && (t.includes('track') || t.includes('print') || t === 'wash')) {
+    return { flash: 'Hound tracks run along the eastern wash, past the Dry Well, toward Hound Sign.' }
+  }
+  if (id === 'spine:well') {
+    if (t.includes('brick') || t.includes('carving') || t.includes('words')) {
+      return {
+        flash: state.flags.wellScrap
+          ? 'KAELEN CUTS DUSK and CACHE IS BAIT are cut into the bricks. The loose one is already out, and the hole behind it is empty.'
+          : 'KAELEN CUTS DUSK and CACHE IS BAIT are cut into the bricks. The brick under the words sits loose in its mortar.',
+      }
+    }
+    if (t.includes('throat') || t.includes('resin') || t === 'well') {
+      if (state.flags['skim:spine:well']) return { flash: 'The well-throat is scraped bare.' }
+      return {
+        flash: state.equipped?.weapon
+          ? 'Hard resin lines the inside of the well-throat. Your weapon will scrape one Drop out of it.'
+          : 'Hard resin lines the inside of the well-throat. Scraping a Drop out of it needs a weapon equipped.',
+      }
+    }
+  }
+  if (id === 'spine:hound' && (t.includes('kill') || t.includes('shard') || t.includes('print') || t.includes('tooth'))) {
+    return {
+      flash: state.flags.houndTooth
+        ? 'Fresh Shard-Hound prints in the dust. The old kill beside them has no shard left in it.'
+        : 'Fresh Shard-Hound prints in the dust. Beside them, an old kill still has a spent shard in its jaw.',
+    }
+  }
   if (id === 'ch1:p-pipe' && (t === 'grate' || t === 'bolt' || t === 'pipe' || t === 'fence')) {
     const wrench = (state.items.wrench ?? 0) > 0
     return {
@@ -283,6 +310,17 @@ export function helpEntries(state: GameState, labels: string[]): HelpEntry[] {
       add(list, labels, { group: 'Look', command: 'look vial', why: 'a Drop vial under her skiff' })
     }
     if (!state.flags.bayVetchTook) add(list, labels, { group: 'Look', command: 'look wire', why: 'copper wire on a crate' })
+  }
+
+  if (state.sceneId === 'spine:ridge') {
+    add(list, labels, { group: 'Look', command: 'look at tracks', why: 'Hound tracks on the eastern wash' })
+  }
+  if (state.sceneId === 'spine:well') {
+    if (!state.flags.wellScrap) add(list, labels, { group: 'Look', command: 'look at bricks', why: 'a loose brick under the carved words' })
+    if (!state.flags['skim:spine:well']) add(list, labels, { group: 'Look', command: 'look at throat', why: 'hard resin inside the well' })
+  }
+  if (state.sceneId === 'spine:hound' && !state.flags.houndTooth) {
+    add(list, labels, { group: 'Look', command: 'look at kill', why: 'an old kill beside the prints' })
   }
 
   for (const person of Object.values(PEOPLE)) {

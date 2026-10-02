@@ -2,9 +2,10 @@ import { ITEMS } from './content/catalog'
 import { getScene } from './content'
 import { check } from './logic'
 import { equippedShell, equippedStrike } from './kit'
+import { SPINE_HUNTER } from './content/spineHunter'
 import type { Choice, Effect, GameState, ItemId } from './types'
 
-export type EncounterKind = 'jackal' | 'cutter' | 'tick' | 'pup' | 'scavenger' | 'patrol' | 'handler' | 'overseer'
+export type EncounterKind = 'jackal' | 'cutter' | 'tick' | 'pup' | 'scavenger' | 'patrol' | 'handler' | 'overseer' | 'collector'
 
 /** Fight hits. Sap stays thirst/travel. */
 export const HEALTH_MAX = 6
@@ -83,6 +84,8 @@ const SPECS: Spec[] = [
     hp: 3,
     line: 'Overseer Valerius. Bald, scarred, steam baton in the fist. He came himself.',
   },
+  // Spine hunter fight. Copy and stats live in content/spineHunter.ts.
+  { kind: 'collector', ...SPINE_HUNTER.encounter },
 ]
 
 const TEACH =

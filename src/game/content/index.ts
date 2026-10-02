@@ -5,6 +5,7 @@ import { crisisScenes } from './crises'
 import { campKaelenScenes, roamKaelenScenes, spineKaelenScenes, threshKaelenScenes } from './kaelen'
 import { openingScenes } from './openings'
 import { redMawScenes } from './redMaw'
+import { shadeHandScenes } from './shadeHands'
 import { spineScenes } from './spine'
 import { thresholdScenes } from './threshold'
 
@@ -16,6 +17,7 @@ const all: Scene[] = [
   ...campKaelenScenes,
   ...roamKaelenScenes,
   ...spineScenes,
+  ...shadeHandScenes(),
   ...spineKaelenScenes,
   ...threshKaelenScenes,
   ...thresholdScenes,

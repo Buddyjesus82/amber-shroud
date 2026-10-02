@@ -262,7 +262,7 @@ export const HUBS: Record<string, HubDef> = {
       label: 'Walk the Hunger toward Red Maw',
       sub: 'First Spires: a hard day east-south. Closer than Ironwood. Not close.',
       sceneId: 'ch1:leave',
-      show: { any: [{ flag: 'hungerKnown' }, { item: 'silas_tip' }] },
+      show: { flag: 'hungerKnown' },
     },
     mawLegs: 2,
     mawNote: 'First Spires are a hard day east-south. Stray country sits nearer the bite than Camp-04.',

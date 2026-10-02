@@ -1,3 +1,4 @@
+import { SPINE_HUNTER } from './content/spineHunter'
 import { beginEncounter } from './encounter'
 import { check } from './logic'
 import type { Choice, GameState } from './types'
@@ -14,8 +15,14 @@ function campGround(state: Pick<GameState, 'hubId' | 'sceneId'>): boolean {
   return state.hubId === 'camp04' || state.sceneId.startsWith('camp:')
 }
 
-function spineGround(state: Pick<GameState, 'hubId' | 'sceneId'>): boolean {
-  return state.hubId === 'spine' || state.sceneId.startsWith('spine:')
+/** Spine hub, plus the Outcast leg of the Cache Run. Stray Heat is the hunt Heat here. */
+export function spineGround(state: Pick<GameState, 'hubId' | 'sceneId'>): boolean {
+  return state.hubId === 'spine' || state.sceneId.startsWith('spine:') || state.sceneId.startsWith('ch1:o-')
+}
+
+/** The Strays have a reason to look. Mirrors campHeard for the Cartel. */
+export function straysHeard(state: Pick<GameState, 'flags'>): boolean {
+  return !!state.flags.strayNotice
 }
 
 function threshGround(state: Pick<GameState, 'hubId' | 'sceneId'>): boolean {
@@ -52,7 +59,7 @@ export function pressureFace(state: Pick<GameState, 'flags' | 'sceneId' | 'hubId
   const hot = (state.heat?.cartel ?? 0) >= 7
   if (isSybellaOverlay(state)) return 'Sybella'
   if (isCampHunt(state)) return hot ? 'Valerius' : 'Hound-handler'
-  if (isSpineHunt(state)) return hot ? 'Valerius' : 'Hound-handler'
+  if (isSpineHunt(state)) return SPINE_HUNTER.face
   if (isThreshHunt(state)) return 'Court Guard'
   return null
 }
@@ -74,9 +81,7 @@ export const CAMP_HUNT_APPEND = `A muzzle knocks this ground. The Hound-handler,
 
 "Upright labor. He likes a diagram. I like a throat." You stay on this ground. Pay, fight, hide, or choose a road.`
 
-export const SPINE_HUNT_APPEND = `The wash narrows on this ground. The Hound-handler, shock-leash short, amber-eyed hound awake.
-
-"A Drop, a direction, or a fight." You leave only if you pick a road.`
+export const SPINE_HUNT_APPEND = SPINE_HUNTER.append
 
 export const VALERIUS_HUNT_APPEND = `He came himself. Cartel Heat dragged Overseer Valerius out of the tower. The skiff-woman wants the other end of you. That is a lever, later, if you live.
 
@@ -110,7 +115,7 @@ function hungerOuts(heat: Choice['effects']['heat']): Choice[] {
     {
       id: 'hunter-run',
       label: 'Break for the Hunger',
-      show: { any: [{ flag: 'hungerKnown' }, { item: 'silas_tip' }, { item: 'oram_map' }] },
+      show: { any: [{ flag: 'hungerKnown' }, { item: 'oram_map' }] },
       tone: 'hunger',
       effects: {
         startChapter: 'cache-run',
@@ -125,7 +130,7 @@ function hungerOuts(heat: Choice['effects']['heat']): Choice[] {
       id: 'hunter-blind',
       label: 'Run anyway. Heading or not.',
       show: {
-        all: [{ flagUnset: 'hungerKnown' }, { not: { item: 'silas_tip' } }, { not: { item: 'oram_map' } }],
+        all: [{ flagUnset: 'hungerKnown' }, { not: { item: 'oram_map' } }],
       },
       tone: 'danger',
       effects: {
@@ -237,50 +242,44 @@ function spineHuntChoices(state: GameState): Choice[] {
   const rows: Choice[] = [
     {
       id: 'spine-scrap',
-      label: 'Pay him one scrap',
+      label: 'Pay the collector one scrap',
       sub: 'A minute on this ground.',
       show: { item: 'scrap' },
       effects: stay(state, {
         remove: { scrap: 1 },
-        flash: 'He takes the scrap like a receipt. The wash stays yours for a minute. You did not walk.',
+        flash: 'The collector takes the scrap and walks back down-slope. You stay where you are.',
       }),
     },
     {
       id: 'spine-glint',
-      label: 'Pay him a Glint',
-      sub: 'Cartel Heat cools. You stay.',
+      label: 'Pay the collector a Glint',
+      sub: 'Stray Heat cools. You stay.',
       show: { item: 'glints' },
       effects: stay(state, {
         remove: { glints: 1 },
-        heat: { cartel: -1 },
-        flash: 'Amber chip, amber quiet. He points the Hound past you. This ground does not change.',
+        heat: { strays: -1 },
+        flash: 'The collector pockets the Glint and walks back down-slope. Stray Heat cools. You stay where you are.',
       }),
     },
     {
       id: 'spine-fight',
-      label: state.heat.cartel >= 7 ? 'Fight Valerius' : 'Fight the Hound-handler',
-      sub: state.heat.cartel >= 7 ? 'He came himself. You stay.' : 'The man with the leash. You stay.',
+      label: SPINE_HUNTER.fightLabel,
+      sub: SPINE_HUNTER.fightSub,
       tone: 'danger',
       enable: { healthMin: 1 },
       locked: 'Too hurt to fight.',
-      effects: beginEncounter(
-        state,
-        state.heat.cartel >= 7 ? 'overseer' : 'handler',
-        state.heat.cartel >= 7
-          ? 'Valerius steps in. Bald, scarred, steam baton, no dog. This ground is the fight.'
-          : 'The handler answers. The hound stays on the leash. This ground is the fight.',
-      ),
+      effects: beginEncounter(state, 'collector', SPINE_HUNTER.fightOpen),
     },
     {
       id: 'spine-hide',
       label: 'Eat the wash and stay',
-      sub: 'Sap and Cartel Heat.',
+      sub: 'Sap and Stray Heat.',
       tone: 'quiet',
       effects: stay(state, {
         sap: -1,
-        heat: { cartel: 1 },
+        heat: { strays: 1 },
         pressure: 1,
-        flash: 'Grit in the teeth. He lets the minute pass and writes the cowardice. You are still here.',
+        flash: 'You keep your face in the grit. The collector waits out the minute and walks back down-slope. Stray Heat rises.',
       }),
     },
     {
@@ -290,18 +289,18 @@ function spineHuntChoices(state: GameState): Choice[] {
       show: { slot: 'armor' },
       effects: stay(state, {
         pressure: 1,
-        flash: 'The glance slides off the cloth. He files a miss. You never left this ground.',
+        flash: 'The glance slides off the cloth. The collector looks past you. You never left this ground.',
       }),
     },
     {
       id: 'spine-bargain',
       label: 'Bargain the east',
-      sub: 'Sap and Cartel Heat. You stay. He files the heading.',
+      sub: 'Sap and Stray Heat. You stay.',
       effects: stay(state, {
         sap: -1,
-        heat: { cartel: 1 },
+        heat: { strays: 1 },
         pressure: 1,
-        flash: 'You name the Maw. He almost smiles. The file is the price. Your feet stay.',
+        flash: 'You tell the collector you are walking east to the Maw. They let you be for now. Stray Heat rises.',
       }),
     },
   ]
@@ -315,13 +314,13 @@ function spineHuntChoices(state: GameState): Choice[] {
         sap: -1,
         ticks: 1,
         pressure: 1,
-        heat: { cartel: 1 },
+        heat: { strays: 1 },
         unsetFlag: CLEAR,
-        flash: 'Shade takes you because you ran to it. Valerius lets the choice stand. He will price it later.',
+        flash: 'You run for the tent. The collector stays on the ridge and watches you go. Stray Heat rises.',
       },
     })
   }
-  rows.push(...hungerOuts({ cartel: 1 }))
+  rows.push(...hungerOuts({ strays: 1 }))
   return rows
 }
 
@@ -489,7 +488,7 @@ export function sybellaShadowChoices(state: GameState): Choice[] {
 export function pressureAppend(state: GameState): string | null {
   if (isSybellaOverlay(state)) return SYBELLA_SHADOW_APPEND
   if (isCampHunt(state)) return state.heat.cartel >= 7 ? VALERIUS_HUNT_APPEND : CAMP_HUNT_APPEND
-  if (isSpineHunt(state)) return state.heat.cartel >= 7 ? VALERIUS_HUNT_APPEND : SPINE_HUNT_APPEND
+  if (isSpineHunt(state)) return SPINE_HUNT_APPEND
   if (isThreshHunt(state)) return THRESH_HUNT_APPEND
   return null
 }

@@ -315,7 +315,7 @@ export const spineKaelenScenes: Scene[] = [
         id: 'hunger',
         label: 'Walk the Hunger toward Red Maw',
         tone: 'hunger',
-        show: { any: [{ flag: 'hungerKnown' }, { item: 'silas_tip' }] },
+        show: { flag: 'hungerKnown' },
         effects: {
           startChapter: 'cache-run',
           goto: 'ch1:leave',
@@ -410,7 +410,7 @@ export const spineKaelenScenes: Scene[] = [
         id: 'walk',
         label: 'The heading is enough. Walk the Maw.',
         tone: 'hunger',
-        show: { any: [{ flag: 'hungerKnown' }, { flag: 'kaelenHunger' }, { item: 'silas_tip' }] },
+        show: { any: [{ flag: 'hungerKnown' }, { flag: 'kaelenHunger' }] },
         effects: {
           startChapter: 'cache-run',
           goto: 'ch1:leave',

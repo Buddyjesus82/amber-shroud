@@ -1,5 +1,6 @@
 import { bayLookout } from './campJob'
 import { isCampHunt, isSpineHunt, isSybellaOverlay } from './hunter'
+import { SPINE_HUNTER } from './content/spineHunter'
 import { PEOPLE, type PersonId } from './people'
 import type { GameState, Scene } from './types'
 
@@ -92,11 +93,12 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
     if (kind === 'overseer') return 'valerius'
     if (kind === 'patrol') return 'rell'
     if (kind === 'scavenger' || kind === 'cutter') return 'hunger'
+    if (kind === 'collector') return SPINE_HUNTER.art
   }
   if (isSybellaOverlay(state) || id.startsWith('maw:sybella')) return 'sybella'
   if (isCampHunt(state)) return 'hound'
   if (id === 'camp:hunter' || id === 'camp:valerius' || id === 'camp:tower') return 'valerius'
-  if (isSpineHunt(state)) return state.heat.cartel >= 7 ? 'valerius' : 'hound'
+  if (isSpineHunt(state)) return SPINE_HUNTER.art
   if (id === 'spine:valerius') return 'valerius'
   if (id === 'spine:hunter' || id === 'spine:hound') return 'hound'
   if (id === 'thresh:thalia' || id.startsWith('thresh:thalia')) return 'thalia'
