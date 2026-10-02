@@ -1,5 +1,7 @@
 import type { Scene } from '../types'
 
+const STAND_FLASH = 'Silas is already walking down-slope to his tent. Heat lays a hand on the back of your neck and leaves it there.'
+
 export const openingScenes: Scene[] = [
   {
     id: 'open:prisoner',
@@ -31,22 +33,34 @@ Overseer Valerius is the shadow in the tower. Getting out from under him is the 
     kind: 'story',
     art: 'world',
     title: 'First Drop',
-    body: `You wake on the Bleached Spine with no memory. You do not know your name or the road that brought you here.
+    body: `You wake face-down in amber sand just outside the Bleached Spine outpost, with no memory. You cough, and golden dust comes up out of your chest. You do not know your name or the road that brought you here. Your pockets are empty.
 
 The left side of your face hurts. Your fingers find a brand there, burned into the skin, still raw at the edges. Every Dune-Stray knows that mark. It tells them not to speak to you, and when they see it, they turn away. Nobody will tell you what you did. You only know that you did something.
 
-Someone scratched a shade-cut into your palm while you were out. It is Silas Vane's mark. Silas sells shade by the minute on this ridge, and he trades with anyone who pays. The vial on your belt is empty. Noon on the Spine is a bill: your tongue sits like cloth, and two walks will empty you.`,
+Boots stop beside your head. An old man with one milk-white eye looks down at you, then at the brand, and keeps looking. Silas Vane. He tosses an empty glass vial onto the sand by your hand.
+
+"Nobody on this ridge carries you," he says. "Earn your keep. Get a Drop in that before noon, or noon empties you." He takes your wrist and scratches a mark into your palm with a sliver of glass. "That is my shade-cut, under the rock down-slope. On credit. I collect."
+
+Your first goal: get a Drop of Oasis Sap into that vial before the midday heat drains you. Your tongue already sits like cloth.`,
     choices: [
       {
         id: 'stand',
-        label: 'Stand up into the noon',
-        sub: 'Gear: empty vial, Silas\'s tip. Sap is already thin.',
+        label: 'Pick up the vial and stand',
+        sub: 'Goal: a first Drop before noon. Gear: the empty vial, Silas\'s shade-cut.',
         effects: {
           enterHub: 'spine',
           goto: 'spine:ridge',
+          add: { vial_empty: 1, silas_tip: 1 },
           ticks: 1,
-          flash: 'Heat lays a hand on the back of your neck and leaves it there.',
+          flash: STAND_FLASH,
         },
+      },
+    ],
+    intents: [
+      {
+        tags: ['stand', 'up', 'rise', 'vial', 'get'],
+        reply: STAND_FLASH,
+        effects: { enterHub: 'spine', goto: 'spine:ridge', add: { vial_empty: 1, silas_tip: 1 }, ticks: 1 },
       },
     ],
   },

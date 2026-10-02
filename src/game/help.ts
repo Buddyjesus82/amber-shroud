@@ -1,4 +1,5 @@
 import { bayLookout } from './campJob'
+import { FIRST_DROP_GOAL, firstDropPending } from './firstDrop'
 import { getScene, resolveBody } from './content'
 import { roadPressureScene } from './encounter'
 import { isPressureOverlay } from './hunter'
@@ -378,6 +379,7 @@ export function hiddenCommands(state: GameState, labels: string[]): string[] {
 
 export function helpText(state: GameState, labels: string[]): string {
   const cmds = helpEntries(state, labels)
-  if (!cmds.length) return 'Nothing hidden here. Try look.'
-  return ['Things you could try:'].concat(cmds.map((entry) => entry.command)).join('\n')
+  const goal = firstDropPending(state) && !state.flags.encounterHere && !state.flags.downed ? [FIRST_DROP_GOAL] : []
+  if (!cmds.length) return goal.concat('Nothing hidden here. Try look.').join('\n')
+  return goal.concat('Things you could try:', cmds.map((entry) => entry.command)).join('\n')
 }

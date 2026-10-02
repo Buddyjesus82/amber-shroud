@@ -188,10 +188,10 @@ export const DOORS: Record<string, DoorDef> = {
     place: 'Bleached Spine',
     epithet: 'the Noon-Empty',
     blurb:
-      'Empty vial. Noon heat. Silas already sold you a shade-cut on credit. The Spine will collect — in sap, or in favors.',
+      'Face-down in the sand, empty pockets, a brand on your face. Silas tosses you an empty vial: earn your keep. Get a Drop before noon.',
     sap: 2,
     heat: { cartel: 0, seekers: 1, strays: 2 },
-    items: { vial_empty: 1, silas_tip: 1 },
+    items: {},
     flags: { origin: 'outcast', noonEmpty: true, silasTip: true },
     sceneId: 'open:outcast',
     hubId: 'spine',

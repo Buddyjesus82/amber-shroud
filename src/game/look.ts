@@ -1,4 +1,5 @@
 import { getScene, resolveBody } from './content'
+import { FIRST_DROP_GOAL, firstDropPending } from './firstDrop'
 import { helpEntries } from './help'
 import { SPINE_HUNTERS } from './content/spineHunter'
 import { pressureFace } from './hunter'
@@ -541,7 +542,7 @@ function authored(state: GameState, scene: Scene): string[] {
   }
 
   if (id === 'open:outcast') {
-    push(lines, 'Silas\'s tip is still a scratch in the palm. The empty vial is the other thing you woke with.')
+    push(lines, 'The empty vial Silas tossed lies by your hand. The scratch in your palm is his shade-cut, on credit.')
     return lines
   }
 
@@ -717,7 +718,8 @@ export function roomDetail(state: GameState, labels: string[]): string {
 }
 
 export function roomLookFlash(state: GameState, labels: string[]): string {
-  return `${roomDetail(state, labels)}\n${compassLine(state)}`
+  const goal = firstDropPending(state) && !state.sceneId.startsWith('open:') ? `${FIRST_DROP_GOAL}\n` : ''
+  return `${goal}${roomDetail(state, labels)}\n${compassLine(state)}`
 }
 
 export function roomLookEffect(state: GameState, labels: string[]): Effect {

@@ -85,8 +85,15 @@ export function repairSceneId(state: Pick<GameState, 'door' | 'sceneId' | 'chapt
   return home.sceneId
 }
 
+/** Saves from before the first-Drop goal: an Outcast who already had a Drop gets the goal marked quietly. */
+function markOldFirstDrop(state: GameState): GameState {
+  if (state.door !== 'outcast' || state.flags.firstDropMarked) return state
+  const had = !!state.flags.firstDrop || (state.items.vial_drop ?? 0) > 0 || !!state.flags.chapter1Done
+  return had ? { ...state, flags: { ...state.flags, firstDropMarked: true } } : state
+}
+
 export function repairLoadedState(state: GameState): GameState {
-  const base = migrateEquipped(state)
+  const base = markOldFirstDrop(migrateEquipped(state))
   const sceneId = repairSceneId(base)
   if (sceneId === base.sceneId && hasScene(sceneId) && sceneFitsDoor(sceneId, base.door)) {
     const scene = getScene(sceneId, base.door)

@@ -15,7 +15,7 @@ Down-slope: a tent the color of old teeth. Silas Vane sells shade by the minute.
       {
         if: { sapMax: 2 },
         mode: 'append',
-        body: `Your vision frays at the edges. First Drop is not a poem. It is a requirement.`,
+        body: `Your vision frays at the edges. You need a Drop before noon.`,
       },
       {
         if: { pressureMin: 8 },

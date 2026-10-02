@@ -1,4 +1,5 @@
 import type { Choice, Scene } from '../types'
+import { HOLLOW_PULL } from '../sandSign'
 
 /**
  * Walk-up Strays in Silas's shade, in the shape of bayHands.ts (Pike, Sarn, Vetch at Skiff Bay):
@@ -217,6 +218,16 @@ He cannot see through the amber. He heard the shade go quiet when you walked in,
   ],
 }
 
+const MIRA_HOLLOW_DRAWING =
+  'After a while she draws in the sand with one finger: a ring with a hole in the middle. She points east-south, toward Red Maw, taps the ring twice, and shakes her head. A Gilded Hollow. Do not step in one. She brushes the drawing away.'
+
+/** Outcast, first time: he feels the Hollow pull while the drawing is in the sand. See sandSign.ts. */
+const MIRA_HOLLOW_DRAWING_PULL = `After a while she draws in the sand with one finger: a ring with a hole in the middle. She points east-south, toward Red Maw, taps the ring twice, and shakes her head. A Gilded Hollow. Do not step in one.
+
+${HOLLOW_PULL}
+
+She brushes the drawing away.`
+
 export const MIRA_SCENE: Scene = {
   id: 'spine:mira',
   hubId: 'spine',
@@ -237,12 +248,21 @@ She sees the brand. She does not turn away, and she does not speak. She goes bac
     {
       id: 'sit',
       label: 'Sit beside her and wait',
-      show: { all: [{ flagUnset: 'miraWarned' }, { flagUnset: 'miraTook' }] },
+      show: { all: [{ not: { all: [{ door: 'outcast' }, { flagUnset: 'hollowPullSeen' }] } }, { flagUnset: 'miraWarned' }, { flagUnset: 'miraTook' }] },
       effects: {
         flag: { miraWarned: true },
         ticks: 1,
-        flash:
-          'After a while she draws in the sand with one finger: a ring with a hole in the middle. She points east-south, toward Red Maw, taps the ring twice, and shakes her head. A Gilded Hollow. Do not step in one. She brushes the drawing away.',
+        flash: MIRA_HOLLOW_DRAWING,
+      },
+    },
+    {
+      id: 'sit',
+      label: 'Sit beside her and wait',
+      show: { all: [{ door: 'outcast' }, { flagUnset: 'hollowPullSeen' }, { flagUnset: 'miraWarned' }, { flagUnset: 'miraTook' }] },
+      effects: {
+        flag: { miraWarned: true, hollowPullSeen: true },
+        ticks: 1,
+        flash: MIRA_HOLLOW_DRAWING_PULL,
       },
     },
     {

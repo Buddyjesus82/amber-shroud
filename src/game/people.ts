@@ -342,6 +342,8 @@ export function personKnown(state: GameState, person: Person): boolean {
   if (state.flags[`asked:${person.id}`]) return true
   const here = personAtScene(state.sceneId)
   if (here?.id === person.id) return true
+  // The Outcast wakes at Silas's feet; he is known from the opening on.
+  if (person.id === 'silas' && state.door === 'outcast') return true
   if (person.id === 'handler' && (state.flags.metHandler || state.flags.hunterHere)) return true
   if (person.id === 'sybella' && state.flags.hunterHere && (state.hubId === 'redmaw' || state.sceneId.startsWith('maw:'))) {
     return true

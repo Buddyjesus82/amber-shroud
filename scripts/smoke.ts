@@ -28,6 +28,8 @@ import { heatFactions } from '../src/game/heat.ts'
 import { GLOBAL_INTENTS } from '../src/game/intent.ts'
 import { wakeEffect } from '../src/game/downed.ts'
 import { BRAND_LOOK } from '../src/game/brand.ts'
+import { FIRST_DROP_DONE, FIRST_DROP_GOAL } from '../src/game/firstDrop.ts'
+import { AMBER_WARM, HANDS_LOOK, HOLLOW_PULL, SAND_DOWN, SAND_LOW, SAND_SIGN_FLAGS, SAND_TOUCH, sandGround, sandSignsSeen } from '../src/game/sandSign.ts'
 import type { Cond, Scene } from '../src/game/types.ts'
 import { rollScavenge, SCAVENGE_SALVE_PCT, scavengeSalve } from '../src/game/scavenge.ts'
 import { kaelenOffers } from '../src/game/trade.ts'
@@ -226,7 +228,11 @@ assert(prisoner.items.scrip === 2 && !prisoner.items.wrench && !prisoner.items.v
 assert(!prisoner.items.scrap && !prisoner.items.silas_tip && !prisoner.items.oram_map, 'prisoner kit unique')
 assert(prisoner.heat.cartel === 3, 'prisoner cartel heat')
 
-assert(outcast.items.vial_empty === 1 && outcast.items.silas_tip === 1, 'outcast kit: empty vial + silas tip')
+assert(Object.keys(outcast.items).length === 0, 'outcast wakes with empty pockets')
+{
+  const stood = pick(newGame('outcast'), 'stand')
+  assert(stood.items.vial_empty === 1 && stood.items.silas_tip === 1, 'Silas tosses the empty vial and scratches his shade-cut on standing')
+}
 assert(!outcast.items.wrench && !outcast.items.scrip && !outcast.items.oram_map, 'outcast kit unique')
 assert(outcast.sap === 2, 'outcast sap is thin')
 assert(outcast.heat.strays === 2, 'outcast stray lean')
@@ -478,7 +484,7 @@ s = newGame('outcast')
 assert(s.sap === 2, 'outcast starts thin')
 {
   const button = pick(s, 'stand')
-  for (const typed of ['stand up into the noon', 'stand up', 'into the noon']) {
+  for (const typed of ['pick up the vial and stand', 'stand up', 'get up', 'pick up the vial']) {
     const viaDo = interpret(s, typed)
     assert(viaDo.sceneId === button.sceneId, `Do "${typed}" walks the same road as the button`)
     assert(viaDo.hubId === button.hubId, `Do "${typed}" enters the Spine like the button`)
@@ -508,6 +514,7 @@ s = pick(s, 'tip')
 assert(s.sceneId === 'spine:tip')
 s = pick(s, 'fill')
 assert(s.items.vial_drop === 1 && !s.items.vial_empty, 'empty vial filled from tip smear')
+assert((s.flash ?? '').endsWith(FIRST_DROP_DONE) && s.flags.firstDropMarked, 'the tip fills the first Drop and the goal is marked done')
 assert(s.sap >= 3, 'smear sap bite reversed a little')
 s = applyEffect(s, { startChapter: 'cache-run', goto: 'ch1:leave', ticks: 1 })
 s = pick(s, 'go')
@@ -1365,7 +1372,7 @@ assert(s.flags.hunterFrom === 'maw:lip', 'facing her smoke keeps the ground unde
 
   // Stray-raising acts are what make the Strays notice.
   {
-    const base = applyEffect(newGame('outcast'), { goto: 'spine:ridge', enterHub: 'spine', flag: { encounterAt: 999 } })
+    const base = applyEffect(newGame('outcast'), { goto: 'spine:ridge', enterHub: 'spine', add: { vial_empty: 1, silas_tip: 1 }, flag: { encounterAt: 999 } })
     assert(!base.flags.strayNotice, 'a fresh Outcast is not noticed yet')
     const mercy = pick(applyEffect(base, { goto: 'spine:silas' }), 'mercy')
     assert(mercy.flags.strayNotice && mercy.flags.silasOwed && mercy.flags.silasOwedDrop, "Silas's mercy Drop is a debt and the Strays notice")
@@ -3603,6 +3610,124 @@ function assertHelpResolves(s: GameState, where: string) {
   const copy = JSON.stringify(CARAPACE_HUNTER) + JSON.stringify(PEOPLE.carapace)
   assert(!/Shard-Hound/i.test(copy), 'he is never called Shard-Hound')
   assert(!/valerius/i.test(copy) && !/\bthis is not\b/i.test(copy), 'his copy has no Valerius and no "this is not" lines')
+}
+
+{
+  // Outcast sand signs: each shows once, saves a flag, and never names what he can do.
+  const ridge = (): GameState => {
+    const st = applyEffect(pick(newGame('outcast'), 'stand'), { goto: 'spine:ridge', flag: { encounterAt: 99999 } })
+    return { ...st, ticks: 40 }
+  }
+  assert(sandGround(ridge()) && !sandGround(applyEffect(newGame('prisoner'), { goto: 'camp:yard' })), 'sand ground is the Outcast on the Spine')
+
+  // (a) Down on sand ground.
+  const down = applyEffect(ridge(), { health: -99 })
+  assert(down.flags.downed && bodyOf(down).includes(SAND_DOWN) && down.flags.sandDownSeen, 'going Down on the Spine: the sand slides out from under his face')
+  const up = pick(down, ids(down)[0])
+  const downAgain = applyEffect({ ...up, ticks: up.ticks + 10 }, { health: -99 })
+  assert(downAgain.flags.downed && !bodyOf(downAgain).includes(SAND_DOWN), 'the Down sign shows once')
+  assert(!bodyOf(applyEffect(applyEffect(newGame('prisoner'), { goto: 'camp:yard' }), { health: -99 })).includes(SAND_DOWN), 'no sand sign on other doors')
+  const tooSoon = applyEffect({ ...ridge(), flags: { ...ridge().flags, sandSignAt: 40 } }, { health: -99 })
+  assert(!bodyOf(tooSoon).includes(SAND_DOWN) && !tooSoon.flags.sandDownSeen, 'two signs never land back to back')
+
+  // (a) Health 1 in a fight on sand ground.
+  let lowSeen = 0
+  for (let t = 0; t < 40 && !lowSeen; t++) {
+    let f = { ...ridge(), ticks: 40 + t, health: 6 }
+    f = applyEffect(f, { flag: { encounterAt: f.ticks } })
+    f = applyEffect(f, beginEncounter(f, 'collector'))
+    let rounds = 0
+    while (f.flags.encounterHere && !f.flags.encounterDone && !f.flags.downed && rounds < 8) {
+      const before = f.health
+      f = pick(f, 'enc-fight')
+      rounds++
+      if (before >= 2 && f.health === 1 && f.flags.encounterHere) {
+        assert(String(f.flags.encounterClash).endsWith(SAND_LOW) && f.flags.sandLowSeen, 'Health 1 in a Spine fight: the sand slides toward him')
+        lowSeen++
+      }
+    }
+  }
+  assert(lowSeen === 1, 'the low-Health sign shows in a Spine fight')
+
+  // (b) Amber warms the first time he scavenges a Glint.
+  let warm = 0
+  let st = ridge()
+  for (let t = 0; t < 60; t++) {
+    const before = st.items.glints ?? 0
+    st = scavenge({ ...st, ticks: st.ticks + 3 + (t % 4) })
+    if ((st.items.glints ?? 0) > before && (st.flash ?? '').includes(AMBER_WARM)) warm++
+  }
+  assert(warm === 1 && st.flags.amberWarmSeen, `the first scavenged Glint warms and hums once (${warm})`)
+  let pg = applyEffect(newGame('prisoner'), { goto: 'camp:yard', flag: { chapter1Done: true } })
+  for (let t = 0; t < 40; t++) pg = scavenge({ ...pg, ticks: pg.ticks + 3 + (t % 4) })
+  assert((pg.items.glints ?? 0) > 0 && !pg.flags.amberWarmSeen && !/hums/.test(pg.flash ?? ''), 'other doors find cold amber')
+
+  // (c) Mira's Hollow drawing pulls at him once.
+  const mira = applyEffect(ridge(), { goto: 'spine:mira' })
+  const sat = pick(mira, 'sit')
+  assert((sat.flash ?? '').includes(HOLLOW_PULL) && sat.flags.hollowPullSeen && sat.flags.miraWarned, 'Mira draws the Hollow and he feels it pull')
+  assert(visibleChoices(mira).filter((c) => c.id === 'sit').length === 1, 'one sit row shows at a time')
+  assert(!ids(sat).includes('sit'), 'the drawing happens once')
+
+  // (d) Typed: hands, sand, amber.
+  const h1 = interpret(ridge(), 'look at my hands')
+  assert(h1.flash === HANDS_LOOK && h1.flags.handsLookSeen, 'look at hands: amber dust in the lines')
+  assert(interpret(h1, 'look at hands').flash !== HANDS_LOOK, 'the hands line is plain after the first time')
+  const s1 = interpret(ridge(), 'touch the sand')
+  assert(s1.flash === SAND_TOUCH && s1.flags.sandTouchSeen, 'touch the sand: grains crawl toward his palm')
+  assert(interpret(s1, 'feel the sand').flash !== SAND_TOUCH, 'the crawl shows once')
+  const a1 = interpret(applyEffect(ridge(), { add: { glints: 1 } }), 'hold the glint')
+  assert(a1.flash === AMBER_WARM && a1.flags.amberWarmSeen, 'holding a Glint warms it once')
+  assert(interpret(a1, 'hold the glint').flash !== AMBER_WARM, 'held amber is cold after that')
+  assert(interpret(applyEffect(newGame('prisoner'), { goto: 'camp:yard' }), 'touch the sand').flash !== SAND_TOUCH, 'the sand does not move for other doors')
+  assert(sandSignsSeen({ ...h1, flags: { ...h1.flags, sandTouchSeen: true, amberWarmSeen: true } }) === 3, 'signs seen are counted for the later reveal')
+  assert(SAND_SIGN_FLAGS.length === 6, 'six signs')
+
+  const lines = [SAND_LOW, SAND_DOWN, AMBER_WARM, HOLLOW_PULL, SAND_TOUCH, HANDS_LOOK].join('\n')
+  assert(!/\b(power|magic|gift|curse|heart|shard|runners?|Spires|you did)\b/i.test(lines), 'signs never name or explain it')
+  assert(!/\bthis is not\b|\bnot a\b/i.test(lines), 'signs have no "this is not" lines')
+  const signSrc = readFileSync(new URL('../src/game/sandSign.ts', import.meta.url), 'utf8')
+  assert(/TODO\(designer\): the reveal/.test(signSrc), 'the reveal is a designer TODO')
+}
+
+{
+  // Outcast opening: face-down outside the outpost, Silas tosses the vial, first goal is a Drop before noon.
+  const open = getScene('open:outcast').body
+  assert(/face-down in amber sand just outside the Bleached Spine outpost/.test(open) && /golden dust/.test(open) && /pockets are empty/.test(open), 'opening: face-down, golden dust, empty pockets')
+  assert(/Silas Vane\. He tosses an empty glass vial/.test(open) && /Earn your keep/.test(open), 'opening: Silas tosses the vial and says earn your keep')
+  assert(/Your first goal: get a Drop of Oasis Sap into that vial before the midday heat drains you\./.test(open), 'opening states the first goal')
+  assert(!/while you were out/.test(open), 'the old palm line is gone')
+  assert(/Silas Vane/.test(interpret(newGame('outcast'), 'who is silas').flash ?? ''), 'the Outcast knows Silas from the opening')
+  const fresh = pick(newGame('outcast'), 'stand')
+  assert(interpret(fresh, 'look').flash?.startsWith(FIRST_DROP_GOAL), 'look shows the first goal')
+  assert((interpret(fresh, 'help').flash ?? '').startsWith(FIRST_DROP_GOAL), 'help shows the first goal')
+  assert(!(interpret(applyEffect(newGame('prisoner'), { goto: 'camp:yard' }), 'look').flash ?? '').includes(FIRST_DROP_GOAL), 'other doors have no first-Drop goal')
+
+  // Path 1: Silas's shade-cut.
+  const tip = pick(pick(fresh, 'tip'), 'fill')
+  assert(tip.items.vial_drop === 1 && (tip.flash ?? '').endsWith(FIRST_DROP_DONE), 'path 1: the shade-cut fills the vial')
+  assert(!(interpret(tip, 'look').flash ?? '').includes(FIRST_DROP_GOAL), 'look drops the goal once it is done')
+  assert(!(pick(applyEffect(tip, { goto: 'spine:shade' }), 'talk').flash ?? '').includes(FIRST_DROP_DONE), 'the done line shows once')
+  // Path 2: Silas's mercy at low sap.
+  const mercy = pick(applyEffect(fresh, { goto: 'spine:silas' }), 'mercy')
+  assert(mercy.items.vial_drop === 1 && (mercy.flash ?? '').endsWith(FIRST_DROP_DONE), 'path 2: Silas gives a Drop once')
+  // Path 3: scavenge scrap, buy a Drop on Silas's shelf.
+  let scav = applyEffect(fresh, { flag: { encounterAt: 99999 } })
+  for (let t = 0; t < 12 && (scav.items.scrap ?? 0) < 2 && !(scav.items.vial_drop ?? 0); t++) {
+    scav = scavenge({ ...scav, ticks: scav.ticks + 2 + (t % 3) })
+  }
+  if (!(scav.items.vial_drop ?? 0)) {
+    const shelf = openShop(applyEffect(scav, { goto: 'spine:silas' }), 'buy')
+    scav = pick(shelf, ids(shelf).includes('drop-scrap') ? 'drop-scrap' : 'drop-glint')
+  }
+  assert((scav.items.vial_drop ?? 0) >= 1 && scav.flags.firstDropMarked, 'path 3: scavenged scrap buys the first Drop from Silas')
+  // Path 4: the well brickwork pays a Glint; the Glint buys a Drop.
+  const well = pick(applyEffect(fresh, { goto: 'spine:well', flag: { encounterAt: 99999 } }), 'search')
+  const wellBuy = pick(openShop(applyEffect(well, { goto: 'spine:silas', sap: 1 }), 'buy'), 'drop-glint')
+  assert(wellBuy.items.vial_drop === 1 && wellBuy.flags.firstDropMarked, 'path 4: the well Glint buys the first Drop')
+
+  const old = repairLoadedState({ ...fresh, items: { ...fresh.items, vial_drop: 1 }, flags: { ...fresh.flags, firstDrop: true } })
+  assert(old.flags.firstDropMarked, 'old saves with a Drop are marked quietly')
 }
 
 console.log('OK', {
