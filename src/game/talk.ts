@@ -293,7 +293,7 @@ const ossa: IntentRule[] = [
   {
     tags: TALK,
     show: { all: [{ door: 'outcast' }, { flagUnset: 'ossaAlly' }] },
-    reply: 'She looks past the brand at the sand. "You know what you did. Ask me for water, not for talk."',
+    reply: 'She looks past the brand to your eyes. "Ask me for water. Talk can wait."',
     effects: { ticks: 1 },
   },
   {
@@ -509,6 +509,7 @@ const BY_PERSON: Record<PersonId, IntentRule[]> = {
   korvan,
   mira,
   corvin,
+  carapace: [],
   handler: [
     {
       tags: TALK,

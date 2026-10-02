@@ -1,6 +1,6 @@
 import { getScene, resolveBody } from './content'
 import { helpEntries } from './help'
-import { SPINE_HUNTER } from './content/spineHunter'
+import { SPINE_HUNTERS } from './content/spineHunter'
 import { pressureFace } from './hunter'
 import { check } from './logic'
 import { compassLine, compassMoves, type CompassMove } from './map'
@@ -106,7 +106,7 @@ export function overlayLook(state: GameState): string {
   if (face === 'Sybella') return 'Sybella is the one on this ground. Stay, defy, or run. The rock under her can wait.'
   if (face === 'Valerius') return 'Valerius is here himself. Pay, fight, or hide. The handler was the warning.'
   if (face === 'Court Guard') return 'A court guard has you in the hymn. Fight, hide, or answer him.'
-  if (face === SPINE_HUNTER.face) return SPINE_HUNTER.look
+  for (const h of Object.values(SPINE_HUNTERS)) if (face === h.face) return h.look
   return 'The Hound-handler has the leash. The hound stays on it. Pay, fight, or hide.'
 }
 

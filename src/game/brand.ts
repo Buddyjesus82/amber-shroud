@@ -27,7 +27,7 @@ function speakerRefusal(state: GameState): string {
     return 'Silas does not look at it. "I do not ask what you did. I ask what you pay."'
   }
   if (id === 'ch1:o-tax') return 'Nim looks past your head. "You know what you did."'
-  if (id.includes('ossa') || id.startsWith('maw:stilt')) return 'Ossa\'s face closes. "You know what you did."'
+  if (id.includes('ossa') || id.startsWith('maw:stilt')) return 'Ossa looks past the brand to your eyes. "Ask me for water. Talk can wait."'
   return 'Nobody here will say. You don\'t remember. They do.'
 }
 

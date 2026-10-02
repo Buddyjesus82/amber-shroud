@@ -196,13 +196,21 @@ Zafir is at his stall. He has watched buyers fail and kept the tray anyway. On i
         mode: 'replace',
         body: `Ossa is here anyway. Stilts, vial, alive. The Approach collects people who lived, whether you traveled with her or not.`,
       },
+      {
+        // First time she sees you at all (a door whose road never crossed hers).
+        if: { all: [{ flagUnset: 'ossaMet' }, { flagUnset: 'ossaAlly' }, { flagUnset: 'ossaRobbed' }] },
+        mode: 'replace',
+        body: `A woman on stilts is tying cord under the canvas. When you step into the shade she stops and looks at your face a beat too long. Her hand tightens on the stilt. Then she goes back to the knot.
+
+"Shade is free to stand in," Ossa says, the way she would say it to any stranger. "Water is not."`,
+      },
     ],
     choices: [
       {
         id: 'talk',
         label: 'Talk to Ossa',
         sub: 'She is alive. What she says depends on how you left her on the road.',
-        effects: { goto: 'maw:ossa', ticks: 1 },
+        effects: { goto: 'maw:ossa', ticks: 1, flag: { ossaMet: true } },
       },
     ],
   },
@@ -217,7 +225,7 @@ Zafir is at his stall. He has watched buyers fail and kept the tray anyway. On i
       {
         if: { flag: 'ossaToldDay' },
         mode: 'replace',
-        body: `She does not play the stranger anymore. "I already told you the day. The Great Bleed. How you were taken. The rest waits until you are ready. Ask when you can hear it."`,
+        body: `She does not play the stranger anymore. "I already told you the day. The dawn, the fire, the fifteen years. The rest waits until you are ready. Ask when you can hear it."`,
       },
       {
         if: { all: [{ flag: 'ossaStillness' }, { flagUnset: 'ossaToldDay' }] },
@@ -289,16 +297,33 @@ Zafir is at his stall. He has watched buyers fail and kept the tray anyway. On i
     speaker: 'Ossa',
     body: `Ossa sets the stilts down so you stand at the same height. The stranger voice is gone. What is left is a teacher who has lived in weather.
 
-"I raised you," she says. "I know you. I knew your face before any wire did."
+"I raised you," she says. "I knew your face before the sand ever had it.
 
-She does not look away. "They took you during the Great Bleed. They took you as a Bleed-Cut captive. I watched the tracks close, and I could not follow."
+"We had a homestead. Every dawn I walked the perimeter. One morning I started the circuit at the east fence and walked on. I never thought raiders would come through the place where I had just been. They did. While I was on the far side, they came in, burned everything, and took you. You were thirteen. Old enough that I had taught you well. Young enough that someone could make you into something new."
+
+She does not look away. "I don't know who took you. I have walked this desert for fifteen years looking for you. I came across you on the road by chance, and I still did not say so. I needed to know if you kept what I taught you. You did."
 
 A breath. The cord in her hands gets a second knot. "That is the day. The rest I will tell when you are ready to hear it. Ask me then. I will still be here."`,
     variants: [
       {
+        if: { all: [{ door: 'prisoner' }, { flag: 'ossaStillness' }] },
+        mode: 'append',
+        body: `Her eyes go to the wire scars on your wrists. "Wherever you landed after that, it ended in a cage. I could see that the first time I saw you."`,
+      },
+      {
+        if: { all: [{ door: 'outcast' }, { flag: 'ossaStillness' }] },
+        mode: 'append',
+        body: `Her eyes go to the brand once, then back to yours. "I don't know where you got that, and I won't guess. It doesn't change who I raised."`,
+      },
+      {
+        if: { all: [{ door: 'vessel' }, { flag: 'ossaStillness' }] },
+        mode: 'append',
+        body: `She touches the gold thread at your collar. "Someone dressed you as a cup. That is where you landed. It is not where you started."`,
+      },
+      {
         if: { flagUnset: 'ossaStillness' },
         mode: 'replace',
-        body: `"I'm alive," Ossa says, and nothing more. She is a woman on stilts. She does not know you. She will not pretend she does.`,
+        body: `"I'm alive," Ossa says, and nothing more. She talks to you the way she talks to any stranger on the road.`,
       },
     ],
     choices: [

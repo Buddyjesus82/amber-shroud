@@ -82,7 +82,7 @@ Oram sloshes a real Drop against your mouth while Thalia screams a hymn that has
     speaker: 'Ossa',
     body: `Sap gone. Knees gone. The dune tries to claim a new Hollow.
 
-Stilts plant on either side of your head. Ossa is alive — of course she is — and furious about the extra work. A vial at your mouth. Half a Drop. Her half.
+Stilts plant on either side of your head. Ossa is alive — of course she is. She looks down at your face and goes still a beat longer than a stranger would. Her hand tightens on the stilt. Then a vial at your mouth. Half a Drop. Her half.
 
 "Up," she says. "I don't bury people I haven't finished arguing with. Sybella is a brass line on the horizon. Move."`,
     choices: [

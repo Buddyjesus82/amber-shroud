@@ -423,9 +423,9 @@ Ride the last mile and I drop you with Ossa. Walk, and the Cartel keeps your tra
     kind: 'story',
     title: 'Escaped Property',
     speaker: 'Ossa',
-    body: `Stilts. She is counting the wire still in your cuffs.
+    body: `Stilts. She stops in the middle of a step and looks at your face a beat too long. Her hand tightens on the stilt-cord. Then her eyes drop to the wire still in your cuffs.
 
-"You smell like a cage," Ossa says. "If Valerius is behind you, I fall funny and you fall first. Hail like a person who escaped. Or pass. I don't hide property."`,
+"You smell like a cage," Ossa says, the way she would say it to any stranger. "If Valerius is behind you, I fall funny and you fall first. Hail like a person who escaped. Or pass. I don't hide property."`,
     variants: [
       {
         if: { flag: 'oilRide' },
@@ -809,7 +809,9 @@ She looks at the brand once and then talks to the air beside your head. "Shade-r
     speaker: 'Ossa',
     body: `Stilts. Kin-height. The vial on her hip is half-full, honest, the way Stray throats are supposed to be.
 
-She sees the brand, and her face closes. "You know what you did," she says. She does not say what it was. "I still don't let thirsty people die on my sand. Show empty glass if you have it. Don't lunge."`,
+She stops when she sees your face. She looks at it a beat too long, and her hand tightens on the stilt. Her eyes pass over the brand and do not stay on it.
+
+"Thirsty," she says, the way she would say it to any stranger on the road. "I don't let thirsty people die on my sand. Show empty glass if you have it. Don't lunge."`,
     variants: [
       {
         if: { flag: 'nimRun' },
@@ -880,7 +882,7 @@ She sees the brand, and her face closes. "You know what you did," she says. She 
       },
       {
         tags: ['help', 'hail', 'hello', 'talk', 'friend', 'kin'],
-        reply: 'She looks at the brand before she looks at your hands. "You know what you did. I will still hear you out."',
+        reply: 'She looks past the brand to your eyes. "Ask me for water. Talk can wait."',
         effects: { goto: 'ch1:ossa-talk', flag: { ossaMet: true, ossaKin: true } },
       },
     ],

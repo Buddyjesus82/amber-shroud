@@ -2,10 +2,10 @@ import { ITEMS } from './content/catalog'
 import { getScene } from './content'
 import { check } from './logic'
 import { equippedShell, equippedStrike } from './kit'
-import { SPINE_HUNTER } from './content/spineHunter'
+import { CARAPACE_HUNTER, SPINE_HUNTER } from './content/spineHunter'
 import type { Choice, Effect, GameState, ItemId } from './types'
 
-export type EncounterKind = 'jackal' | 'cutter' | 'tick' | 'pup' | 'scavenger' | 'patrol' | 'handler' | 'overseer' | 'collector'
+export type EncounterKind = 'jackal' | 'cutter' | 'tick' | 'pup' | 'scavenger' | 'patrol' | 'handler' | 'overseer' | 'collector' | 'carapace'
 
 /** Fight hits. Sap stays thirst/travel. */
 export const HEALTH_MAX = 6
@@ -86,6 +86,7 @@ const SPECS: Spec[] = [
   },
   // Spine hunter fight. Copy and stats live in content/spineHunter.ts.
   { kind: 'collector', ...SPINE_HUNTER.encounter },
+  { kind: 'carapace', ...CARAPACE_HUNTER.encounter },
 ]
 
 const TEACH = 'Fight or give the road. The rules: help fight.'
@@ -363,7 +364,7 @@ function pocket(state: GameState): number {
  * Fauna pay scrap or sap. People sometimes pay with a knife, a scav wrap, or a cloak.
  */
 /** People carry salve sometimes. Beasts never do. */
-export const HUMAN_KINDS: readonly EncounterKind[] = ['cutter', 'scavenger', 'patrol', 'handler', 'overseer', 'collector']
+export const HUMAN_KINDS: readonly EncounterKind[] = ['cutter', 'scavenger', 'patrol', 'handler', 'overseer', 'collector', 'carapace']
 export const BEAST_KINDS: readonly EncounterKind[] = ['jackal', 'tick', 'pup']
 /** Percent chance a downed human also carries a Resin Salve. */
 export const HUMAN_SALVE_PCT = 18
