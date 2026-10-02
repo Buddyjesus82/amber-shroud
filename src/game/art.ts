@@ -59,6 +59,49 @@ const FILES: Record<CoverKey, string> = {
   carapace: 'carapace.jpg',
 }
 
+/**
+ * The band of each cover that must stay visible above the story panel, as [top, bottom] fractions
+ * of the image height. People, skiff legs, and the glowing things you can take live in this band.
+ * When the band is taller than the clear window over the story, the cover scales down (blurred fill
+ * at the sides) instead of hiding the band behind text. See `.scene-img` in index.css.
+ */
+export const COVER_BAND: Record<CoverKey, [number, number]> = {
+  world: [0.05, 0.75],
+  hunger: [0.05, 0.75],
+  camp04: [0.1, 0.8],
+  spine: [0.15, 0.85],
+  threshold: [0.1, 0.85],
+  valerius: [0.05, 0.7],
+  hound: [0.05, 0.8],
+  sybella: [0.0, 0.6],
+  thalia: [0.05, 0.88],
+  zafir: [0.1, 0.9],
+  ossa: [0.15, 0.95],
+  kaelen: [0.05, 0.72],
+  oiltooth: [0.05, 0.78],
+  silas: [0.0, 0.6],
+  nim: [0.05, 0.78],
+  oram: [0.1, 0.9],
+  brin: [0.05, 0.72],
+  rell: [0.1, 0.85],
+  handler: [0.05, 0.8],
+  // Skiff Bay: the four bays, the people, and Vetch's torch.
+  skiffbay: [0.2, 0.84],
+  // Pike's bolt glows in the rear knee joint; the skiff legs reach the cradle.
+  bay_pike: [0.12, 0.82],
+  // Sarn's bolts and scrap pile are on the crate in front.
+  bay_sarn: [0.12, 0.96],
+  // Vetch's vial sits under the skiff; the copper wire and the torch are low.
+  bay_vetch: [0.15, 0.9],
+  // Oil-Tooth on his back under the hull, the spark, the toolbox.
+  hotwire: [0.2, 0.9],
+  carapace: [0.0, 0.75],
+}
+
+export function coverBand(key: CoverKey): [number, number] {
+  return COVER_BAND[key] ?? [0, 0.5]
+}
+
 const PERSON_COVER: Record<PersonId, CoverKey> = {
   oiltooth: 'oiltooth',
   kaelen: 'kaelen',

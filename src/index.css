@@ -418,6 +418,7 @@ h2 {
 }
 
 .play-screen .scene-stage {
+  --story-top: min(calc(56.25cqi * var(--band-bot, 0.5)), 50cqb);
   container-type: size;
   flex: 1 1 auto;
   min-height: 0;
@@ -466,8 +467,56 @@ h2 {
 
 @supports (width: 1cqi) {
   .play-screen .story {
-    /* Midline of the 16:9 cover, capped so a short stage still leaves the head clear. */
-    top: min(28.125cqi, 46cqb);
+    /*
+     * The panel starts at the bottom of the cover's band (the midline for a band ending at 0.5),
+     * capped at half the stage so the story keeps room on a short stage.
+     */
+    top: var(--story-top);
+  }
+}
+
+/* Blurred copy of the cover fills the frame behind the framed cover. */
+.play-screen .scene-art {
+  overflow: hidden;
+}
+
+.play-screen .scene-art .scene-fill {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  filter: blur(14px) brightness(0.5);
+  transform: scale(1.12);
+}
+
+.play-screen .scene-art .scene-img {
+  position: relative;
+}
+
+@supports (width: 1cqi) {
+  /*
+   * Each cover has a band (--band-top..--band-bot, fractions of its height) that must stay
+   * in the clear window above the story panel. If the band is taller than the window, the cover
+   * scales down to fit it; the blurred fill covers the sides. Then it slides up just enough that
+   * the band's bottom clears the panel.
+   */
+  .play-screen .scene-art {
+    --win: calc(var(--story-top) + 0.7rem);
+    --full: 56.25cqi;
+    --img-h: min(var(--full), calc(var(--win) / (var(--band-bot, 0.5) - var(--band-top, 0))));
+  }
+
+  .play-screen .scene-art .scene-img {
+    position: absolute;
+    left: 50%;
+    top: min(0px, calc(var(--win) - var(--band-bot, 0.5) * var(--img-h)));
+    height: var(--img-h);
+    width: calc(var(--img-h) * 16 / 9);
+    max-width: none;
+    transform: translateX(-50%);
+    object-fit: contain;
   }
 }
 

@@ -43,7 +43,7 @@ import {
   tapResume,
 } from '../src/game/doorPick.ts'
 import type { DoorId, GameState } from '../src/game/types.ts'
-import { playCoverKey } from '../src/game/art.ts'
+import { COVER_BAND, playCoverFile, playCoverKey } from '../src/game/art.ts'
 import { helpEntries, helpText } from '../src/game/help.ts'
 import { equippedShell } from '../src/game/kit.ts'
 import { repairLoadedState } from '../src/game/repair.ts'
@@ -2631,7 +2631,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v40'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v41'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -2649,11 +2649,11 @@ assert(/html,\s*body,\s*#root \{[\s\S]*?overflow:\s*hidden/.test(css), 'page chr
 assert(css.includes('object-fit: contain'), 'scene art shows the whole cover instead of cropping heads')
 assert(css.includes('object-position: center top'), 'scene art keeps faces at the top of the frame')
 assert(css.includes('scene-stage'), 'story shares a stage with the cover')
-assert(/top:\s*min\(28\.125cqi,\s*46cqb\)/.test(css), 'story starts at the cover midline so the upper half stays clear')
+assert(css.includes('--story-top: min(calc(56.25cqi * var(--band-bot, 0.5)), 50cqb)') && css.includes('top: var(--story-top)'), 'story starts under the cover band, capped at half the stage')
 assert(css.includes('rgba(12, 7, 4, 0.58)'), 'story scrim stays translucent so cover art shows through')
 assert(!css.includes('rgba(12, 7, 4, 0.88)'), 'story scrim is lighter than the v32 slab')
 const playSrc = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
-assert(playSrc.includes('?v=40'), 'scene cover URLs are cache-busted with the service worker')
+assert(playSrc.includes('?v=41'), 'scene cover URLs are cache-busted with the service worker')
 assert(!css.includes('object-position: center 68%'), 'scene art no longer crops toward the ground')
 assert(!css.includes('height: 56px'), 'short phones no longer squash covers into a head-cropping strip')
 assert(css.includes('place-items: center'), 'game screen is centered on the backdrop')
@@ -3761,6 +3761,24 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(getScene('spine:valerius').title === 'Overseer Valerius', 'Valerius keeps his own title on the Spine')
   assert(!getScene('spine:hunter').speaker && !/Valerius/.test(getScene('spine:hunter').body), 'the Spine hunt ground is not Valerius')
   assert(/deserter/.test(getScene('spine:hound').body), 'on the Spine Valerius is after the deserter')
+}
+
+{
+  // Cover bands: what must stay visible above the story panel, per cover.
+  for (const [key, [top, bot]] of Object.entries(COVER_BAND)) {
+    assert(top >= 0 && bot <= 1 && bot - top >= 0.4, `${key} band is a real window (${top}..${bot})`)
+    assert(playCoverFile(key as never), `${key} has a file`)
+  }
+  // The lit things you can take sit low in the bay art; the band must reach them.
+  assert(COVER_BAND.bay_pike[1] >= 0.8, "Pike's bolt and the skiff legs stay above the panel")
+  assert(COVER_BAND.bay_sarn[1] >= 0.95, "Sarn's scrap pile stays above the panel")
+  assert(COVER_BAND.bay_vetch[1] >= 0.88, "Vetch's vial, wire, and torch stay above the panel")
+  assert(COVER_BAND.skiffbay[1] >= 0.82 && COVER_BAND.hotwire[1] >= 0.88, 'Skiff Bay people and the hotwire beat stay above the panel')
+  const css2 = readFileSync(new URL('../src/index.css', import.meta.url), 'utf8')
+  assert(css2.includes('.scene-fill') && /blur\(/.test(css2), 'a blurred fill sits behind a scaled-down cover')
+  assert(/\.scene-img \{[\s\S]*?height: var\(--img-h\)/.test(css2), 'the cover scales to fit its band')
+  const play2 = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
+  assert(play2.includes('coverBand(coverKey)') && play2.includes("'--band-bot'"), 'PlayScreen passes the band to the stage')
 }
 
 console.log('OK', {
