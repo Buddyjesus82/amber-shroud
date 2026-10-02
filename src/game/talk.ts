@@ -533,7 +533,7 @@ export function talkIntentsFor(sceneId: string): IntentRule[] {
   if (match(sceneId, ['camp:kaelen', 'camp:wire', 'thresh:kaelen', 'thresh:sift'])) {
     return kaelen
   }
-  if (match(sceneId, ['camp:valerius', 'camp:tower', 'camp:hunter', 'spine:valerius', 'spine:hound', 'spine:hunter'])) {
+  if (match(sceneId, ['camp:valerius', 'camp:tower', 'camp:hunter', 'spine:valerius', 'spine:hound'])) {
     return valerius
   }
   if (match(sceneId, ['spine:silas', 'spine:shade', 'spine:tip', 'spine:ridge', 'ch1:o-silas'])) return silas

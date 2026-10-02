@@ -409,7 +409,12 @@ function authored(state: GameState, scene: Scene): string[] {
     return lines
   }
 
-  if (id === 'spine:valerius' || id === 'spine:hunter') {
+  if (id === 'spine:hunter') {
+    push(lines, 'The Strays are watching this stretch of ridge. East, or back under the canvas.')
+    return lines
+  }
+
+  if (id === 'spine:valerius') {
     push(lines, 'He wants a returned Drop or a direction. Refusing him is still a choice you can make out loud.')
     return lines
   }
