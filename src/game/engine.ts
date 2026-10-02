@@ -34,6 +34,8 @@ import {
 } from './campJob'
 import { markMetOnLeave, matchPersonQuery, personAtScene } from './people'
 import { downedNote, wakeEffect } from './downed'
+import { markFirstDrop } from './firstDrop'
+import { amberFindSign, downedSign, lowHealthSign, sandTouchReply } from './sandSign'
 import { isPressureOverlay, pressureAppend, pressureChoices, pressureVerb, spineGround, spineHunterKindAt, straysHeard } from './hunter'
 import { offButton } from './verbs'
 import {
@@ -117,8 +119,9 @@ export function newGame(door: DoorId): GameState {
 }
 
 export function persist(state: GameState): GameState {
-  writeSave(state)
-  return state
+  const next = markFirstDrop(state)
+  writeSave(next)
+  return next
 }
 
 export function sceneOf(state: GameState): Scene {
@@ -639,10 +642,18 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     next = applyDelta(next, arrived.onEnter)
   }
 
+  // Outcast: the sand moves when he is hurt. Once, during a fight that leaves him at Health 1.
+  const low = lowHealthSign(state, next)
+  if (low && typeof next.flags.encounterClash === 'string' && next.flags.encounterClash) {
+    next.flags = { ...next.flags, encounterClash: `${next.flags.encounterClash}\n\n${low}`, sandLowSeen: true, sandSignAt: next.ticks }
+  }
+
   if ((state.health ?? 1) > 0 && (next.health ?? 1) <= 0 && !state.flags.downed) {
-    const note = downedNote({ ...state, sceneId: next.sceneId, flags: next.flags, hubId: next.hubId })
+    let note = downedNote({ ...state, sceneId: next.sceneId, flags: next.flags, hubId: next.hubId })
     const kind = next.flags.encounterKind
-    const flags: FlagMap = { ...next.flags, downed: true, downedNote: note }
+    const sign = downedSign({ ...next, health: 0 })
+    if (sign) note = `${note}\n\n${sign}`
+    const flags: FlagMap = { ...next.flags, downed: true, downedNote: note, ...(sign ? { sandDownSeen: true, sandSignAt: next.ticks } : {}) }
     // The fight card is cleared below; the wake still needs to know who put you down.
     if (typeof kind === 'string' && kind) flags.downedKind = kind
     for (const k of ENCOUNTER_FLAGS) delete flags[k]
@@ -727,7 +738,9 @@ function verbLabel(tag: string): string {
 export function scavenge(state: GameState): GameState {
   // applyDelta only — never applyEffect, never goto, never hunter/crisis relocate.
   const pinned = { sceneId: state.sceneId, hubId: state.hubId, chapterId: state.chapterId }
-  const next = applyScavenge(state)
+  let next = applyScavenge(state)
+  const warm = amberFindSign(state, (next.items.glints ?? 0) > (state.items.glints ?? 0))
+  if (warm) next = { ...next, flash: `${next.flash ?? ''} ${warm}`.trim(), flags: { ...next.flags, amberWarmSeen: true, sandSignAt: next.ticks } }
   return withVerb(
     persist({
       ...next,
@@ -882,6 +895,13 @@ export function interpret(state: GameState, text: string): GameState {
   // Outcast: the brand. Looking at it describes it; asking about it never gets the answer.
   const branded = brandReply(state, text)
   if (branded) return withVerb(persist({ ...state, flash: branded, updatedAt: Date.now() }), 'brand')
+
+  // Outcast: hands, sand, amber. Plain sensory lines; the first of each is a sign, saved once.
+  const touched = sandTouchReply(state, text)
+  if (touched) {
+    const flags = touched.flag ? { ...state.flags, ...touched.flag } : state.flags
+    return withVerb(persist({ ...state, flags, flash: touched.flash, updatedAt: Date.now() }), 'look')
+  }
 
   const who = matchPersonQuery(text, state)
   if (who === 'unknown') {
