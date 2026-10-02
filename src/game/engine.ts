@@ -44,13 +44,20 @@ import {
   encounterCard,
   encounterChoices,
   encounterGround,
-  enemyHealth,
+  FIGHT_RESET,
+  fightStartFlags,
   ENCOUNTER_FLAGS,
   HEALTH_MAX,
   isEncounterResult,
   pickEncounterKind,
   resolveEncounter,
+  wantsEncounterDeal,
+  wantsEncounterFeint,
   wantsEncounterFight,
+  wantsEncounterGuard,
+  wantsEncounterPull,
+  wantsEncounterRun,
+  wantsEncounterTrick,
   wantsEncounterHide,
   wantsEncounterSkip,
 } from './encounter'
@@ -385,6 +392,9 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   if (fx.resolveEncounter) {
     const result = resolveEncounter(state, fx.resolveEncounter)
     next = applyDelta(next, result.fx)
+    if (result.fx.flag?.encounterGrip && !state.flags.encounterGrip) {
+      next.flags = { ...next.flags, sandGripSeen: true, sandSignAt: next.ticks }
+    }
     if (result.fx.flag?.ventLoot) next = applyDelta(next, { add: { ironwood_baton: 1 } })
     next.flash = result.flash
     if (result.fx.add?.vial_drop && (state.items.vial_empty ?? 0) > 0) {
@@ -623,17 +633,9 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   ) {
     const kind = pickEncounterKind(next)
     next.flash = undefined
-    next.flags = {
-      ...next.flags,
-      encounterHere: true,
-      encounterKind: kind,
-      encounterAt: next.ticks,
-      encounterHp: enemyHealth(kind),
-      roadFightSeen: true,
-    }
-    delete next.flags.encounterClash
-    delete next.flags.encounterRound
-    delete next.flags.encounterStall
+    const fresh = { ...next.flags }
+    for (const k of FIGHT_RESET) delete fresh[k]
+    next.flags = { ...fresh, ...fightStartFlags(next, kind), roadFightSeen: true }
   } else if (firstWalk) {
     next.flags = { ...next.flags, roadFightSeen: true }
   }
@@ -959,8 +961,37 @@ export function interpret(state: GameState, text: string): GameState {
     if (isEncounterResult(state)) {
       return withVerb(applyEffect(state, dismissEncounter(state)), 'on')
     }
+    // Typed moves pick the same row as the buttons, so locks and reasons match.
+    const typedMove = wantsEncounterPull(text)
+      ? 'enc-pull'
+      : wantsEncounterDeal(text)
+        ? 'enc-deal'
+        : wantsEncounterGuard(text)
+          ? 'enc-guard'
+          : wantsEncounterFeint(text)
+            ? 'enc-feint'
+            : wantsEncounterTrick(text)
+              ? 'enc-trick'
+              : wantsEncounterRun(text) && state.flags.encounterRound
+                ? 'enc-run'
+                : null
+    if (typedMove) {
+      const row = visibleChoices(state).find((c) => c.id === typedMove)
+      if (row) {
+        if (!isChoiceOn(state, row.enable)) {
+          return withVerb(persist({ ...state, flash: `${row.locked ?? 'Not now'}.`.replace(/\.\.$/, '.'), updatedAt: Date.now() }), 'fight')
+        }
+        return withVerb(applyEffect(state, row.effects), typedMove.replace('enc-', ''))
+      }
+    }
     if (wantsEncounterFight(text)) {
       return withVerb(applyEffect(state, { resolveEncounter: 'fight', ticks: 1 }), 'fight')
+    }
+    if (state.flags.encounterRound && (wantsEncounterHide(text) || wantsEncounterSkip(text))) {
+      return withVerb(
+        persist({ ...state, flash: 'The fight has started. Run, or keep fighting.', updatedAt: Date.now() }),
+        'fight',
+      )
     }
     if (wantsEncounterHide(text) || wantsEncounterSkip(text)) {
       return withVerb(applyEffect(state, { resolveEncounter: 'skip' }), wantsEncounterHide(text) ? 'hide' : 'skip')
