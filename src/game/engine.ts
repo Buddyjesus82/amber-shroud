@@ -621,6 +621,8 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
       roadFightSeen: true,
     }
     delete next.flags.encounterClash
+    delete next.flags.encounterRound
+    delete next.flags.encounterStall
   } else if (firstWalk) {
     next.flags = { ...next.flags, roadFightSeen: true }
   }

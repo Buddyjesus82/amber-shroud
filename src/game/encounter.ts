@@ -89,13 +89,39 @@ const SPECS: Spec[] = [
 ]
 
 const TEACH =
-  'Strike has to beat Shell to wound. Health takes the hits — not Sap. Fight or skip. Skip is free and pays nothing. Loot only if they drop.'
+  'Each exchange, both sides add a swing of 0 to 2 to Strike. Strike past Shell is the wound, and a hit always lands at least 1. Health takes the hits. Sap stays for thirst and walking. Fight or skip. Skip is free and pays nothing. Loot only if they drop.'
+
+/** Every exchange that lands deals at least this much, both ways. */
+export const DAMAGE_FLOOR = 1
+/** Each side's swing is 0..SWING_MAX added to Strike, per exchange. */
+export const SWING_MAX = 2
+/** Rounds in a row with no damage either way before the enemy breaks off. */
+export const STALL_ROUNDS = 3
 
 function seed(state: GameState): number {
   let n = state.ticks * 11 + state.pressure * 5 + state.sap * 3
   for (const ch of state.sceneId) n += ch.charCodeAt(0)
   n += (state.items.scrap ?? 0) + (state.items.glints ?? 0) * 2
   return Math.abs(n)
+}
+
+/**
+ * Swing for one side of one exchange: 0..SWING_MAX. Seeded from the road seed, the round, and the side,
+ * so a save replays the same fight and tests stay fixed.
+ */
+export function swingOf(state: GameState, side: 'you' | 'them'): number {
+  const round = Number(state.flags.encounterRound ?? 0)
+  let h = (seed(state) * 2654435761 + round * 40503 + (side === 'you' ? 17 : 91)) >>> 0
+  for (const ch of String(state.flags.encounterKind ?? '')) h = (Math.imul(h ^ ch.charCodeAt(0), 2246822519) >>> 0)
+  h ^= h >>> 15
+  h = Math.imul(h, 3266489917) >>> 0
+  h ^= h >>> 13
+  return (h >>> 0) % (SWING_MAX + 1)
+}
+
+/** Damage one side deals in an exchange. A landed exchange never rounds down to nothing. */
+export function exchangeDamage(strike: number, swing: number, shell: number, floor = DAMAGE_FLOOR): number {
+  return Math.max(floor, strike + swing - shell)
 }
 
 export function encounterSpec(state: GameState): Spec {
@@ -222,18 +248,22 @@ export type Clash = {
   spec: Spec
   strike: number
   shell: number
+  swingOut: number
+  swingIn: number
   dmgOut: number
   dmgIn: number
   theirHp: number
   yourHp: number
 }
 
-export function clashOf(state: GameState): Clash {
+export function clashOf(state: GameState, floor = DAMAGE_FLOOR): Clash {
   const spec = encounterSpec(state)
   const strike = equippedStrike(state)
   const shell = equippedShell(state)
-  const dmgOut = Math.max(0, strike - spec.shell)
-  const dmgIn = Math.max(0, spec.strike - shell)
+  const swingOut = swingOf(state, 'you')
+  const swingIn = swingOf(state, 'them')
+  const dmgOut = exchangeDamage(strike, swingOut, spec.shell, floor)
+  const dmgIn = exchangeDamage(spec.strike, swingIn, shell, floor)
   const theirNow = Number(state.flags.encounterHp ?? spec.hp)
   const healthMax = state.healthMax ?? HEALTH_MAX
   const yours = state.health ?? healthMax
@@ -241,6 +271,8 @@ export function clashOf(state: GameState): Clash {
     spec,
     strike,
     shell,
+    swingOut,
+    swingIn,
     dmgOut,
     dmgIn,
     theirHp: Math.max(0, theirNow),
@@ -253,7 +285,7 @@ function compareLines(c: Clash): string {
 }
 
 function compareHit(c: Clash): string {
-  return `You Strike ${c.strike} vs their Shell ${c.spec.shell} → ${c.dmgOut}\n\nTheir Strike ${c.spec.strike} vs your Shell ${c.shell} → ${c.dmgIn}`
+  return `You Strike ${c.strike}+${c.swingOut} vs their Shell ${c.spec.shell} → ${c.dmgOut}\n\nTheir Strike ${c.spec.strike}+${c.swingIn} vs your Shell ${c.shell} → ${c.dmgIn}`
 }
 
 /** Encounter interrupt body only — never the place underneath. */
@@ -374,6 +406,8 @@ export const ENCOUNTER_FLAGS = [
   'encounterClash',
   'encounterDone',
   'encounterFlash',
+  'encounterRound',
+  'encounterStall',
 ] as const
 
 export function isEncounterResult(state: Pick<GameState, 'flags'>): boolean {
@@ -408,14 +442,24 @@ function holdCard(state: GameState, spec: Spec, card: string, short: string, ext
   }
 }
 
-export function resolveEncounter(state: GameState, how: 'fight' | 'skip'): { fx: Effect; flash: string } {
+/**
+ * The one fight resolver for every door and every fight. `floor` exists for tests of the stall valve;
+ * the game always plays with DAMAGE_FLOOR.
+ */
+export function resolveEncounter(
+  state: GameState,
+  how: 'fight' | 'skip',
+  opts: { floor?: number } = {},
+): { fx: Effect; flash: string } {
   const spec = encounterSpec(state)
   if (how === 'skip') {
     const line = `You give the ${spec.name} the road. No loot. No bill.`
     return holdCard(state, spec, line, line)
   }
 
-  const c = clashOf(state)
+  const c = clashOf(state, opts.floor ?? DAMAGE_FLOOR)
+  const round = Number(state.flags.encounterRound ?? 0) + 1
+  const stall = c.dmgOut === 0 && c.dmgIn === 0 ? Number(state.flags.encounterStall ?? 0) + 1 : 0
   const theirHp = Math.max(0, c.theirHp - c.dmgOut)
   const yourHp = Math.max(0, c.yourHp - c.dmgIn)
   const max = state.healthMax ?? HEALTH_MAX
@@ -458,6 +502,12 @@ export function resolveEncounter(state: GameState, how: 'fight' | 'skip'): { fx:
     })
   }
 
+  if (stall >= STALL_ROUNDS) {
+    const who = spec.kind === 'overseer' ? spec.name : `The ${spec.name}`
+    const outcome = `${who} backs off and leaves the road. No loot.`
+    return holdCard(state, spec, `${hitCard}\n\n${outcome}`, outcome, { health: healthDelta })
+  }
+
   const standing = `${hitCard}\n\nThey still stand. Their Health ${theirHp}/${spec.hp}. Yours ${yourHp}/${max}. No loot yet.`
   return {
     fx: {
@@ -467,6 +517,8 @@ export function resolveEncounter(state: GameState, how: 'fight' | 'skip'): { fx:
         encounterHere: true,
         encounterKind: spec.kind,
         encounterHp: theirHp,
+        encounterRound: round,
+        encounterStall: stall,
         encounterClash: standing,
         fightTaught: true,
         encounterAt: state.ticks,
@@ -496,7 +548,7 @@ export function roadPressureScene(sceneId: string): boolean {
 export function beginEncounter(state: GameState, kind?: EncounterKind, flash?: string): Effect {
   const k = kind ?? pickEncounterKind(state)
   return {
-    unsetFlag: ['hunterHere', 'hunterFrom', 'encounterDone', 'encounterClash', 'encounterFlash'],
+    unsetFlag: ['hunterHere', 'hunterFrom', 'encounterDone', 'encounterClash', 'encounterFlash', 'encounterRound', 'encounterStall'],
     flag: {
       encounterHere: true,
       encounterKind: k,

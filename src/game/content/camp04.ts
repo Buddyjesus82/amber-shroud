@@ -1027,7 +1027,7 @@ A vent patrol is in place: one clerk, shock baton, eyes on the joint. Unwatched 
         tone: 'danger',
         show: { flag: 'ventPatrol' },
         effects: {
-          unsetFlag: ['encounterDone', 'encounterClash', 'encounterFlash', 'hunterHere', 'hunterFrom'],
+          unsetFlag: ['encounterDone', 'encounterClash', 'encounterFlash', 'encounterRound', 'encounterStall', 'hunterHere', 'hunterFrom'],
           flag: {
             encounterHere: true,
             encounterKind: 'patrol',
@@ -1287,7 +1287,7 @@ He hunts Sap thieves and unpermitted relic hoarders. You look like both. First m
           returnHunterFrom: true,
           unsetFlag: ['hunterHere', 'hunterFrom'],
           ticks: 1,
-          flash: 'The armor takes the glance. Gear gated that. No dice. You are not forced into the Yard.',
+          flash: 'The armor takes the glance. Gear gated that. You are not forced into the Yard.',
         },
       },
     ],

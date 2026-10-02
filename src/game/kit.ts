@@ -26,7 +26,7 @@ export function isWorn(state: GameState, id: ItemId): boolean {
   return EQUIP_SLOTS.some((slot) => state.equipped?.[slot] === id)
 }
 
-/** Empty hand still has a number. Never a roll. */
+/** Empty hand still has a number. The fight adds its own 0-2 swing. */
 export function equippedStrike(state: GameState): number {
   const id = state.equipped?.weapon
   if (id && ITEMS[id]?.strike != null) return ITEMS[id].strike as number
