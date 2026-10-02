@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useRef, useState, type CSSProperties } from 'react'
 import { HUBS } from '../game/content/catalog'
 import {
   applyEffect,
@@ -21,7 +21,7 @@ import { heatFactions, heatRiseLine } from '../game/heat'
 import { effectPills, listedKit } from '../game/kit'
 import { isMawExit } from '../game/map'
 import { encounterSpeaker, isEncounterResult } from '../game/encounter'
-import { playCoverFile, playCoverKey } from '../game/art'
+import { coverBand, playCoverFile, playCoverKey } from '../game/art'
 import { bayLookout } from '../game/campJob'
 import { isPressureOverlay, pressureFace } from '../game/hunter'
 import { isShopOpen } from '../game/trade'
@@ -223,7 +223,10 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     requestAnimationFrame(() => sayRef.current?.focus())
   }
 
-  const artSrc = `${import.meta.env.BASE_URL}covers/${playCoverFile(playCoverKey(state, scene))}?v=40`
+  const coverKey = playCoverKey(state, scene)
+  const artSrc = `${import.meta.env.BASE_URL}covers/${playCoverFile(coverKey)}?v=41`
+  const [bandTop, bandBot] = coverBand(coverKey)
+  const artBand = { '--band-top': bandTop, '--band-bot': bandBot } as CSSProperties
 
   return (
     <div className={`screen play-screen${split ? ' play-split' : ''}`}>
@@ -296,9 +299,10 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
       {saveToast ? <p className="heat-toast">{saveToast}</p> : null}
       {toast ? <p className="heat-toast">{toast}</p> : null}
 
-      <div className="scene-stage">
+      <div className="scene-stage" style={artBand}>
         <div className="scene-art" aria-hidden="true">
-          <img src={artSrc} alt="" />
+          <img className="scene-fill" src={artSrc} alt="" />
+          <img className="scene-img" src={artSrc} alt="" />
         </div>
 
         <div className="story" ref={storyRef}>
