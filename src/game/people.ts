@@ -17,6 +17,7 @@ export type PersonId =
   | 'korvan'
   | 'mira'
   | 'corvin'
+  | 'carapace'
 
 export type Person = {
   id: PersonId
@@ -29,6 +30,18 @@ export type Person = {
 }
 
 export const PEOPLE: Record<PersonId, Person> = {
+  carapace: {
+    id: 'carapace',
+    name: 'Carapace hunter',
+    // TODO(designer): his Dune-Stray name and his old Cartel name. Never "Shard-Hound"; shard-hounds are beasts.
+    aliases: ['carapace hunter', 'carapace', 'bounty hunter', 'tracker', 'harpoon'],
+    metFlag: 'metCarapace',
+    card: `The Carapace hunter. A scarred bounty hunter in patched armor made from the glassy black carapace of Shard-Born Striders he has killed. A cracked respirator mask under a hood. A heavy serrated harpoon rifle.
+
+He was a high-ranking Cartel mercenary until a failed expedition got him cast out. He took a Dune-Stray name after he left. Now he tracks runaways and stolen Glance-Shards for whoever pays. Cold, relentless, superstitious. He believes the amber sands demand blood and treats every hunt as a ritual. Someone hired him to track you.`,
+    scenes: [],
+    later: {},
+  },
   korvan: {
     id: 'korvan',
     name: 'Korvan Drell',
@@ -279,10 +292,10 @@ She is a living person on purpose. She falls funny. She does not die easy. A twi
     scenes: ['ch1:p-ossa', 'ch1:o-ossa', 'ch1:ossa-talk', 'ch1:ossa-rob', 'maw:stilt', 'maw:ossa', 'maw:ossa-day'],
     later: {
       'ch1:p-ossa': `Stilts. She is counting the wire still in your cuffs. "You smell like a cage. I don't hide property."`,
-      'ch1:o-ossa': `Stilts. Kin-height. Honest glass. "Family can still be cruel. Don't lunge."`,
+      'ch1:o-ossa': `Stilts. Kin-height. Honest glass. She talks to you like a stranger. "Show empty glass if you have it. Don't lunge."`,
       'maw:stilt': `Ossa is here, stilts unstrapped or not, repairing a lash or refusing shade. Alive is still the headline.`,
       'maw:ossa': `"I'm alive," she says, which is both greeting and warning. The Maw wants the cache. She wants stilts that keep working.`,
-      'maw:ossa-day': `The stranger voice is gone. She tells you she raised you, and that you were taken during the Great Bleed as a Bleed-Cut captive. The rest waits until you are ready.`,
+      'maw:ossa-day': `The stranger voice is gone. She tells you she raised you, that raiders burned the homestead and took you at thirteen while she walked the perimeter, and that she has looked for you for fifteen years. She does not know who took you. The rest waits until you are ready.`,
     },
   },
   sybella: {

@@ -46,7 +46,7 @@ import { helpEntries, helpText } from '../src/game/help.ts'
 import { equippedShell } from '../src/game/kit.ts'
 import { repairLoadedState } from '../src/game/repair.ts'
 import { pressureFace } from '../src/game/hunter.ts'
-import { SPINE_HUNTER } from '../src/game/content/spineHunter.ts'
+import { CARAPACE_HUNTER, CARAPACE_HUNTER_HEAT, SPINE_HUNTER } from '../src/game/content/spineHunter.ts'
 import { SHADE_HANDS_LIVE } from '../src/game/content/shadeHands.ts'
 import { SILAS_JOB_FLAGS, SILAS_JOB_LIVE } from '../src/game/content/silasJob.ts'
 import { canSkim } from '../src/game/scavenge.ts'
@@ -1242,16 +1242,16 @@ assert(s.flags.hunterFrom === 'maw:lip', 'facing her smoke keeps the ground unde
 
   let spineVal = knockAt('outcast', 'spine', 'spine:ridge', 7, 0)
   assert(!spineVal.flags.hunterHere, 'Spine ignores Cartel Heat: Cartel 7 with Strays 0 does not field a hunter')
-  spineVal = { ...spineVal, heat: { ...spineVal.heat, cartel: 0, strays: 7 }, flags: { ...spineVal.flags, strayNotice: true, huntQuiet: 8 } }
+  spineVal = { ...spineVal, heat: { ...spineVal.heat, cartel: 0, strays: 3 }, flags: { ...spineVal.flags, strayNotice: true, huntQuiet: 8 } }
   spineVal = applyEffect(spineVal, { ticks: 1 })
-  assert(spineVal.flags.hunterHere && pressureFace(spineVal) === SPINE_HUNTER.face, 'Spine Stray Heat 7 fields the Spine hunter')
+  assert(spineVal.flags.hunterHere && pressureFace(spineVal) === SPINE_HUNTER.face, 'Spine Stray Heat 3 fields the Stray collector')
   assert(pressureFace(spineVal) !== 'Valerius', 'Spine hunter is not Valerius in a different coat')
   assert(ids(spineVal).includes('spine-fight') && ids(spineVal).includes('spine-hide'), 'Spine hunt offers fight and hide')
   const spineGlint = pick(applyEffect(spineVal, { add: { glints: 1 } }), 'spine-glint')
-  assert(spineGlint.heat.strays === 6 && spineGlint.heat.cartel === 0, 'paying the collector a Glint cools Stray Heat, not Cartel')
+  assert(spineGlint.heat.strays === 2 && spineGlint.heat.cartel === 0, 'paying the collector a Glint cools Stray Heat, not Cartel')
   const spineHeld = pick(spineVal, 'spine-scrap')
   assert(!spineHeld.flags.hunterHere && spineHeld.sceneId === 'spine:ridge', 'Spine dismiss stays on the ridge')
-  assert(!applyEffect(spineHeld, { ticks: 1 }).flags.hunterHere, 'Spine hunter does not re-arm on the next scene at Heat 7')
+  assert(!applyEffect(spineHeld, { ticks: 1 }).flags.hunterHere, 'Spine hunter does not re-arm on the next scene at Heat 3')
   const spineFight = pick(spineVal, 'spine-fight')
   assert(spineFight.flags.encounterHere && spineFight.flags.encounterKind === 'collector', 'Spine hunt fight is the collector')
 
@@ -2624,7 +2624,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v39'"), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v40'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -2646,7 +2646,7 @@ assert(/top:\s*min\(28\.125cqi,\s*46cqb\)/.test(css), 'story starts at the cover
 assert(css.includes('rgba(12, 7, 4, 0.58)'), 'story scrim stays translucent so cover art shows through')
 assert(!css.includes('rgba(12, 7, 4, 0.88)'), 'story scrim is lighter than the v32 slab')
 const playSrc = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
-assert(playSrc.includes('?v=39'), 'scene cover URLs are cache-busted with the service worker')
+assert(playSrc.includes('?v=40'), 'scene cover URLs are cache-busted with the service worker')
 assert(!css.includes('object-position: center 68%'), 'scene art no longer crops toward the ground')
 assert(!css.includes('height: 56px'), 'short phones no longer squash covers into a head-cropping strip')
 assert(css.includes('place-items: center'), 'game screen is centered on the backdrop')
@@ -2866,8 +2866,13 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(told.sceneId === 'maw:ossa-day', 'quiet choice reaches the day')
   const day = bodyOf(told)
   assert(/raised you/i.test(day), 'Ossa admits she raised him')
-  assert(/Great Bleed/.test(day), 'the day was the Great Bleed')
-  assert(/Bleed-Cut/.test(day), 'he was taken as a Bleed-Cut captive')
+  assert(/walked the perimeter/.test(day) && /raiders/.test(day) && /fifteen years/.test(day), 'the day on screen: perimeter, raiders, fifteen years')
+  const full = getScene('maw:ossa-day')
+  const told3 = [full.body, ...(full.variants ?? []).map((v) => v.body)].join('\n')
+  assert(/burned everything, and took you/.test(full.body) && /You were thirteen\./.test(full.body), 'the day: raiders burned the homestead and took him at thirteen')
+  assert(/I don't know who took you\./.test(full.body), 'she does not know who took him')
+  assert(!/Bleed-Cut|Great Bleed|Cartel|Seeker|Stray/.test(told3), 'the reveal names no taker and no faction')
+  assert(!/brand/.test(full.body), 'the shared reveal does not explain the brand')
   told = pick(told, 'back')
   assert(told.flags.ossaToldDay, 'she has told the day')
   told = applyEffect(told, { goto: 'maw:ossa' })
@@ -3427,7 +3432,12 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(/I will not say it\. You don.t remember\. They do\./.test(interpret(atKorvan, 'ask about the brand').flash ?? ''), 'Korvan knows the brand and will not say it')
   assert(/I ask what you pay/.test(interpret(applyEffect(ridge, { goto: 'spine:silas' }), 'what happened').flash ?? ''), 'Silas will not ask; he trades')
   assert(interpret(applyEffect(newGame('prisoner'), { goto: 'camp:yard' }), 'touch brand').flash !== BRAND_LOOK, 'the brand is Outcast only')
-  assert(/You know what you did/.test(getScene('ch1:o-ossa').body) && /talks to the air beside your head/.test(getScene('ch1:o-tax').body), 'Ossa and Nim react to the brand')
+  assert(/talks to the air beside your head/.test(getScene('ch1:o-tax').body), 'Nim reacts to the brand')
+  const oOssa = getScene('ch1:o-ossa').body
+  assert(/a beat too long/.test(oOssa) && /hand tightens on the stilt/.test(oOssa), 'Ossa shows a tell when she sees his face')
+  assert(/do not stay on it/.test(oOssa) && /any stranger/.test(oOssa), 'Ossa looks past the brand and speaks as a stranger')
+  const ossaHello = interpret(applyEffect(ridge, { goto: 'ch1:o-ossa', startChapter: 'cache-run' }), 'hello').flash ?? ''
+  assert(/Ask me for water\. Talk can wait\./.test(ossaHello), `typed hello to Ossa: water first: ${ossaHello}`)
   assert(/You know what you did/.test(interpret(applyEffect(ridge, { goto: 'ch1:o-tax', startChapter: 'cache-run' }), 'hello').flash ?? ''), 'typed hello to Nim gets the brand refusal')
 
   // Korvan and Mira in Silas's shade; Jodi's slot stays dark.
@@ -3516,6 +3526,83 @@ function assertHelpResolves(s: GameState, where: string) {
   }
   assert(/Rarely, a Resin Salve turns up with the find\./.test(topicText(HELP_TOPICS[1])), 'help scavenge names the salve find')
   assert(/People sometimes carry a Resin Salve on them\. Beasts never do\./.test(fightHelpText()), 'help fight names salve loot')
+}
+
+{
+  // Ossa recognizes him at first sight in every door, says nothing, and never uses the Strays' brand line.
+  const ossaScenes = ['ch1:p-ossa', 'ch1:o-ossa', 'maw:stilt', 'crisis:dunes', 'maw:ossa', 'maw:ossa-day']
+  for (const id of ossaScenes) {
+    const sc = getScene(id)
+    const all = [sc.body, ...(sc.variants ?? []).map((v) => v.body), ...(sc.intents ?? []).map((r) => r.reply)].join('\n')
+    assert(!/You know what you did/.test(all), `Ossa never says the brand line in ${id}`)
+    assert(!/Bleed-Cut/.test(all), `no Bleed-Cut in ${id}`)
+  }
+  for (const id of ['ch1:p-ossa', 'ch1:o-ossa', 'crisis:dunes']) {
+    assert(/a beat too long|a beat longer/.test(getScene(id).body), `first-sight tell in ${id}`)
+  }
+  const vesselFirst = applyEffect(newGame('vessel'), { goto: 'maw:stilt', flag: { chapter1Done: true } })
+  assert(/a beat too long/.test(bodyOf(vesselFirst)) && /any stranger/.test(bodyOf(vesselFirst)), 'Vessel first meeting at the stilt: tell, then stranger voice')
+  assert(/a beat too long/.test(bodyOf(applyEffect(newGame('prisoner'), { goto: 'ch1:p-ossa' }))), 'Prisoner first meeting shows the tell')
+  const appendFor = (door: DoorId) => bodyOf(applyEffect(newGame(door), { goto: 'maw:ossa-day', flag: { ossaStillness: true, ossaAlly: true, chapter1Done: true } }))
+  assert(/wire scars/.test(appendFor('prisoner')) && !/gold thread|the brand once/.test(appendFor('prisoner')), 'Prisoner append: the wire scars')
+  assert(/the brand once/.test(appendFor('outcast')) && /doesn't change who I raised/.test(appendFor('outcast')), 'Outcast append: she looks past the brand')
+  assert(/gold thread/.test(appendFor('vessel')) && /dressed you as a cup/.test(appendFor('vessel')), 'Vessel append: the gold thread')
+  assert(/You know what you did/.test(interpret(applyEffect(newGame('outcast'), { goto: 'ch1:o-tax', startChapter: 'cache-run' }), 'hello').flash ?? ''), 'Nim keeps the brand line')
+}
+
+{
+  // The Carapace hunter takes the Spine hunt at Stray Heat 4+. The face locks when the hunt arrives.
+  const spineAt = (strays: number, seed = 0): GameState => {
+    let st = applyEffect(pick(newGame('outcast'), 'stand'), { goto: 'spine:ridge', flag: { encounterAt: 99999 } })
+    st = { ...st, ticks: 20 + seed, heat: { cartel: 0, seekers: 0, strays }, flags: { ...st.flags, strayNotice: true, huntQuiet: 9 } }
+    delete st.flags.hunterHere
+    delete st.flags.encounterHere
+    return applyEffect(st, { ticks: 1 })
+  }
+  assert(CARAPACE_HUNTER_HEAT === 4, 'Carapace threshold is Stray Heat 4')
+  const low = spineAt(3)
+  assert(low.flags.hunterHere && pressureFace(low) === SPINE_HUNTER.face, 'Stray Heat 3 is still the collector')
+  const hi = spineAt(4)
+  assert(hi.flags.hunterHere && pressureFace(hi) === 'Carapace hunter', 'Stray Heat 4 fields the Carapace hunter')
+  assert(hi.flags.spineHunterKind === 'carapace' && hi.flags.metCarapace, 'the hunt locks the carapace face and marks him met')
+  assert(/harpoon rifle with a serrated head/.test(bodyOf(hi)) && /Someone paid me for yours/.test(bodyOf(hi)), 'his append shows on the Spine ground')
+  assert(playCoverKey(hi, sceneOf(hi)) === 'carapace', 'his portrait is the scene art during the hunt')
+  const cooled = { ...hi, heat: { ...hi.heat, strays: 1 } }
+  assert(pressureFace(cooled) === 'Carapace hunter', 'cooling Heat mid-hunt keeps the same face')
+  const heated = { ...low, heat: { ...low.heat, strays: 8 } }
+  assert(pressureFace(heated) === SPINE_HUNTER.face, 'raising Heat mid-hunt keeps the collector')
+  assert(!ids(hi).includes('spine-scrap') && !ids(hi).includes('spine-glint'), 'he takes no scrap and no Glint')
+  assert(!ids(applyEffect(hi, { add: { scrap: 2, glints: 2 } })).some((id) => /spine-(scrap|glint)/.test(id)), 'no pay rows even when you carry scrap and Glints')
+  const withDrop = applyEffect(hi, { add: { vial_drop: 2 } })
+  assert(ids(withDrop).includes('spine-offer'), 'with a Drop he can be offered one')
+  const offered = pick(withDrop, 'spine-offer')
+  assert(!offered.flags.hunterHere && offered.flags.carapaceOffered && (offered.items.vial_drop ?? 0) === 1, 'the offering sends him off and costs a Drop')
+  const again = spineAt(5)
+  const againOffered = applyEffect({ ...again, flags: { ...again.flags, carapaceOffered: true } }, { add: { vial_drop: 1 } })
+  assert(!ids(againOffered).includes('spine-offer'), 'the offering works once')
+  const fight = pick(hi, 'spine-fight')
+  assert(fight.flags.encounterHere && fight.flags.encounterKind === 'carapace', 'his fight is the carapace encounter')
+  assert(CARAPACE_HUNTER.encounter.strike === 4 && CARAPACE_HUNTER.encounter.shell === 2 && CARAPACE_HUNTER.encounter.hp === 3, 'Carapace hunter is Strike 4, Shell 2, Health 3')
+  assert(SPINE_HUNTER.encounter.strike === 3 && SPINE_HUNTER.encounter.shell === 1 && SPINE_HUNTER.encounter.hp === 2, 'collector stays Strike 3, Shell 1, Health 2')
+  assert(playCoverKey(fight, sceneOf(fight)) === 'carapace', 'his portrait shows in the fight')
+  let wins = 0
+  for (let t = 0; t < 30; t++) {
+    let f = pick(spineAt(4, t), 'spine-fight')
+    f = { ...f, health: f.healthMax ?? f.health, items: { ...f.items, needle_knife: 1, scav_wrap: 1 }, equipped: { weapon: 'needle_knife', armor: 'scav_wrap' } }
+    let rounds = 0
+    while (f.flags.encounterHere && !f.flags.encounterDone && !f.flags.downed && rounds < 10) {
+      f = pick(f, 'enc-fight')
+      rounds++
+    }
+    if (f.flags.encounterDone && /They drop/.test(String(f.flags.encounterClash))) wins++
+  }
+  assert(wins > 0, `needle knife and scav wrap can beat him (${wins}/30)`)
+  assert(wins < 30, `he is a real fight (${wins}/30 wins)`)
+  const card = interpret(offered, 'who is the carapace hunter').flash ?? ''
+  assert(/Carapace hunter/.test(card), `who-is works after meeting him: ${card.slice(0, 80)}`)
+  const copy = JSON.stringify(CARAPACE_HUNTER) + JSON.stringify(PEOPLE.carapace)
+  assert(!/Shard-Hound/i.test(copy), 'he is never called Shard-Hound')
+  assert(!/valerius/i.test(copy) && !/\bthis is not\b/i.test(copy), 'his copy has no Valerius and no "this is not" lines')
 }
 
 console.log('OK', {

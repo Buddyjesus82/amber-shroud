@@ -1,4 +1,4 @@
-import { SPINE_HUNTER } from './content/spineHunter'
+import { CARAPACE_HUNTER_HEAT, SPINE_HUNTER, spineHunterFor } from './content/spineHunter'
 import { beginEncounter } from './encounter'
 import { check } from './logic'
 import type { Choice, GameState } from './types'
@@ -59,7 +59,7 @@ export function pressureFace(state: Pick<GameState, 'flags' | 'sceneId' | 'hubId
   const hot = (state.heat?.cartel ?? 0) >= 7
   if (isSybellaOverlay(state)) return 'Sybella'
   if (isCampHunt(state)) return hot ? 'Valerius' : 'Hound-handler'
-  if (isSpineHunt(state)) return SPINE_HUNTER.face
+  if (isSpineHunt(state)) return spineHunterFor(state).face
   if (isThreshHunt(state)) return 'Court Guard'
   return null
 }
@@ -238,37 +238,64 @@ function campHuntChoices(state: GameState): Choice[] {
   return rows
 }
 
+/** Which Spine face the hunt fields at this Stray Heat, before the hunt locks it in. */
+export function spineHunterKindAt(strays: number): 'collector' | 'carapace' {
+  return strays >= CARAPACE_HUNTER_HEAT ? 'carapace' : 'collector'
+}
+
 function spineHuntChoices(state: GameState): Choice[] {
+  const hunter = spineHunterFor(state)
+  const carapace = hunter.kind === 'carapace'
+  const who = carapace ? 'The Carapace hunter' : 'The collector'
+  const pay: Choice[] = carapace
+    ? [
+        {
+          id: 'spine-offer',
+          label: 'Pour a Drop on his sand',
+          sub: 'Costs 1 Drop. He takes it as the blood the sand is owed, once. You stay.',
+          show: { all: [{ item: 'vial_drop' }, { flagUnset: 'carapaceOffered' }] },
+          effects: stay(state, {
+            remove: { vial_drop: 1 },
+            add: { vial_empty: 1 },
+            flag: { carapaceOffered: true },
+            flash:
+              'You pour the Drop onto his pinch of sand. He watches it soak in, nods once, and walks back down the slope. "Next time the sand takes yours," he says.',
+          }),
+        },
+      ]
+    : [
+        {
+          id: 'spine-scrap',
+          label: 'Pay the collector one scrap',
+          sub: 'A minute on this ground.',
+          show: { item: 'scrap' },
+          effects: stay(state, {
+            remove: { scrap: 1 },
+            flash: 'The collector takes the scrap and walks back down-slope. You stay where you are.',
+          }),
+        },
+        {
+          id: 'spine-glint',
+          label: 'Pay the collector a Glint',
+          sub: 'Stray Heat cools. You stay.',
+          show: { item: 'glints' },
+          effects: stay(state, {
+            remove: { glints: 1 },
+            heat: { strays: -1 },
+            flash: 'The collector pockets the Glint and walks back down-slope. Stray Heat cools. You stay where you are.',
+          }),
+        },
+      ]
   const rows: Choice[] = [
-    {
-      id: 'spine-scrap',
-      label: 'Pay the collector one scrap',
-      sub: 'A minute on this ground.',
-      show: { item: 'scrap' },
-      effects: stay(state, {
-        remove: { scrap: 1 },
-        flash: 'The collector takes the scrap and walks back down-slope. You stay where you are.',
-      }),
-    },
-    {
-      id: 'spine-glint',
-      label: 'Pay the collector a Glint',
-      sub: 'Stray Heat cools. You stay.',
-      show: { item: 'glints' },
-      effects: stay(state, {
-        remove: { glints: 1 },
-        heat: { strays: -1 },
-        flash: 'The collector pockets the Glint and walks back down-slope. Stray Heat cools. You stay where you are.',
-      }),
-    },
+    ...pay,
     {
       id: 'spine-fight',
-      label: SPINE_HUNTER.fightLabel,
-      sub: SPINE_HUNTER.fightSub,
+      label: hunter.fightLabel,
+      sub: hunter.fightSub,
       tone: 'danger',
       enable: { healthMin: 1 },
       locked: 'Too hurt to fight.',
-      effects: beginEncounter(state, 'collector', SPINE_HUNTER.fightOpen),
+      effects: beginEncounter(state, hunter.kind, hunter.fightOpen),
     },
     {
       id: 'spine-hide',
@@ -279,7 +306,7 @@ function spineHuntChoices(state: GameState): Choice[] {
         sap: -1,
         heat: { strays: 1 },
         pressure: 1,
-        flash: 'You keep your face in the grit. The collector waits out the minute and walks back down-slope. Stray Heat rises.',
+        flash: `You keep your face in the grit. ${who} waits out the minute and walks back down-slope. Stray Heat rises.`,
       }),
     },
     {
@@ -289,7 +316,7 @@ function spineHuntChoices(state: GameState): Choice[] {
       show: { slot: 'armor' },
       effects: stay(state, {
         pressure: 1,
-        flash: 'The glance slides off the cloth. The collector looks past you. You never left this ground.',
+        flash: `The glance slides off the cloth. ${who} looks past you. You never left this ground.`,
       }),
     },
     {
@@ -300,7 +327,9 @@ function spineHuntChoices(state: GameState): Choice[] {
         sap: -1,
         heat: { strays: 1 },
         pressure: 1,
-        flash: 'You tell the collector you are walking east to the Maw. They let you be for now. Stray Heat rises.',
+        flash: carapace
+          ? 'You tell him you are walking east to the Maw. "Then I walk east," he says, and lets you be for now. Stray Heat rises.'
+          : 'You tell the collector you are walking east to the Maw. They let you be for now. Stray Heat rises.',
       }),
     },
   ]
@@ -316,7 +345,7 @@ function spineHuntChoices(state: GameState): Choice[] {
         pressure: 1,
         heat: { strays: 1 },
         unsetFlag: CLEAR,
-        flash: 'You run for the tent. The collector stays on the ridge and watches you go. Stray Heat rises.',
+        flash: `You run for the tent. ${who} stays on the ridge and watches you go. Stray Heat rises.`,
       },
     })
   }
@@ -488,7 +517,7 @@ export function sybellaShadowChoices(state: GameState): Choice[] {
 export function pressureAppend(state: GameState): string | null {
   if (isSybellaOverlay(state)) return SYBELLA_SHADOW_APPEND
   if (isCampHunt(state)) return state.heat.cartel >= 7 ? VALERIUS_HUNT_APPEND : CAMP_HUNT_APPEND
-  if (isSpineHunt(state)) return SPINE_HUNT_APPEND
+  if (isSpineHunt(state)) return spineHunterFor(state).append
   if (isThreshHunt(state)) return THRESH_HUNT_APPEND
   return null
 }
@@ -519,7 +548,8 @@ export function pressureVerb(state: GameState, text: string): Choice | null {
   if (/\bglint/.test(hay)) return rows.find((c) => /glint|evidence/.test(c.id)) ?? null
   if (/\bscrap/.test(hay)) return rows.find((c) => c.id.endsWith('scrap')) ?? null
   if (/\bscrip/.test(hay)) return rows.find((c) => c.id.includes('scrip')) ?? null
-  if (/\b(pay|bribe)\b/.test(hay)) return rows.find((c) => /scrap|glint|scrip|evidence/.test(c.id)) ?? null
+  if (/\b(pour|offer)\b/.test(hay)) return findId(rows, 'spine-offer')
+  if (/\b(pay|bribe)\b/.test(hay)) return rows.find((c) => /scrap|glint|scrip|evidence|offer/.test(c.id)) ?? null
   if (/\b(handler|hound)\b/.test(hay) && /\b(fight|attack|kill|stab|swing)\b/.test(hay)) {
     return rows.find((c) => c.id === 'hunter-fight' || c.id === 'spine-fight') ?? null
   }

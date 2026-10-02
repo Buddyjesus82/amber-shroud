@@ -1,6 +1,6 @@
 import { bayLookout } from './campJob'
 import { isCampHunt, isSpineHunt, isSybellaOverlay } from './hunter'
-import { SPINE_HUNTER } from './content/spineHunter'
+import { CARAPACE_HUNTER, SPINE_HUNTER, spineHunterFor } from './content/spineHunter'
 import { PEOPLE, type PersonId } from './people'
 import type { GameState, Scene } from './types'
 
@@ -29,6 +29,7 @@ export type CoverKey =
   | 'bay_sarn'
   | 'bay_vetch'
   | 'hotwire'
+  | 'carapace'
 
 const FILES: Record<CoverKey, string> = {
   world: 'world.png',
@@ -55,6 +56,7 @@ const FILES: Record<CoverKey, string> = {
   bay_sarn: 'bay_sarn.jpg',
   bay_vetch: 'bay_vetch.jpg',
   hotwire: 'hotwire.jpg',
+  carapace: 'carapace.jpg',
 }
 
 const PERSON_COVER: Record<PersonId, CoverKey> = {
@@ -75,6 +77,7 @@ const PERSON_COVER: Record<PersonId, CoverKey> = {
   korvan: 'spine',
   mira: 'spine',
   corvin: 'spine',
+  carapace: 'carapace',
 }
 
 function npcCover(sceneId: string): CoverKey | null {
@@ -98,11 +101,12 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
     if (kind === 'patrol') return 'rell'
     if (kind === 'scavenger' || kind === 'cutter') return 'hunger'
     if (kind === 'collector') return SPINE_HUNTER.art
+    if (kind === 'carapace') return CARAPACE_HUNTER.art
   }
   if (isSybellaOverlay(state) || id.startsWith('maw:sybella')) return 'sybella'
   if (isCampHunt(state)) return 'hound'
   if (id === 'camp:hunter' || id === 'camp:valerius' || id === 'camp:tower') return 'valerius'
-  if (isSpineHunt(state)) return SPINE_HUNTER.art
+  if (isSpineHunt(state)) return spineHunterFor(state).art
   if (id === 'spine:valerius') return 'valerius'
   if (id === 'spine:hunter' || id === 'spine:hound') return 'hound'
   if (id === 'thresh:thalia' || id.startsWith('thresh:thalia')) return 'thalia'

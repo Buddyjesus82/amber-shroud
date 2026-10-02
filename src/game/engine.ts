@@ -34,7 +34,7 @@ import {
 } from './campJob'
 import { markMetOnLeave, matchPersonQuery, personAtScene } from './people'
 import { downedNote, wakeEffect } from './downed'
-import { isPressureOverlay, pressureAppend, pressureChoices, pressureVerb, spineGround, straysHeard } from './hunter'
+import { isPressureOverlay, pressureAppend, pressureChoices, pressureVerb, spineGround, spineHunterKindAt, straysHeard } from './hunter'
 import { offButton } from './verbs'
 import {
   canEncounter,
@@ -571,6 +571,12 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
       huntQuiet: 0,
       sybellaShadowed: from.startsWith('maw:') || next.hubId === 'redmaw' ? true : next.flags.sybellaShadowed,
       metHandler: interrupt === 'camp:hunter' ? true : next.flags.metHandler,
+      ...(interrupt === 'spine:hunter'
+        ? {
+            spineHunterKind: spineHunterKindAt(next.heat.strays),
+            metCarapace: spineHunterKindAt(next.heat.strays) === 'carapace' ? true : next.flags.metCarapace,
+          }
+        : {}),
     }
   }
 
