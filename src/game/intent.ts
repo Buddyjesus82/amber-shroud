@@ -23,6 +23,13 @@ function scoreRule(haystack: string, rule: IntentRule): number {
 
 /** Visible-button Do match. Exact label/id, or a phrase from label/sub. */
 export function matchChoiceText(text: string, choices: Choice[]): Choice | null {
+  return scoreChoiceText(text, choices)?.choice ?? null
+}
+
+/** Score at or above this means the typed line names a visible button, not a fuzzy guess. */
+export const STRONG_BUTTON = 350
+
+export function scoreChoiceText(text: string, choices: Choice[]): { choice: Choice; score: number } | null {
   const hay = normalize(text)
   if (!hay) return null
   let best: Choice | null = null
@@ -50,7 +57,7 @@ export function matchChoiceText(text: string, choices: Choice[]): Choice | null 
       bestScore = score
     }
   }
-  return best
+  return best ? { choice: best, score: bestScore } : null
 }
 
 export function matchIntent(
