@@ -1,7 +1,8 @@
-import { HEAT_FACTIONS, HEAT_TIP } from '../game/heat'
-import type { Faction } from '../game/types'
+import { heatFactions, HEAT_TIP } from '../game/heat'
+import type { DoorId, Faction } from '../game/types'
 
-export function HeatTip({ onDismiss }: { onDismiss: () => void }) {
+export function HeatTip({ onDismiss, door }: { onDismiss: () => void; door?: DoorId }) {
+  const HEAT_FACTIONS = heatFactions(door)
   return (
     <div className="map-backdrop heat-guide" role="dialog" aria-label="Heat is attention">
       <div className="map-sheet" onClick={(e) => e.stopPropagation()}>
@@ -27,8 +28,8 @@ export function HeatTip({ onDismiss }: { onDismiss: () => void }) {
   )
 }
 
-export function HeatExplainer({ faction, onClose }: { faction: Faction; onClose: () => void }) {
-  const f = HEAT_FACTIONS[faction]
+export function HeatExplainer({ faction, onClose, door }: { faction: Faction; onClose: () => void; door?: DoorId }) {
+  const f = heatFactions(door)[faction]
   return (
     <div className="map-backdrop heat-guide" role="dialog" aria-label={`${f.name} Heat`} onClick={onClose}>
       <div className="map-sheet" onClick={(e) => e.stopPropagation()}>

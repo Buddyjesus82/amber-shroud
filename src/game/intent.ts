@@ -127,13 +127,41 @@ export const GLOBAL_INTENTS: IntentRule[] = [
   },
   {
     tags: ['trade', 'buy', 'sell', 'shop', 'merchant', 'barter'],
+    show: { door: 'prisoner' },
     reply:
-      'Kaelen the Sifter trades from Buy and Sell shelves — scrap for a Drop of Oasis Sap, Glints for intel. Zafir keeps a stall at the Bone Market — Hound Hide, Drops, a pawned baton. Silas sells a Drop in the shade. Oil-Tooth is a different job. He hotwires. He does not sell.',
+      'Kaelen the Sifter trades from Buy and Sell shelves — scrap for a Drop of Oasis Sap, Glints for intel. Zafir keeps a stall at the Bone Market — Hound Hide, Drops, a pawned baton. Oil-Tooth is a different job. He hotwires. He does not sell.',
+    effects: {},
+  },
+  {
+    tags: ['trade', 'buy', 'sell', 'shop', 'merchant', 'barter'],
+    show: { door: 'outcast' },
+    reply:
+      'Silas Vane trades from Buy and Sell shelves in his shade — Drops, salve, a wrap, a cloak, a needle knife, for Glints or scrap. Korvan trades leads for water and scrap. Zafir keeps a stall at the Bone Market in Red Maw.',
+    effects: {},
+  },
+  {
+    tags: ['trade', 'buy', 'sell', 'shop', 'merchant', 'barter'],
+    show: { door: 'vessel' },
+    reply:
+      'Kaelen the Sifter trades from Buy and Sell shelves off the paddock — scrap for a Drop of Oasis Sap, Glints for intel. Zafir keeps a stall at the Bone Market — Hound Hide, Drops, a pawned baton.',
     effects: {},
   },
   {
     tags: ['ask'],
+    show: { door: 'prisoner' },
     reply: 'Ask who? Name them — who is Kaelen, who is Oil-Tooth — or ask a mouth that is here. The desert does not guess.',
+    effects: {},
+  },
+  {
+    tags: ['ask'],
+    show: { door: 'outcast' },
+    reply: 'Ask who? Name them — who is Silas, who is Korvan — or ask a mouth that is here. The desert does not guess.',
+    effects: {},
+  },
+  {
+    tags: ['ask'],
+    show: { door: 'vessel' },
+    reply: 'Ask who? Name them — who is Thalia, who is Oram — or ask a mouth that is here. The desert does not guess.',
     effects: {},
   },
   {

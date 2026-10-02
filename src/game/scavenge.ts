@@ -49,7 +49,29 @@ export type ScavengeResult = {
   drop: boolean
 }
 
+/** Percent chance a scavenge also turns up a Resin Salve, on every door. Rare; buying stays the usual way. */
+export const SCAVENGE_SALVE_PCT = 6
+
+/** Its own bucket off the same seed, so the main find does not shift. */
+export function scavengeSalve(state: GameState): boolean {
+  let h = (Math.imul(seed(state) + 0x9e3779b9, 2246822519) + 3266489917) >>> 0
+  h ^= h >>> 15
+  h = Math.imul(h, 2246822519) >>> 0
+  h ^= h >>> 13
+  h = Math.imul(h, 668265263) >>> 0
+  h ^= h >>> 16
+  return (h >>> 0) % 100 < SCAVENGE_SALVE_PCT
+}
+
+const SALVE_FIND = ' Under it, a thumb of Resin Salve in a twist of cloth.'
+
 export function rollScavenge(state: GameState): ScavengeResult {
+  const base = rollFind(state)
+  if (!scavengeSalve(state)) return base
+  return { ...base, add: { ...base.add, salve: (base.add.salve ?? 0) + 1 }, flash: base.flash + SALVE_FIND }
+}
+
+function rollFind(state: GameState): ScavengeResult {
   const roll = seed(state) % 10
   const place = state.sceneId.includes('vat') || state.sceneId.includes('vent') || state.sceneId.includes('well')
   if (roll === 0 || (place && roll === 7)) {
@@ -64,14 +86,14 @@ export function rollScavenge(state: GameState): ScavengeResult {
     return {
       add: { glints: 1 },
       drop: false,
-      flash: 'A Glint wedged like a tooth. Spent amber. Kaelen trades rumors for these.',
+      flash: 'A Glint wedged like a tooth. Spent amber. Traders take these.',
     }
   }
   if (roll === 2 || roll === 6) {
     return {
       add: { scrap: 2 },
       drop: false,
-      flash: 'Two twists of scrap. Wire. Bent tooth. Saleable. Tradeable. The Sifter buys this.',
+      flash: 'Two twists of scrap. Wire. Bent tooth. Saleable. Tradeable.',
     }
   }
   if (state.hubId === 'camp04' && roll === 3) {
@@ -84,7 +106,7 @@ export function rollScavenge(state: GameState): ScavengeResult {
   return {
     add: { scrap: 1 },
     drop: false,
-    flash: 'Scrap +1. Bent metal. Things that cut or trade. Kaelen trades Drops for scrap.',
+    flash: 'Scrap +1. Bent metal. Things that cut or trade. Traders swap Drops for scrap.',
   }
 }
 
@@ -155,7 +177,7 @@ export function applySkim(state: GameState): GameState {
   if (!SKIM_SCENES.has(state.sceneId)) {
     return {
       ...state,
-      flash: 'No drip here worth a hand. Find a vat, a vent, a well, a lip — or buy from Kaelen.',
+      flash: 'No drip here worth a hand. Find a vat, a vent, a well, a lip — or buy from a trader.',
     }
   }
   if (state.flags[`skim:${state.sceneId}`]) {

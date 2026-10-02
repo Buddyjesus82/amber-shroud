@@ -52,7 +52,7 @@ Down-slope: a tent the color of old teeth. Silas Vane sells shade by the minute.
       {
         id: 'well',
         label: 'Walk the dry well',
-        sub: 'Costs sap. The well has been dry for years. Kaelen sometimes leaves a mark in the stone.',
+        sub: 'Costs sap. The well has been dry for years. People carve warnings in the stone.',
         effects: { goto: 'spine:well', ticks: 1, sap: -1 },
       },
       {
@@ -147,7 +147,9 @@ The Hunger is a red bruise east-south. You could fill the empty vial with this s
     speaker: 'Silas Vane',
     body: `Silas Vane is older than the well's disappointment. One eye is milk. The other is counting what you owe. The tent smells of resin-chew and wool that has never been wet.
 
-"Noon-Empty," he says. That is what the Spine already calls you. "Shade is not free. Talk is not free. A Drop of Oasis Sap is a story I still keep in stock, if you pay."`,
+"Noon-Empty," he says. That is what the Spine already calls you. He looks at the brand on your face and does not ask about it. "I trade with anyone who pays. That mark does not change the price. Shade is not free. Talk is not free. Drops, salve, and a little steel are on the shelf."
+
+Two Strays share the shade. A man with amber sealed over his mouth sits where the canvas runs out. A woman with one hand sifts sand by the tent pole. Everyone else in the shade has turned their back to you.`,
     choices: [
       {
         id: 'talk',
@@ -202,13 +204,14 @@ The Hunger is a red bruise east-south. You could fill the empty vial with this s
         effects: { goto: 'spine:silas-cache', ticks: 1 },
       },
       {
-        id: 'kaelen',
-        label: 'Ask after Kaelen',
+        id: 'who',
+        label: 'Ask who will talk to you',
+        show: { flagUnset: 'korvanNamed' },
         effects: {
-          flag: { kaelenKnown: true },
+          flag: { korvanNamed: true },
           ticks: 1,
           flash:
-            '"Kaelen the Sifter passes at dusk if dusk remembers him. Jittery merchant. Pack of vials. He sells Drops for scrap and rumors for Glints. He is not shade. I am shade." Silas points his chin at the well. "He left a scratch in the stone. Read it or don\'t."',
+            'Silas looks at the brand, then at the back of the tent. "On this ridge? Korvan. Amber on his face. He sits where the canvas runs out. He talks to anyone the Strays turned away, and he trades what he knows for water and scrap."',
           goto: 'spine:silas',
         },
       },
@@ -315,7 +318,7 @@ A heading costs a Glint. Or I put it on your tab, and the Spine hears that you o
     hubId: 'spine',
     kind: 'place',
     title: 'Dry Well',
-    body: `A circle of stones and a throat of dust. Someone carved KAELEN CUTS DUSK into a brick. Under it, a newer line: CACHE IS BAIT.
+    body: `A circle of stones and a throat of dust. Someone carved CACHE IS BAIT into a brick. The letters are newer than the brick.
 
 You can lower a hope into it. There is no bucket here that still believes in water.`,
     choices: [
@@ -341,22 +344,16 @@ You can lower a hope into it. There is no bucket here that still believes in wat
       {
         id: 'search',
         label: 'Search the brickwork',
-        sub: 'Costs sap. A Glint and a twist of scrap, if Kaelen left them.',
+        sub: 'Costs sap. A Glint and a twist of scrap, if someone hid them here.',
         show: { flagUnset: 'wellScrap' },
         effects: {
           add: { scrap: 1, glints: 1 },
-          flag: { wellScrap: true, kaelenKnown: true },
+          flag: { wellScrap: true },
           ticks: 1,
           sap: -1,
           goto: 'spine:well',
-          flash: 'A Glint wedged like a tooth. Scrap wire. Kaelen the Sifter leaves inventory the way other people leave warnings.',
+          flash: 'A Glint wedged like a tooth. Scrap wire. Someone hid them here and did not come back for them.',
         },
-      },
-      {
-        id: 'kaelen',
-        label: 'Wait for dusk and Kaelen the Sifter',
-        sub: 'He sells rumors if you ask. This is not Silas\'s shade. Costs sap.',
-        effects: { goto: 'spine:kaelen', ticks: 1, sap: -1, pressure: 1 },
       },
       {
         id: 'hunger',
@@ -422,6 +419,12 @@ Overseer Valerius is here in a different coat: dust instead of prison cuffs, and
           flash:
             'Resin jaw, then silence. Hound Hide · Shell 4 still smells like Cartel loyalty. Equip it in Gear. Valerius will count this.',
         },
+      },
+      {
+        id: 'boots',
+        label: 'Follow the boot-prints that go the other way',
+        sub: 'One set of boots walks away from the Hound sign, toward a slab of rock.',
+        effects: { goto: 'spine:corvin', ticks: 1 },
       },
       {
         id: 'hunger',
@@ -530,6 +533,103 @@ Valerius stands on the Spine with the sun behind him like he rented it. "This wa
           pressure: 1,
           flash: 'Shade takes you. Valerius lets it. For a price he has not named.',
         },
+      },
+    ],
+  },
+  {
+    id: 'spine:corvin',
+    hubId: 'spine',
+    kind: 'talk',
+    title: 'Corvin Pryce',
+    speaker: 'Corvin Pryce',
+    body: `Behind a slab of bone-pale rock, out of sight of the Hound prints, a young man sits in a Cartel security coat turned inside out. The Ironwood patch has been cut off the shoulder. He carries no rifle. His hands shake when he hears you, then go still when he sees your face.
+
+He looks at the brand. He does not turn away.
+
+"I'm Corvin," he says. "I don't ask what that mark is for. I guarded the Cartel's ironwood harvesters out by the Gilded Hollows. Dune-Stray families came to siphon sap from the cut trees, and the Cartel shot them for it. When they ordered me to fire on the families, I dropped my rifle and walked into the deep sand. The Cartel hunts me for that. So do the Seekers.
+
+"I know every trap on the dry ford south of here. I use that to keep Strays alive. It doesn't pay back what I watched, but it's what I have."`,
+    variants: [
+      {
+        if: { flag: 'corvinHelped' },
+        mode: 'replace',
+        body: `Corvin is behind the same slab, coat inside out, watching the wash.
+
+"When you walk east, find me at the dry ford," he says. "I'll take you past the traps. If you go down on this ridge, I'll come get you."`,
+      },
+    ],
+    choices: [
+      {
+        id: 'water',
+        label: 'Give him a Drop',
+        sub: 'Costs 1 Drop. He has not had water today.',
+        show: { flagUnset: 'corvinHelped' },
+        enable: { item: 'vial_drop' },
+        locked: 'Need 1 Drop',
+        effects: {
+          remove: { vial_drop: 1 },
+          add: { vial_empty: 1 },
+          flag: { corvinHelped: true, corvinWater: true },
+          ticks: 1,
+          flash:
+            'He drinks it slowly, like he forgot how. "Thank you. When you walk east, find me at the dry ford and I\'ll take you past the traps. If you go down on this ridge, I\'ll come get you."',
+        },
+      },
+      {
+        id: 'sweep',
+        label: 'Sweep his boot-prints out of the wash',
+        sub: 'Costs sap. Cartel Heat rises when the Hounds smell you on his trail.',
+        show: { flagUnset: 'corvinHelped' },
+        effects: {
+          sap: -1,
+          heat: { cartel: 1 },
+          flag: { corvinHelped: true, corvinSwept: true },
+          ticks: 1,
+          flash:
+            'You drag a strip of canvas over his prints until the wash shows only Hound sign. Cartel Heat rises. Corvin nods. "When you walk east, find me at the dry ford. I\'ll take you past the traps. If you go down on this ridge, I\'ll come get you."',
+        },
+      },
+      {
+        id: 'brand',
+        label: 'Ask if he knows the brand',
+        show: { flagUnset: 'corvinBrandAsked' },
+        effects: {
+          flag: { corvinBrandAsked: true },
+          ticks: 1,
+          flash:
+            '"I know Cartel brands. I don\'t know Stray marks, and I\'m not going to guess at yours. The Strays know. They won\'t say it to you."',
+        },
+      },
+      {
+        id: 'back',
+        label: 'Back to the Hound prints',
+        tone: 'quiet',
+        effects: { goto: 'spine:hound' },
+      },
+      {
+        id: 'hunger',
+        label: 'Walk east toward Red Maw',
+        sub: 'You have a heading. Corvin waits at the dry ford if you helped him.',
+        tone: 'hunger',
+        show: { flag: 'hungerKnown' },
+        effects: {
+          startChapter: 'cache-run',
+          goto: 'ch1:leave',
+          ticks: 1,
+          flash: 'Corvin watches you go and then watches the wash behind you.',
+        },
+      },
+    ],
+    intents: [
+      {
+        tags: ['ford', 'trap', 'traps', 'guide', 'way', 'through'],
+        reply: '"The dry ford is south and east. Wire under the sand, resin pits, Cartel snares. I walk people past them."',
+        effects: { ticks: 1 },
+      },
+      {
+        tags: ['rifle', 'cartel', 'hollow', 'hollows', 'desert', 'deserter', 'families'],
+        reply: '"I put the rifle down. That is the whole story I tell. The rest I carry."',
+        effects: { ticks: 1 },
       },
     ],
   },

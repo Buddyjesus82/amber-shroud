@@ -10,6 +10,7 @@ import {
   RIM_HUNGER_OPEN,
   RIM_NOWHERE,
 } from './hunger'
+import { brandReply } from './brand'
 import { GLOBAL_INTENTS, matchChoiceText, matchIntent, scoreChoiceText, STRONG_BUTTON } from './intent'
 import { consumeAsk, NONE_TO_USE } from './consume'
 import { helpText } from './help'
@@ -574,8 +575,8 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   }
 
   const place = getScene(next.sceneId).kind === 'place'
-  if (next.sceneId === 'camp:kaelen' || next.sceneId === 'spine:kaelen' || next.sceneId === 'thresh:kaelen') {
-    const hub = next.sceneId.startsWith('camp') ? 'camp04' : next.sceneId.startsWith('spine') ? 'spine' : 'threshold'
+  if (next.sceneId === 'camp:kaelen' || next.sceneId === 'thresh:kaelen') {
+    const hub = next.sceneId.startsWith('camp') ? 'camp04' : 'threshold'
     next.flags = { ...next.flags, kaelenHub: hub }
   }
   if (
@@ -871,6 +872,10 @@ export function interpret(state: GameState, text: string): GameState {
     const next = consume.item === 'salve' ? bindSalve(state) : drinkDrop(state)
     return withVerb(next, consume.verb)
   }
+
+  // Outcast: the brand. Looking at it describes it; asking about it never gets the answer.
+  const branded = brandReply(state, text)
+  if (branded) return withVerb(persist({ ...state, flash: branded, updatedAt: Date.now() }), 'brand')
 
   const who = matchPersonQuery(text, state)
   if (who === 'unknown') {

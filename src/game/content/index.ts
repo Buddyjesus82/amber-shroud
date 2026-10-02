@@ -2,7 +2,7 @@ import type { DoorId, Scene } from '../types'
 import { campScenes } from './camp04'
 import { cacheRunScenes } from './cacheRun'
 import { crisisScenes } from './crises'
-import { campKaelenScenes, roamKaelenScenes, spineKaelenScenes, threshKaelenScenes } from './kaelen'
+import { campKaelenScenes, roamKaelenScenes, threshKaelenScenes } from './kaelen'
 import { openingScenes } from './openings'
 import { redMawScenes } from './redMaw'
 import { shadeHandScenes } from './shadeHands'
@@ -18,7 +18,6 @@ const all: Scene[] = [
   ...roamKaelenScenes,
   ...spineScenes,
   ...shadeHandScenes(),
-  ...spineKaelenScenes,
   ...threshKaelenScenes,
   ...thresholdScenes,
   ...cacheRunScenes,

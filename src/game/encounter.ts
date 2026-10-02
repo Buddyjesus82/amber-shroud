@@ -362,7 +362,30 @@ function pocket(state: GameState): number {
  * Junk a body can actually carry. Shop and quest steel stay on their shelves.
  * Fauna pay scrap or sap. People sometimes pay with a knife, a scav wrap, or a cloak.
  */
+/** People carry salve sometimes. Beasts never do. */
+export const HUMAN_KINDS: readonly EncounterKind[] = ['cutter', 'scavenger', 'patrol', 'handler', 'overseer', 'collector']
+export const BEAST_KINDS: readonly EncounterKind[] = ['jackal', 'tick', 'pup']
+/** Percent chance a downed human also carries a Resin Salve. */
+export const HUMAN_SALVE_PCT = 18
+
+/** Its own bucket off the road seed, so the rest of the pocket does not shift. */
+export function carriesSalve(state: GameState, kind: EncounterKind): boolean {
+  if (!HUMAN_KINDS.includes(kind)) return false
+  let h = (Math.imul(seed(state) + 0x27d4eb2f, 374761393) + 668265263) >>> 0
+  for (const ch of kind) h = Math.imul(h ^ ch.charCodeAt(0), 2246822519) >>> 0
+  h ^= h >>> 15
+  h = Math.imul(h, 3266489917) >>> 0
+  h ^= h >>> 16
+  return (h >>> 0) % 100 < HUMAN_SALVE_PCT
+}
+
 function lootFor(state: GameState, kind: EncounterKind): Partial<Record<ItemId, number>> {
+  const add = pocketLoot(state, kind)
+  if (carriesSalve(state, kind)) add.salve = (add.salve ?? 0) + 1
+  return add
+}
+
+function pocketLoot(state: GameState, kind: EncounterKind): Partial<Record<ItemId, number>> {
   if (kind === 'jackal') return { scrap: 2 }
   if (kind === 'tick') return { vial_drop: 1 }
   if (kind === 'pup') return { glints: 1, scrap: 1 }
@@ -470,9 +493,11 @@ export function resolveEncounter(
     const outcome = stagger
       ? `The clerk drops. You drop with them. Scrap. Shock Baton. Health 0/${max}. The bolt is still yours.`
       : 'The clerk drops. Scrap. Shock Baton. The bolt is open.'
-    return holdCard(state, spec, `${hitCard}\n\n${outcome}`, outcome, {
+    const salve = carriesSalve(state, 'patrol')
+    const said = salve ? `${outcome} A Resin Salve in his belt pouch.` : outcome
+    return holdCard(state, spec, `${hitCard}\n\n${said}`, said, {
       health: stagger ? -c.yourHp : healthDelta,
-      add: { scrap: 1 },
+      add: salve ? { scrap: 1, salve: 1 } : { scrap: 1 },
       heat: { cartel: 1 },
       pressure: 1,
       flag: { guardDown: true, ventLoot: true },

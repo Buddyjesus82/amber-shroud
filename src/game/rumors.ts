@@ -1,6 +1,6 @@
 import type { Choice, GameState } from './types'
 
-const RUMOR_SCENES = new Set(['camp:kaelen-rumors', 'spine:kaelen-rumors', 'thresh:kaelen-rumors'])
+const RUMOR_SCENES = new Set(['camp:kaelen-rumors', 'thresh:kaelen-rumors'])
 
 export type RumorShelf = 'intel' | 'side'
 

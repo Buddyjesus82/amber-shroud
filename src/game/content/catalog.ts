@@ -131,7 +131,7 @@ export const ITEMS: Record<ItemId, ItemDef> = {
     kind: 'weapon',
     slot: 'weapon',
     strike: 3,
-    desc: "Kaelen's shelf. Strike 3. Thin. Mean. Cost, not charity.",
+    desc: "A trader's shelf. Strike 3. Thin. Mean. Scrapes hard resin.",
   },
   scav_wrap: {
     id: 'scav_wrap',
@@ -301,7 +301,7 @@ export const HUBS: Record<string, HubDef> = {
       { id: 'stilt', name: 'Stilt Shade', sceneId: 'maw:stilt' },
       { id: 'smoke', name: 'Skiff Smoke', sceneId: 'maw:smoke' },
       { id: 'lip', name: 'Hollow Lip', sceneId: 'maw:lip' },
-      { id: 'tuner', name: "Oil-Tooth's Wreck", sceneId: 'maw:tuner' },
+      { id: 'tuner', name: 'The Wreck', sceneId: 'maw:tuner' },
     ],
     hungerHook: {
       label: 'Under the jaw',

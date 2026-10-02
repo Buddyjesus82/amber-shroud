@@ -24,10 +24,15 @@ import {
 import { DOORS, HUBS, ITEMS } from '../src/game/content/catalog.ts'
 import { ALL_SCENES, getScene } from '../src/game/content/index.ts'
 import { PEOPLE } from '../src/game/people.ts'
-import { rollScavenge } from '../src/game/scavenge.ts'
+import { heatFactions } from '../src/game/heat.ts'
+import { GLOBAL_INTENTS } from '../src/game/intent.ts'
+import { wakeEffect } from '../src/game/downed.ts'
+import { BRAND_LOOK } from '../src/game/brand.ts'
+import type { Cond, Scene } from '../src/game/types.ts'
+import { rollScavenge, SCAVENGE_SALVE_PCT, scavengeSalve } from '../src/game/scavenge.ts'
 import { kaelenOffers } from '../src/game/trade.ts'
 import { FIGHT_HELP_LINES, fightHelpAuto, fightHelpText, HELP_TOPICS, helpRoute, isFightHelpAsk, markFightHelpSeen, topicListText, topicText } from '../src/game/helpTopics.ts'
-import { beginEncounter, DAMAGE_FLOOR, exchangeDamage, resolveEncounter, STALL_ROUNDS, swingOf } from '../src/game/encounter.ts'
+import { BEAST_KINDS, carriesSalve, HUMAN_KINDS, HUMAN_SALVE_PCT, beginEncounter, DAMAGE_FLOOR, exchangeDamage, resolveEncounter, STALL_ROUNDS, swingOf } from '../src/game/encounter.ts'
 import {
   IDLE_DOOR,
   tapDoor,
@@ -271,7 +276,7 @@ assert(
   'title credit is not the handle',
 )
 assert(
-  readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8').includes('who is kaelen'),
+  readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8').includes('help / who is ${'),
   'Do placeholder still teaches who is',
 )
 
@@ -1891,14 +1896,14 @@ assert(/gloves|product|shelf/i.test(s.flash ?? ''), 'Do talk on the Wire hits Ka
 
 s = newGame('outcast')
 s = pick(s, 'stand')
-s = applyEffect(s, { goto: 'spine:kaelen', add: { scrap: 2 } })
-assert(ids(s).includes('shop-buy') && ids(s).includes('shop-sell'), 'Outcast Kaelen has Buy/Sell like Prisoner')
+s = applyEffect(s, { goto: 'spine:silas', add: { scrap: 2 } })
+assert(ids(s).includes('shop-buy') && ids(s).includes('shop-sell'), 'Outcast Silas has Buy/Sell like Prisoner Kaelen')
 s = openShop(s, 'buy')
-assert(ids(s).includes('cloak-glint') && ids(s).includes('cloak-scrap'), 'Outcast Kaelen cloak is Glint or scrap, two rows')
-assert(ids(s).includes('wrap'), 'Outcast Kaelen sells Scav Wrap')
-s = applyEffect(s, { goto: 'spine:well' })
+assert(ids(s).includes('cloak-glint') && ids(s).includes('cloak-scrap'), 'Outcast Silas cloak is Glint or scrap, two rows')
+assert(ids(s).includes('wrap') && ids(s).includes('knife') && ids(s).includes('salve'), 'Outcast Silas sells Scav Wrap, Needle Knife, salve')
+s = applyEffect(s, { goto: 'spine:korvan', unsetFlag: ['shopShelf'] })
 s = interpret(s, 'talk')
-assert(/gloves|product|shelf/i.test(s.flash ?? ''), 'Do talk at the well hits Kaelen who is there')
+assert(/Red Maw|east wash|amber/i.test(s.flash ?? ''), 'Do talk in the shade back hits Korvan who is there')
 
 s = newGame('vessel')
 s = pick(s, 'keep')
@@ -2239,7 +2244,7 @@ assert(html.includes('apple-touch.png?v=13'), 'apple-touch-icon is cache-busted 
   assert(playCoverKey(ridge, sceneOf(ridge)) === 'spine', 'Noon Spine uses Spine art, not Silas')
   const well = walkTo(ridge, 'spine:well')
   assert(playCoverKey(well, sceneOf(well)) === 'spine', 'Dry Well uses Spine art, not Kaelen')
-  assert(playCoverKey(well, { id: 'spine:kaelen' }) === 'kaelen', 'Kaelen talk still uses Kaelen art')
+  assert(playCoverKey(well, { id: 'roam:kaelen' }) === 'kaelen', 'Kaelen roaming pass still uses Kaelen art')
   assert(!PEOPLE.silas.scenes.includes('spine:ridge'), 'Silas cover list excludes the ridge')
   assert(!PEOPLE.kaelen.scenes.includes('spine:well'), 'Kaelen cover list excludes the dry well')
   assert(!PEOPLE.oiltooth.scenes.includes('camp:bay'), 'Oil-Tooth cover list excludes Skiff Bay')
@@ -2796,8 +2801,8 @@ function assertHelpResolves(s: GameState, where: string) {
 {
   const campOffers = kaelenOffers(applyEffect(newGame('prisoner'), { goto: 'camp:kaelen' })).map((o) => o.id)
   assert(campOffers.includes('knife') && campOffers.includes('wrap') && campOffers.includes('cloak'), 'camp shelf has knife, wrap, cloak')
-  const spineOffers = kaelenOffers(applyEffect(newGame('outcast'), { goto: 'spine:kaelen' })).map((o) => o.id)
-  assert(spineOffers.includes('wrap') && spineOffers.includes('cloak') && spineOffers.includes('knife'), 'spine shelf sells a knife so the Hound fight is reachable')
+  const spineOffers = kaelenOffers(applyEffect(newGame('outcast'), { goto: 'roam:kaelen', flag: { kaelenHub: 'spine' } })).map((o) => o.id)
+  assert(spineOffers.includes('wrap') && spineOffers.includes('cloak') && spineOffers.includes('knife'), 'Kaelen passing on the Spine still carries the dune shelf')
   const threshOffers = kaelenOffers(applyEffect(newGame('vessel'), { goto: 'thresh:kaelen' })).map((o) => o.id)
   assert(threshOffers.includes('wrap') && threshOffers.includes('cloak'), 'threshold shelf still has wrap and cloak')
   const roam = applyEffect(newGame('prisoner'), { goto: 'roam:kaelen', flag: { kaelenHub: 'redmaw' } })
@@ -2889,7 +2894,7 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(fresh.sceneId === 'spine:ridge' && !fresh.flags.hungerKnown, 'Outcast starts on the ridge without a heading')
   const ridgeHook = HUBS.spine.hungerHook
   assert(ridgeHook && !isChoiceOn(fresh, ridgeHook.show), "Spine hub hook stays shut on Silas's Tip alone")
-  for (const scene of ['spine:ridge', 'spine:shade', 'spine:silas', 'spine:well', 'spine:kaelen', 'spine:kaelen-rumors', 'spine:hound', 'spine:tip']) {
+  for (const scene of ['spine:ridge', 'spine:shade', 'spine:silas', 'spine:well', 'spine:korvan', 'spine:mira', 'spine:corvin', 'spine:hound', 'spine:tip']) {
     const at = applyEffect(fresh, { goto: scene, flag: quiet })
     assert(!visibleChoices(at).some((c) => c.effects.startChapter === 'cache-run' && c.tone !== 'danger'), `${scene}: no Hunger exit before a heading`)
   }
@@ -2903,11 +2908,11 @@ function assertHelpResolves(s: GameState, where: string) {
   const bare = skim(well)
   assert(!bare.flags['skim:spine:well'] && /weapon equipped/.test(bare.flash ?? ''), 'typed skim at the well names the weapon')
 
-  // Kaelen's Spine shelf sells the knife; the knife opens the well and the Hound fight.
-  let shop = applyEffect(fresh, { goto: 'spine:kaelen', add: { scrap: 2 }, flag: quiet, sap: 4 })
+  // Silas's Spine shelf sells the knife; the knife opens the well and the Hound fight.
+  let shop = applyEffect(fresh, { goto: 'spine:silas', add: { scrap: 2 }, flag: quiet, sap: 4 })
   shop = pick(shop, 'shop-buy')
   shop = pick(shop, 'knife')
-  assert((shop.items.needle_knife ?? 0) === 1, 'Spine Kaelen sells a Needle Knife')
+  assert((shop.items.needle_knife ?? 0) === 1, 'Spine Silas sells a Needle Knife')
   shop = equipItem(shop, 'needle_knife')
   assert(shop.equipped.weapon === 'needle_knife', 'knife equips')
   const armedWell = applyEffect(shop, { goto: 'spine:well', flag: quiet })
@@ -2922,13 +2927,13 @@ function assertHelpResolves(s: GameState, where: string) {
   const paid = pick(paidCache, 'pay')
   assert(paid.flags.hungerKnown && !paid.items.glints && !paid.flags.silasOwed, 'a Glint buys the heading with no debt')
   assert(paid.heat.strays === paidCache.heat.strays, 'paid heading adds no Stray Heat')
-  const kae = pick(pick(applyEffect(fresh, { goto: 'spine:kaelen-rumors', add: { glints: 1 }, flag: quiet }), 'rumor-intel'), 'hunger-glint')
-  assert(kae.flags.hungerKnown, 'Kaelen still sells the heading')
+  const kor = pick(applyEffect(fresh, { goto: 'spine:korvan', add: { scrap: 2 }, flag: quiet }), 'hunger-scrap')
+  assert(kor.flags.hungerKnown && kor.flags.korvanHunger && !kor.items.scrap, 'Korvan trades the heading for 2 scrap')
   const val = pick(applyEffect(fresh, { goto: 'spine:valerius', flag: quiet }), 'ask')
   assert(val.flags.hungerKnown, 'asking at Hound Sign still names the skiff')
 
   // Help and look on Spine ground.
-  for (const scene of ['spine:ridge', 'spine:well', 'spine:hound', 'spine:shade', 'spine:silas', 'spine:silas-cache', 'spine:kaelen']) {
+  for (const scene of ['spine:ridge', 'spine:well', 'spine:hound', 'spine:shade', 'spine:silas', 'spine:silas-cache', 'spine:korvan', 'spine:mira', 'spine:corvin']) {
     const at = applyEffect(fresh, { goto: scene, flag: quiet })
     assertHelpResolves(at, `outcast ${scene}`)
     const looked = interpret(at, 'look')
@@ -2946,9 +2951,10 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(!/\bthis is not\b|\bnot a\b/i.test(JSON.stringify(SPINE_HUNTER)), 'Spine hunter copy has no "this is not X" lines')
 
   // Scaffolds never reach a player.
-  assert(!SHADE_HANDS_LIVE && !SILAS_JOB_LIVE, 'shade walk-ups and the Silas job are scaffolds, off')
+  assert(SHADE_HANDS_LIVE && !SILAS_JOB_LIVE, 'shade walk-ups are live (Korvan, Mira); the Silas job is a scaffold, off')
   const shade = applyEffect(fresh, { goto: 'spine:shade', flag: quiet })
   assert(!visibleChoices(shade).some((c) => /TODO/.test(c.label)), 'shade shows no placeholder walk-ups')
+  assert(ids(shade).includes('walk-korvan') && ids(shade).includes('walk-mira'), 'shade walks up to Korvan and Mira')
   for (const scene of ALL_SCENES) {
     const text = JSON.stringify(scene)
     assert(!/TODO_STRAY/.test(text), `${scene.id} carries no walk-up placeholder`)
@@ -2987,7 +2993,7 @@ function assertHelpResolves(s: GameState, where: string) {
 
 // Typed "drink a drop" on a merchant screen drinks (same as the Drink a Drop row). It never buys.
 {
-  const VENDOR_SCENES = ['camp:kaelen', 'spine:kaelen', 'thresh:kaelen', 'roam:kaelen', 'maw:zafir', 'maw:market', 'spine:silas', 'spine:silas-drop']
+  const VENDOR_SCENES = ['camp:kaelen', 'thresh:kaelen', 'roam:kaelen', 'maw:zafir', 'maw:market', 'spine:silas', 'spine:silas-drop']
   const sig = (x: GameState) => JSON.stringify([x.sceneId, x.items, x.sap, x.heat, x.flags.shopShelf ?? null, x.flash])
   const at = (door: DoorId, id: string, shelf: 'buy' | 'sell' | undefined, drops: number) => {
     const sc = getScene(id)
@@ -3047,7 +3053,7 @@ function assertHelpResolves(s: GameState, where: string) {
       }
     }
   }
-  assert(covered === 72, `merchant drink checks cover every door and shelf (${covered})`)
+  assert(covered === 63, `merchant drink checks cover every door and shelf (${covered})`)
 
   // Typing any visible, enabled button's label does what tapping it does, everywhere.
   const bsig = (x: GameState) => JSON.stringify([x.sceneId, x.items, x.sap, x.heat, x.health, x.flags.shopShelf ?? null, x.flags.rumorShelf ?? null])
@@ -3258,7 +3264,7 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(text.startsWith('help fight'), 'fight card header')
   assert(/DAMAGE: Strike \+ swing - Shell\. Never less than 1\./.test(text) && /add 0, 1, or 2 to Strike/.test(text), 'formula and swing on the card')
   assert(text.indexOf('AT 0 HEALTH') > text.indexOf('OPTIONS') && /Give the road/.test(text), 'options come before the Down rules')
-  assert(/Outcast \(Noon Spine\) and Vessel \(Threshold\)/.test(FIGHT_HELP_LINES[FIGHT_HELP_LINES.length - 1]), 'the card ends with the per-door Down note')
+  assert(/^By door: .*Outcast .*Corvin.*Vessel/.test(FIGHT_HELP_LINES[FIGHT_HELP_LINES.length - 1]), 'the card ends with the per-door Down note')
 
   // help scavenge says what the code does: once per fresh scene, and the refresh secret.
   const scavText = topicText(HELP_TOPICS[1])
@@ -3305,6 +3311,211 @@ function assertHelpResolves(s: GameState, where: string) {
   delete road.flags.hunterHere
   const up = pick(pick(road, 'enc-fight'), 'wake')
   assert(up.health === 1 && up.sap === 3 && JSON.stringify(up.items) === JSON.stringify(road.items), 'most ground: 1 Health, 1 Sap, gear kept')
+}
+
+
+// ── Outcast rework: Kaelen and Oil-Tooth are cameos only; the brand; Korvan, Mira, Corvin; salve finds ──
+{
+  const PRISONER_NAMES = /Kaelen|Sifter|Jaxson|Oil-Tooth|Oil Tooth|\bVance\b/
+  // Kaelen's roaming pack passing by is the one cameo allowed on the Outcast road.
+  const CAMEO_ALLOW = new Set(['roam:kaelen'])
+  const PRISONER_FLAGS = new Set(['oilRide', 'oilRoad', 'oilTag', 'jaxsonInside', 'oilRefused', 'oilResentful', 'oilMended', 'oilAlly', 'oilJob', 'leftCamp', 'guardDown', 'wireCut', 'campLockdown', 'quietFence', 'bayLooked'])
+  /** True when no Outcast state can pass this condition. */
+  const shutForOutcast = (c?: Cond): boolean => {
+    if (!c) return false
+    if (c.door && c.door !== 'outcast') return true
+    if (c.flag && PRISONER_FLAGS.has(c.flag)) return true
+    if (c.not?.door === 'outcast') return true
+    if (c.all?.some(shutForOutcast)) return true
+    if (c.any?.length && c.any.every(shutForOutcast)) return true
+    return false
+  }
+  const outcastScene = (id: string) =>
+    id === 'open:outcast' ||
+    id.startsWith('spine:') ||
+    (id.startsWith('ch1:') && !/^ch1:(p|v)-/.test(id)) ||
+    id.startsWith('maw:') ||
+    id.startsWith('ch2:') ||
+    id === 'crisis:spine' ||
+    id === 'crisis:dunes' ||
+    id === 'crisis:maw' ||
+    id.startsWith('roam:')
+  const textOf = (sc: Scene): string[] => {
+    const out = [sc.title ?? '', sc.speaker ?? '', sc.body]
+    for (const v of sc.variants ?? []) if (!shutForOutcast(v.if)) out.push(v.body)
+    for (const c of sc.choices) {
+      if (shutForOutcast(c.show)) continue
+      out.push(c.label, c.sub ?? '', c.locked ?? '', c.effects.flash ?? '')
+    }
+    for (const it of sc.intents ?? []) {
+      if (shutForOutcast(it.show)) continue
+      out.push(typeof it.reply === 'string' ? it.reply : '')
+    }
+    for (const p of Object.values(PEOPLE)) if (p.later[sc.id]) out.push(p.later[sc.id] ?? '')
+    return out
+  }
+  const scanned = ALL_SCENES.filter((sc) => outcastScene(sc.id))
+  assert(scanned.length > 40 && scanned.some((sc) => sc.id === 'spine:korvan') && scanned.some((sc) => sc.id === 'maw:tuner'), 'Outcast scan covers the Spine, the road, and the Maw')
+  for (const sc of scanned) {
+    if (CAMEO_ALLOW.has(sc.id)) continue
+    const hit = textOf(sc).find((t) => PRISONER_NAMES.test(t))
+    assert(!hit, `Outcast scene ${sc.id} names a Prisoner NPC: ${hit}`)
+    // What the player sees there when they look or talk.
+    let at = applyEffect(pick(newGame('outcast'), 'stand'), { goto: sc.id, enterHub: sc.hubId, startChapter: sc.chapterId, flag: { encounterAt: 99999 } })
+    at = { ...at, flags: { ...at.flags } }
+    delete at.flags.hunterHere
+    for (const said of ['look', 'talk', 'trade', 'ask']) {
+      const f = interpret(at, said).flash ?? ''
+      assert(!PRISONER_NAMES.test(f), `Outcast "${said}" at ${sc.id} names a Prisoner NPC: ${f}`)
+    }
+  }
+  assert(!ALL_SCENES.some((sc) => sc.id === 'spine:kaelen' || sc.id === 'spine:kaelen-rumors'), 'the Spine Kaelen counter scenes are gone')
+  const outcastHeat = JSON.stringify(heatFactions('outcast'))
+  assert(!PRISONER_NAMES.test(outcastHeat) && /Silas sells minutes/.test(outcastHeat), 'Outcast Heat cards name no Prisoner NPC')
+  assert(/Oil-Tooth/.test(heatFactions('prisoner').strays.watch), 'Prisoner Stray Heat still names Oil-Tooth')
+  assert(!PRISONER_NAMES.test(JSON.stringify(heatFactions('vessel').strays)), 'Vessel Stray Heat names no Prisoner NPC')
+  for (const rule of GLOBAL_INTENTS) {
+    if (shutForOutcast(rule.show)) continue
+    assert(!PRISONER_NAMES.test(String(rule.reply)), `Outcast global help line names a Prisoner NPC: ${rule.reply}`)
+  }
+  for (let t = 0; t < 60; t++) {
+    const f = rollScavenge({ ...pick(newGame('outcast'), 'stand'), ticks: t }).flash
+    assert(!PRISONER_NAMES.test(f), `Outcast scavenge line names a Prisoner NPC: ${f}`)
+  }
+
+  // "This is not Silas's shade" is struck everywhere.
+  const walk = (dir: string): string[] => readdirSync(dir, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(join(dir, e.name)) : [join(dir, e.name)]))
+  for (const f of walk(new URL('../src', import.meta.url).pathname)) {
+    assert(!/not Silas.?s shade/i.test(readFileSync(f, 'utf8')), `${f} still says it is not Silas's shade`)
+  }
+
+  // Old saves parked in the removed Spine Kaelen scenes land on Korvan in Silas's shade.
+  for (const old of ['spine:kaelen', 'spine:kaelen-rumors']) {
+    const saved = { ...pick(newGame('outcast'), 'stand'), sceneId: old, hubId: 'spine' }
+    const fixed = repairLoadedState(saved)
+    assert(fixed.sceneId === 'spine:korvan' && fixed.hubId === 'spine', `old save in ${old} lands on spine:korvan`)
+    assert(visibleChoices(fixed).length > 0, `repaired ${old} save has choices`)
+  }
+
+  // Silas keeps the Spine Buy/Sell shelf: Drops and the Needle Knife.
+  let shelf = applyEffect(pick(newGame('outcast'), 'stand'), { goto: 'spine:silas', add: { scrap: 6, glints: 1 }, flag: { encounterAt: 99999 } })
+  shelf = openShop(shelf, 'buy')
+  for (const want of ['drop-glint', 'drop-scrap', 'knife', 'salve', 'wrap', 'cloak-glint']) assert(ids(shelf).includes(want), `Silas shelf has ${want}`)
+  const bought = pick(pick(shelf, 'drop-scrap'), 'knife')
+  assert((bought.items.vial_drop ?? 0) >= 1 && (bought.items.needle_knife ?? 0) === 1 && bought.items.scrap === 2, 'Silas sells a Drop for 2 scrap and the knife for 2 scrap')
+  assert(!ids(openShop(bought, 'buy')).includes('knife'), 'Silas sells one knife')
+  const sold = openShop(applyEffect(shelf, { unsetFlag: ['shopShelf'], add: { shiv: 1 } }), 'sell')
+  assert(ids(sold).some((i) => /shiv/.test(i)), 'Silas buys unequipped junk on the Sell shelf')
+
+  // The Outcast opening states the brand plainly, and says nobody will tell him.
+  const open = getScene('open:outcast').body
+  assert(/no memory/.test(open) && /a brand there, burned into the skin/.test(open), 'opening: no memory, burned brand on the face')
+  assert(/Every Dune-Stray knows that mark\. It tells them not to speak to you, and when they see it, they turn away\./.test(open), 'opening: Strays know the brand and turn away')
+  assert(/Nobody will tell you what you did\. You only know that you did something\./.test(open), 'opening: nobody says what he did')
+  assert(!/this is not/i.test(open), 'opening has no "this is not" line')
+
+  // Typed brand questions refuse; looking at it describes it; nothing reveals what he did.
+  const ridge = applyEffect(pick(newGame('outcast'), 'stand'), { flag: { encounterAt: 99999 } })
+  for (const ask of ['who am i', 'what happened', 'what did I do', 'ask about the brand', 'what does my brand mean']) {
+    const f = interpret(ridge, ask).flash ?? ''
+    assert(/You don.t remember\. They do\.|Nobody here will say/.test(f), `"${ask}" gets a refusal: ${f}`)
+  }
+  for (const look of ['look at brand', 'touch brand', 'touch my face', 'feel the brand']) {
+    assert(interpret(ridge, look).flash === BRAND_LOOK, `"${look}" describes the brand`)
+  }
+  const atKorvan = applyEffect(ridge, { goto: 'spine:korvan' })
+  assert(/I will not say it\. You don.t remember\. They do\./.test(interpret(atKorvan, 'ask about the brand').flash ?? ''), 'Korvan knows the brand and will not say it')
+  assert(/I ask what you pay/.test(interpret(applyEffect(ridge, { goto: 'spine:silas' }), 'what happened').flash ?? ''), 'Silas will not ask; he trades')
+  assert(interpret(applyEffect(newGame('prisoner'), { goto: 'camp:yard' }), 'touch brand').flash !== BRAND_LOOK, 'the brand is Outcast only')
+  assert(/You know what you did/.test(getScene('ch1:o-ossa').body) && /talks to the air beside your head/.test(getScene('ch1:o-tax').body), 'Ossa and Nim react to the brand')
+  assert(/You know what you did/.test(interpret(applyEffect(ridge, { goto: 'ch1:o-tax', startChapter: 'cache-run' }), 'hello').flash ?? ''), 'typed hello to Nim gets the brand refusal')
+
+  // Korvan and Mira in Silas's shade; Jodi's slot stays dark.
+  const shade = applyEffect(ridge, { goto: 'spine:shade' })
+  assert(ids(shade).includes('walk-korvan') && ids(shade).includes('walk-mira') && !visibleChoices(shade).some((c) => /TODO/.test(c.label)), 'shade: Korvan and Mira, no Jodi placeholder')
+  const kor = pick(shade, 'walk-korvan')
+  assert(kor.sceneId === 'spine:korvan' && /I will not tell you what that mark is for/.test(bodyOf(kor)), 'Korvan speaks to the branded player and keeps the secret')
+  const kDrop = pick(applyEffect(kor, { add: { vial_drop: 1 } }), 'hunger-drop')
+  assert(kDrop.flags.hungerKnown && kDrop.flags.sybellaNamed && (kDrop.items.kallik_mark ?? 0) === 1, 'Korvan trades a Drop for the Hunger lead')
+  const kHound = pick(applyEffect(kor, { add: { scrap: 1 } }), 'hound')
+  assert(kHound.flags.korvanHoundRumor && /Corvin/.test(kHound.flash ?? '') && ids(kHound).includes('hound-walk'), 'Korvan sells the east wash lead and names Corvin')
+  const kTook = pick(kor, 'take')
+  assert(kTook.flags.korvanTook && kTook.flags.strayNotice && !ids(kTook).includes('hunger-scrap'), 'taking from Korvan wakes the Strays and closes his trade')
+  const mira = pick(pick(shade, 'walk-mira'), 'sit')
+  assert(mira.flags.miraWarned && /Gilded Hollow/.test(mira.flash ?? ''), 'Mira warns about the Hollows without speaking')
+  assert(/does not answer/.test(interpret(mira, 'hello').flash ?? ''), 'Mira stays silent')
+
+  // Corvin: help him and he walks you past the ford traps and pulls you up on the Spine.
+  const hound = applyEffect(ridge, { goto: 'spine:hound' })
+  const corvin = pick(hound, 'boots')
+  assert(corvin.sceneId === 'spine:corvin' && /I don't ask what that mark is for/.test(bodyOf(corvin)), 'Corvin behind the rock, no questions about the brand')
+  const helped = pick(applyEffect(corvin, { add: { vial_drop: 1 } }), 'water')
+  assert(helped.flags.corvinHelped, 'a Drop helps Corvin')
+  const swept = pick(corvin, 'sweep')
+  assert(swept.flags.corvinHelped && swept.heat.cartel === corvin.heat.cartel + 1, 'sweeping his prints helps Corvin and costs Cartel Heat')
+  const quietly = (x: GameState): GameState => {
+    const c = { ...x, flags: { ...x.flags } }
+    for (const k of ['encounterHere', 'encounterKind', 'encounterHp', 'hunterHere', 'hunterFrom']) delete c.flags[k]
+    return c
+  }
+  const noon = quietly(applyEffect(helped, { goto: 'ch1:o-noon', startChapter: 'cache-run', flag: { hungerKnown: true } }))
+  assert(ids(noon).includes('ford'), 'helped Corvin waits at the dry ford')
+  const forded = pick(noon, 'ford')
+  assert(forded.sceneId === 'ch1:o-ossa' && forded.flags.corvinRoad && !forded.flags.nimMet, 'Corvin walks you past the traps to Ossa')
+  const bareNoon = quietly(applyEffect(ridge, { goto: 'ch1:o-noon', startChapter: 'cache-run' }))
+  assert(ids(bareNoon).includes('noon') && !ids(bareNoon).includes('ford'), 'no ford line before you help him')
+  const downOnSpine = { ...helped, sceneId: 'spine:well', hubId: 'spine', sap: 4, health: 0, flags: { ...helped.flags, downed: true, downedKind: 'collector' } }
+  const up = wakeEffect(downOnSpine)
+  assert(up.health === 2 && up.sap === -1 && !up.goto && up.flag?.corvinPulled, 'Corvin pulls you up on Spine ground: 2 Health, 1 Sap')
+  const alone = wakeEffect({ ...downOnSpine, flags: { ...downOnSpine.flags, corvinHelped: false } })
+  assert(alone.health === 1, 'without Corvin the most-ground rule applies')
+
+  // The Maw wreck: a short nameless cameo off the Prisoner door.
+  const wreck = applyEffect(newGame('outcast'), { goto: 'maw:tuner', enterHub: 'redmaw' })
+  assert(!PRISONER_NAMES.test(bodyOf(wreck)) && /brass jaw/.test(bodyOf(wreck)) && ids(wreck).includes('rest'), 'Outcast wreck is a nameless cameo with the bench')
+  assert(/Oil-Tooth/.test(bodyOf(applyEffect(newGame('prisoner'), { goto: 'maw:tuner', enterHub: 'redmaw' }))), 'Prisoner wreck still names Oil-Tooth')
+
+  // Resin Salve: a rare scavenge find on every door; humans sometimes carry one, beasts never.
+  assert(SCAVENGE_SALVE_PCT >= 5 && SCAVENGE_SALVE_PCT <= 8, 'scavenge salve odds are 5-8%')
+  assert(HUMAN_SALVE_PCT >= 15 && HUMAN_SALVE_PCT <= 20, 'human salve odds are 15-20%')
+  for (const door of ['prisoner', 'outcast', 'vessel'] as DoorId[]) {
+    let found = 0
+    const base = newGame(door)
+    for (let t = 0; t < 1000; t++) {
+      const st = { ...base, ticks: t, pressure: t % 7 }
+      const r = rollScavenge(st)
+      if (r.add.salve) {
+        found++
+        assert(scavengeSalve(st) && /Resin Salve/.test(r.flash), 'salve find says so')
+      }
+      assert(JSON.stringify(rollScavenge(st)) === JSON.stringify(r), 'scavenge roll is deterministic')
+    }
+    assert(found >= 25 && found <= 110, `${door} scavenge turns up salve rarely (${found}/1000)`)
+  }
+  let yard = applyEffect(newGame('prisoner'), { goto: 'camp:yard', enterHub: 'camp04', flag: { encounterAt: 99999 } })
+  yard = { ...yard, flags: { ...yard.flags } }
+  delete yard.flags.hunterHere
+  let hit = false
+  for (let t = 0; t < 400 && !hit; t++) {
+    const st = { ...yard, ticks: t }
+    if (!carriesSalve(st, 'cutter')) continue
+    const win = { ...st, health: 6, flags: { ...st.flags, encounterHere: true, encounterKind: 'cutter', encounterHp: 1, fightTaught: true } }
+    const { fx } = resolveEncounter(win, 'fight')
+    hit = (fx.add?.salve ?? 0) === 1 && /Resin Salve/.test(String(fx.flag?.encounterFlash ?? ''))
+  }
+  assert(hit, 'a downed cutter can carry a Resin Salve, and the loot line names it')
+  for (const kind of HUMAN_KINDS) {
+    let n = 0
+    for (let t = 0; t < 1000; t++) if (carriesSalve({ ...yard, ticks: t }, kind)) n++
+    assert(n >= 100 && n <= 280, `${kind} carries salve about ${HUMAN_SALVE_PCT}% of the time (${n}/1000)`)
+  }
+  for (const kind of BEAST_KINDS) {
+    for (let t = 0; t < 1000; t++) assert(!carriesSalve({ ...yard, ticks: t }, kind), `${kind} never carries salve`)
+    const beast = { ...yard, health: 6, flags: { ...yard.flags, encounterHere: true, encounterKind: kind, encounterHp: 1, fightTaught: true } }
+    for (let t = 0; t < 200; t++) assert(!resolveEncounter({ ...beast, ticks: t }, 'fight').fx.add?.salve, `${kind} loot never has salve`)
+  }
+  assert(/Rarely, a Resin Salve turns up with the find\./.test(topicText(HELP_TOPICS[1])), 'help scavenge names the salve find')
+  assert(/People sometimes carry a Resin Salve on them\. Beasts never do\./.test(fightHelpText()), 'help fight names salve loot')
 }
 
 console.log('OK', {

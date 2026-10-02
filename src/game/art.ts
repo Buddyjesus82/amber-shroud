@@ -71,6 +71,10 @@ const PERSON_COVER: Record<PersonId, CoverKey> = {
   ossa: 'ossa',
   sybella: 'sybella',
   handler: 'handler',
+  // No portraits yet for the Spine Strays. They use the Spine art.
+  korvan: 'spine',
+  mira: 'spine',
+  corvin: 'spine',
 }
 
 function npcCover(sceneId: string): CoverKey | null {

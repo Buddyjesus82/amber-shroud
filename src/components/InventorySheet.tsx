@@ -1,4 +1,5 @@
 import { bindSalve, drinkDrop, equipItem, sapLabel, unequipSlot } from '../game/engine'
+import { heatFactions } from '../game/heat'
 import { gearStat, isWorn, listedKit } from '../game/kit'
 import { ITEMS } from '../game/content/catalog'
 import type { EquipSlot, GameState, ItemId } from '../game/types'
@@ -80,15 +81,11 @@ export function InventorySheet({ state, onClose, onChange }: Props) {
           </ul>
         )}
         <div className="heat-legend">
-          <p>
-            <b>Cartel</b> {state.heat.cartel} · Ironwood, Valerius, Hounds
-          </p>
-          <p>
-            <b>Seekers</b> {state.heat.seekers} · cloth, vessels, Sybella
-          </p>
-          <p>
-            <b>Strays</b> {state.heat.strays} · Oil-Tooth, Silas, Kaelen the Sifter
-          </p>
+          {(['cartel', 'seekers', 'strays'] as const).map((f) => (
+            <p key={f}>
+              <b>{heatFactions(state.door)[f].name}</b> {state.heat[f]} · {heatFactions(state.door)[f].watch}
+            </p>
+          ))}
         </div>
       </div>
     </div>

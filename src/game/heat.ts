@@ -1,4 +1,4 @@
-import type { Faction } from './types'
+import type { DoorId, Faction } from './types'
 
 export const HEAT_TIP = {
   title: 'Heat is attention',
@@ -28,7 +28,37 @@ export const HEAT_FACTIONS: Record<
   },
 }
 
-export function heatRiseLine(faction: Faction, n: number): string {
-  const f = HEAT_FACTIONS[faction]
+type HeatCard = { name: string; watch: string; body: string }
+
+/** Who is watching depends on the door: Oil-Tooth and Kaelen are the Prisoner's people. */
+const BY_DOOR: Partial<Record<DoorId, Partial<Record<Faction, HeatCard>>>> = {
+  outcast: {
+    seekers: {
+      name: 'Seekers',
+      watch: 'runners, skiffs, Sybella',
+      body: 'Seekers want a cup that holds. Sybella hunts what the sand should not have let walk — for the faith, not for you. Seeker Heat is hymns, runners, and a skiff. She does not aid Cartel. She does not aid Dune-Strays.',
+    },
+    strays: {
+      name: 'Strays',
+      watch: 'Silas, Nim, Ossa',
+      body: 'Dune-Strays collect favors and shade. Silas sells minutes. Nim collects the shade-road fee. Stray Heat is being known. Known is not safe.',
+    },
+  },
+  vessel: {
+    strays: {
+      name: 'Strays',
+      watch: 'Dune-Strays, Ossa',
+      body: 'Dune-Strays collect favors and shade. Ossa keeps her stilts near Red Maw. Stray Heat is being known. Known is not safe.',
+    },
+  },
+}
+
+export function heatFactions(door?: DoorId): Record<Faction, HeatCard> {
+  const over = (door && BY_DOOR[door]) || {}
+  return { ...HEAT_FACTIONS, ...over }
+}
+
+export function heatRiseLine(faction: Faction, n: number, door?: DoorId): string {
+  const f = heatFactions(door)[faction]
   return `${f.name} Heat +${n} — someone is watching. ${f.watch}.`
 }

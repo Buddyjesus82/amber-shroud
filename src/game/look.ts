@@ -48,7 +48,7 @@ const WAY: Record<string, string> = {
   'maw:stilt': 'stilt shade',
   'maw:smoke': 'skiff smoke on the rim',
   'maw:lip': 'the Hollow Lip',
-  'maw:tuner': 'Oil-Tooth\'s wreck',
+  'maw:tuner': 'the wreck',
 }
 
 function norm(text: string): string {
@@ -309,13 +309,13 @@ function authored(state: GameState, scene: Scene): string[] {
     return lines
   }
 
-  if (id === 'camp:kaelen' || id === 'spine:kaelen' || id === 'thresh:kaelen' || id === 'roam:kaelen') {
+  if (id === 'camp:kaelen' || id === 'thresh:kaelen' || id === 'roam:kaelen') {
     push(lines, 'Buy, sell, or ask him for a rumor.')
     if (id === 'roam:kaelen' && on(state, 'heardWalkingAmber')) push(lines, 'Ask him about the Walking Amber and he gives it in a whisper.')
     return lines
   }
 
-  if (id === 'camp:kaelen-rumors' || id === 'spine:kaelen-rumors' || id === 'thresh:kaelen-rumors') {
+  if (id === 'camp:kaelen-rumors' || id === 'thresh:kaelen-rumors') {
     push(lines, 'The rumor shelf is headings and side trouble. He names a price with the pack, not with a sermon.')
     return lines
   }
@@ -348,6 +348,28 @@ function authored(state: GameState, scene: Scene): string[] {
 
   if (id === 'spine:shade') {
     push(lines, 'Sitting down is how you pay for the minute. A Drop is a separate price.')
+    push(lines, 'Korvan sits where the canvas runs out. Mira sifts sand by the tent pole.')
+    return lines
+  }
+
+  if (id === 'spine:korvan') {
+    if (on(state, 'korvanTook')) push(lines, 'He keeps his back to you.')
+    else {
+      if (!on(state, 'korvanHunger')) push(lines, 'A Drop or 2 scrap buys his Hunger lead. 1 scrap buys the east wash.')
+      push(lines, 'He talks to you. He will not say what the brand is for.')
+    }
+    return lines
+  }
+
+  if (id === 'spine:mira') {
+    if (on(state, 'miraTook')) push(lines, 'She keeps her back to you.')
+    else push(lines, 'She does not talk. Sit with her and she draws in the sand.')
+    return lines
+  }
+
+  if (id === 'spine:corvin') {
+    if (on(state, 'corvinHelped')) push(lines, 'He waits for you at the dry ford on the road east. On this ridge he pulls you up if you go down.')
+    else push(lines, 'A Drop, or sweeping his prints out of the wash, is help he will remember.')
     return lines
   }
 
@@ -377,8 +399,7 @@ function authored(state: GameState, scene: Scene): string[] {
       )
     }
     if (!on(state, 'wellScrap')) push(lines, 'The brickwork still hides a Glint and a twist of scrap.')
-    else push(lines, 'The bricks have already given up what Kaelen left.')
-    push(lines, 'Dusk is when Kaelen stands here.')
+    else push(lines, 'The bricks have already given up what was hidden in them.')
     return lines
   }
 
