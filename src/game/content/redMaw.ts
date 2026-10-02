@@ -135,20 +135,15 @@ Zafir is at his stall. He has watched buyers fail and kept the tray anyway. On i
       },
     ],
     choices: [
-      {
-        id: 'info',
-        label: 'Ask what The Walking Amber is',
-        show: { flag: 'heardWalkingAmber' },
-        effects: {
-          ticks: 1,
-          goto: 'maw:zafir',
-          flash:
-            "Seeker talk. Something that walks out of the sand and shouldn't. Ask the woman in the skiff, if you like breathing less.",
-        },
-      },
       { id: 'back', label: 'Leave his stall', tone: 'quiet', effects: { goto: 'maw:market' } },
     ],
     intents: [
+      {
+        tags: ['walking amber', 'walking'],
+        show: { flag: 'heardWalkingAmber' },
+        reply: "Seeker talk. Something that walks out of the sand and shouldn't. Ask the woman in the skiff, if you like breathing less.",
+        effects: { ticks: 1 },
+      },
       {
         tags: ['drop', 'vial', 'sap'],
         show: { itemMin: ['glints', 2] },
@@ -521,16 +516,13 @@ She is here, and she is hunting. Walk up and she will talk. You can also slip pa
           flash: 'The Lip swallows. Far off, skiff-runners hesitate. You taste metal that is not yours.',
         },
       },
+    ],
+    intents: [
       {
-        id: 'listen',
-        label: 'Listen for what you already buried',
-        sub: 'Costs sap. You check that the buried thing is still down there.',
+        tags: ['listen', 'buried', 'kettle'],
         show: { flag: 'hollowMarked' },
-        effects: {
-          ticks: 1,
-          sap: -1,
-          flash: 'It is still down there. Quiet. Like a kettle in another room. The Maw is not finished with it.',
-        },
+        reply: 'It is still down there. Quiet. Like a kettle in another room. The Maw is not finished with it.',
+        effects: { ticks: 1 },
       },
     ],
   },

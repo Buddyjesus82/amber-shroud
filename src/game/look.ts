@@ -156,6 +156,7 @@ function authored(state: GameState, scene: Scene): string[] {
   }
 
   if (id === 'camp:bay-pike') {
+    push(lines, 'Pike answers short if you talk to him.')
     if (!on(state, 'lashCord')) push(lines, 'A lash cord hangs coiled on a post at the left of the bay.')
     if (!on(state, 'bayPikeTook')) {
       if (has(state, 'wrench')) {
@@ -172,6 +173,7 @@ function authored(state: GameState, scene: Scene): string[] {
   }
 
   if (id === 'camp:bay-sarn') {
+    push(lines, 'Sarn answers in counts if you talk to him.')
     if (!on(state, 'baySarnTook')) push(lines, 'Counted rows of bolts and a small pile of scrap twists sit on his crate.')
     else push(lines, 'The rows of bolts on his crate are counted again. The scrap pile is one twist short.')
     if (has(state, 'wrench') && !on(state, 'wrenchBayTrade')) push(lines, 'Sarn will count you a twist of scrap for the wrench.')
@@ -179,6 +181,7 @@ function authored(state: GameState, scene: Scene): string[] {
   }
 
   if (id === 'camp:bay-vetch') {
+    push(lines, 'Vetch lifts the mask if you talk to her.')
     if (state.flags.wrenchBayTrade !== 'vetch') {
       push(lines, 'A Drop vial sits under her skiff, by a leg.')
       if (has(state, 'wrench') && !on(state, 'wrenchBayTrade')) push(lines, 'Vetch will trade the vial for the wrench.')
@@ -220,6 +223,7 @@ function authored(state: GameState, scene: Scene): string[] {
   }
 
   if (id === 'camp:vents') {
+    push(lines, 'The pipes carry amber and the Cartel rhythm if you listen. No heading in them.')
     if (!on(state, 'skim:camp:vents')) push(lines, 'A drip in the pipe-scream will fill a glass. The Cartel can trace it.')
     if (!on(state, 'jaxsonInside')) push(lines, "The bolt at the guard station is Oil-Tooth's job.")
     else if (!on(state, 'guardDown')) push(lines, 'The west bolt at the guard station is the job throat.')
@@ -241,6 +245,7 @@ function authored(state: GameState, scene: Scene): string[] {
   }
 
   if (id === 'camp:jaxson') {
+    push(lines, 'Ask him how to beat Valerius and he lays out the plan.')
     if (!on(state, 'jaxsonInside')) push(lines, 'Ask him for the wrench. The station comes after. Kaelen is a different counter.')
     else if (!on(state, 'guardDown')) push(lines, 'He has already given you the job. The vent is west of here.')
     else push(lines, 'He will be at the bay if the station is already down.')
@@ -274,6 +279,8 @@ function authored(state: GameState, scene: Scene): string[] {
   if (id === 'camp:wire') {
     if (on(state, 'wireCut')) push(lines, 'The hole you paid for is still in the wire.')
     else push(lines, 'Past the wire the haze goes red if you stare it down.')
+    if (on(state, 'relicRumor') || on(state, 'wireCut')) push(lines, 'The fence-hole back to the Pens is paid for.')
+    else push(lines, 'The fence-hole back to the Pens opens once you pay Kaelen for a lead or the hole.')
     return lines
   }
 
@@ -304,6 +311,7 @@ function authored(state: GameState, scene: Scene): string[] {
 
   if (id === 'camp:kaelen' || id === 'spine:kaelen' || id === 'thresh:kaelen' || id === 'roam:kaelen') {
     push(lines, 'Buy, sell, or ask him for a rumor.')
+    if (id === 'roam:kaelen' && on(state, 'heardWalkingAmber')) push(lines, 'Ask him about the Walking Amber and he gives it in a whisper.')
     return lines
   }
 
@@ -455,6 +463,7 @@ function authored(state: GameState, scene: Scene): string[] {
 
   if (id === 'maw:zafir') {
     push(lines, 'He will talk news.')
+    if (on(state, 'heardWalkingAmber')) push(lines, 'Ask him about the Walking Amber and he gives you the street version.')
     return lines
   }
 

@@ -351,7 +351,6 @@ const back: Choice = {
 }
 
 export const pikeBayChoices: Choice[] = [
-  { id: 'talk', label: 'Talk to Pike', effects: { ticks: 1, flash: PIKE_TALK } },
   {
     id: 'cord',
     label: 'Take the lash cord off the post',
@@ -379,7 +378,6 @@ export const pikeBayChoices: Choice[] = [
 ]
 
 export const sarnBayChoices: Choice[] = [
-  { id: 'talk', label: 'Talk to Sarn', effects: { ticks: 1, flash: SARN_TALK } },
   {
     id: 'scrap',
     label: 'Take a twist of scrap off his crate',
@@ -398,7 +396,6 @@ export const sarnBayChoices: Choice[] = [
 ]
 
 export const vetchBayChoices: Choice[] = [
-  { id: 'talk', label: 'Talk to Vetch', effects: { ticks: 1, flash: VETCH_TALK } },
   {
     id: 'wire',
     label: 'Take the copper wire off the crate',

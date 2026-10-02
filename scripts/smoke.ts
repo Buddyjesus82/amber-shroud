@@ -4,6 +4,7 @@ import {
   applyEffect,
   bodyOf,
   drinkDrop,
+  STRIDER_READY_SAP,
   equipItem,
   HUNTER_QUIET_GAPS,
   huntGap,
@@ -363,15 +364,52 @@ assert(!canTravelTo(s, 'camp:yard'), 'Map still refuses Wire→Yard')
   assert(blockedYard.sceneId === s.sceneId, 'travelGate keeps you on the Wire after the relic lead')
   assert(blockedYard.flash?.toLowerCase().includes('no road'), 'Wire→Yard explains the missing road')
 }
-assert(ids(s).includes('relic-walk'), 'Walk the Yard is an explicit gated choice')
+assert(ids(s).includes('relic-walk'), 'Walk the Yard is on the counter once the side trouble is paid')
 {
-  const tried = pick(s, 'relic-walk')
-  assert(tried.sceneId === s.sceneId, 'walk-the-Yard uses the gate — no silent teleport')
-  s = tried
+  // Paid for the side trouble: Walk the Yard crawls the fence-hole back to the Pens, keeping everything.
+  const before = s
+  const walked = pick(s, 'relic-walk')
+  assert(walked.sceneId === 'camp:cages', `Walk the Yard takes you back to the Pens (got ${walked.sceneId})`)
+  assert(walked.sap === before.sap, 'the crawl costs no Sap, so low Sap cannot strand you at the Wire')
+  assert(JSON.stringify({ ...walked.items }) === JSON.stringify({ ...before.items }), 'the crawl keeps your gear')
+  assert(walked.flags.relicRumor && walked.flags.kaelenKnown, 'the crawl keeps the paid lead')
+  for (const line of ['walk the yard', 'back to the pens', 'Walk the Yard — back to the Pens through the fence-hole']) {
+    const typed = interpret(before, line)
+    assert(typed.sceneId === walked.sceneId && typed.sap === walked.sap && typed.flash === walked.flash, `typed "${line}" at the rumor counter is the Walk the Yard button`)
+  }
+  const wire = dismissFight(applyEffect(applyEffect(before, { goto: 'camp:wire' }), { unsetFlag: ['hunterHere', 'hunterFrom'] }))
+  const row = visibleChoices(wire).find((c) => c.id === 'pens')
+  assert(row && isChoiceOn(wire, row.enable), `the Wire shows the paid fence-hole row (at ${wire.sceneId}: ${ids(wire).join(',')})`)
+  const fromWire = applyEffect(wire, row.effects)
+  assert(fromWire.sceneId === 'camp:cages', 'the Wire row crawls to the Pens')
+  for (const line of ['walk the yard', 'back to the pens', 'go back to the pens', 'crawl back through the fence']) {
+    const typed = interpret(wire, line)
+    assert(typed.sceneId === 'camp:cages' && typed.sap === fromWire.sap, `typed "${line}" on the Wire is the fence-hole row`)
+  }
+  s = walked
+  assert(ids(s).includes('yard'), 'the Yard is one road on from the Pens')
+}
+{
+  // Nothing paid: the row is locked and says what it needs. Typed asks get the same answer and stay put.
+  for (const door of ['prisoner', 'outcast', 'vessel'] as DoorId[]) {
+    let w = applyEffect(newGame(door), { goto: 'camp:wire', enterHub: 'camp04', flag: { encounterAt: 99999 } })
+    w = { ...w, flags: { ...w.flags } }
+    delete w.flags.encounterHere
+    delete w.flags.hunterHere
+    const row = visibleChoices(w).find((c) => c.id === 'pens')
+    assert(row && !isChoiceOn(w, row.enable) && row.locked?.includes('Pay Kaelen'), `${door} unpaid Wire shows a locked fence-hole row`)
+    for (const line of ['walk the yard', 'back to the pens']) {
+      const typed = interpret(w, line)
+      assert(typed.sceneId === 'camp:wire' && typed.flash === `${row.locked}.`, `${door} unpaid typed "${line}" says what it needs`)
+    }
+    const cut = applyEffect(w, { flag: { wireCut: true } })
+    assert(interpret(cut, 'walk the yard').sceneId === 'camp:cages', `${door} buying the hole also opens the crawl`)
+  }
 }
 s = walkTo(s, 'camp:yard')
-assert(s.sceneId === 'camp:yard', 'Yard for the hoard is Map-connected travel')
-assert(ids(s).includes('relic'), 'hoard is a Yard choice after the rumor')
+if (s.flags.hunterHere) s = applyEffect(s, { unsetFlag: ['hunterHere', 'hunterFrom'] })
+assert(s.sceneId === 'camp:yard', `the Yard is one road from the Pens (got ${s.sceneId})`)
+assert(ids(s).includes('relic'), `hoard is a Yard choice after the rumor (${ids(s).join(',')} ${JSON.stringify({r: s.flags.relicRumor, t: s.flags.relicTaken, seen: s.flags.relicSeen, h: s.flags.hunterHere, e: s.flags.encounterHere})})`)
 s = pick(s, 'relic')
 assert(s.sceneId === 'camp:relic', 'hoard beat is local to the Yard')
 s = pick(s, 'look')
@@ -3028,6 +3066,62 @@ function assertHelpResolves(s: GameState, where: string) {
     }
   }
   assert(rows > 1000 && off.length === 0, `typed button labels match the tap (${rows} rows): ${off.slice(0, 5).join(' | ')}`)
+}
+
+// An action button has to change something: place, gear, Sap, Health, Heat, a flag the game reads,
+// or a shelf. Flavor goes to look, help, and typed lines.
+{
+  const NOISE = new Set(['encounterAt', 'huntQuiet'])
+  // Rows that move you back to where you came from; the synthetic setup has no "from".
+  const RETURN_ROWS = new Set(['camp:gate back', 'roam:kaelen back'])
+  const moved = (a: GameState, b: GameState) => {
+    if (a.sceneId !== b.sceneId || a.hubId !== b.hubId || a.chapterId !== b.chapterId) return true
+    if (JSON.stringify(a.items) !== JSON.stringify(b.items) || JSON.stringify(a.heat) !== JSON.stringify(b.heat)) return true
+    if ((b.health ?? 0) !== (a.health ?? 0) || b.sap > a.sap) return true
+    const keys = new Set([...Object.keys(a.flags), ...Object.keys(b.flags)])
+    for (const k of keys) if (!NOISE.has(k) && JSON.stringify(a.flags[k]) !== JSON.stringify(b.flags[k])) return true
+    return false
+  }
+  const flat: string[] = []
+  for (const door of ['prisoner', 'outcast', 'vessel'] as DoorId[]) {
+    for (const sc of ALL_SCENES) {
+      if (sc.id.startsWith('open:')) continue
+      for (const shelf of [undefined, 'buy', 'sell'] as const) {
+        let x = applyEffect(newGame(door), {
+          goto: sc.id,
+          enterHub: sc.hubId,
+          startChapter: sc.chapterId,
+          sap: 4,
+          health: -2,
+          heat: { cartel: 2, seekers: 2, strays: 2 },
+          add: { vial_drop: 2, glints: 2, scrap: 3, salve: 1 },
+          flag: { encounterAt: 99999, ...(shelf ? { shopShelf: shelf } : {}) },
+        })
+        x = { ...x, flags: { ...x.flags } }
+        delete x.flags.hunterHere
+        delete x.flags.encounterHere
+        if (x.sceneId !== sc.id) continue
+        for (const c of visibleChoices(x)) {
+          if (!isChoiceOn(x, c.enable) || RETURN_ROWS.has(`${sc.id} ${c.id}`)) continue
+          if (!moved(x, applyEffect(x, c.effects))) flat.push(`${door} ${sc.id} "${c.label}"`)
+        }
+      }
+    }
+  }
+  assert(flat.length === 0, `action buttons that only print text: ${[...new Set(flat)].slice(0, 6).join(' | ')}`)
+
+  // Ready the stolen Strider is real: the Hunger ride starts with the Sap it saved.
+  let v = walkTo(pick(newGame('vessel'), 'keep'), 'thresh:paddock')
+  v = applyEffect(v, { add: { strider_bit: v.items.strider_bit ? 0 : 1 }, flag: { hungerKnown: true } })
+  if (v.flags.hunterHere) v = applyEffect(v, { unsetFlag: ['hunterHere', 'hunterFrom'] })
+  v = dismissFight(v)
+  v = { ...v, sap: 3 }
+  const readied = pick(v, 'ready')
+  assert(readied.flags.striderReady && !ids(readied).includes('ready'), 'readying the Strider sticks and the row goes away')
+  const rode = pick(walkTo(readied, 'thresh:court'), 'hunger')
+  const base = pick(walkTo(v, 'thresh:court'), 'hunger')
+  assert(rode.chapterId === 'cache-run' && rode.sap === base.sap + STRIDER_READY_SAP, `the readied Strider saves ${STRIDER_READY_SAP} Sap on the Hunger (${base.sap} → ${rode.sap})`)
+  assert(rode.flags.striderSpent && !base.flags.striderSpent, 'only a readied Strider spends itself')
 }
 
 console.log('OK', {

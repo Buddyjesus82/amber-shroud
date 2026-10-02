@@ -230,8 +230,8 @@ Oram is here more often than he is in the Court. He prefers the animals to the h
       {
         id: 'ready',
         label: 'Ready the stolen Strider',
-        sub: 'Put the bit in. The beast is ready when you leave for Red Maw.',
-        show: { item: 'strider_bit' },
+        sub: 'Put the bit in. When you ride into the Hunger, it carries the first stretch: 2 Sap saved.',
+        show: { all: [{ item: 'strider_bit' }, { flagUnset: 'striderReady' }] },
         effects: {
           flag: { striderReady: true },
           ticks: 1,
@@ -244,7 +244,7 @@ Oram is here more often than he is in the Court. He prefers the animals to the h
       {
         tags: ['ride', 'steal', 'mount', 'go'],
         reply: 'Not past the guard in daylight unless you want a hymn of knives. Ready it. Then pick your hour.',
-        effects: { flag: { striderReady: true } },
+        effects: {},
       },
       {
         tags: ['kaelen', 'sifter', 'merchant', 'pack', 'shadow'],
