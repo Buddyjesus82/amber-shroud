@@ -13,6 +13,7 @@ import {
 import { GLOBAL_INTENTS, matchChoiceText, matchIntent, scoreChoiceText, STRONG_BUTTON } from './intent'
 import { consumeAsk, NONE_TO_USE } from './consume'
 import { helpText } from './help'
+import { helpRoute, HELP_HINT, HELP_TOPICS, topicText } from './helpTopics'
 import { isBayScene } from './content/bayHands'
 import { classifyLook, directedLookFlash, pressureLookFlash, roomLookEffect } from './look'
 import { matchCompass, travelGate } from './map'
@@ -633,7 +634,10 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
 
   if ((state.health ?? 1) > 0 && (next.health ?? 1) <= 0 && !state.flags.downed) {
     const note = downedNote({ ...state, sceneId: next.sceneId, flags: next.flags, hubId: next.hubId })
+    const kind = next.flags.encounterKind
     const flags: FlagMap = { ...next.flags, downed: true, downedNote: note }
+    // The fight card is cleared below; the wake still needs to know who put you down.
+    if (typeof kind === 'string' && kind) flags.downedKind = kind
     for (const k of ENCOUNTER_FLAGS) delete flags[k]
     next.flags = flags
     next.health = 0
@@ -836,9 +840,19 @@ export function interpret(state: GameState, text: string): GameState {
         ? 'The fight is the whole ground. '
         : ''
     return withVerb(
-      persist({ ...state, flash: `${face}${helpText(state, labels)}`, updatedAt: Date.now() }),
+      persist({
+        ...state,
+        flash: `${face}${helpText(state, labels)}\n\n${HELP_HINT}. Topics: ${HELP_TOPICS.map((t) => t.id).join(', ')}.`,
+        updatedAt: Date.now(),
+      }),
       'help',
     )
+  }
+  // help <topic> opens a card in the app; typed here it answers with the card text or the topic list.
+  const asked = helpRoute(text)
+  if (asked && asked.kind !== 'list') {
+    const flash = asked.kind === 'topic' ? topicText(asked.topic) : asked.reply
+    return withVerb(persist({ ...state, flash, updatedAt: Date.now() }), 'help')
   }
   if ((state.flags.downed || (state.health ?? 1) <= 0) && !/^(wake|up|stand|rise)$/.test(bare)) {
     return withVerb(

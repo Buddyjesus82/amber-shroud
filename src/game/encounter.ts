@@ -88,8 +88,7 @@ const SPECS: Spec[] = [
   { kind: 'collector', ...SPINE_HUNTER.encounter },
 ]
 
-const TEACH =
-  'Each exchange, both sides add a swing of 0 to 2 to Strike. Strike past Shell is the wound, and a hit always lands at least 1. Health takes the hits. Sap stays for thirst and walking. Fight or skip. Skip is free and pays nothing. Loot only if they drop.'
+const TEACH = 'Fight or give the road. The rules: help fight.'
 
 /** Every exchange that lands deals at least this much, both ways. */
 export const DAMAGE_FLOOR = 1

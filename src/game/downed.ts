@@ -33,6 +33,11 @@ export function downedNote(state: GameState): string {
   return `You collapse. Too hurt to fight. The ground keeps you a minute, then lets you up poorer in blood and sap.`
 }
 
+/** Who put you down. The fight flags are gone by the time you wake. */
+function downedBy(state: GameState): unknown {
+  return state.flags.encounterKind ?? state.flags.downedKind
+}
+
 export function wakeEffect(state: GameState): Effect {
   if (nearOssa(state)) {
     const payDrop = (state.items.vial_drop ?? 0) > 0
@@ -41,7 +46,7 @@ export function wakeEffect(state: GameState): Effect {
       sap: payDrop ? undefined : -1,
       remove: payDrop ? { vial_drop: 1 } : undefined,
       add: payDrop ? { vial_empty: 1 } : undefined,
-      unsetFlag: ['downed', 'downedNote'],
+      unsetFlag: ['downed', 'downedNote', 'downedKind'],
       flag: { ossaPulled: true },
       flash: payDrop
         ? 'Ossa takes the Drop and pours a little back into you. Health returns. The vial is empty.'
@@ -54,20 +59,20 @@ export function wakeEffect(state: GameState): Effect {
       health: 2,
       sap: scrap ? undefined : -1,
       remove: scrap ? { scrap: 1 } : undefined,
-      unsetFlag: ['downed', 'downedNote'],
+      unsetFlag: ['downed', 'downedNote', 'downedKind'],
       flag: { oilPulled: true },
       flash: scrap
         ? 'He takes a twist of scrap for the resin he wastes on you. Health returns. "Do not make a habit."'
         : 'He burns a minute and some of your sap getting you upright. Health returns.',
     }
   }
-  const kind = state.flags.encounterKind
+  const kind = downedBy(state)
   const camp = state.hubId === 'camp04' || state.sceneId.startsWith('camp:')
   if (camp && (kind === 'handler' || kind === 'patrol' || kind === 'pup' || kind === 'overseer' || state.flags.hunterHere)) {
     return {
       health: 1,
       heat: { cartel: 2 },
-      unsetFlag: ['downed', 'downedNote', 'hunterHere', 'hunterFrom'],
+      unsetFlag: ['downed', 'downedNote', 'downedKind', 'hunterHere', 'hunterFrom'],
       goto: 'camp:yard',
       flash: 'You wake in the Yard. Feet raw. Cartel Heat climbed while you were down. Health is a thread. Too hurt to swing until it holds.',
     }
@@ -75,7 +80,7 @@ export function wakeEffect(state: GameState): Effect {
   return {
     health: 1,
     sap: state.sap > 0 ? -1 : undefined,
-    unsetFlag: ['downed', 'downedNote', 'hunterHere', 'hunterFrom'],
+    unsetFlag: ['downed', 'downedNote', 'downedKind', 'hunterHere', 'hunterFrom'],
     flash: 'You get up. Health is a thread. The minute on the ground cost sap. Too hurt to fight until it holds.',
   }
 }

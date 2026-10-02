@@ -10,6 +10,7 @@ import {
   healthLabel,
   interpret,
   isChoiceOn,
+  persist,
   sapLabel,
   scavenge,
   sceneOf,
@@ -26,6 +27,8 @@ import { isPressureOverlay, pressureFace } from '../game/hunter'
 import { isShopOpen } from '../game/trade'
 import type { Choice, Faction, GameState } from '../game/types'
 import { helpEntries } from '../game/help'
+import { fightHelpAuto, helpRoute, helpTopic, markFightHelpSeen } from '../game/helpTopics'
+import { HelpTopicCard } from './HelpTopicCard'
 import { HeatExplainer, HeatTip } from './HeatGuide'
 import { HelpCard } from './HelpCard'
 import { InventorySheet } from './InventorySheet'
@@ -59,6 +62,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
   const sayRef = useRef<HTMLInputElement>(null)
   const [draft, setDraft] = useState('')
   const [helpOpen, setHelpOpen] = useState(false)
+  const [topicOpen, setTopicOpen] = useState<string | null>(null)
   const [kit, setKit] = useState(false)
   const [mapOpen, setMapOpen] = useState(false)
   const [journalOpen, setJournalOpen] = useState(false)
@@ -188,13 +192,28 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
   function submitIntent() {
     const t = draft.trim()
     if (!t) return
-    if (/^(help|\?)$/i.test(t)) {
+    const route = helpRoute(t)
+    if (route?.kind === 'list') {
       setDraft('')
       setHelpOpen(true)
       return
     }
+    if (route?.kind === 'topic') {
+      setDraft('')
+      setTopicOpen(route.topic.id)
+      return
+    }
     setDraft('')
     onChange(interpret(state, t))
+  }
+
+  const fightAuto = fightHelpAuto(state)
+
+  const shownTopic = helpTopic(topicOpen ?? (fightAuto ? 'fight' : ''))
+
+  function closeTopic() {
+    setTopicOpen(null)
+    if (fightAuto) onChange(persist(markFightHelpSeen(state)))
   }
 
   function pickHelp(command: string) {
@@ -395,8 +414,13 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
           )}
           onClose={() => setHelpOpen(false)}
           onPick={pickHelp}
+          onTopic={(id) => {
+            setHelpOpen(false)
+            setTopicOpen(id)
+          }}
         />
       ) : null}
+      {shownTopic ? <HelpTopicCard topic={shownTopic} onClose={closeTopic} /> : null}
       {kit ? <InventorySheet state={state} onClose={() => setKit(false)} onChange={onChange} /> : null}
       {mapOpen ? <MapSheet state={state} onClose={() => setMapOpen(false)} onChange={onChange} /> : null}
       {journalOpen ? <JournalSheet state={state} onClose={() => setJournalOpen(false)} /> : null}
