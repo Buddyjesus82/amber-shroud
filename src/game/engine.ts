@@ -19,7 +19,10 @@ import { matchCompass, travelGate } from './map'
 import {
   atGuardStation,
   atKaelenInvoice,
+  atTheWire,
   campJobOpen,
+  FENCE_HOLE_BACK,
+  wantsFenceHoleBack,
   TAKE_INSIDE_JOB,
   bayLookout,
   campHeard,
@@ -404,6 +407,11 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     if (next.items.oram_map || next.items.silas_tip || next.items.cache_map) {
       delete next.flags.cacheBlind
     }
+    // A Strider readied at the paddock carries the first stretch of the Hunger.
+    if (fx.startChapter === 'cache-run' && state.flags.striderReady && !state.flags.striderSpent) {
+      next = applyDelta(next, { sap: STRIDER_READY_SAP, flag: { striderSpent: true } })
+      next.flash = [next.flash, STRIDER_READY_FLASH].filter(Boolean).join(' ')
+    }
   }
   if (fx.enterHub) {
     const hub = HUBS[fx.enterHub]
@@ -657,6 +665,10 @@ export function travelTo(state: GameState, sceneId: string): GameState {
   })
 }
 
+/** Sap the readied Strider saves on the first stretch of the Hunger. */
+export const STRIDER_READY_SAP = 2
+export const STRIDER_READY_FLASH = 'The readied Strider takes the first stretch. Two Sap you did not spend.'
+
 export function drinkDrop(state: GameState): GameState {
   if (!(state.items.vial_drop ?? 0)) {
     return persist({ ...state, flash: NONE_TO_USE.vial_drop })
@@ -884,6 +896,14 @@ export function interpret(state: GameState, text: string): GameState {
 
   const job = tryCampSabotageJob(state, text)
   if (job) return job
+
+  // The Wire's way home is the fence-hole to the Pens. Same row on the Wire and the rumor counter.
+  if (atTheWire(state) && !state.flags.encounterHere && !isPressureOverlay(state) && wantsFenceHoleBack(text)) {
+    if (!isChoiceOn(state, FENCE_HOLE_BACK.enable)) {
+      return withVerb(persist({ ...state, flash: `${FENCE_HOLE_BACK.locked}.`, updatedAt: Date.now() }), 'pens')
+    }
+    return withVerb(applyEffect(state, FENCE_HOLE_BACK.effects), 'pens')
+  }
 
   if (state.flags.encounterHere) {
     if ((state.health ?? 1) <= 0 && wantsEncounterFight(text)) {

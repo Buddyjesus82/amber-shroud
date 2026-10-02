@@ -1,4 +1,4 @@
-import type { Effect, GameState } from './types'
+import type { Choice, Cond, Effect, GameState } from './types'
 
 export const TAKE_INSIDE_JOB: Effect = {
   add: { wrench: 1 },
@@ -62,4 +62,34 @@ export function campHeard(state: Pick<GameState, 'flags'>): boolean {
 /** West steam-vent: patrol is on the bolt, not out on the wire. Stable for this arrival. */
 export function ventPatrolInPlace(state: Pick<GameState, 'ticks' | 'pressure' | 'sap'>): boolean {
   return Math.abs(state.ticks * 17 + state.pressure * 3 + state.sap * 5) % 2 === 1
+}
+
+/** Paid Kaelen for the side trouble (the relic lead) or for the hole itself. Either one opens the crawl. */
+export const FENCE_HOLE_PAID: Cond = { any: [{ flag: 'relicRumor' }, { flag: 'wireCut' }] }
+
+/** The Wire back to the Pens through the fence-hole. Same row on the Wire and on Kaelen's rumor counter. */
+export const FENCE_HOLE_BACK: Choice = {
+  id: 'pens',
+  label: 'Walk the Yard — back to the Pens through the fence-hole',
+  sub: 'Crawl the hole Kaelen priced. No Sap. The Pens, then the Yard is one road on.',
+  enable: FENCE_HOLE_PAID,
+  locked: 'Pay Kaelen first: a side-trouble lead (1 scrap) or the hole in the wire (2 scrap or 1 Glint)',
+  effects: {
+    goto: 'camp:cages',
+    ticks: 1,
+    flash:
+      'You crawl the hole Kaelen sold you. Razor-wire takes a thread of sleeve. The Pens again. The Yard is one road on.',
+  },
+}
+
+export function atTheWire(state: GameState): boolean {
+  return state.sceneId === 'camp:wire' || state.sceneId.startsWith('camp:kaelen')
+}
+
+/** Typed "walk the yard", "back to the pens", "crawl through the fence-hole" at the Wire. */
+export function wantsFenceHoleBack(text: string): boolean {
+  const hay = text.toLowerCase().replace(/[^a-z\s-]/g, ' ').replace(/\s+/g, ' ').trim()
+  if (/\b(walk|go|head|back|return)( back)?( to)? (the )?(bleed )?yard\b/.test(hay)) return true
+  if (/\b(walk|go|head|back|return|crawl|sneak)\b.*\b(pens?|cages?|holding pens)\b/.test(hay)) return true
+  return /\b(crawl|through|back)\b.*\b(fence-?hole|hole|fence)\b/.test(hay)
 }

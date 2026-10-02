@@ -1,3 +1,4 @@
+import { FENCE_HOLE_BACK } from '../campJob'
 import type { Scene } from '../types'
 
 const rumorHook = `"News is inventory. I don't give it away. Scrap buys a Drop of Oasis Sap. Glints buy intel. Ask. Pay. Then you get a lead — side trouble, or the Hunger, or both if your pockets are honest."`
@@ -154,13 +155,10 @@ Three: cheaper leads. Side trouble. Relics Valerius hunts. When the Great Bleed 
         },
       },
       {
+        ...FENCE_HOLE_BACK,
         id: 'relic-walk',
-        label: 'Walk the Yard for the hoard',
-        sub: 'Connected roads only. The Wire is not a door into the vats.',
+        sub: 'Crawl the hole back to the Pens. No Sap. The Yard and the vat-shadow hoard are one road on.',
         show: { all: [{ flag: 'relicRumor' }, { flagUnset: 'relicTaken' }, { flagUnset: 'relicSeen' }] },
-        effects: {
-          travel: 'camp:yard',
-        },
       },
       {
         id: 'bleed',
@@ -674,20 +672,19 @@ export const roamKaelenScenes: Scene[] = [
         },
       },
       {
-        id: 'amber',
-        label: 'Ask what The Walking Amber is',
-        show: { flag: 'heardWalkingAmber' },
-        effects: {
-          ticks: 1,
-          flash:
-            '"Seeker talk. Something that walks out of the sand and should not. I will not say their word louder than this. Ask the woman in the skiff if you like breathing less."',
-        },
-      },
-      {
         id: 'back',
         label: 'Let him go',
         tone: 'quiet',
         effects: { flag: { returnPass: true }, ticks: 1, flash: 'The pack is gone. You are where you were.' },
+      },
+    ],
+    intents: [
+      {
+        tags: ['walking amber', 'walking'],
+        show: { flag: 'heardWalkingAmber' },
+        reply:
+          '"Seeker talk. Something that walks out of the sand and should not. I will not say their word louder than this. Ask the woman in the skiff if you like breathing less."',
+        effects: { ticks: 1 },
       },
     ],
   },

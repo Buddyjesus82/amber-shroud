@@ -1,4 +1,4 @@
-import { TAKE_INSIDE_JOB } from '../campJob'
+import { FENCE_HOLE_BACK, TAKE_INSIDE_JOB } from '../campJob'
 import type { Scene } from '../types'
 import {
   bayHandIntents,
@@ -227,17 +227,6 @@ Oil-Tooth named a west bolt at the Guard Station. That is a different pipe. This
         },
       },
       {
-        id: 'listen',
-        label: 'Listen to the pipes',
-        tone: 'quiet',
-        effects: {
-          ticks: 1,
-          sap: -1,
-          flash:
-            'Amber in the joints. Cartel in the rhythm. No heading. The Wire is still a walk from the bay, and the pens are a walk through the Yard.',
-        },
-      },
-      {
         id: 'skim',
         label: 'Skim a drip from the scream',
         sub: 'Risky Drop. Cartel Heat. Not a crisis rescue.',
@@ -272,6 +261,12 @@ Oil-Tooth named a west bolt at the Guard Station. That is a different pipe. This
       },
     ],
     intents: [
+      {
+        tags: ['listen', 'pipes', 'pipe', 'hear'],
+        reply:
+          'Amber in the joints. Cartel in the rhythm. No heading. The Wire is still a walk from the bay, and the pens are a walk through the Yard.',
+        effects: { ticks: 1 },
+      },
       {
         tags: ['bay', 'skiff', 'strider', 'south'],
         reply: 'Skiff Bay is the next road, south-east. Open the Map. The steam does not carry you there.',
@@ -618,17 +613,6 @@ Great Bleed hits, you sabotage that station. I hotwire a Strider. We leave the p
         effects: { goto: 'camp:jaxson-drop', ticks: 1 },
       },
       {
-        id: 'valerius',
-        label: 'Ask how to beat Valerius',
-        effects: {
-          ticks: 1,
-          pressure: 1,
-          goto: 'camp:jaxson',
-          flash:
-            '"You do not beat him in a conversation. You sabotage his station, you steal his Strider, you put dunes between his shock baton and your back. First major victory. After that he is still a shadow. Shadows follow."',
-        },
-      },
-      {
         id: 'kaelen',
         label: 'Ask where Kaelen sells rumors',
         effects: {
@@ -648,6 +632,12 @@ Great Bleed hits, you sabotage that station. I hotwire a Strider. We leave the p
       },
     ],
     intents: [
+      {
+        tags: ['beat valerius', 'beat him', 'how to beat', 'overseer'],
+        reply:
+          '"You do not beat him in a conversation. You sabotage his station, you steal his Strider, you put dunes between his shock baton and your back. First major victory. After that he is still a shadow. Shadows follow."',
+        effects: { ticks: 1 },
+      },
       {
         tags: ['hotwire', 'strider', 'inside', 'wrench', 'job'],
         show: { flagUnset: 'jaxsonInside' },
@@ -896,6 +886,7 @@ Ironclad Skiff-Striders patrol the far side of this line. Red Maw is past it. So
         sub: 'Rumors and Drops.',
         effects: { goto: 'camp:kaelen', ticks: 1, pressure: 1 },
       },
+      FENCE_HOLE_BACK,
       {
         id: 'look',
         label: 'Stare the dunes down',
@@ -952,20 +943,14 @@ The Great Bleed is a clock. You sabotage the west steam-vent here. Oil-Tooth hot
         show: { all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] },
         effects: { goto: 'camp:sabotage', ticks: 1, sap: -1 },
       },
-      {
-        id: 'locked',
-        label: 'Study the station',
-        sub: 'Look, and do not touch it yet. Costs sap. The bolt stays shut until you take the job.',
-        show: { flagUnset: 'jaxsonInside' },
-        effects: {
-          ticks: 1,
-          sap: -1,
-          flash:
-            'Security weaknesses are Oil-Tooth\'s religion. Take the job — here, or back at the stall — and the west bolt opens.',
-        },
-      },
     ],
     intents: [
+      {
+        tags: ['study', 'weakness', 'weaknesses', 'inspect'],
+        show: { flagUnset: 'jaxsonInside' },
+        reply: "Security weaknesses are Oil-Tooth's religion. Take the job — here, or back at the stall — and the west bolt opens.",
+        effects: { ticks: 1 },
+      },
       {
         tags: ['inside', 'wrench', 'job', 'oil', 'tooth'],
         show: { flagUnset: 'jaxsonInside' },
