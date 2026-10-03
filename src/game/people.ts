@@ -28,6 +28,8 @@ export type Person = {
   card: string
   scenes: string[]
   later: Partial<Record<string, string>>
+  /** Always sees through the Vessel Cloth disguise (Prisoner and Outcast doors). */
+  seesThroughDisguise?: boolean
 }
 
 export const PEOPLE: Record<PersonId, Person> = {
@@ -319,6 +321,7 @@ She is a living person on purpose. She falls funny. She does not die easy. A twi
     card: `Sybella — older, blonde, kohl ruined on purpose, blindfold pushed up. A sand-skiff. Cold of faith. She was High Seeker Thalia's mentor, a faithful acolyte until the Cartel and the Dune-Strays made her bitter.
 
 She would bury a road in amber and sand before she let an enemy reach what is sealed in the First Spire. Danger first. Enemy only if you make one.`,
+    seesThroughDisguise: true,
     scenes: ['ch1:sybella', 'maw:smoke', 'maw:sybella', 'maw:sybella-shadow'],
     later: {
       'ch1:sybella': `The sky goes brass. The skiff comes in low. She has already let one name slip. She will not say it again.`,

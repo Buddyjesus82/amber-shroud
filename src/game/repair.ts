@@ -1,9 +1,11 @@
 import { ITEMS, getScene, hasScene } from './content'
-import type { DoorId, EquipSlot, GameState } from './types'
+import type { DoorId, GameState } from './types'
+import { EQUIP_SLOTS, slotsFor } from './kit'
 
-const EQUIP_SLOTS: EquipSlot[] = ['weapon', 'armor', 'garment']
-
-/** Old saves parked Vessel Cloth on armor. Move a piece onto the slot its catalog declares. */
+/**
+ * Old saves parked Vessel Cloth on armor, and the Dust Cloak on armor before the Cloak slot existed.
+ * Move a piece onto the slot its catalog declares.
+ */
 export function migrateEquipped(state: GameState): GameState {
   const prev = state.equipped ?? {}
   const next: GameState['equipped'] = { ...prev }
@@ -17,6 +19,7 @@ export function migrateEquipped(state: GameState): GameState {
       changed = true
       continue
     }
+    if (slotsFor(id).includes(slot)) continue
     if (want !== slot) {
       delete next[slot]
       changed = true

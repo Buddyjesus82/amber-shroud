@@ -64,6 +64,8 @@ import {
 import { talkFallback, talkIntentsFor } from './talk'
 import { applyScavenge, canScavenge, canSkim, skimHeat, skimLocked } from './scavenge'
 import { writeSave } from './save'
+import { bagCap, bagFree, bagLoad, bagUnits, disguiseActive, fitBag, gearLookLine, heldNames, heldOf, SCAV_PACK_LOCKED, SCAV_PACK_RECIPE, SLOT_LABEL, slotsFor, takeHeld, wornCount } from './kit'
+import { DISGUISE_SOFTEN_NOTE, disguiseArrival, softenCartel } from './disguise'
 import { repairSceneId } from './repair'
 import { isRumorCounter, matchRumorText, rumorChoices } from './rumors'
 import { matchShopText, moneyLabel, pickPay, shopChoices, vendorFor } from './trade'
@@ -304,7 +306,7 @@ function markCartelNotice(prev: GameState, next: GameState, fx: Effect): GameSta
     !!(fx.flag?.vatDripTaken && fx.heat?.cartel) ||
     !!fx.flag?.cartelNotice
   const job = !!fx.flag?.jaxsonInside && !prev.flags.jaxsonInside
-  const offLimits = next.sceneId === 'camp:guard' && prev.sceneId !== 'camp:guard' && !next.flags.jaxsonInside
+  const offLimits = next.sceneId === 'camp:guard' && prev.sceneId !== 'camp:guard' && !next.flags.jaxsonInside && !disguiseActive(next)
   if (!stole && !job && !offLimits) return next
   return { ...next, flags: { ...next.flags, cartelNotice: true } }
 }
@@ -386,12 +388,20 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
       }
     }
   }
+  const softened = softenCartel(state, fx)
+  if (softened !== fx) fx = { ...softened, flash: fx.flash ? `${fx.flash} ${DISGUISE_SOFTEN_NOTE}` : DISGUISE_SOFTEN_NOTE }
   const dest = resolveDest(state, fx)
   let next = applyDelta(state, fx)
   next.flash = fx.flash
+  if (fx.bagRetry) next = takeHeld(next)
+  if (fx.bagLeave) {
+    const flags = { ...next.flags }
+    delete flags.bagHeld
+    next.flags = flags
+  }
   if (fx.resolveEncounter) {
     const result = resolveEncounter(state, fx.resolveEncounter)
-    next = applyDelta(next, result.fx)
+    next = applyDelta(next, softenCartel(state, result.fx))
     if (result.fx.flag?.encounterGrip && !state.flags.encounterGrip) {
       next.flags = { ...next.flags, sandGripSeen: true, sandSignAt: next.ticks }
     }
@@ -664,8 +674,43 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     next.flash = undefined
   }
 
+  next = disguiseArrival(state, next)
+  // Walking off leaves anything the full bag could not take.
+  if (next.sceneId !== state.sceneId && next.flags.bagHeld && !fx.bagRetry) {
+    const flags = { ...next.flags }
+    delete flags.bagHeld
+    next.flags = flags
+  }
+  next = fitBag(state, next)
+
   next.updatedAt = Date.now()
   return persist(next)
+}
+
+/** Drop one of something from the bag. Worn pieces come off in Gear first. */
+export function dropItem(state: GameState, id: ItemId): GameState {
+  const def = ITEMS[id]
+  if (!def || !(state.items[id] ?? 0)) return persist({ ...state, flash: 'You do not have that to drop.' })
+  if ((state.items[id] ?? 0) <= wornCount(state, id)) {
+    return persist({ ...state, flash: `${def.name} is on your body. Unequip it before you drop it.` })
+  }
+  return applyEffect(state, { remove: { [id]: 1 }, bagRetry: !!state.flags.bagHeld, flash: `You drop the ${def.name}.` })
+}
+
+/** Craft: stitch a Scav Pack from 3 scrap and 1 Sinew Cord. Carries 14. */
+export function craftScavPack(state: GameState): GameState {
+  if ((state.items.scav_pack ?? 0) > 0) return persist({ ...state, flash: 'You already have a Scav Pack.' })
+  if (!canCraftScavPack(state)) return persist({ ...state, flash: `${SCAV_PACK_LOCKED}.` })
+  return applyEffect(state, {
+    remove: { scrap: SCAV_PACK_RECIPE.scrap, sinew_cord: SCAV_PACK_RECIPE.sinew_cord },
+    add: { scav_pack: 1 },
+    ticks: 1,
+    flash: 'You bend the scrap into a frame and stitch canvas over it with the cord. Scav Pack: your bag now carries 14.',
+  })
+}
+
+export function canCraftScavPack(state: GameState): boolean {
+  return !(state.items.scav_pack ?? 0) && (state.items.scrap ?? 0) >= SCAV_PACK_RECIPE.scrap && (state.items.sinew_cord ?? 0) >= SCAV_PACK_RECIPE.sinew_cord
 }
 
 export function travelTo(state: GameState, sceneId: string): GameState {
@@ -740,7 +785,7 @@ function verbLabel(tag: string): string {
 export function scavenge(state: GameState): GameState {
   // applyDelta only — never applyEffect, never goto, never hunter/crisis relocate.
   const pinned = { sceneId: state.sceneId, hubId: state.hubId, chapterId: state.chapterId }
-  let next = applyScavenge(state)
+  let next = fitBag(state, applyScavenge(state))
   const warm = amberFindSign(state, (next.items.glints ?? 0) > (state.items.glints ?? 0))
   if (warm) next = { ...next, flash: `${next.flash ?? ''} ${warm}`.trim(), flags: { ...next.flags, amberWarmSeen: true, sandSignAt: next.ticks } }
   return withVerb(
@@ -1065,6 +1110,12 @@ export function interpret(state: GameState, text: string): GameState {
   if (aimed?.kind === 'dir') {
     return withVerb(persist({ ...state, flash: directedLookFlash(state, aimed.dir), updatedAt: Date.now() }), 'look')
   }
+  if (aimed?.kind === 'target' && /^(?:my |your )?(?:gear|bag|pack|kit|self|myself|inventory|clothes|clothing)$/.test(aimed.target)) {
+    return withVerb(persist({ ...state, flash: gearLookLine(state), updatedAt: Date.now() }), 'look')
+  }
+  if (/^(?:craft|stitch|make)(?: a)?(?: scav)? (?:pack|bag)$|^craft$/.test(said)) {
+    return withVerb(craftScavPack(state), 'craft')
+  }
 
   // A line that names a visible, enabled button is that button. Shelf and rumor guesses come after.
   {
@@ -1217,13 +1268,38 @@ export function visibleChoices(state: GameState): Choice[] {
   }
   const knock = pressureChoices(state)
   if (knock.length) return knock
+  const bag = bagChoices(state)
   const authored = scopeDecoy(state, sceneOf(state).choices.filter((c) => check(c.show, state)))
   const rows = vendorFor(state.sceneId)
     ? shopChoices(state, authored).filter((c) => check(c.show, state))
     : isRumorCounter(state.sceneId)
       ? rumorChoices(state, authored).filter((c) => check(c.show, state))
       : authored
-  return withKaelenPass(state, rows)
+  return [...bag, ...withKaelenPass(state, rows)]
+}
+
+/** Bag full: drop something to take what is on the ground, or leave it. */
+function bagChoices(state: GameState): Choice[] {
+  const held = heldOf(state.flags)
+  if (!Object.keys(held).length) return []
+  const names = heldNames(held)
+  const rows: Choice[] = (Object.keys(state.items) as ItemId[])
+    .filter((id) => bagUnits(state, id) > 0 && !bagFree(id))
+    .map((id) => ({
+      id: `bag-drop-${id}`,
+      label: `Drop 1 ${ITEMS[id].name} to take the ${names}`,
+      sub: `Bag ${bagLoad(state)}/${bagCap(state)}. The ${ITEMS[id].name} stays here.`,
+      tone: 'quiet' as const,
+      effects: { remove: { [id]: 1 }, bagRetry: true, flash: `You drop the ${ITEMS[id].name} and pick up what fits.` },
+    }))
+  rows.push({
+    id: 'bag-leave',
+    label: `Leave the ${names}`,
+    sub: 'It stays on the ground.',
+    tone: 'quiet',
+    effects: { bagLeave: true, flash: `You leave the ${names} where it lies.` },
+  })
+  return rows
 }
 
 function withKaelenPass(state: GameState, rows: Choice[]): Choice[] {
@@ -1264,27 +1340,53 @@ export function sapLabel(n: number): string {
 
 export { healthLabel } from './encounter'
 
-export function equipItem(state: GameState, id: ItemId): GameState {
+const SLOT_ON: Record<EquipSlot, string> = {
+  head: 'on your head',
+  armor: 'on the body',
+  legs: 'on your legs',
+  hands: 'on your hands',
+  cloak: 'over your shoulders',
+  garment: 'worn',
+  weapon: 'in the main hand',
+  offhand: 'in the off hand',
+}
+
+const SLOT_OFF: Record<EquipSlot, string> = {
+  head: 'The head is bare.',
+  armor: 'Bare shoulders.',
+  legs: 'Bare legs.',
+  hands: 'Bare hands.',
+  cloak: 'The cloak comes off.',
+  garment: 'The garment comes off.',
+  weapon: 'Empty hand.',
+  offhand: 'The off hand is empty.',
+}
+
+/** Why a piece cannot go in a slot right now, or null if it can. */
+export function equipBlock(state: GameState, id: ItemId, slot: EquipSlot): string | null {
   const def = ITEMS[id]
-  if (!def?.slot) {
-    return persist({ ...state, flash: 'That does not wear. Carry it.' })
+  if (!def?.slot) return 'That does not wear. Carry it.'
+  if (!(state.items[id] ?? 0)) return 'You do not have it to equip.'
+  if (!slotsFor(id).includes(slot)) {
+    if (slot === 'weapon' && def.offhand === 'shield') return 'A shield goes in the Off hand.'
+    if (slot === 'offhand') return 'The Off hand takes a short blade, a club, or a shield.'
+    return `${def.name} goes in the ${SLOT_LABEL[def.slot]} slot.`
   }
-  if (!(state.items[id] ?? 0)) {
-    return persist({ ...state, flash: 'You do not have it to equip.' })
-  }
-  const equipped = { ...(state.equipped ?? {}), [def.slot]: id }
-  const flash =
-    def.slot === 'weapon'
-      ? `${def.name} in the hand.`
-      : def.slot === 'armor'
-        ? `${def.name} on the body.`
-        : def.slot === 'head'
-          ? `${def.name} at the brow.`
-          : `${def.name} worn.`
+  const other: EquipSlot | null = slot === 'weapon' ? 'offhand' : slot === 'offhand' ? 'weapon' : null
+  if (other && state.equipped?.[other] === id && (state.items[id] ?? 0) < 2) return `Your only ${def.name} is already in the other hand.`
+  return null
+}
+
+export function equipItem(state: GameState, id: ItemId, slot?: EquipSlot): GameState {
+  const def = ITEMS[id]
+  const to = slot ?? slotsFor(id)[0]
+  const block = to ? equipBlock(state, id, to) : 'That does not wear. Carry it.'
+  if (block || !to || !def) return persist({ ...state, flash: block ?? 'That does not wear. Carry it.' })
+  const equipped = { ...(state.equipped ?? {}), [to]: id }
   return persist({
     ...state,
     equipped,
-    flash,
+    flash: `${def.name} ${SLOT_ON[to]}.`,
     updatedAt: Date.now(),
   })
 }
@@ -1292,12 +1394,10 @@ export function equipItem(state: GameState, id: ItemId): GameState {
 export function unequipSlot(state: GameState, slot: EquipSlot): GameState {
   const equipped = { ...(state.equipped ?? {}) }
   delete equipped[slot]
-  const flash =
-    slot === 'weapon' ? 'Empty hand.' : slot === 'armor' ? 'Bare shoulders.' : slot === 'head' ? 'The brow is bare.' : 'The garment comes off.'
   return persist({
     ...state,
     equipped,
-    flash,
+    flash: SLOT_OFF[slot],
     updatedAt: Date.now(),
   })
 }

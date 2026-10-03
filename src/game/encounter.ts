@@ -1,7 +1,7 @@
 import { ITEMS } from './content/catalog'
 import { getScene } from './content'
 import { check } from './logic'
-import { equippedShell, equippedStrike } from './kit'
+import { disguiseActive, equippedShell, equippedStrike } from './kit'
 import { CARAPACE_HUNTER, SPINE_HUNTER } from './content/spineHunter'
 import type { Choice, Effect, FlagMap, GameState, ItemId } from './types'
 import { hash, OPENERS, sandAnswers, PAIR_LINE, sandGripLine, TERRAINS, terrainPool, type Terrain, type TerrainId } from './fightTricks'
@@ -380,7 +380,7 @@ export function encounterChoices(state: GameState): Choice[] {
     {
       id: 'enc-pull',
       label: 'Pull the tick off',
-      sub: 'No attack. Stops the Sap drain.',
+      sub: state.equipped?.hands === 'hide_gloves' ? 'Stops the Sap drain. The Hide Gloves let you strike in the same exchange.' : 'No attack. Stops the Sap drain.',
       show: { flag: 'encounterLatched' },
       effects: { resolveEncounter: 'pull', ticks: 1 },
     },
@@ -409,11 +409,26 @@ export function encounterChoices(state: GameState): Choice[] {
     {
       id: 'enc-cloak',
       label: 'Let the cloak eat the glance. Skip.',
-      show: { all: [{ slot: 'armor' }, { flagUnset: 'encounterRound' }] },
+      show: { all: [{ any: [{ slot: 'armor' }, { slot: 'cloak' }] }, { flagUnset: 'encounterRound' }] },
       effects: { resolveEncounter: 'skip' },
     },
   ]
+  if (disguiseCheck(state, spec.kind)) {
+    rows.push({
+      id: 'enc-disguise',
+      label: 'Walk past in the Vessel cloth',
+      sub: '3 in 4 they read a cup and let you by. No loot. If they look closely, the cloth is seen through and Cartel Heat rises by 2.',
+      effects: { resolveEncounter: 'disguise', ticks: 1 },
+    })
+  }
   return rows.filter((c) => check(c.show, state))
+}
+
+/** Cartel people on the road. The vent clerk at the sabotage stays a fight. */
+const CARTEL_KINDS: EncounterKind[] = ['patrol', 'handler', 'overseer']
+
+function disguiseCheck(state: GameState, kind: EncounterKind): boolean {
+  return disguiseActive(state) && CARTEL_KINDS.includes(kind) && state.sceneId !== 'camp:sabotage' && !state.flags.encounterRound
 }
 
 /** Percent chance a Run gets away. */
@@ -422,6 +437,7 @@ export function runChance(state: GameState): number {
   let p = 60 + terrainOf(state).run
   if (spec.kind === 'handler') p -= 20
   if (state.flags.encounterPair && Number(state.flags.encounterHp ?? 0) >= 2) p -= 10
+  if (state.equipped?.legs === 'shin_wraps') p += 10
   return Math.max(10, Math.min(90, p))
 }
 
@@ -487,7 +503,7 @@ function lootLine(add: Partial<Record<ItemId, number>>): string {
     const item = ITEMS[id]
     const name = item?.name ?? id
     const bit = `${name} +${n}`
-    if (item?.slot === 'weapon' || item?.slot === 'armor' || item?.slot === 'garment' || item?.slot === 'head') gear.push(name)
+    if (item?.slot) gear.push(name)
     else pockets.push(bit)
   }
   const held = pockets.join(', ')
@@ -587,12 +603,26 @@ function grabbable(state: GameState, kind: EncounterKind): ItemId | null {
  */
 export function resolveEncounter(
   state: GameState,
-  how: FightMove | 'skip',
+  how: FightMove | 'skip' | 'disguise',
   opts: { floor?: number } = {},
 ): { fx: Effect; flash: string } {
   const spec = encounterSpec(state)
   const f = state.flags
   const who = whoOf(spec)
+  if (how === 'disguise') {
+    if (roll(state, 'disguise', 4) > 0) {
+      const line = `${cap(who)} sees the gold thread and steps aside for a Vessel. You walk past. No loot.`
+      return holdCard(state, spec, line, line)
+    }
+    const line = `${cap(who)} looks at the cloth, then at your hands and your boots. "That is no Vessel." The cloth will not fool the Cartel again. Cartel Heat rises by 2.`
+    return {
+      fx: {
+        heat: { cartel: 2 },
+        flag: { encounterRound: 1, encounterAt: state.ticks, disguiseBlown: true, cartelNotice: true, encounterClash: `${line}\n\n${encounterCard({ ...state, flags: { ...f, encounterClash: '' } })}` },
+      },
+      flash: '',
+    }
+  }
   if (how === 'skip') {
     const line = `You give the ${spec.name} the road. No loot. No bill.`
     return holdCard(state, spec, line, line)
@@ -614,7 +644,8 @@ export function resolveEncounter(
   const round = Number(f.encounterRound ?? 0) + 1
   const max = state.healthMax ?? HEALTH_MAX
   const notes: string[] = []
-  const attacking = move === 'fight'
+  // Hide Gloves: pull the tick and strike in the same exchange.
+  const attacking = move === 'fight' || (move === 'pull' && !!f.encounterLatched && state.equipped?.hands === 'hide_gloves')
 
   // Swings after ground, feint, and a numb arm.
   let swingOut = c.swingOut

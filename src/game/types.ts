@@ -26,9 +26,20 @@ export type ItemId =
   | 'hide_wrap'
   | 'scav_wrap'
   | 'salve'
+  | 'head_wrap'
+  | 'shin_wraps'
+  | 'hide_gloves'
+  | 'scrap_buckler'
+  | 'sinew_cord'
+  | 'scav_pack'
+  | 'hauler_pack'
 
 export type ItemKind = 'gear' | 'currency' | 'key' | 'weapon' | 'armor' | 'garment'
-export type EquipSlot = 'weapon' | 'armor' | 'garment' | 'head'
+/**
+ * 'weapon' is the Main hand and 'armor' is the Body slot; the ids stay so old saves load unchanged.
+ * Labels live in kit.ts (SLOT_LABEL).
+ */
+export type EquipSlot = 'head' | 'armor' | 'legs' | 'hands' | 'cloak' | 'garment' | 'weapon' | 'offhand'
 
 export type Heat = {
   cartel: number
@@ -58,7 +69,7 @@ export type GameState = {
   flash?: string
   startedAt: number
   updatedAt: number
-  equipped: { weapon?: ItemId; armor?: ItemId; garment?: ItemId; head?: ItemId }
+  equipped: Partial<Record<EquipSlot, ItemId>>
   recentVerbs?: string[]
 }
 
@@ -107,7 +118,11 @@ export type Effect = {
   returnHunterFrom?: boolean
   returnCrisisFrom?: boolean
   /** Optional roam fight. Strike + 0-2 swing vs Shell, min 1 damage. */
-  resolveEncounter?: 'fight' | 'skip' | 'guard' | 'feint' | 'trick' | 'run' | 'pull' | 'deal'
+  resolveEncounter?: 'fight' | 'skip' | 'guard' | 'feint' | 'trick' | 'run' | 'pull' | 'deal' | 'disguise'
+  /** Bag full: take held finds back up to the free room. */
+  bagRetry?: boolean
+  /** Bag full: leave the held finds behind. */
+  bagLeave?: boolean
 }
 
 export type Choice = {
@@ -230,4 +245,10 @@ export type ItemDef = {
   strike?: number
   /** Armor compare-number. Shown as Shell. Never added to a roll. Garment does not stack into this. */
   shell?: number
+  /** Can also go in the Off hand: a short blade, a club, or a shield (shield goes only there). */
+  offhand?: 'blade' | 'club' | 'shield'
+  /** Bag capacity when this is the best bag you own. */
+  bag?: number
+  /** One-line perk, shown in Gear. */
+  perk?: string
 }

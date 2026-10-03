@@ -65,10 +65,53 @@ export function scavengeSalve(state: GameState): boolean {
 
 const SALVE_FIND = ' Under it, a thumb of Resin Salve in a twist of cloth.'
 
+/** Its own bucket (0-99), so the main find and the salve do not shift. */
+function extraBucket(state: GameState): number {
+  let h = (Math.imul(seed(state) + 0x51ed27, 2654435761) + 0x7f4a7c15) >>> 0
+  h ^= h >>> 16
+  h = Math.imul(h, 0x45d9f3b) >>> 0
+  h ^= h >>> 16
+  return h % 100
+}
+
+/** New-slot pieces turn up 4 in 100, the first one you do not own yet. */
+export const GEAR_FIND_PIECES: ItemId[] = ['hide_gloves', 'shin_wraps', 'head_wrap', 'scrap_buckler']
+export const GEAR_FIND_PCT = 4
+/** Sinew Cord, the craft material: 8 in 100. */
+export const CORD_FIND_PCT = 8
+/** Prisoner and Outcast: a Vessel Cloth, 2 in 100, once. */
+export const CLOTH_FIND_PCT = 2
+/** A Hauler Pack, 1 in 100, once. */
+export const HAULER_FIND_PCT = 1
+
+const EXTRA_LINES: Partial<Record<ItemId, string>> = {
+  hide_gloves: ' A pair of stiff Hide Gloves, still shaped to somebody\'s hands.',
+  shin_wraps: ' Hide strips wound into Shin Wraps, dropped by someone who ran.',
+  head_wrap: ' A Head Wrap, sun-bleached, long enough to cover the mouth.',
+  scrap_buckler: ' A riveted hubcap with a strap on the back. A Scrap Buckler.',
+  sinew_cord: ' A coil of Sinew Cord. Good for stitching.',
+  ceremonial_cloth: ' Folded under a stone: a Vessel Cloth, gold thread and all. Somebody walked as a cup out here and stopped.',
+  hauler_pack: ' A Hauler Pack, a Cartel frame with the sack still lashed on. It carries 20.',
+}
+
+export function scavengeExtra(state: GameState): ItemId | null {
+  const b = extraBucket(state)
+  const has = (id: ItemId) => (state.items[id] ?? 0) > 0
+  if (b < GEAR_FIND_PCT) return GEAR_FIND_PIECES.find((id) => !has(id)) ?? 'sinew_cord'
+  if (b < GEAR_FIND_PCT + CORD_FIND_PCT) return 'sinew_cord'
+  if (b >= 100 - HAULER_FIND_PCT) return has('hauler_pack') ? null : 'hauler_pack'
+  if (b >= 100 - HAULER_FIND_PCT - CLOTH_FIND_PCT) {
+    return state.door !== 'vessel' && !has('ceremonial_cloth') ? 'ceremonial_cloth' : null
+  }
+  return null
+}
+
 export function rollScavenge(state: GameState): ScavengeResult {
-  const base = rollFind(state)
-  if (!scavengeSalve(state)) return base
-  return { ...base, add: { ...base.add, salve: (base.add.salve ?? 0) + 1 }, flash: base.flash + SALVE_FIND }
+  let out = rollFind(state)
+  if (scavengeSalve(state)) out = { ...out, add: { ...out.add, salve: (out.add.salve ?? 0) + 1 }, flash: out.flash + SALVE_FIND }
+  const extra = scavengeExtra(state)
+  if (extra) out = { ...out, add: { ...out.add, [extra]: (out.add[extra] ?? 0) + 1 }, flash: out.flash + (EXTRA_LINES[extra] ?? '') }
+  return out
 }
 
 function rollFind(state: GameState): ScavengeResult {

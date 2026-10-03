@@ -1,3 +1,4 @@
+import { wornCount } from './kit'
 import { ITEMS } from './content/catalog'
 import type { Choice, Cond, Effect, FlagMap, GameState, ItemId } from './types'
 
@@ -75,6 +76,28 @@ const AUTH_PRODUCT = new Set([
 
 const KAELEN_STOCK: StockOffer[] = [
   {
+    id: 'hauler',
+    item: 'hauler_pack',
+    label: 'Buy a Hauler Pack',
+    sub: 'A bigger bag. Carries 20. Pay 2 Glints or 4 scrap.',
+    cost: { glints: 2, scrap: 4 },
+    onceFlag: 'kaelenSoldHauler',
+    extraFlag: { kaelenSoldHauler: true },
+    flash: '"Cartel frame. The hauler who owned it does not need it. It carries twenty."',
+    tags: ['pack', 'bag', 'hauler', 'sack'],
+  },
+  {
+    id: 'cloth',
+    item: 'ceremonial_cloth',
+    label: 'Buy a Vessel Cloth — two Glints',
+    sub: 'Garment. Worn, Cartel eyes read a cup until someone looks closely. Equip it in Gear.',
+    cost: { glints: 2 },
+    onceFlag: 'kaelenSoldCloth',
+    extraFlag: { kaelenSoldCloth: true },
+    flash: '"Gold thread off a Vessel who stopped walking. Wear it near the Cartel and they see a cup. Do not let anyone look at you long."',
+    tags: ['cloth', 'vessel', 'gold', 'disguise', 'garment'],
+  },
+  {
     id: 'drop',
     item: 'vial_drop',
     label: 'Buy a Drop of Oasis Sap — one scrap',
@@ -119,7 +142,7 @@ const KAELEN_STOCK: StockOffer[] = [
     id: 'cloak',
     item: 'dust_cloak',
     label: 'Buy a Dust Cloak',
-    sub: 'Armor · Shell 3. Hides a silhouette. Does not hide Heat. Pay with a Glint or with scrap.',
+    sub: 'Cloak · Shell 2. Hides a silhouette. Does not hide Heat. Pay with a Glint or with scrap.',
     cost: { glints: 1, scrap: 2 },
     onceFlag: 'kaelenSoldCloak',
     extraFlag: { kaelenSoldCloak: true },
@@ -176,7 +199,7 @@ const SILAS_STOCK: StockOffer[] = [
     id: 'cloak',
     item: 'dust_cloak',
     label: 'Buy a Dust Cloak',
-    sub: 'Dune canvas. Armor · Shell 3. Hides a silhouette. Does not hide Heat. Pay with a Glint or with scrap.',
+    sub: 'Dune canvas. Cloak · Shell 2. Hides a silhouette. Does not hide Heat. Pay with a Glint or with scrap.',
     cost: { glints: 1, scrap: 2 },
     onceFlag: 'silasSoldCloak',
     extraFlag: { silasSoldCloak: true },
@@ -243,17 +266,19 @@ export function kaelenOffers(state: GameState): StockOffer[] {
     hub === 'spine'
       ? {
           ...kaelenPiece('cloak'),
-          sub: 'Dune canvas. Armor · Shell 3. Hides a silhouette. Does not hide Heat. Pay with a Glint or with scrap.',
+          sub: 'Dune canvas. Cloak · Shell 2. Hides a silhouette. Does not hide Heat. Pay with a Glint or with scrap.',
         }
       : hub === 'threshold'
         ? {
             ...kaelenPiece('cloak'),
-            sub: 'Hymn-dust canvas. Armor · Shell 3. Hides a silhouette. Does not hide Heat. Pay with a Glint or with scrap.',
+            sub: 'Hymn-dust canvas. Cloak · Shell 2. Hides a silhouette. Does not hide Heat. Pay with a Glint or with scrap.',
           }
         : kaelenPiece('cloak')
   const rows = [...basics, wrap, cloak]
   const tone = KNIFE_TONE[hub] ?? KNIFE_TONE.camp04
   rows.push({ ...kaelenPiece('knife'), sub: tone.sub, flash: tone.flash })
+  rows.push(kaelenPiece('hauler'))
+  if (state.door !== 'vessel') rows.push(kaelenPiece('cloth'))
   return rows
 }
 
@@ -402,12 +427,11 @@ function sellPay(id: ItemId): Money | null {
   return null
 }
 
-/** Spare copies — equipped weapon, armor, and garment stay off the list until unequipped in Gear. */
+/** Spare copies — anything on the body stays off the list until unequipped in Gear. */
 export function saleableCount(state: GameState, id: ItemId): number {
   const n = state.items[id] ?? 0
   if (n <= 0) return 0
-  const worn = state.equipped?.weapon === id || state.equipped?.armor === id || state.equipped?.garment === id
-  return worn ? Math.max(0, n - 1) : n
+  return Math.max(0, n - wornCount(state, id))
 }
 
 function knownFlag(vendor: Vendor, sceneId: string, extra?: FlagMap): FlagMap {
