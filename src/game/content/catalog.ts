@@ -97,7 +97,7 @@ export const ITEMS: Record<ItemId, ItemDef> = {
     kind: 'weapon',
     slot: 'weapon',
     strike: 3,
-    desc: "Oil-Tooth's steel. Strike 3. Hotwires Striders. Pries bolts, wire, and lies. Equip it if you mean to swing.",
+    desc: "Jaxson's steel. Strike 3. Hotwires Striders. Pries bolts, wire, and lies. Equip it if you mean to swing.",
   },
   rusted_dagger: {
     id: 'rusted_dagger',
@@ -233,7 +233,7 @@ export const DOORS: Record<string, DoorDef> = {
     place: 'Ironwood Camp-04',
     epithet: 'the Bleed-Cut',
     blurb:
-      'Holding pens. Cartel Scrip only. The Great Bleed is about to hit. You wake with blood on the back of your head and no faction\'s kit. Oil-Tooth hotwires. Kaelen the Sifter, once, sells rumors at the Wire.',
+      'Holding pens. Cartel Scrip only. The Great Bleed is about to hit. You wake with blood on the back of your head and no faction\'s kit. Jaxson hotwires. Kaelen the Sifter, once, sells rumors at the Wire.',
     sap: 4,
     heat: { cartel: 3, seekers: 0, strays: 1 },
     items: { scrip: 2 },
@@ -293,7 +293,7 @@ export const HUBS: Record<string, HubDef> = {
       { id: 'vents', name: 'Steam Vents', sceneId: 'camp:vents' },
       { id: 'guard', name: 'Guard Station', sceneId: 'camp:guard' },
       { id: 'bay', name: 'Skiff Bay', sceneId: 'camp:bay' },
-      { id: 'lean', name: "Oil-Tooth's Stall", sceneId: 'camp:lean' },
+      { id: 'lean', name: "Jaxson's Stall", sceneId: 'camp:lean' },
       { id: 'tower', name: 'Overseer', sceneId: 'camp:tower' },
       { id: 'wire', name: 'The Wire', sceneId: 'camp:wire' },
     ],

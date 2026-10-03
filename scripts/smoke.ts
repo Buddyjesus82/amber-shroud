@@ -147,7 +147,7 @@ function prisonerToSybella(s: GameState): GameState {
   s = pick(s, ids(s).includes('wrench') ? 'wrench' : 'crawl')
   assert(s.sceneId === 'ch1:p-clerk', `prisoner meets Clerk Rell (got ${s.sceneId})`)
   s = pick(s, ids(s).includes('scrip') ? 'scrip' : 'bolt')
-  assert(s.sceneId === 'ch1:p-oil', `prisoner meets Oil-Tooth on the stolen hull (got ${s.sceneId})`)
+  assert(s.sceneId === 'ch1:p-oil', `prisoner meets Jaxson on the stolen hull (got ${s.sceneId})`)
   s = pick(s, ids(s).includes('ride') ? 'ride' : ids(s).includes('tag') ? 'tag' : 'walk')
   assert(s.sceneId === 'ch1:p-ossa', `prisoner meets Ossa as escaped property (got ${s.sceneId})`)
   s = pick(s, ids(s).includes('wrench') ? 'wrench' : 'skip')
@@ -331,12 +331,12 @@ assert(blocked.sceneId === 'camp:cages', 'illegal travel stays in the pens')
 assert(blocked.flash?.toLowerCase().includes('no road'), 'illegal travel explains the missing road')
 s = pick(s, 'jaxson')
 s = pick(s, 'inside')
-assert(s.items.wrench === 1 && s.flags.jaxsonInside, 'Oil-Tooth is the inside man — wrench for hotwire')
+assert(s.items.wrench === 1 && s.flags.jaxsonInside, 'Jaxson is the inside man — wrench for hotwire')
 s = equipItem(s, 'wrench')
 assert(s.equipped.weapon === 'wrench', 'Gear can equip the wrench')
 assert(ids(s).includes('station'), 'stall offers the west vent after the job — no hub-chip required')
 s = travelTo(s, 'camp:vats')
-assert(ids(s).includes('wrench'), 'vat wrench path after Oil-Tooth')
+assert(ids(s).includes('wrench'), 'vat wrench path after Jaxson')
 s = pick(s, 'wrench')
 assert((s.items.vial_drop ?? 0) >= 1, 'wrench vat extra drop, no extra heat')
 assert(s.heat.cartel === 3, 'quiet wrench does not add cartel heat')
@@ -345,8 +345,8 @@ s = newGame('prisoner')
 s = pick(s, 'pens')
 s = travelTo(s, 'camp:lean')
 s = interpret(s, 'ask about kallik cache red maw')
-assert(s.sceneId === 'camp:wire' || s.sceneId === 'camp:jaxson-cache', 'cache rumor is Kaelen, not Oil-Tooth')
-assert(!s.flags.hungerKnown, 'Oil-Tooth does not sell the Hunger heading')
+assert(s.sceneId === 'camp:wire' || s.sceneId === 'camp:jaxson-cache', 'cache rumor is Kaelen, not Jaxson')
+assert(!s.flags.hungerKnown, 'Jaxson does not sell the Hunger heading')
 
 s = newGame('prisoner')
 s = pick(s, 'pens')
@@ -446,7 +446,7 @@ s = pick(s, 'sabotage')
 s = crackVent(s)
 assert(s.flags.guardDown, 'sabotage guard station')
 s = pick(s, 'hotwire')
-assert(s.flags.striderHot, 'Oil-Tooth hotwires the Strider')
+assert(s.flags.striderHot, 'Jaxson hotwires the Strider')
 s = applyEffect(s, { sap: 4 })
 s = applyEffect(s, { startChapter: 'cache-run', goto: 'ch1:leave', ticks: 1 })
 s = pick(s, 'go')
@@ -456,7 +456,7 @@ while (s.flags.encounterHere) {
   else if (ids(s).includes('enc-continue')) s = pick(s, 'enc-continue')
   else break
 }
-assert(ids(s).includes('wrench'), 'cache run wrench branch from Oil-Tooth kit')
+assert(ids(s).includes('wrench'), 'cache run wrench branch from Jaxson kit')
 assert(!ids(s).includes('silas'), 'prisoner fence has no Silas cut')
 assert(!ids(s).includes('oram'), 'prisoner fence has no Oram heading')
 s = pick(s, 'wrench')
@@ -464,7 +464,7 @@ assert(s.flags.wrenchCut, 'wrench cut flag')
 assert(s.sceneId === 'ch1:p-clerk', 'prisoner meets Clerk Rell, not Ossa yet')
 assert(ids(s).includes('scrip'), 'Rell takes scrip as fake papers')
 s = pick(s, 'scrip')
-assert(s.sceneId === 'ch1:p-oil', 'Oil-Tooth is on the stolen hull, not a cairn shop')
+assert(s.sceneId === 'ch1:p-oil', 'Jaxson is on the stolen hull, not a cairn shop')
 s = pick(s, 'walk')
 assert(s.sceneId === 'ch1:p-ossa', 'Ossa on escape terms')
 assert(ids(s).includes('wrench'), 'ossa wrench lash still a tool')
@@ -683,7 +683,7 @@ assert(/you are the lookout/i.test(bodyOf(s)), 'lookout bay is his working beat'
 assert(ids(s).includes('hotwire'), 'lookout offers the hotwire cover')
 {
   const covered = interpret(s, 'talk')
-  assert(/cover me/i.test(covered.flash ?? ''), 'Do talk on the lookout is Oil-Tooth')
+  assert(/cover me/i.test(covered.flash ?? ''), 'Do talk on the lookout is Jaxson')
   assert(covered.sceneId === 'camp:bay', 'lookout talk stays on the bay')
 }
 s = pick(s, 'hotwire')
@@ -714,10 +714,10 @@ assert(!ids(s).includes('up-vessel'), 'her Drop is Seekers-only')
 
 s = newGame('prisoner')
 s = pick(s, 'pens')
-assert(bodyOf(s).includes('cybernetic brass jaw'), 'first Oil-Tooth meet is the full card')
+assert(bodyOf(s).includes('cybernetic brass jaw'), 'first Jaxson meet is the full card')
 assert(!ids(s).some((id) => id.startsWith('who-')), 'no dedicated Who is button')
-s = interpret(s, 'who is oil-tooth')
-assert(s.flash?.includes('cybernetic brass jaw'), 'who is Oil-Tooth returns the full card')
+s = interpret(s, 'who is jaxson')
+assert(s.flash?.includes('cybernetic brass jaw'), 'who is Jaxson returns the full card')
 assert(s.flags.metOilTooth, 'asking who marks the meet')
 assert(!bodyOf(s).includes('cybernetic brass jaw'), 'later pens show what he is doing now')
 s = interpret(s, 'xyzzy poetry please')
@@ -727,15 +727,15 @@ s = newGame('prisoner')
 s = pick(s, 'pens')
 s = pick(s, 'jaxson')
 s = pick(s, 'leave')
-assert(s.flags.metOilTooth && s.sceneId === 'camp:lean', 'first Oil-Tooth talk is done at the stall')
-assert(playCoverKey(s, sceneOf(s)) === 'oiltooth', 'the stall still uses Oil-Tooth art')
+assert(s.flags.metOilTooth && s.sceneId === 'camp:lean', 'first Jaxson talk is done at the stall')
+assert(playCoverKey(s, sceneOf(s)) === 'oiltooth', 'the stall still uses Jaxson art')
 s = applyEffect(s, { sap: 6 })
 s = walkTo(s, 'camp:bay')
 assert(s.sceneId === 'camp:bay', 'Map reaches Skiff Bay after the first talk')
 assert(playCoverKey(s, sceneOf(s)) === 'skiffbay', 'Skiff Bay uses its own backdrop after the first talk')
-assert(!/under a hull/i.test(bodyOf(s)), 'Skiff Bay does not stage Oil-Tooth after the first talk')
+assert(!/under a hull/i.test(bodyOf(s)), 'Skiff Bay does not stage Jaxson after the first talk')
 assert(/Pike/.test(bodyOf(s)) && /Sarn/.test(bodyOf(s)) && /Vetch/.test(bodyOf(s)), 'bay names the other prisoners')
-assert(!/None of them is Oil-Tooth/i.test(bodyOf(s)), 'Skiff Bay does not say who the prisoners are not')
+assert(!/None of them is Jaxson/i.test(bodyOf(s)), 'Skiff Bay does not say who the prisoners are not')
 assert(/Ask nicely and you get a short answer/i.test(bodyOf(s)), 'Skiff Bay keeps the short-answer warning')
 assert(!ids(s).includes('hotwire'), 'hotwire stays off the bay until the station is down')
 {
@@ -744,8 +744,8 @@ assert(!ids(s).includes('hotwire'), 'hotwire stays off the bay until the station
   assert(!talked.flags.jaxsonInside && !talked.flags.hungerKnown, 'bay talk does not open a quest')
   const named = interpret(s, 'hello sarn')
   assert(/sarn/i.test(named.flash ?? '') && !/miss/i.test(named.flash ?? ''), 'Do hello Sarn is authored')
-  const absent = interpret(s, 'talk to oil-tooth')
-  assert(/stall|next bunk/i.test(absent.flash ?? ''), 'Oil-Tooth is at the stall or the bunk, not the bay')
+  const absent = interpret(s, 'talk to jaxson')
+  assert(/stall|next bunk/i.test(absent.flash ?? ''), 'Jaxson is at the stall or the bunk, not the bay')
   const bare = interpret(s, 'steal from pike')
   assert(!(s.items.wrench ?? 0), 'this walk reaches the bay without the wrench')
   assert(!bare.flags.bayPikeTook && (bare.items.scrap ?? 0) === (s.items.scrap ?? 0), 'no wrench, no resin bolt')
@@ -839,7 +839,7 @@ assert(foundDrop, 'Scavenge can yield a Drop of Sap, not only crisis rescues')
 s = newGame('prisoner')
 s = pick(s, 'pens')
 s = pick(s, 'jaxson')
-assert(ids(s).includes('inside'), 'first Oil-Tooth pitch offers the inside job')
+assert(ids(s).includes('inside'), 'first Jaxson pitch offers the inside job')
 s = pick(s, 'leave')
 assert(!s.flags.jaxsonInside && !s.items.wrench, 'leaving the pitch does not take the job')
 assert(ids(s).includes('inside'), 'stall still offers the job after you walk off')
@@ -996,13 +996,13 @@ assert(!/carrying sap like a signal fire/i.test(bodyOf(s)), 'empty sap is not a 
 s = newGame('prisoner')
 s = pick(s, 'pens')
 s = interpret(s, 'hello')
-assert(s.flash && !s.flash.toLowerCase().includes('miss'), 'hello to Oil-Tooth is authored')
+assert(s.flash && !s.flash.toLowerCase().includes('miss'), 'hello to Jaxson is authored')
 s = interpret(s, 'trade')
-assert(s.flash?.toLowerCase().includes('kaelen'), 'Oil-Tooth points trade at Kaelen')
+assert(s.flash?.toLowerCase().includes('kaelen'), 'Jaxson points trade at Kaelen')
 s = interpret(s, 'threaten')
-assert(s.flash && !s.flash.toLowerCase().includes('miss'), 'threaten Oil-Tooth is authored')
+assert(s.flash && !s.flash.toLowerCase().includes('miss'), 'threaten Jaxson is authored')
 s = interpret(s, 'help')
-assert(s.flash && !s.flash.toLowerCase().includes('miss'), 'help Oil-Tooth is authored')
+assert(s.flash && !s.flash.toLowerCase().includes('miss'), 'help Jaxson is authored')
 s = applyEffect(s, { sap: 6, goto: 'camp:kaelen', enterHub: 'camp04' })
 s = interpret(s, 'help')
 assert(s.flash && !s.flash.toLowerCase().includes('miss'), 'help Kaelen is authored')
@@ -2247,8 +2247,8 @@ assert(html.includes('apple-touch.png?v=13'), 'apple-touch-icon is cache-busted 
 {
   const p = newGame('prisoner')
   assert(playCoverKey(p, sceneOf(p)) === 'camp04', 'Prisoner opening uses Camp-04 art')
-  assert(playCoverKey(p, { id: 'camp:cages' }) === 'oiltooth', 'Holding Pens keep Oil-Tooth on the first-meet cover')
-  assert(playCoverKey(p, { id: 'camp:jaxson' }) === 'oiltooth', 'Oil-Tooth talk uses his cover')
+  assert(playCoverKey(p, { id: 'camp:cages' }) === 'oiltooth', 'Holding Pens keep Jaxson on the first-meet cover')
+  assert(playCoverKey(p, { id: 'camp:jaxson' }) === 'oiltooth', 'Jaxson talk uses his cover')
   const o = newGame('outcast')
   assert(playCoverKey(o, sceneOf(o)) === 'spine', 'Outcast opening uses Spine art')
   const ridge = applyEffect(pick(o, 'stand'), { sap: 6 })
@@ -2259,7 +2259,7 @@ assert(html.includes('apple-touch.png?v=13'), 'apple-touch-icon is cache-busted 
   assert(playCoverKey(well, { id: 'roam:kaelen' }) === 'kaelen', 'Kaelen roaming pass still uses Kaelen art')
   assert(!PEOPLE.silas.scenes.includes('spine:ridge'), 'Silas cover list excludes the ridge')
   assert(!PEOPLE.kaelen.scenes.includes('spine:well'), 'Kaelen cover list excludes the dry well')
-  assert(!PEOPLE.oiltooth.scenes.includes('camp:bay'), 'Oil-Tooth cover list excludes Skiff Bay')
+  assert(!PEOPLE.oiltooth.scenes.includes('camp:bay'), 'Jaxson cover list excludes Skiff Bay')
   const v = newGame('vessel')
   assert(playCoverKey(v, sceneOf(v)) === 'threshold', 'Vessel opening uses Threshold art')
   const hunt = applyEffect(p, { goto: 'camp:hunter' })
@@ -2296,15 +2296,15 @@ s = pick(s, 'pens')
 {
   const looked = interpret(s, 'look around')
   assert(looked.sceneId === 'camp:cages', 'look around stays in the pens')
-  assert(/pens|cage|Oil-Tooth/i.test(looked.flash ?? ''), 'look around names the pens')
+  assert(/pens|cage|Jaxson/i.test(looked.flash ?? ''), 'look around names the pens')
   assert(!/miss/i.test(looked.flash ?? ''), 'look around is not a miss')
   const examined = interpret(s, 'examine scrip')
   assert(examined.sceneId === 'camp:cages' && /scrip|paper|Ironwood/i.test(examined.flash ?? ''), 'examine names a thing in the pack')
   const noFight = interpret(s, 'attack')
   assert(noFight.sceneId === 'camp:cages' && !noFight.flags.encounterHere, 'attack in the pens does not invent a fight')
-  assert(/wrench|throat|shield|fluent|not/i.test(noFight.flash ?? '') && !/miss/i.test(noFight.flash ?? ''), 'attack on Oil-Tooth is a threaten, not a brick wall')
+  assert(/wrench|throat|shield|fluent|not/i.test(noFight.flash ?? '') && !/miss/i.test(noFight.flash ?? ''), 'attack on Jaxson is a threaten, not a brick wall')
   const bribed = interpret(s, 'bribe')
-  assert(/job|wrench|palm/i.test(bribed.flash ?? '') && !/miss/i.test(bribed.flash ?? ''), 'bribe Oil-Tooth is authored')
+  assert(/job|wrench|palm/i.test(bribed.flash ?? '') && !/miss/i.test(bribed.flash ?? ''), 'bribe Jaxson is authored')
   const taken = interpret(s, 'take')
   assert(/shelf|button/i.test(taken.flash ?? ''), 'take from a person is refused in one line')
 }
@@ -2375,7 +2375,7 @@ s = pick(s, 'keep')
   assert(/resin bolt/i.test(bayLook.flash ?? ''), 'Skiff Bay look points at Pike’s bolt')
   assert(/Sarn/i.test(bayLook.flash ?? '') && /Vetch/i.test(bayLook.flash ?? ''), 'Skiff Bay look points at Sarn and Vetch')
   assert(/wrench/i.test(bayLook.flash ?? ''), 'Skiff Bay look points at the wrench trade')
-  assert(/South: Oil-Tooth's Stall, The Wire/.test(bayLook.flash ?? ''), 'Skiff Bay south exits share one label')
+  assert(/South: Jaxson's Stall, The Wire/.test(bayLook.flash ?? ''), 'Skiff Bay south exits share one label')
   assert(!/South:[\s\S]*South:/.test(exitsOf(bayLook.flash ?? '')), 'Skiff Bay exits do not repeat South')
   assert(bayLook.flags.bayLooked, 'room look still reveals the bay')
   const spent = applyEffect(bay, {
@@ -2394,17 +2394,17 @@ s = pick(s, 'keep')
     applyEffect(newGame('prisoner'), { goto: 'camp:cages', enterHub: 'camp04', flag: { encounterAt: 9999 } }),
     'l',
   )
-  assert(/cage|Oil-Tooth/i.test(alias.flash ?? ''), 'l is a room look')
+  assert(/cage|Jaxson/i.test(alias.flash ?? ''), 'l is a room look')
   const here = interpret(
     applyEffect(newGame('prisoner'), { goto: 'camp:cages', enterHub: 'camp04', flag: { encounterAt: 9999 } }),
     'look here',
   )
-  assert(/cage|Oil-Tooth/i.test(here.flash ?? ''), 'look here is a room look')
+  assert(/cage|Jaxson/i.test(here.flash ?? ''), 'look here is a room look')
   const room = interpret(
     applyEffect(newGame('prisoner'), { goto: 'camp:cages', enterHub: 'camp04', flag: { encounterAt: 9999 } }),
     'examine room',
   )
-  assert(/cage|Oil-Tooth/i.test(room.flash ?? ''), 'examine room is a room look')
+  assert(/cage|Jaxson/i.test(room.flash ?? ''), 'examine room is a room look')
 }
 
 s = newGame('prisoner')
@@ -2636,7 +2636,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v46'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v47'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -2658,7 +2658,7 @@ assert(css.includes('--story-top: min(calc(56.25cqi * var(--band-bot, 0.5)), 50c
 assert(css.includes('rgba(12, 7, 4, 0.58)'), 'story scrim stays translucent so cover art shows through')
 assert(!css.includes('rgba(12, 7, 4, 0.88)'), 'story scrim is lighter than the v32 slab')
 const playSrc = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
-assert(playSrc.includes('?v=46'), 'scene cover URLs are cache-busted with the service worker')
+assert(playSrc.includes('?v=47'), 'scene cover URLs are cache-busted with the service worker')
 assert(!css.includes('object-position: center 68%'), 'scene art no longer crops toward the ground')
 assert(!css.includes('height: 56px'), 'short phones no longer squash covers into a head-cropping strip')
 assert(css.includes('place-items: center'), 'game screen is centered on the backdrop')
@@ -2768,8 +2768,8 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(afterBolt.flags.lashCord && !(afterBolt.items.wrench ?? 0), 'the cord trade still works after the bolt')
   const oil = applyEffect(newGame('prisoner'), { goto: 'camp:jaxson', flag: { encounterAt: 9999 } })
   const oilHelp = helpEntries(oil, visibleChoices(oil).map((c) => c.label)).map((e) => e.command)
-  assert(!oilHelp.some((c) => /oil-tooth/i.test(c)), 'Oil-Tooth conversation does not list him again')
-  assert(!oilHelp.some((c) => /^go\b/.test(c)), 'Oil-Tooth conversation does not list map exits')
+  assert(!oilHelp.some((c) => /jaxson/i.test(c)), 'Jaxson conversation does not list him again')
+  assert(!oilHelp.some((c) => /^go\b/.test(c)), 'Jaxson conversation does not list map exits')
   assertHelpResolves(applyEffect(bay, { flag: { bayLooked: true } }), 'bay after look')
   assertHelpResolves(applyEffect(newGame('prisoner'), { goto: 'camp:kaelen', flag: quiet }), 'kaelen')
   assertHelpResolves(applyEffect(newGame('prisoner'), { goto: 'camp:yard', flag: quiet }), 'yard')
@@ -2865,7 +2865,7 @@ function assertHelpResolves(s: GameState, where: string) {
     const showing = { ...held, flags: { ...held.flags, kaelenPassing: true, kaelenHub: held.hubId } }
     assert(!ids(showing).includes('kaelen-pass'), `Kaelen does not stop in ${sceneId}`)
   }
-  assert(/Kaelen/.test(bodyOf(applyEffect(newGame('prisoner'), { goto: 'camp:jaxson' }))), 'Oil-Tooth may still name Kaelen')
+  assert(/Kaelen/.test(bodyOf(applyEffect(newGame('prisoner'), { goto: 'camp:jaxson' }))), 'Jaxson may still name Kaelen')
 }
 
 {
@@ -3331,9 +3331,9 @@ function assertHelpResolves(s: GameState, where: string) {
 }
 
 
-// ── Outcast rework: Kaelen and Oil-Tooth are cameos only; the brand; Korvan, Mira, Corvin; salve finds ──
+// ── Outcast rework: Kaelen and Jaxson are cameos only; the brand; Korvan, Mira, Corvin; salve finds ──
 {
-  const PRISONER_NAMES = /Kaelen|Sifter|Jaxson|Oil-Tooth|Oil Tooth|\bVance\b/
+  const PRISONER_NAMES = /Kaelen|Sifter|Jaxson|\bVance\b/
   // Kaelen's roaming pack passing by is the one cameo allowed on the Outcast road.
   const CAMEO_ALLOW = new Set(['roam:kaelen'])
   const PRISONER_FLAGS = new Set(['oilRide', 'oilRoad', 'oilTag', 'jaxsonInside', 'oilRefused', 'oilResentful', 'oilMended', 'oilAlly', 'oilJob', 'leftCamp', 'guardDown', 'wireCut', 'campLockdown', 'quietFence', 'bayLooked'])
@@ -3389,7 +3389,7 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(!ALL_SCENES.some((sc) => sc.id === 'spine:kaelen' || sc.id === 'spine:kaelen-rumors'), 'the Spine Kaelen counter scenes are gone')
   const outcastHeat = JSON.stringify(heatFactions('outcast'))
   assert(!PRISONER_NAMES.test(outcastHeat) && /Silas sells minutes/.test(outcastHeat), 'Outcast Heat cards name no Prisoner NPC')
-  assert(/Oil-Tooth/.test(heatFactions('prisoner').strays.watch), 'Prisoner Stray Heat still names Oil-Tooth')
+  assert(/Jaxson/.test(heatFactions('prisoner').strays.watch), 'Prisoner Stray Heat still names Jaxson')
   assert(!PRISONER_NAMES.test(JSON.stringify(heatFactions('vessel').strays)), 'Vessel Stray Heat names no Prisoner NPC')
   for (const rule of GLOBAL_INTENTS) {
     if (shutForOutcast(rule.show)) continue
@@ -3495,7 +3495,7 @@ function assertHelpResolves(s: GameState, where: string) {
   // The Maw wreck: a short nameless cameo off the Prisoner door.
   const wreck = applyEffect(newGame('outcast'), { goto: 'maw:tuner', enterHub: 'redmaw' })
   assert(!PRISONER_NAMES.test(bodyOf(wreck)) && /brass jaw/.test(bodyOf(wreck)) && ids(wreck).includes('rest'), 'Outcast wreck is a nameless cameo with the bench')
-  assert(/Oil-Tooth/.test(bodyOf(applyEffect(newGame('prisoner'), { goto: 'maw:tuner', enterHub: 'redmaw' }))), 'Prisoner wreck still names Oil-Tooth')
+  assert(/Jaxson/.test(bodyOf(applyEffect(newGame('prisoner'), { goto: 'maw:tuner', enterHub: 'redmaw' }))), 'Prisoner wreck still names Jaxson')
 
   // Resin Salve: a rare scavenge find on every door; humans sometimes carry one, beasts never.
   assert(SCAVENGE_SALVE_PCT >= 5 && SCAVENGE_SALVE_PCT <= 8, 'scavenge salve odds are 5-8%')
@@ -4142,8 +4142,24 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(/Bag \d+\/10/.test(interpret(b0, 'look at my gear').flash ?? ''), 'look at my gear shows the bag')
   // scavenge extras and Kaelen
   assert(GS.GEAR_FIND_PIECES.length === 4 && GS.CLOTH_FIND_PCT > 0 && GS.HAULER_FIND_PCT > 0 && GS.CORD_FIND_PCT > 0, 'scavenge has gear, cord, cloth, and hauler finds')
-  assert(!kaelenOffers(applyEffect(newGame('vessel'), { goto: 'camp:kaelen' })).some((o) => o.id === 'cloth'), 'Kaelen sells no cloth in the Vessel door')
-  assert(kaelenOffers(applyEffect(newGame('prisoner'), { goto: 'camp:kaelen' })).some((o) => o.id === 'cloth'), 'Kaelen sells Vessel Cloth in the Prisoner door')
+  // Kaelen is a Prisoner NPC: the Hauler Pack and Vessel Cloth come from him only in that door.
+  for (const door of ['outcast', 'vessel'] as const) {
+    for (const where of ['camp:kaelen', 'thresh:kaelen', 'roam:kaelen']) {
+      const offers = kaelenOffers(applyEffect(newGame(door), { goto: where })).map((o) => o.id)
+      assert(!offers.includes('cloth') && !offers.includes('hauler'), `${door}: Kaelen sells no Hauler Pack or Vessel Cloth at ${where}`)
+    }
+  }
+  const pk = kaelenOffers(applyEffect(newGame('prisoner'), { goto: 'camp:kaelen' })).map((o) => o.id)
+  assert(pk.includes('cloth') && pk.includes('hauler'), 'Prisoner: Kaelen sells the Hauler Pack and Vessel Cloth')
+  const silasO = interpret({ ...applyEffect(newGame('outcast'), { goto: 'spine:silas', flag: { encounterAt: 99999 } }), items: { glints: 5, scrap: 5 } }, 'buy a hauler pack with glints')
+  assert(silasO.items.hauler_pack === 1, 'Outcast: Silas sells the Hauler Pack')
+  const silasP = interpret({ ...applyEffect(newGame('prisoner'), { goto: 'spine:silas', flag: { encounterAt: 99999 } }), items: { glints: 5, scrap: 5 } }, 'buy a hauler pack with glints')
+  assert(!silasP.items.hauler_pack, 'Prisoner: Silas does not sell the Hauler Pack')
+  const zafV = interpret({ ...applyEffect(newGame('vessel'), { goto: 'maw:zafir', enterHub: 'redmaw', flag: { encounterAt: 99999, zafirMet: true } }), items: { glints: 5, scrap: 5 } }, 'buy a hauler pack with glints')
+  assert(zafV.items.hauler_pack === 1, 'Vessel: Zafir sells the Hauler Pack')
+  const zafO = interpret({ ...applyEffect(newGame('outcast'), { goto: 'maw:zafir', enterHub: 'redmaw', flag: { encounterAt: 99999, zafirMet: true } }), items: { glints: 5, scrap: 5 } }, 'buy a hauler pack with glints')
+  assert(!zafO.items.hauler_pack, 'Outcast: Zafir does not sell the Hauler Pack')
+
   // disguise
   const dress = (door: DoorId): GameState => {
     const s0 = newGame(door)
@@ -4184,6 +4200,18 @@ function assertHelpResolves(s: GameState, where: string) {
   for (const t of newText) assert(!/\bthis is not\b|\bit is not a\b/i.test(t), `plain line: ${t}`)
 }
 
+// Jaxson Vance: no Oil-Tooth name anywhere; lookups by first name and surname.
+{
+  assert(PEOPLE.oiltooth.name === 'Jaxson Vance' || PEOPLE.oiltooth.name === 'Jaxson', 'Jaxson is named Jaxson')
+  assert(PEOPLE.oiltooth.aliases.includes('vance') && PEOPLE.oiltooth.aliases.includes('jaxson'), 'jaxson and vance are aliases')
+  assert(!PEOPLE.oiltooth.aliases.some((a) => /oil|tooth/.test(a)), 'no Oil-Tooth alias for Jaxson')
+  for (const ask of ['who is jaxson', 'who is vance']) {
+    assert(/cybernetic brass jaw/.test(interpret(pick(newGame('prisoner'), 'pens'), ask).flash ?? ''), `"${ask}" returns his card`)
+  }
+  const srcDir = join(process.cwd(), 'src')
+  const walk = (d: string): string[] => readdirSync(d, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(join(d, e.name)) : [join(d, e.name)]))
+  for (const f of walk(srcDir)) assert(!/Oil-Tooth/i.test(readFileSync(f, 'utf8')), `no Oil-Tooth name in ${f}`)
+}
 console.log('OK', {
   prisoner: Object.keys(DOORS.prisoner.items),
   outcast: Object.keys(DOORS.outcast.items),

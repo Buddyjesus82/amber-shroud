@@ -31,8 +31,8 @@ const WAY: Record<string, string> = {
   'camp:vents': 'screaming pipes, not the station bolt',
   'camp:bay': 'three skiffs, Pike in the north bay, Sarn east, Vetch south',
   'camp:yard': 'the vats and the scrape-line',
-  'camp:cages': 'the pens and Oil-Tooth\'s bunk',
-  'camp:lean': 'Oil-Tooth\'s stall',
+  'camp:cages': 'the pens and Jaxson\'s bunk',
+  'camp:lean': 'Jaxson\'s stall',
   'camp:wire': 'the razor line, and Kaelen when he is selling',
   'camp:tower': 'the tower, and Valerius if he is in it',
   'spine:ridge': 'noon rock and no kind shadow',
@@ -194,7 +194,7 @@ function authored(state: GameState, scene: Scene): string[] {
 
   if (id === 'camp:cages') {
     if (!on(state, 'shivTaken')) push(lines, 'A bar in your cage is loose enough to work free.')
-    if (!on(state, 'jaxsonInside')) push(lines, 'Oil-Tooth will hand you the oversized wrench if you take the inside job.')
+    if (!on(state, 'jaxsonInside')) push(lines, 'Jaxson will hand you the oversized wrench if you take the inside job.')
     else if (!on(state, 'guardDown')) push(lines, 'The west steam-vent at the guard station is what the wrench is for.')
     else push(lines, 'The station is down. He will be under a hull at the bay.')
     if (on(state, 'jaxsonFavor') && !on(state, 'jaxsonStash')) {
@@ -208,7 +208,7 @@ function authored(state: GameState, scene: Scene): string[] {
       push(lines, "Kaelen\'s hoard is in the third vat\'s shadow. That seam is here.")
     }
     if (!on(state, 'vatDripTaken')) push(lines, 'The cooling vats still have a seam a hand could search.')
-    if (!on(state, 'jaxsonInside')) push(lines, "Oil-Tooth\'s inside job is still open at his stall.")
+    if (!on(state, 'jaxsonInside')) push(lines, "Jaxson\'s inside job is still open at his stall.")
     else if (!on(state, 'guardDown')) push(lines, 'The sabotage is the west steam-vent at the guard station.')
     if (!on(state, 'skim:camp:yard')) push(lines, 'The yard grit will give up a drip if you skim it. The Cartel can trace that.')
     return lines
@@ -226,7 +226,7 @@ function authored(state: GameState, scene: Scene): string[] {
   if (id === 'camp:vents') {
     push(lines, 'The pipes carry amber and the Cartel rhythm if you listen. No heading in them.')
     if (!on(state, 'skim:camp:vents')) push(lines, 'A drip in the pipe-scream will fill a glass. The Cartel can trace it.')
-    if (!on(state, 'jaxsonInside')) push(lines, "The bolt at the guard station is Oil-Tooth's job.")
+    if (!on(state, 'jaxsonInside')) push(lines, "The bolt at the guard station is Jaxson's job.")
     else if (!on(state, 'guardDown')) push(lines, 'The west bolt at the guard station is the job throat.')
     else push(lines, 'The station is already coughing into this corridor.')
     return lines
@@ -286,7 +286,7 @@ function authored(state: GameState, scene: Scene): string[] {
   }
 
   if (id === 'camp:guard') {
-    if (!on(state, 'jaxsonInside')) push(lines, 'The west bolt stays shut until you take Oil-Tooth\'s wrench.')
+    if (!on(state, 'jaxsonInside')) push(lines, 'The west bolt stays shut until you take Jaxson\'s wrench.')
     else if (!on(state, 'guardDown')) push(lines, 'You have the wrench. The west steam-vent is the bolt he named.')
     else push(lines, 'The vent is already open. The bay is where the hotwire happens.')
     if (on(state, 'bleedIntel') && !on(state, 'guardDown')) push(lines, 'Kaelen sold you the hour. The bolt is still yours to crack.')

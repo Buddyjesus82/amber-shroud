@@ -330,7 +330,7 @@ export function encounterChoices(state: GameState): Choice[] {
           ? {
               ...base,
               goto: 'camp:bay',
-              flash: 'The clerk is down. The vent screams. Shock Baton · Strike 4. Equip it. Oil-Tooth is under a hull.',
+              flash: 'The clerk is down. The vent screams. Shock Baton · Strike 4. Equip it. Jaxson is under a hull.',
             }
           : base,
       },

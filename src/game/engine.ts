@@ -845,7 +845,7 @@ function strongButton(state: GameState, text: string): Choice | null {
 function tryCampSabotageJob(state: GameState, text: string): GameState | null {
   if (!campJobOpen(state) || !wantsCampSabotage(text)) return null
   if (sceneOf(state).kind === 'crisis') return null
-  // A visible button that names this line wins (e.g. "Oil-Tooth's inside job is still open" walks to him).
+  // A visible button that names this line wins (e.g. "Jaxson's inside job is still open" walks to him).
   const named = strongButton(state, text)
   if (named) return withVerb(applyEffect(state, named.effects), named.id)
   const stayWithKaelen = atKaelenInvoice(state)

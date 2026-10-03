@@ -145,11 +145,11 @@ export function sceneSearch(state: GameState, target: string): Effect | null {
     if (t === 'south bay' || t === 'vetch' || t.includes('vetch')) {
       return { goto: 'camp:bay-vetch', flag: { bayLooked: true } }
     }
-    if (t === 'center bay' || t === 'centre bay' || t.includes('oil')) {
+    if (t === 'center bay' || t === 'centre bay' || t.includes('jaxson') || t.includes('vance') || t.includes('skiff')) {
       return {
         flash: bayLookout(state)
-          ? 'Oil-Tooth is on his back under his skiff in the center bay, hotwiring it.'
-          : "Oil-Tooth's skiff stands in the center bay with nobody at it.",
+          ? 'Jaxson is on his back under his skiff in the center bay, hotwiring it.'
+          : "Jaxson's skiff stands in the center bay with nobody at it.",
       }
     }
   }
@@ -238,7 +238,7 @@ export function sceneSearch(state: GameState, target: string): Effect | null {
     return {
       flash: wrench
         ? 'The stolen hull is loud. A lash on the port runner is coming loose. The wrench would seat it. The Cartel tag is still sewn in your cuff.'
-        : 'The stolen hull is loud. Oil-Tooth is under it. The Cartel tag is still sewn in your cuff unless you let him cut it.',
+        : 'The stolen hull is loud. Jaxson is under it. The Cartel tag is still sewn in your cuff unless you let him cut it.',
     }
   }
   return null

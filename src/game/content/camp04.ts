@@ -25,7 +25,7 @@ Overseer Valerius is the shadow over the Yard. Getting out from under him is the
       {
         if: { all: [{ flag: 'leftCamp' }, { flag: 'quietFence' }, { flagUnset: 'campLockdown' }] },
         mode: 'append',
-        body: `You came back through the fence-hole. The camp is uneasy and quiet. Guards have not proved the hole. Oil-Tooth's stash, if it is still in the vat-shadow, is a walk, not a war.`,
+        body: `You came back through the fence-hole. The camp is uneasy and quiet. Guards have not proved the hole. Jaxson's stash, if it is still in the vat-shadow, is a walk, not a war.`,
       },
       {
         if: { flag: 'campLockdown' },
@@ -84,7 +84,7 @@ Overseer Valerius is the shadow over the Yard. Getting out from under him is the
       },
       {
         id: 'job',
-        label: "Oil-Tooth's inside job is still open",
+        label: "Jaxson's inside job is still open",
         sub: 'Go to his stall. The job is the wrench and the west steam-vent. You can still see Kaelen first.',
         show: { flagUnset: 'jaxsonInside' },
         effects: { goto: 'camp:lean', ticks: 1 },
@@ -92,7 +92,7 @@ Overseer Valerius is the shadow over the Yard. Getting out from under him is the
       {
         id: 'station',
         label: 'West steam-vent. Sabotage the guard station.',
-        sub: 'Oil-Tooth named the bolt. Walk to the Guard Station and sabotage it.',
+        sub: 'Jaxson named the bolt. Walk to the Guard Station and sabotage it.',
         tone: 'hunger',
         show: { all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] },
         effects: { goto: 'camp:guard', ticks: 1 },
@@ -112,8 +112,8 @@ Overseer Valerius is the shadow over the Yard. Getting out from under him is the
         effects: { goto: 'camp:vats', ticks: 1, sap: -1, pressure: 1 },
       },
       {
-        tags: ['jaxson', 'oil', 'tooth', 'lean', 'vance', 'bunk'],
-        reply: "Oil-Tooth's stall sits off the line. The next bunk in the pens is his. He hotwires. Kaelen works the Wire.",
+        tags: ['jaxson', 'lean', 'vance', 'bunk'],
+        reply: "Jaxson's stall sits off the line. The next bunk in the pens is his. He hotwires. Kaelen works the Wire.",
         effects: { goto: 'camp:lean' },
       },
       {
@@ -207,7 +207,7 @@ Take it and you are a thief twice. Leave it and noon will take it anyway.`,
 
 One door goes back toward the Bleed Yard. The other coughs toward Skiff Bay. You cannot see the pens from here, and you cannot see the dunes. Two roads. The Map is how you pick one.
 
-Oil-Tooth named a west bolt at the Guard Station. That is a different pipe. This corridor is only steam and rust.`,
+Jaxson named a west bolt at the Guard Station. That is a different pipe. This corridor is only steam and rust.`,
     variants: [
       {
         if: { flag: 'guardDown' },
@@ -246,7 +246,7 @@ Oil-Tooth named a west bolt at the Guard Station. That is a different pipe. This
       },
       {
         id: 'job',
-        label: "Oil-Tooth's inside job is still open",
+        label: "Jaxson's inside job is still open",
         sub: 'This scream is weather. The west bolt is at the station.',
         show: { flagUnset: 'jaxsonInside' },
         effects: { goto: 'camp:lean', ticks: 1 },
@@ -298,7 +298,7 @@ Oil-Tooth named a west bolt at the Guard Station. That is a different pipe. This
     title: 'Holding Pens',
     body: `Holding pens. Each cage is a ribcage for a laborer with no money. Yours still smells like the last Bleed. Cartel scrip is hidden in your hem. Nothing else.
 
-The bunk next to you is Jaxson "Oil-Tooth" Vance. He is burly and grease-stained, with a permanent smirk and a cybernetic brass jaw in the steam-light. Scorched welding leathers. Corporate tags he never cut off. An oversized wrench, when he is not hiding it.
+The bunk next to you is Jaxson Vance. He is burly and grease-stained, with a permanent smirk and a cybernetic brass jaw in the steam-light. Scorched welding leathers. Corporate tags he never cut off. An oversized wrench, when he is not hiding it.
 
 He is the one who can break you out. He hotwires Ironclad Skiff-Striders, and he has skimmed Oasis Sap for as long as he has repaired them. The jokes are a shield. He watches the guards more closely than he lets on.
 
@@ -306,7 +306,7 @@ Kaelen the Sifter sells rumors at the Wire.`,
     choices: [
       {
         id: 'jaxson',
-        label: 'Talk to Oil-Tooth in the next bunk',
+        label: 'Talk to Jaxson in the next bunk',
         sub: 'He hotwires the Striders. Kaelen, at the Wire, is the one who sells rumors.',
         effects: { goto: 'camp:jaxson', ticks: 1 },
       },
@@ -342,7 +342,7 @@ Kaelen the Sifter sells rumors at the Wire.`,
           sap: -1,
           goto: 'camp:cages',
           flash:
-            "Under the pallet: scrap enough to interest Kaelen the Sifter. Oil-Tooth does not sell headings. He sells a ride.",
+            "Under the pallet: scrap enough to interest Kaelen the Sifter. Jaxson does not sell headings. He sells a ride.",
         },
       },
       {
@@ -362,14 +362,14 @@ Kaelen the Sifter sells rumors at the Wire.`,
       {
         id: 'bay',
         label: 'Skiff Bay. He is under a hull.',
-        sub: 'The station is down. Oil-Tooth is working a Strider at the bay.',
+        sub: 'The station is down. Jaxson is working a Strider at the bay.',
         show: { flag: 'guardDown' },
         effects: { goto: 'camp:bay', ticks: 1 },
       },
     ],
     intents: [
       {
-        tags: ['jaxson', 'oil', 'tooth', 'vance', 'talk', 'hotwire'],
+        tags: ['jaxson', 'vance', 'talk', 'hotwire'],
         reply: 'The brass jaw turns. Humor as a shield. He has been waiting for the Bleed.',
         effects: { goto: 'camp:jaxson', ticks: 1 },
       },
@@ -433,8 +433,8 @@ Kaelen the Sifter sells rumors at the Wire.`,
     id: 'camp:lean',
     hubId: 'camp04',
     kind: 'place',
-    title: "Oil-Tooth's Stall",
-    speaker: 'Jaxson "Oil-Tooth" Vance',
+    title: "Jaxson's Stall",
+    speaker: 'Jaxson Vance',
     body: `The stall is hot metal and skimmed sap. The oversized wrench sits in his fist.
 
 "Bleed-Cut," he says. "The Great Bleed is coming. You sabotage the Guard Station. I hotwire a Strider."`,
@@ -460,14 +460,14 @@ Kaelen the Sifter sells rumors at the Wire.`,
       },
       {
         id: 'talk',
-        label: 'Talk to Oil-Tooth',
+        label: 'Talk to Jaxson',
         sub: 'The pitch. Valerius. The ride.',
         effects: { goto: 'camp:jaxson', ticks: 1, pressure: 1 },
       },
       {
         id: 'station',
         label: 'West steam-vent. Sabotage the station.',
-        sub: 'Oil-Tooth named the bolt. The wrench knows it.',
+        sub: 'Jaxson named the bolt. The wrench knows it.',
         tone: 'hunger',
         show: { all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] },
         effects: { goto: 'camp:guard', ticks: 1 },
@@ -487,7 +487,7 @@ Kaelen the Sifter sells rumors at the Wire.`,
           startChapter: 'cache-run',
           goto: 'ch1:leave',
           heat: { cartel: 1 },
-          flash: 'Camp-04 falls behind like a bad hymn. The wrench still smells like Oil-Tooth\'s stall.',
+          flash: 'Camp-04 falls behind like a bad hymn. The wrench still smells like Jaxson\'s stall.',
         },
       },
       {
@@ -544,9 +544,9 @@ Kaelen the Sifter sells rumors at the Wire.`,
     id: 'camp:jaxson',
     hubId: 'camp04',
     kind: 'talk',
-    title: 'Jaxson "Oil-Tooth" Vance',
-    speaker: 'Jaxson "Oil-Tooth" Vance',
-    body: `"Valerius is the first thing you have to get out from under," Oil-Tooth says, smirking around the brass. "Tower. Baton. He hunts anyone skimming Sap. I have watched the guard station until I could draw it in grease.
+    title: 'Jaxson Vance',
+    speaker: 'Jaxson Vance',
+    body: `"Valerius is the first thing you have to get out from under," Jaxson says, smirking around the brass. "Tower. Baton. He hunts anyone skimming Sap. I have watched the guard station until I could draw it in grease.
 
 Great Bleed hits, you sabotage that station. I hotwire a Strider. We leave the pens. Rumors are Kaelen, at the Wire."`,
     choices: [
@@ -591,7 +591,7 @@ Great Bleed hits, you sabotage that station. I hotwire a Strider. We leave the p
           startChapter: 'cache-run',
           goto: 'ch1:leave',
           heat: { cartel: 1 },
-          flash: 'Camp-04 falls behind like a bad hymn. The wrench still smells like Oil-Tooth\'s stall.',
+          flash: 'Camp-04 falls behind like a bad hymn. The wrench still smells like Jaxson\'s stall.',
         },
       },
       {
@@ -677,8 +677,8 @@ Great Bleed hits, you sabotage that station. I hotwire a Strider. We leave the p
     hubId: 'camp04',
     kind: 'talk',
     title: 'Wrong Counter',
-    speaker: 'Jaxson "Oil-Tooth" Vance',
-    body: `"That heading is not my product," Oil-Tooth says. "Kaelen the Sifter sells rumors. Wire. Glints for intel. Scrap for Drops. I hotwire. Guard station. Strider. Take the rumor to him."`,
+    speaker: 'Jaxson Vance',
+    body: `"That heading is not my product," Jaxson says. "Kaelen the Sifter sells rumors. Wire. Glints for intel. Scrap for Drops. I hotwire. Guard station. Strider. Take the rumor to him."`,
     choices: [
       {
         id: 'wire',
@@ -692,7 +692,7 @@ Great Bleed hits, you sabotage that station. I hotwire a Strider. We leave the p
     id: 'camp:jaxson-drop',
     hubId: 'camp04',
     kind: 'talk',
-    speaker: 'Jaxson "Oil-Tooth" Vance',
+    speaker: 'Jaxson Vance',
     title: 'A Drop',
     body: `"I skim Oasis Sap. Lifetime habit. I look like a charity?" The brass jaw ticks. "Sabotage the station first. I hotwire second. Then this Drop might change pockets. Kaelen will sell you one for scrap if you are impatient. That is a different job."`,
     choices: [
@@ -915,7 +915,7 @@ Ironclad Skiff-Striders patrol the far side of this line. Red Maw is past it. So
     title: 'Guard Station',
     body: `The Guard Station is Ironwood's fist. Racks of shock batons. Steam vents. A clerk who loves a ledger more than a throat. Ironclad Skiff-Striders pass on patrol and make the wire hum.
 
-The Great Bleed is a clock. You sabotage the west steam-vent here. Oil-Tooth hotwires a Strider at Skiff Bay. Overseer Valerius will take it personally. That is the point.`,
+The Great Bleed is a clock. You sabotage the west steam-vent here. Jaxson hotwires a Strider at Skiff Bay. Overseer Valerius will take it personally. That is the point.`,
     variants: [
       {
         if: { flag: 'guardDown' },
@@ -931,7 +931,7 @@ The Great Bleed is a clock. You sabotage the west steam-vent here. Oil-Tooth hot
     choices: [
       {
         id: 'inside',
-        label: 'Take Oil-Tooth\'s inside job',
+        label: 'Take Jaxson\'s inside job',
         sub: 'Take the wrench. You crack the west steam-vent. He still hotwires the Strider.',
         show: { flagUnset: 'jaxsonInside' },
         effects: { ...TAKE_INSIDE_JOB, goto: 'camp:guard' },
@@ -939,7 +939,7 @@ The Great Bleed is a clock. You sabotage the west steam-vent here. Oil-Tooth hot
       {
         id: 'sabotage',
         label: 'Sabotage the west steam-vent',
-        sub: 'The job Oil-Tooth gave you. The wrench on a bolt Valerius cares about. Costs sap.',
+        sub: 'The job Jaxson gave you. The wrench on a bolt Valerius cares about. Costs sap.',
         show: { all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] },
         effects: { goto: 'camp:sabotage', ticks: 1, sap: -1 },
       },
@@ -948,11 +948,11 @@ The Great Bleed is a clock. You sabotage the west steam-vent here. Oil-Tooth hot
       {
         tags: ['study', 'weakness', 'weaknesses', 'inspect'],
         show: { flagUnset: 'jaxsonInside' },
-        reply: "Security weaknesses are Oil-Tooth's religion. Take the job — here, or back at the stall — and the west bolt opens.",
+        reply: "Security weaknesses are Jaxson's religion. Take the job — here, or back at the stall — and the west bolt opens.",
         effects: { ticks: 1 },
       },
       {
-        tags: ['inside', 'wrench', 'job', 'oil', 'tooth'],
+        tags: ['inside', 'wrench', 'job', 'jaxson'],
         show: { flagUnset: 'jaxsonInside' },
         reply: TAKE_INSIDE_JOB.flash ?? '',
         effects: { ...TAKE_INSIDE_JOB, goto: 'camp:guard' },
@@ -972,7 +972,7 @@ The Great Bleed is a clock. You sabotage the west steam-vent here. Oil-Tooth hot
     title: 'Great Bleed',
     body: `The Great Bleed hits. Vats weep. The west steam-vent is empty for a breath — patrol is on the wire, not on this bolt.
 
-Quiet still risks a shout. Oil-Tooth named this throat. The wrench knows the bolt.`,
+Quiet still risks a shout. Jaxson named this throat. The wrench knows the bolt.`,
     variants: [
       {
         if: { flag: 'ventPatrol' },
@@ -1002,7 +1002,7 @@ A vent patrol is in place: one clerk, shock baton, eyes on the joint. Unwatched 
           ticks: 1,
           goto: 'camp:bay',
           flash:
-            'The bolt turns. Nobody is on it. The scream still puts you in the steam. Scrap. Shock Baton · Strike 4. Equip it. Oil-Tooth is under a hull.',
+            'The bolt turns. Nobody is on it. The scream still puts you in the steam. Scrap. Shock Baton · Strike 4. Equip it. Jaxson is under a hull.',
         },
       },
       {
@@ -1017,7 +1017,7 @@ A vent patrol is in place: one clerk, shock baton, eyes on the joint. Unwatched 
           ticks: 1,
           goto: 'camp:bay',
           flash:
-            'The Sifter sold a gap. You take it. Shock Baton · Strike 4 from a clerk who was counting vats. Equip it. Oil-Tooth still has to hotwire.',
+            'The Sifter sold a gap. You take it. Shock Baton · Strike 4 from a clerk who was counting vats. Equip it. Jaxson still has to hotwire.',
         },
       },
       {
@@ -1046,14 +1046,14 @@ A vent patrol is in place: one clerk, shock baton, eyes on the joint. Unwatched 
     title: 'Skiff Bay',
     body: `You come in through the west gate. Four Skiff-Striders stand on repair cradles, each in its own bay under a tin roof. Cartel tags are still bolted to the hulls.
 
-Pike is in the north bay on your left, working a leg of his skiff. Sarn stands beside his skiff in the east bay, straight ahead, counting bolts out loud. Vetch is in the south bay on your right, kneeling with a torch and welding a cracked skid. Oil-Tooth's skiff stands in the center bay with nobody at it.
+Pike is in the north bay on your left, working a leg of his skiff. Sarn stands beside his skiff in the east bay, straight ahead, counting bolts out loud. Vetch is in the south bay on your right, kneeling with a torch and welding a cracked skid. Jaxson's skiff stands in the center bay with nobody at it.
 
 Ask nicely and you get a short answer. Reach for their stuff and you get a bolt thrown at you, or a shout.`,
     variants: [
       {
         if: { flag: 'striderHot' },
         mode: 'append',
-        body: `Oil-Tooth's skiff in the center bay is hotwired and ticking. The dunes are open if you ride it.`,
+        body: `Jaxson's skiff in the center bay is hotwired and ticking. The dunes are open if you ride it.`,
       },
       {
         if: { flag: 'guardDown' },
@@ -1065,7 +1065,7 @@ Ask nicely and you get a short answer. Reach for their stuff and you get a bolt 
         mode: 'replace',
         body: `Black smoke is coming off the guard station behind you. Patrol is late.
 
-Jaxson "Oil-Tooth" Vance is on his back under his skiff in the center bay, wrench in the joint, hotwiring it.
+Jaxson Vance is on his back under his skiff in the center bay, wrench in the joint, hotwiring it.
 
 You are the lookout. "Cover me," he says. "Valerius eats dust if we are fast."
 
@@ -1093,7 +1093,7 @@ Pike, Sarn, and Vetch keep their heads down in their own bays.`,
       },
       {
         id: 'hotwire',
-        label: 'Cover Oil-Tooth while he hotwires',
+        label: 'Cover Jaxson while he hotwires',
         sub: 'He is the inside man. You are the extra pair of hands.',
         show: { all: [{ flag: 'jaxsonInside' }, { flag: 'guardDown' }, { flagUnset: 'striderHot' }] },
         effects: {
@@ -1102,7 +1102,7 @@ Pike, Sarn, and Vetch keep their heads down in their own bays.`,
           ticks: 1,
           goto: 'camp:bay',
           flash:
-            'Welding leather. Oversized wrench. A Strider that believes it is still inventory. Oil-Tooth laughs once, a shield. "Ride, or linger, or go pay Kaelen for a heading. I did my half."',
+            'Welding leather. Oversized wrench. A Strider that believes it is still inventory. Jaxson laughs once, a shield. "Ride, or linger, or go pay Kaelen for a heading. I did my half."',
         },
       },
       {
@@ -1114,7 +1114,7 @@ Pike, Sarn, and Vetch keep their heads down in their own bays.`,
           startChapter: 'cache-run',
           goto: 'ch1:leave',
           heat: { cartel: 1 },
-          flash: 'Camp-04 falls behind like a bad hymn. The wrench still smells like Oil-Tooth\'s stall.',
+          flash: 'Camp-04 falls behind like a bad hymn. The wrench still smells like Jaxson\'s stall.',
         },
       },
       {
@@ -1221,7 +1221,7 @@ He hunts Sap thieves and unpermitted relic hoarders. You look like both. First m
     choices: [
       {
         id: 'ride',
-        label: 'Run for Oil-Tooth\'s hotwired Strider',
+        label: 'Run for Jaxson\'s hotwired Strider',
         show: { flag: 'striderHot' },
         tone: 'hunger',
         effects: {
@@ -1299,7 +1299,7 @@ He hunts Sap thieves and unpermitted relic hoarders. You look like both. First m
     title: 'The Camp Closes',
     body: `Pressure has a sound. It is the vats, the whistles, the way nobody meets your eye.
 
-You can stay and scrape until the Drop in you burns out. Or take Oil-Tooth's Strider. Or follow Kaelen's heading. Pick one job and spend it.`,
+You can stay and scrape until the Drop in you burns out. Or take Jaxson's Strider. Or follow Kaelen's heading. Pick one job and spend it.`,
     choices: [
       {
         id: 'go',

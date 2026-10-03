@@ -203,7 +203,7 @@ function bribeHit(state: GameState, scene: Scene): DoHit {
     }
   }
   if (who?.id === 'oiltooth') {
-    return { effects: { ticks: 1, flash: 'Oil-Tooth has a wrench, not a palm. Do the job.' }, verb: 'bribe' }
+    return { effects: { ticks: 1, flash: 'Jaxson has a wrench, not a palm. Do the job.' }, verb: 'bribe' }
   }
   if (who?.id === 'sybella') {
     if (state.door === 'vessel' && (state.items.glints ?? 0) > 0) {

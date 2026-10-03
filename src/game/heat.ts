@@ -23,14 +23,14 @@ export const HEAT_FACTIONS: Record<
   },
   strays: {
     name: 'Strays',
-    watch: 'Oil-Tooth, Silas, Kaelen the Sifter',
-    body: 'Dune-Strays collect favors and shade. Oil-Tooth hotwires. Silas sells minutes. Kaelen sells rumors and funds a way out. Stray Heat is being known. Known is not safe.',
+    watch: 'Jaxson, Silas, Kaelen the Sifter',
+    body: 'Dune-Strays collect favors and shade. Jaxson hotwires. Silas sells minutes. Kaelen sells rumors and funds a way out. Stray Heat is being known. Known is not safe.',
   },
 }
 
 type HeatCard = { name: string; watch: string; body: string }
 
-/** Who is watching depends on the door: Oil-Tooth and Kaelen are the Prisoner's people. */
+/** Who is watching depends on the door: Jaxson and Kaelen are the Prisoner's people. */
 const BY_DOOR: Partial<Record<DoorId, Partial<Record<Faction, HeatCard>>>> = {
   outcast: {
     seekers: {

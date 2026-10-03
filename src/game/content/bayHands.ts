@@ -34,7 +34,7 @@ function walkPhrases(names: string[]): string[] {
 const pike = ['pike', 'scraper', 'north hull', 'north bay', "pike's skiff", "pike's bay", 'his skiff']
 const sarn = ['sarn', 'rigger', 'east cradle', 'east bay', "sarn's skiff", "sarn's bay"]
 const vetch = ['vetch', 'welder', 'south skid', 'south bay', "vetch's skiff", "vetch's bay"]
-const oil = ['oil-tooth', 'oil tooth', 'oiltooth', 'jaxson', 'vance', 'brass jaw']
+const oil = ['jaxson', 'vance', 'jaxson vance', 'brass jaw']
 
 export const BAY_HUB = 'camp:bay'
 export const BAY_PIKE = 'camp:bay-pike'
@@ -185,7 +185,7 @@ const oilRules: IntentRule[] = [
   {
     tags: phrases(MOUTH, oil).concat(oil),
     show: underHull,
-    reply: '"Cover me," Oil-Tooth says, brass ticking under the hull. "I hotwire. You watch the bay. This bay is the job."',
+    reply: '"Cover me," Jaxson says, brass ticking under the hull. "I hotwire. You watch the bay. This bay is the job."',
     effects: { ticks: 1 },
   },
   {
@@ -199,15 +199,15 @@ const oilRules: IntentRule[] = [
 /** Typed walk-ups from the hub. Buttons carry the same moves. */
 export const bayWalkIntents: IntentRule[] = [
   {
-    tags: walkPhrases(['center bay', 'centre bay', "oil-tooth's skiff", 'middle bay']),
+    tags: walkPhrases(['center bay', 'centre bay', "jaxson's skiff", 'middle bay']),
     show: underHull,
-    reply: 'Oil-Tooth is on his back under his skiff in the center bay, hotwiring it. "Cover me."',
+    reply: 'Jaxson is on his back under his skiff in the center bay, hotwiring it. "Cover me."',
     effects: {},
   },
   {
-    tags: walkPhrases(['center bay', 'centre bay', "oil-tooth's skiff", 'middle bay']),
+    tags: walkPhrases(['center bay', 'centre bay', "jaxson's skiff", 'middle bay']),
     show: { not: underHull },
-    reply: "Oil-Tooth's skiff stands in the center bay with nobody at it.",
+    reply: "Jaxson's skiff stands in the center bay with nobody at it.",
     effects: {},
   },
   {
@@ -236,7 +236,7 @@ export const bayHandIntents: IntentRule[] = [
   {
     tags: MOUTH,
     show: underHull,
-    reply: '"Cover me," Oil-Tooth says, without looking up from the joint. "I hotwire. You are the lookout. Pike can scrape."',
+    reply: '"Cover me," Jaxson says, without looking up from the joint. "I hotwire. You are the lookout. Pike can scrape."',
     effects: { ticks: 1 },
   },
   {

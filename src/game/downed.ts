@@ -24,7 +24,7 @@ export function downedNote(state: GameState): string {
     return `You collapse. Too hurt to fight. Boots in the grit, then Corvin's hands under your arms. He drags you behind rock and keeps watch until you can stand. It costs a minute of sap.`
   }
   if (nearOil(state)) {
-    return `You collapse. Too hurt to fight. Oil-Tooth swears through the brass and drags you under cover. The pull costs scrap or sap. He is not gentle. You are not dead.`
+    return `You collapse. Too hurt to fight. Jaxson swears through the brass and drags you under cover. The pull costs scrap or sap. He is not gentle. You are not dead.`
   }
   const kind = state.flags.encounterKind
   const camp =

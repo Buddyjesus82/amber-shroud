@@ -1,5 +1,5 @@
 /**
- * SCAFFOLD: a Silas job for the Outcast door, in the shape of Oil-Tooth's inside job
+ * SCAFFOLD: a Silas job for the Outcast door, in the shape of Jaxson's inside job
  * (campJob.ts). Flag names only; nothing reads or sets the job flags yet.
  *
  * What already exists for it to plug into:
@@ -9,7 +9,7 @@
  *   - `strayNotice` wakes the Spine hunt (content/spineHunter.ts). A job could set or clear it.
  *
  * TODO(designer): what Silas wants done, where on the Spine it happens, what it pays
- * (a gated second exit like Oil-Tooth's hotwired Strider?), and what refusing costs.
+ * (a gated second exit like Jaxson's hotwired Strider?), and what refusing costs.
  */
 export const SILAS_JOB_LIVE = false
 

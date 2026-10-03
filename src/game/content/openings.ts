@@ -10,13 +10,13 @@ export const openingScenes: Scene[] = [
     title: 'Ironwood Break',
     body: `You wake face-down in the holding pens muck. The back of your head is wet and you do not know the name of the wet. Cold, resin-slick, already in your mouth. Ironwood Camp-04 is loud: razor-wire, screaming steam-vents, harvesters on the petrified groves. You are a Bleed-Cut. Captive labor. Amnesiac. Your kit matches no faction.
 
-Jaxson "Oil-Tooth" Vance is hollering from the next bunk — burly, grease-stained, a fused brass jaw. He sees the blood before he sees you. "Back of the head. Don't lie down again."
+Jaxson Vance is hollering from the next bunk — burly, grease-stained, a fused brass jaw. He sees the blood before he sees you. "Back of the head. Don't lie down again."
 
 Overseer Valerius is the shadow in the tower. Getting out from under him is the first job.`,
     choices: [
       {
         id: 'pens',
-        label: 'Sit up. Acknowledge Oil-Tooth.',
+        label: 'Sit up. Acknowledge Jaxson.',
         sub: 'Gear: Cartel Scrip only. The jaw in the next bunk will not shut up. Kaelen the Sifter is a rumor at the Wire.',
         effects: {
           enterHub: 'camp04',
