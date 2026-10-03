@@ -2,7 +2,37 @@ import { ITEMS } from './content/catalog'
 import { moneyLabel } from './trade'
 import type { Effect, EquipSlot, GameState, ItemDef, ItemId } from './types'
 
-export const EQUIP_SLOTS: EquipSlot[] = ['weapon', 'armor', 'garment', 'head']
+/** Body layout order: head to feet, then hands. */
+export const EQUIP_SLOTS: EquipSlot[] = ['head', 'cloak', 'armor', 'garment', 'hands', 'legs', 'weapon', 'offhand']
+
+export const SLOT_LABEL: Record<EquipSlot, string> = {
+  head: 'Head',
+  armor: 'Body',
+  legs: 'Legs',
+  hands: 'Hands',
+  cloak: 'Cloak',
+  garment: 'Garment',
+  weapon: 'Main hand',
+  offhand: 'Off hand',
+}
+
+export const SLOT_EMPTY: Record<EquipSlot, string> = {
+  head: 'Bare head',
+  armor: 'Bare shoulders',
+  legs: 'Bare legs',
+  hands: 'Bare hands',
+  cloak: 'No cloak',
+  garment: 'Unworn',
+  weapon: 'Empty hand (Strike 1)',
+  offhand: 'Empty hand',
+}
+
+/** Shell pieces stack up to this. */
+export const SHELL_CAP = 5
+/** A short blade or club in the Off hand adds this to Strike. */
+export const OFFHAND_STRIKE = 1
+/** The bag you start with. Bigger bags are items (catalog `bag`). */
+export const BASE_BAG = 10
 
 export type KitChip = {
   id: ItemId
@@ -26,19 +56,195 @@ export function isWorn(state: GameState, id: ItemId): boolean {
   return EQUIP_SLOTS.some((slot) => state.equipped?.[slot] === id)
 }
 
-/** Empty hand still has a number. The fight adds its own 0-2 swing. */
-export function equippedStrike(state: GameState): number {
-  const id = state.equipped?.weapon
-  if (id && ITEMS[id]?.strike != null) return ITEMS[id].strike as number
-  return 1
+/** How many of this item are on the body. */
+export function wornCount(state: GameState, id: ItemId): number {
+  return EQUIP_SLOTS.filter((slot) => state.equipped?.[slot] === id).length
 }
 
-/** Armor only. A worn garment does not stack into this. Bare shoulders are 0. */
-export function equippedShell(state: GameState): number {
-  const id = state.equipped?.armor
-  if (id && ITEMS[id]?.shell != null) return ITEMS[id].shell as number
-  return 0
+/** Slots an item can go in. Weapons with an off-hand kind can go in either hand; a shield only the Off hand. */
+export function slotsFor(id: ItemId): EquipSlot[] {
+  const def = ITEMS[id]
+  if (!def?.slot) return []
+  if (def.offhand === 'shield') return ['offhand']
+  if (def.slot === 'weapon' && def.offhand) return ['weapon', 'offhand']
+  return [def.slot]
 }
+
+/** Main hand Strike (bare hand is 1), plus 1 for a short blade or club in the Off hand. The fight adds its own 0-2 swing. */
+export function equippedStrike(state: GameState): number {
+  const id = state.equipped?.weapon
+  const main = id && ITEMS[id]?.strike != null ? (ITEMS[id].strike as number) : 1
+  const off = state.equipped?.offhand
+  const offDef = off ? ITEMS[off] : null
+  const bonus = offDef && (offDef.offhand === 'blade' || offDef.offhand === 'club') ? OFFHAND_STRIKE : 0
+  return main + bonus
+}
+
+/** Body, cloak, head, legs, hands, and a shield add up, to SHELL_CAP. A garment adds nothing. Bare is 0. */
+export function equippedShell(state: GameState): number {
+  let total = 0
+  for (const slot of ['armor', 'cloak', 'head', 'legs', 'hands', 'offhand'] as EquipSlot[]) {
+    const id = state.equipped?.[slot]
+    const def = id ? ITEMS[id] : null
+    if (!def || def.shell == null) continue
+    if (slot === 'offhand' && def.offhand !== 'shield') continue
+    total += def.shell
+  }
+  return Math.min(SHELL_CAP, total)
+}
+
+// ── Bag ──
+
+/** Key items, bags, and the empty vial ride free. So do coins (Glints, Scrip). */
+export function bagFree(id: ItemId): boolean {
+  const def = ITEMS[id]
+  if (!def) return true
+  return def.kind === 'key' || def.kind === 'currency' || id === 'vial_empty' || id === 'ossa_token' || def.bag != null
+}
+
+export function bagCap(state: Pick<GameState, 'items'>): number {
+  let cap = BASE_BAG
+  for (const id of Object.keys(state.items) as ItemId[]) {
+    const b = ITEMS[id]?.bag
+    if (b && (state.items[id] ?? 0) > 0) cap = Math.max(cap, b)
+  }
+  return cap
+}
+
+/** Units in the bag: everything carried that is not free and not worn. */
+export function bagUnits(state: Pick<GameState, 'items' | 'equipped'>, id: ItemId): number {
+  if (bagFree(id)) return 0
+  const n = state.items[id] ?? 0
+  const worn = EQUIP_SLOTS.filter((slot) => state.equipped?.[slot] === id).length
+  return Math.max(0, n - worn)
+}
+
+export function bagLoad(state: Pick<GameState, 'items' | 'equipped'>): number {
+  let n = 0
+  for (const id of Object.keys(state.items) as ItemId[]) n += bagUnits(state, id)
+  return n
+}
+
+export function bagLine(state: Pick<GameState, 'items' | 'equipped'>): string {
+  return `Bag ${bagLoad(state)}/${bagCap(state)}`
+}
+
+/** Held finds while the bag is full, as `id:n|id:n`. */
+export function heldOf(flags: GameState['flags']): Partial<Record<ItemId, number>> {
+  const raw = flags.bagHeld
+  const out: Partial<Record<ItemId, number>> = {}
+  if (typeof raw !== 'string' || !raw) return out
+  for (const part of raw.split('|')) {
+    const [id, n] = part.split(':')
+    if (id && ITEMS[id as ItemId] && Number(n) > 0) out[id as ItemId] = Number(n)
+  }
+  return out
+}
+
+export function heldString(held: Partial<Record<ItemId, number>>): string {
+  return (Object.keys(held) as ItemId[])
+    .filter((id) => (held[id] ?? 0) > 0)
+    .map((id) => `${id}:${held[id]}`)
+    .join('|')
+}
+
+export function heldNames(held: Partial<Record<ItemId, number>>): string {
+  return (Object.keys(held) as ItemId[])
+    .map((id) => ((held[id] ?? 0) > 1 ? `${ITEMS[id].name} ×${held[id]}` : ITEMS[id].name))
+    .join(', ')
+}
+
+/**
+ * After a find: anything that does not fit is set aside (flag bagHeld) instead of carried.
+ * Only new units are held. A bag that was already over (an old save) keeps what it had.
+ */
+export function fitBag(prev: GameState, next: GameState): GameState {
+  const cap = bagCap(next)
+  const before = bagLoad(prev)
+  const after = bagLoad(next)
+  if (after <= cap || after <= before) return next
+  let excess = after - Math.max(cap, before)
+  const items = { ...next.items }
+  const held = heldOf(next.flags)
+  const grown = (Object.keys(items) as ItemId[]).filter((id) => bagUnits(next, id) > bagUnits(prev, id)).reverse()
+  for (const id of grown) {
+    if (excess <= 0) break
+    const take = Math.min(excess, bagUnits(next, id) - bagUnits(prev, id))
+    items[id] = (items[id] ?? 0) - take
+    if (!items[id]) delete items[id]
+    held[id] = (held[id] ?? 0) + take
+    excess -= take
+  }
+  const note = `Your bag is full (${cap}/${cap}). The ${heldNames(held)} stays on the ground. Drop something to make room, or leave it.`
+  return {
+    ...next,
+    items,
+    flags: { ...next.flags, bagHeld: heldString(held) },
+    flash: next.flash ? `${next.flash} ${note}` : note,
+  }
+}
+
+/** Put held finds into the bag, as many as fit. */
+export function takeHeld(state: GameState): GameState {
+  const held = heldOf(state.flags)
+  const items = { ...state.items }
+  let room = bagCap(state) - bagLoad(state)
+  for (const id of Object.keys(held) as ItemId[]) {
+    const n = held[id] ?? 0
+    const take = bagFree(id) ? n : Math.max(0, Math.min(room, n))
+    if (!take) continue
+    items[id] = (items[id] ?? 0) + take
+    held[id] = n - take
+    if (!bagFree(id)) room -= take
+  }
+  const left = heldString(held)
+  const flags = { ...state.flags }
+  if (left) flags.bagHeld = left
+  else delete flags.bagHeld
+  return { ...state, items, flags }
+}
+
+// ── Gear tabs ──
+
+export type GearTab = 'worn' | 'use' | 'trade' | 'key'
+
+/** Which Gear tab lists the item. Wearable pieces live on the Worn tab (on the body, or spare). */
+export function gearTab(id: ItemId): GearTab {
+  const def = ITEMS[id]
+  if (!def) return 'key'
+  if (def.slot) return 'worn'
+  if (id === 'vial_drop' || id === 'salve') return 'use'
+  if (def.kind === 'key' || id === 'vial_empty' || def.bag != null) return 'key'
+  return 'trade'
+}
+
+// ── Vessel disguise ──
+
+/** Prisoner and Outcast doors: the Vessel Cloth worn reads as a cup to Cartel eyes, until someone sees through it. */
+export function disguiseActive(state: Pick<GameState, 'door' | 'equipped' | 'flags'>): boolean {
+  return state.door !== 'vessel' && state.equipped?.garment === 'ceremonial_cloth' && !state.flags.disguiseBlown
+}
+
+// ── Look ──
+
+/** "look at my gear": what is worn, the numbers, and the bag. */
+export function gearLookLine(state: GameState): string {
+  const worn = EQUIP_SLOTS.filter((slot) => state.equipped?.[slot]).map((slot) => `${SLOT_LABEL[slot]}: ${ITEMS[state.equipped[slot] as ItemId].name}`)
+  const parts = [
+    worn.length ? `You wear ${worn.join(', ')}.` : 'You wear nothing that counts in a fight.',
+    `Strike ${equippedStrike(state)}, Shell ${equippedShell(state)}.`,
+    `Bag ${bagLoad(state)}/${bagCap(state)}.`,
+  ]
+  if (state.door !== 'vessel' && state.equipped?.garment === 'ceremonial_cloth') {
+    parts.push(state.flags.disguiseBlown ? 'The Vessel Cloth has been seen through. It fools nobody now.' : 'The Vessel Cloth reads as a cup to Cartel eyes.')
+  }
+  return parts.join(' ')
+}
+
+// ── Craft ──
+
+export const SCAV_PACK_RECIPE = { scrap: 3, sinew_cord: 1 } as const
+export const SCAV_PACK_LOCKED = 'Needs 3 scrap and 1 Sinew Cord'
 
 export function listedKit(items: Partial<Record<ItemId, number>>): KitChip[] {
   return (Object.keys(items) as ItemId[])

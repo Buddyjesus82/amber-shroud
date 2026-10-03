@@ -21,12 +21,12 @@ export const HELP_HINT = 'Try: help <topic>'
 const FIGHT_SECTIONS: HelpSection[] = [
   {
     rows: [
-      { key: 'STRIKE', text: 'How hard you hit. Your weapon sets it. Bare hands are 1.' },
-      { key: 'SHELL', text: 'How much a hit is blunted. Your armor sets it. No armor is 0.' },
+      { key: 'STRIKE', text: 'How hard you hit. Your Main hand weapon sets it, plus 1 for a blade or club in the Off hand. Bare hands are 1.' },
+      { key: 'SHELL', text: 'How much a hit is blunted. Your worn armor pieces and a shield add up to it, up to 5. No armor is 0.' },
       { key: 'SWING', text: 'Each exchange, both sides add 0, 1, or 2 to Strike.' },
       { key: 'DAMAGE', text: 'Strike + swing - Shell. Never less than 1. You and the enemy hit each other in the same exchange.' },
       { key: 'HEALTH', text: 'Hits take Health. You start at 6. Sap is for thirst and walking.' },
-      { key: 'GEAR', text: 'Weapon slot sets Strike. Armor slot sets Shell. Garment and head slots add nothing in a fight.' },
+      { key: 'GEAR', text: 'Main hand sets Strike; a short blade or club in the Off hand adds 1. Body, Cloak, Head, Legs, Hands, and a shield add to Shell, up to 5. A garment adds nothing in a fight.' },
       { key: 'ENEMY', text: 'The fight card lists their Strike, Shell, and Health.' },
     ],
   },
@@ -38,10 +38,11 @@ const FIGHT_SECTIONS: HelpSection[] = [
       { key: 'Feint', text: 'You do not hit this exchange. Their hit on you is 1 less, and your next Fight gets swing +2. You cannot feint again until you Fight.' },
       { key: 'Throw sand', text: 'Once per fight. You do not hit. 4 in 10 they miss this exchange and the next. If it fails, they hit as normal.' },
       { key: 'Run', text: 'About 6 in 10 to get away. Ground, a hound, or a pin changes the odds. A failed run gives them a free hit. No loot.' },
-      { key: 'Pull the tick', text: 'Only while an amber-tick is latched on. Stops the Sap drain.' },
+      { key: 'Pull the tick', text: 'Only while an amber-tick is latched on. Stops the Sap drain. With Hide Gloves on, you also strike that exchange.' },
       { key: 'Deal', text: 'Only when a hurt enemy offers one. Ends the fight on their terms.' },
       { key: 'Give the road', text: 'Before the first exchange only. Ends the fight. No loot. No cost.' },
-      { key: 'Cloak skip', text: 'With armor on, before the first exchange. Same as giving the road.' },
+      { key: 'Cloak skip', text: 'With body armor or a cloak on, before the first exchange. Same as giving the road.' },
+      { key: 'Walk past', text: 'Prisoner and Outcast doors, wearing Vessel Cloth that has not been seen through, against Cartel people only. Before the first exchange. 3 in 4 they let you pass. Otherwise the cloth is seen through, Cartel Heat +2, and the fight goes on.' },
       { text: 'A move that cannot be used right now stays on the list, greyed, with the reason.' },
       { text: 'Bribes and talk do nothing once a fight starts.' },
     ],
@@ -105,7 +106,7 @@ const SCAVENGE_SECTIONS: HelpSection[] = [
     rows: [
       { key: 'WHERE', text: 'Any hub ground off the Hunger road. Not in a crisis, an opening, or a chapter beat.' },
       { key: 'ONCE', text: 'You can scavenge once per fresh scene. Trying again right away says the patch is already in your hands.' },
-      { key: 'FINDS', text: 'Scrap most often. Sometimes 2 scrap, a Glint, a Drop, or Cartel Scrip in Camp-04. Vats, vents, and wells turn up Drops more often. Rarely, a Resin Salve turns up with the find.' },
+      { key: 'FINDS', text: 'Scrap most often. Sometimes 2 scrap, a Glint, a Drop, or Cartel Scrip in Camp-04. Vats, vents, and wells turn up Drops more often. Rarely, a Resin Salve turns up with the find. Now and then a worn piece (Head Wrap, Shin Wraps, Hide Gloves, Scrap Buckler) or a Sinew Cord turns up too, and very rarely a Hauler Pack or, outside the Vessel door, a Vessel Cloth.' },
       { key: 'COST', text: 'Each scavenge passes time and adds 1 Pressure. Hunters use the hours you spend lingering.' },
     ],
   },
@@ -199,9 +200,15 @@ const HEAT_SECTIONS: HelpSection[] = [
 const GEAR_SECTIONS: HelpSection[] = [
   {
     rows: [
-      { key: 'SLOTS', text: 'Weapon, armor, garment, head. Equip from the Gear sheet.' },
-      { key: 'FIGHT', text: 'Weapon sets Strike. Armor sets Shell. Garment and head add nothing in a fight.' },
-      { key: 'CLOTH', text: 'Vessel Cloth wears in the garment slot and leaves the armor slot free.' },
+      { key: 'SLOTS', text: 'Head, Body, Legs, Hands, Cloak, Garment, Main hand, Off hand. Tap a piece on the Worn tab of Gear to equip it. Empty slots stay on the layout.' },
+      { key: 'HANDS', text: 'Main hand takes any weapon, never a shield. Off hand takes a short blade, a club, or a shield.' },
+      { key: 'STRIKE', text: 'Your Main hand weapon sets Strike. Bare hand is 1. A short blade or club in the Off hand adds 1.' },
+      { key: 'SHELL', text: 'Body, Cloak, Head, Legs, Hands, and a shield add up to Shell, up to 5. A garment adds none.' },
+      { key: 'PERKS', text: 'Dust Cloak: skip a road fight before the first exchange. Shin Wraps: Run 10 in 100 better. Hide Gloves: pull a tick and strike in the same exchange.' },
+      { key: 'BAG', text: 'Your bag carries 10. A Scav Pack carries 14, a Hauler Pack 20. Key items, coin (Glints, Scrip), and worn gear ride free.' },
+      { key: 'FULL', text: 'With a full bag, a new find stays on the ground. Drop something to take it, or leave it. Walking away leaves it.' },
+      { key: 'CRAFT', text: 'Stitch a Scav Pack from 3 scrap and 1 Sinew Cord, on the Key items tab or by typing craft pack. Sinew Cord turns up when you scavenge.' },
+      { key: 'CLOTH', text: 'Vessel Cloth wears in the Garment slot. In the Prisoner and Outcast doors it is a disguise: Cartel Heat gains are 1 lower, the Guard Station does not mark you, and you can walk past Cartel people on the road. A close look can see through it, and then it stops working for the run. Some people always see through it.' },
       { key: 'SELL', text: 'Unequip an item before a trader will buy it.' },
     ],
   },

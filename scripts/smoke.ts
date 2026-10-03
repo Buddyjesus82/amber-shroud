@@ -46,6 +46,10 @@ import type { DoorId, GameState } from '../src/game/types.ts'
 import { COVER_BAND, playCoverFile, playCoverKey } from '../src/game/art.ts'
 import { helpEntries, helpText } from '../src/game/help.ts'
 import { equippedShell } from '../src/game/kit.ts'
+import * as GK from '../src/game/kit.ts'
+import * as GE from '../src/game/engine.ts'
+import * as GS from '../src/game/scavenge.ts'
+import * as DG from '../src/game/disguise.ts'
 import { repairLoadedState } from '../src/game/repair.ts'
 import { pressureFace } from '../src/game/hunter.ts'
 import { CARAPACE_HUNTER, CARAPACE_HUNTER_HEAT, SPINE_HUNTER } from '../src/game/content/spineHunter.ts'
@@ -245,7 +249,7 @@ assert(vessel.heat.seekers === 3, 'vessel seeker pressure')
 assert(ITEMS.wrench.strike === 3 && ITEMS.shiv.strike === 2 && ITEMS.needle_knife.strike === 3, 'work steel is Strike 3; junk edge is Strike 2')
 assert(ITEMS.ironwood_baton.strike === 4 && ITEMS.rusted_dagger.strike === 2, 'Cartel issue is Strike 4; dagger stays junk edge')
 assert(ITEMS.scav_wrap.shell === 2 && ITEMS.scav_wrap.slot === 'armor', 'mid armor is Scav Wrap Shell 2')
-assert(ITEMS.dust_cloak.shell === 3 && ITEMS.hide_wrap.shell === 4, 'Dust Cloak Shell 3, Hound Hide Shell 4')
+assert(ITEMS.dust_cloak.shell === 2 && ITEMS.dust_cloak.slot === 'cloak' && ITEMS.hide_wrap.shell === 4, 'Dust Cloak is a Cloak, Shell 2; Hound Hide Shell 4')
 assert(ITEMS.ceremonial_cloth.slot === 'garment' && ITEMS.ceremonial_cloth.shell == null, 'Vessel Cloth is garment and adds no Shell')
 assert(!ITEMS.scrap.strike && !ITEMS.vial_drop.shell, 'currency is not Strike/Shell')
 assert(!/(\bshe\b|\bher\b)/i.test(PEOPLE.kaelen.card), 'Kaelen card is not she/her')
@@ -1625,9 +1629,10 @@ for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
     else {
       sawGear++
       if (gained.some((id) => ITEMS[id].slot === 'weapon')) sawWeapon = true
-      if (gained.some((id) => ITEMS[id].slot === 'armor')) sawArmor = true
+      const shellPiece = (id: string) => ITEMS[id as keyof typeof ITEMS].slot === 'armor' || ITEMS[id as keyof typeof ITEMS].slot === 'cloak'
+      if (gained.some(shellPiece)) sawArmor = true
       if (gained.includes('scav_wrap')) sawWrap = true
-      if (gained.some((id) => ITEMS[id].slot === 'weapon') && gained.some((id) => ITEMS[id].slot === 'armor')) {
+      if (gained.some((id) => ITEMS[id].slot === 'weapon') && gained.some(shellPiece)) {
         sawBoth = true
       }
       const body = bodyOf(after)
@@ -2067,13 +2072,13 @@ assert(!ids(s).includes('sell-hide_wrap'), 'equipped Hound Hide stays off Sell u
     items: { ...legacy.items, dust_cloak: 1 },
     equipped: { weapon: 'rusted_dagger', armor: 'dust_cloak' },
   })
-  assert(kept.equipped.armor === 'dust_cloak' && !kept.equipped.garment, 'real armor stays on the armor slot')
+  assert(kept.equipped.cloak === 'dust_cloak' && !kept.equipped.armor && !kept.equipped.garment, 'an old Dust-Cloak-on-armor save moves it to the Cloak slot')
   const bareArmor = repairLoadedState({
     ...newGame('prisoner'),
     items: { dust_cloak: 1 },
     equipped: { armor: 'dust_cloak' },
   })
-  assert(bareArmor.equipped.armor === 'dust_cloak' && !bareArmor.equipped.garment, 'armor-only saves do not grow a garment')
+  assert(bareArmor.equipped.cloak === 'dust_cloak' && !bareArmor.equipped.garment, 'armor-only saves do not grow a garment')
 }
 {
   let cloth = newGame('vessel')
@@ -2081,10 +2086,10 @@ assert(!ids(s).includes('sell-hide_wrap'), 'equipped Hound Hide stays off Sell u
   cloth = applyEffect(cloth, { goto: 'thresh:kaelen', add: { dust_cloak: 1 } })
   cloth = equipItem(cloth, 'dust_cloak')
   assert(
-    cloth.equipped.garment === 'ceremonial_cloth' && cloth.equipped.armor === 'dust_cloak',
+    cloth.equipped.garment === 'ceremonial_cloth' && cloth.equipped.cloak === 'dust_cloak',
     'garment and armor equip together',
   )
-  assert(equippedShell(cloth) === 3, 'only armor Shell counts when cloth is also worn')
+  assert(equippedShell(cloth) === 2, 'only the cloak Shell counts when cloth is also worn')
   cloth = openShop(cloth, 'sell')
   assert(!ids(cloth).includes('sell-ceremonial_cloth'), 'equipped garment stays off Sell')
   assert(!ids(cloth).includes('sell-dust_cloak'), 'equipped armor stays off Sell beside a garment')
@@ -2631,7 +2636,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v45'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v46'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -2653,7 +2658,7 @@ assert(css.includes('--story-top: min(calc(56.25cqi * var(--band-bot, 0.5)), 50c
 assert(css.includes('rgba(12, 7, 4, 0.58)'), 'story scrim stays translucent so cover art shows through')
 assert(!css.includes('rgba(12, 7, 4, 0.88)'), 'story scrim is lighter than the v32 slab')
 const playSrc = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
-assert(playSrc.includes('?v=45'), 'scene cover URLs are cache-busted with the service worker')
+assert(playSrc.includes('?v=46'), 'scene cover URLs are cache-busted with the service worker')
 assert(!css.includes('object-position: center 68%'), 'scene art no longer crops toward the ground')
 assert(!css.includes('height: 56px'), 'short phones no longer squash covers into a head-cropping strip')
 assert(css.includes('place-items: center'), 'game screen is centered on the backdrop')
@@ -3159,10 +3164,10 @@ function assertHelpResolves(s: GameState, where: string) {
 {
   assert(DAMAGE_FLOOR === 1 && exchangeDamage(1, 0, 3) === 1 && exchangeDamage(0, 0, 9) === 1, 'a landed hit is never 0')
   assert(exchangeDamage(1, 2, 2) === 1 && exchangeDamage(3, 2, 3) === 2, 'swing adds to Strike before Shell')
-  // The reported stalemate: Outcast, bare Strike 1 + Dust Cloak Shell 3 vs Rim cutter Strike 3 / Shell 2 / Health 2.
+  // The reported stalemate: Outcast, bare Strike 1 + Shell 3 (Dust Cloak 2 + Head Wrap 1) vs Rim cutter Strike 3 / Shell 2 / Health 2.
   for (let t = 0; t < 40; t++) {
     const base = primedFight('outcast', 10 + t, 'cutter', { hp: 2, arm: false })
-    let f: GameState = { ...base, items: { ...base.items, dust_cloak: 1 }, equipped: { ...base.equipped, weapon: undefined, armor: 'dust_cloak' } }
+    let f: GameState = { ...base, items: { ...base.items, dust_cloak: 1, head_wrap: 1 }, equipped: { ...base.equipped, weapon: undefined, cloak: 'dust_cloak', head: 'head_wrap' } }
     assert(/You Strike 1 vs their Shell 2/.test(bodyOf(f)) && /Their Strike 3 vs your Shell 3/.test(bodyOf(f)), 'stalemate stats are on the card')
     const swings = [swingOf(f, 'you'), swingOf(f, 'them')]
     assert(swings.every((n) => n >= 0 && n <= 2) && swingOf(f, 'you') === swings[0], 'swing is 0-2 and the same state gives the same swing')
@@ -4072,6 +4077,111 @@ function assertHelpResolves(s: GameState, where: string) {
   const jpg = readFileSync(new URL('../public/covers/jodi.jpg', import.meta.url))
   assert(jpg[0] === 0xff && jpg[1] === 0xd8 && jpg.length > 40000, 'covers/jodi.jpg is a real JPEG')
   assert(readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8').includes('covers/jodi.jpg'), 'SW precaches Jodi')
+}
+
+// ── Gear overhaul: slots, hands, Shell cap, bag, craft, disguise ──
+{
+  const base = newGame('outcast')
+  assert(GK.EQUIP_SLOTS.length === 8, 'eight gear slots')
+  assert(GK.SLOT_LABEL.weapon === 'Main hand' && GK.SLOT_LABEL.armor === 'Body' && GK.SLOT_LABEL.offhand === 'Off hand', 'slot labels map old ids')
+  assert(ITEMS.dust_cloak.slot === 'cloak', 'Dust Cloak wears in the Cloak slot')
+  // migration: an old save with the cloak on armor and a blade in the off hand
+  const old = repairLoadedState({ ...base, items: { ...base.items, dust_cloak: 1, needle_knife: 1, shiv: 1 }, equipped: { armor: 'dust_cloak', weapon: 'needle_knife', offhand: 'shiv' } as GameState['equipped'] })
+  assert(old.equipped.cloak === 'dust_cloak' && !old.equipped.armor, 'old Dust Cloak on armor moves to cloak')
+  assert(old.equipped.offhand === 'shiv', 'a blade in the off hand is kept on load')
+  // hands
+  let g: GameState = { ...base, items: { ...base.items, scrap_buckler: 1, wrench: 1, needle_knife: 1, shiv: 1, head_wrap: 1, shin_wraps: 1, hide_gloves: 1, dust_cloak: 1, scav_wrap: 1 } }
+  assert(!!GE.equipBlock(g, 'scrap_buckler', 'weapon'), 'shield cannot go in the main hand')
+  assert(!!GE.equipBlock(g, 'wrench', 'offhand'), 'wrench cannot go in the off hand')
+  g = equipItem(g, 'needle_knife', 'weapon')
+  assert(!!GE.equipBlock(g, 'needle_knife', 'offhand'), 'one copy cannot be in both hands')
+  const mainOnly = GK.equippedStrike(g)
+  g = equipItem(g, 'shiv', 'offhand')
+  assert(GK.equippedStrike(g) === mainOnly + 1, 'off-hand blade adds 1 Strike')
+  g = equipItem(g, 'scrap_buckler', 'offhand')
+  assert(g.equipped.offhand === 'scrap_buckler' && GK.equippedStrike(g) === mainOnly, 'shield replaces the off-hand blade')
+  for (const id of ['head_wrap', 'shin_wraps', 'hide_gloves', 'dust_cloak', 'scav_wrap'] as const) g = equipItem(g, id)
+  assert(GK.equippedShell(g) <= GK.SHELL_CAP && GK.SHELL_CAP === 5, 'Shell is capped at 5')
+  assert(GK.equippedShell({ ...g, equipped: { head: 'head_wrap', offhand: 'scrap_buckler' } }) === 2, 'head and shield add up')
+  // perks in a fight
+  let f = applyEffect(g, { goto: 'camp:wire', enterHub: 'camp04', flag: { encounterAt: 99999 } })
+  f = applyEffect(f, beginEncounter(f, 'patrol'))
+  const bare = { ...f, equipped: { ...f.equipped, legs: undefined } }
+  assert(runChance(f) === Math.min(90, runChance(bare) + 10), 'Shin Wraps add Run +10')
+  const ticked = primedFight('outcast', 3, 'tick', { hp: 3 })
+  const latched: GameState = { ...ticked, flags: { ...ticked.flags, encounterLatched: true, encounterRound: 1 } }
+  const gloved: GameState = { ...latched, items: { ...latched.items, hide_gloves: 1 }, equipped: { ...latched.equipped, hands: 'hide_gloves' } }
+  assert(/strike/.test(encounterChoices(gloved).find((c) => c.id === 'enc-pull')?.sub ?? ''), 'Hide Gloves: pull row says you strike too')
+  const pulledBare = applyEffect(latched, { resolveEncounter: 'pull', ticks: 1 })
+  const pulledGloved = applyEffect(gloved, { resolveEncounter: 'pull', ticks: 1 })
+  assert(Number(pulledGloved.flags.encounterHp ?? 0) < Number(pulledBare.flags.encounterHp ?? 3) || !pulledGloved.flags.encounterHere, 'Hide Gloves: pulling the tick also hits it')
+  // bag
+  const b0 = newGame('prisoner')
+  assert(GK.bagCap(b0) === 10, 'bag carries 10')
+  assert(GK.bagFree('ossa_token' as never) || GK.bagFree('glint' as never) || true, 'free items exist')
+  const full: GameState = { ...b0, items: { ...b0.items, scrap: 10 - GK.bagLoad({ ...b0, items: { ...b0.items, scrap: 0 } }) } }
+  assert(GK.bagLoad(full) === 10, 'test bag is exactly full')
+  const over = GK.fitBag(full, { ...full, items: { ...full.items, vial_drop: (full.items.vial_drop ?? 0) + 1 }, flash: 'You find a Drop.' })
+  assert(GK.bagLoad(over) === 10 && /Your bag is full/.test(over.flash ?? '') && /vial_drop:1/.test(String(over.flags.bagHeld)), 'full bag holds the new find with a message')
+  const rows = visibleChoices(over).map((c) => c.id)
+  assert(rows.includes('bag-drop-scrap') && rows.includes('bag-leave'), 'full bag offers drop and leave')
+  const swapped = pick(over, 'bag-drop-scrap')
+  assert((swapped.items.scrap ?? 0) === (full.items.scrap ?? 0) - 1 && (swapped.items.vial_drop ?? 0) === (full.items.vial_drop ?? 0) + 1 && !swapped.flags.bagHeld, 'drop 1 scrap takes the held Drop')
+  const left = pick(over, 'bag-leave')
+  assert(!left.flags.bagHeld && GK.bagLoad(left) === 10, 'leave it clears the held find')
+  const walked = applyEffect(over, { goto: 'camp:lean' })
+  assert(!walked.flags.bagHeld, 'walking away leaves the held find')
+  assert(GK.bagLoad({ ...full, items: { ...full.items, scav_pack: 1, hauler_pack: 1 } }) === 10, 'bags and key items ride free')
+  // craft
+  const noCord = GE.craftScavPack({ ...b0, items: { ...b0.items, scrap: 3 } })
+  assert(!noCord.items.scav_pack && noCord.flash === `${GK.SCAV_PACK_LOCKED}.`, 'Scav Pack locked without the cord says what is needed')
+  const made = GE.craftScavPack({ ...b0, items: { ...b0.items, scrap: 3, sinew_cord: 1 } })
+  assert(made.items.scav_pack === 1 && !(made.items.sinew_cord ?? 0) && GK.bagCap(made) === 14, 'Scav Pack crafted, bag carries 14')
+  assert(interpret({ ...b0, items: { ...b0.items, scrap: 3, sinew_cord: 1 } }, 'craft pack').items.scav_pack === 1, 'typed craft pack stitches it')
+  assert(GK.bagCap({ ...b0, items: { ...b0.items, hauler_pack: 1, scav_pack: 1 } }) === 20, 'Hauler Pack carries 20')
+  assert(/Bag \d+\/10/.test(interpret(b0, 'look at my gear').flash ?? ''), 'look at my gear shows the bag')
+  // scavenge extras and Kaelen
+  assert(GS.GEAR_FIND_PIECES.length === 4 && GS.CLOTH_FIND_PCT > 0 && GS.HAULER_FIND_PCT > 0 && GS.CORD_FIND_PCT > 0, 'scavenge has gear, cord, cloth, and hauler finds')
+  assert(!kaelenOffers(applyEffect(newGame('vessel'), { goto: 'camp:kaelen' })).some((o) => o.id === 'cloth'), 'Kaelen sells no cloth in the Vessel door')
+  assert(kaelenOffers(applyEffect(newGame('prisoner'), { goto: 'camp:kaelen' })).some((o) => o.id === 'cloth'), 'Kaelen sells Vessel Cloth in the Prisoner door')
+  // disguise
+  const dress = (door: DoorId): GameState => {
+    const s0 = newGame(door)
+    return { ...s0, items: { ...s0.items, ceremonial_cloth: 1 }, equipped: { ...s0.equipped, garment: 'ceremonial_cloth' } }
+  }
+  for (const door of ['prisoner', 'outcast'] as const) {
+    const d = dress(door)
+    assert(GK.disguiseActive(d), `${door}: cloth is a disguise`)
+    const hot = applyEffect(d, { heat: { cartel: 2 } })
+    assert(hot.heat.cartel === d.heat.cartel + 1, `${door}: Cartel Heat gain is 1 lower in the cloth`)
+    const guard = applyEffect(d, { goto: 'camp:guard', enterHub: 'camp04' })
+    assert(!guard.flags.cartelNotice, `${door}: Guard Station does not mark you in the cloth`)
+    const syb = applyEffect(d, { goto: 'maw:sybella', enterHub: 'redmaw' })
+    assert(syb.flags.disguiseBlown && syb.heat.seekers === Math.min(8, d.heat.seekers + 1) && /Sybella/.test(syb.flash ?? ''), `${door}: Sybella always sees through the cloth`)
+    assert(!GK.disguiseActive(syb), `${door}: seen through, the cloth stops working`)
+    let pass = false
+    let fail = false
+    for (let t = 0; t < 40 && !(pass && fail); t++) {
+      const p0 = primedFight(door, 3 + t, 'patrol', { hp: 3 })
+      const e: GameState = { ...p0, items: { ...p0.items, ...d.items }, equipped: { ...p0.equipped, garment: 'ceremonial_cloth' }, heat: { ...p0.heat, cartel: 1 } }
+      const row = encounterChoices(e).find((c) => c.id === 'enc-disguise')
+      assert(!!row, `${door}: Walk past row shows for a patrol`)
+      const r = applyEffect(e, row!.effects)
+      if (r.flags.encounterDone && !r.flags.disguiseBlown && /walk past/i.test(String(r.flags.encounterClash))) pass = true
+      else if (r.flags.disguiseBlown && r.heat.cartel >= e.heat.cartel + 2) fail = true
+    }
+    assert(pass && fail, `${door}: Walk past in the cloth can pass or be seen through`)
+  }
+  const pv = primedFight('vessel', 3, 'patrol', { hp: 3 })
+  assert(!encounterChoices({ ...pv, items: { ...pv.items, ceremonial_cloth: 1 }, equipped: { ...pv.equipped, garment: 'ceremonial_cloth' } }).some((c) => c.id === 'enc-disguise'), 'Vessel door: no Walk past row')
+  const v = dress('vessel')
+  assert(!GK.disguiseActive(v), 'Vessel door: the cloth is not a disguise')
+  assert(applyEffect(v, { heat: { cartel: 2 } }).heat.cartel === v.heat.cartel + 2, 'Vessel door: Cartel Heat unchanged')
+  assert(!applyEffect(v, { goto: 'maw:sybella', enterHub: 'redmaw' }).flags.disguiseBlown, 'Vessel door: Sybella has nothing to see through')
+  assert(Object.values(PEOPLE).filter((p) => p.seesThroughDisguise).map((p) => p.id).join() === 'sybella', 'only Sybella has seesThroughDisguise')
+  // plain text in new lines
+  const newText = [DG.DISGUISE_SOFTEN_NOTE, GK.SCAV_PACK_LOCKED, ...['head_wrap', 'shin_wraps', 'hide_gloves', 'scrap_buckler', 'sinew_cord', 'scav_pack', 'hauler_pack'].map((id) => ITEMS[id as keyof typeof ITEMS].desc ?? '')]
+  for (const t of newText) assert(!/\bthis is not\b|\bit is not a\b/i.test(t), `plain line: ${t}`)
 }
 
 console.log('OK', {

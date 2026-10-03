@@ -117,7 +117,7 @@ export const GLOBAL_INTENTS: IntentRule[] = [
   },
   {
     tags: ['inventory', 'pack', 'pocket', 'items', 'gear', 'kit'],
-    reply: 'You pat the pack. Whatever you have, it is listed in Gear — not across the screen. Equip a weapon, armor, or garment if it has a slot. Strike and Shell compare gear. Fights add a 0 to 2 swing.',
+    reply: 'Everything you carry is in Gear, in four tabs: Worn, Consumables, Scrap & trade, and Key items. Tap a piece to equip it. Your bag holds a set number of things; key items, coin, and worn gear ride free. Type look at my gear for a quick count.',
     effects: {},
   },
   {

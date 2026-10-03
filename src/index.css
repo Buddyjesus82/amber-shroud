@@ -1780,3 +1780,94 @@ h2 {
   color: var(--dust);
   font-size: 0.9rem;
 }
+
+/* Gear sheet: tabs, body layout, bag. */
+.gear-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.3rem;
+  margin: 0.4rem 0 0.7rem;
+}
+
+.gear-tab {
+  min-height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #1a1009;
+  color: var(--dust);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  line-height: 1.15;
+  padding: 0.2rem 0.25rem;
+}
+
+.gear-tab.on {
+  color: #1a1009;
+  background: var(--amber-2);
+  border-color: var(--amber-2);
+  font-weight: 600;
+}
+
+.body-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.35rem;
+  margin: 0.2rem 0 0.6rem;
+}
+
+.body-grid .equip-slot.filled {
+  border-color: rgba(232, 163, 23, 0.55);
+}
+
+.body-grid .equip-slot.gap {
+  border: none;
+  background: none;
+}
+
+.kit-note {
+  color: var(--dust);
+  font-size: 0.8rem;
+  margin: 0.3rem 0;
+}
+
+.gear-sub {
+  font-family: Cinzel, serif;
+  color: var(--amber-2);
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin: 0.8rem 0 0.2rem;
+}
+
+.item-acts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  flex: 0 0 auto;
+}
+
+.item-acts .btn[disabled] {
+  opacity: 0.45;
+}
+
+.bag-over {
+  color: #ffb199;
+}
+
+.bag-held {
+  margin: 0 0 0.5rem;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid rgba(232, 163, 23, 0.45);
+  border-radius: 10px;
+  color: var(--amber-2);
+  font-size: 0.82rem;
+}
+
+.craft-box {
+  margin-bottom: 0.8rem;
+}
+
+.kit-list span.kit-lock {
+  color: #ffb199;
+  font-size: 0.78rem;
+}

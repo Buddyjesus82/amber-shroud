@@ -205,7 +205,7 @@ function campHuntChoices(state: GameState): Choice[] {
       id: 'hunter-cloak',
       label: 'Let the cloak eat the glance',
       sub: 'Armor on. Stay. The glance slides.',
-      show: { slot: 'armor' },
+      show: { any: [{ slot: 'armor' }, { slot: 'cloak' }] },
       effects: stay(state, {
         pressure: 1,
         flash: 'The armor takes the glance. Gear did that. You never left.',
@@ -313,7 +313,7 @@ function spineHuntChoices(state: GameState): Choice[] {
       id: 'spine-cloak',
       label: 'Let the cloak eat the glance',
       sub: 'Armor on. Stay.',
-      show: { slot: 'armor' },
+      show: { any: [{ slot: 'armor' }, { slot: 'cloak' }] },
       effects: stay(state, {
         pressure: 1,
         flash: `The glance slides off the cloth. ${who} looks past you. You never left this ground.`,
@@ -402,7 +402,7 @@ function threshHuntChoices(state: GameState): Choice[] {
       id: 'thresh-cloak',
       label: 'Let the cloth eat the glance',
       sub: 'Armor on. Stay.',
-      show: { slot: 'armor' },
+      show: { any: [{ slot: 'armor' }, { slot: 'cloak' }] },
       effects: stay(state, {
         pressure: 1,
         flash: 'The cloth does the lying. The spear hesitates. You never left this ground.',
@@ -470,7 +470,7 @@ export function sybellaShadowChoices(state: GameState): Choice[] {
       id: 'sybella-cloak',
       label: 'Let the cloak eat the glance',
       sub: 'Armor on. You stay. She still sees you.',
-      show: { slot: 'armor' },
+      show: { any: [{ slot: 'armor' }, { slot: 'cloak' }] },
       effects: stay(state, {
         pressure: 1,
         flash: 'The armor takes the glance. The skiff-shadow slides. You never left.',
@@ -559,7 +559,7 @@ export function pressureVerb(state: GameState, text: string): Choice | null {
   }
   if (/\bcloak\b/.test(hay)) return rows.find((c) => c.id.includes('cloak')) ?? null
   if (/\b(hide|crouch|duck|grit)\b/.test(hay)) {
-    if (state.equipped?.armor) {
+    if (state.equipped?.armor || state.equipped?.cloak) {
       const cloak = rows.find((c) => c.id.includes('cloak'))
       if (cloak) return cloak
     }

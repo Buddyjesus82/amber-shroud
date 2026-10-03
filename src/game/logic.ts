@@ -20,15 +20,7 @@ export function check(cond: Cond | undefined, s: GameState): boolean {
   if (cond.door && s.door !== cond.door) return false
   if (cond.pressureMin !== undefined && s.pressure < cond.pressureMin) return false
   if (cond.ticksMin !== undefined && s.ticks < cond.ticksMin) return false
-  if (
-    cond.equipped &&
-    s.equipped?.weapon !== cond.equipped &&
-    s.equipped?.armor !== cond.equipped &&
-    s.equipped?.garment !== cond.equipped &&
-    s.equipped?.head !== cond.equipped
-  ) {
-    return false
-  }
+  if (cond.equipped && !EQUIP_SLOTS.some((slot) => s.equipped?.[slot] === cond.equipped)) return false
   if (cond.slot && !s.equipped?.[cond.slot]) return false
   return true
 }
@@ -91,6 +83,10 @@ export function applyDelta(s: GameState, fx: Effect): GameState {
   for (const slot of EQUIP_SLOTS) {
     const id = next.equipped[slot]
     if (id && !(next.items[id] ?? 0)) delete next.equipped[slot]
+  }
+  // The same piece in both hands needs two of it.
+  if (next.equipped.weapon && next.equipped.weapon === next.equipped.offhand && (next.items[next.equipped.weapon] ?? 0) < 2) {
+    delete next.equipped.offhand
   }
   if (fx.flag) Object.assign(next.flags, fx.flag)
   if (fx.unsetFlag) {
