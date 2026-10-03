@@ -2631,7 +2631,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v44'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v45'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -2653,7 +2653,7 @@ assert(css.includes('--story-top: min(calc(56.25cqi * var(--band-bot, 0.5)), 50c
 assert(css.includes('rgba(12, 7, 4, 0.58)'), 'story scrim stays translucent so cover art shows through')
 assert(!css.includes('rgba(12, 7, 4, 0.88)'), 'story scrim is lighter than the v32 slab')
 const playSrc = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
-assert(playSrc.includes('?v=44'), 'scene cover URLs are cache-busted with the service worker')
+assert(playSrc.includes('?v=45'), 'scene cover URLs are cache-busted with the service worker')
 assert(!css.includes('object-position: center 68%'), 'scene art no longer crops toward the ground')
 assert(!css.includes('height: 56px'), 'short phones no longer squash covers into a head-cropping strip')
 assert(css.includes('place-items: center'), 'game screen is centered on the backdrop')
@@ -4061,6 +4061,17 @@ function assertHelpResolves(s: GameState, where: string) {
   const asked = interpret(full, 'what does my brand mean').flash ?? ''
   assert(/We don't tell him/.test(asked), 'Jodi refuses to say what the brand means')
   assert(/Glint/.test(interpret(full, 'look').flash ?? ''), 'look at Jodi names her prices')
+}
+
+// ---- Jodi's portrait ----
+{
+  const j = applyEffect(newGame('outcast'), { goto: 'spine:jodi', flag: { encounterAt: 9999 } })
+  assert(playCoverKey(j, sceneOf(j)) === 'jodi' && playCoverFile('jodi') === 'jodi.jpg', 'Jodi uses her own portrait')
+  const band = COVER_BAND.jodi
+  assert(band && band[0] < 0.15 && band[1] >= 0.45, 'Jodi band keeps her face and the snake above the story')
+  const jpg = readFileSync(new URL('../public/covers/jodi.jpg', import.meta.url))
+  assert(jpg[0] === 0xff && jpg[1] === 0xd8 && jpg.length > 40000, 'covers/jodi.jpg is a real JPEG')
+  assert(readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8').includes('covers/jodi.jpg'), 'SW precaches Jodi')
 }
 
 console.log('OK', {
