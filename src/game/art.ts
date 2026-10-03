@@ -95,7 +95,7 @@ export const COVER_BAND: Record<CoverKey, [number, number]> = {
   bay_sarn: [0.12, 0.96],
   // Vetch's vial sits under the skiff; the copper wire and the torch are low.
   bay_vetch: [0.15, 0.9],
-  // Oil-Tooth on his back under the hull, the spark, the toolbox.
+  // Jaxson on his back under the hull, the spark, the toolbox.
   hotwire: [0.2, 0.9],
   carapace: [0.0, 0.75],
   // Jodi's face, the snake on her arm, and the vulture behind her are in the top half.
@@ -162,7 +162,7 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   const who = npcCover(id)
   if (who) return who
 
-  // The hotwire art is the one-time lookout beat: station down, Oil-Tooth under his skiff.
+  // The hotwire art is the one-time lookout beat: station down, Jaxson under his skiff.
   if (id === 'camp:bay') return bayLookout(state) ? 'hotwire' : 'skiffbay'
   if (id === 'camp:bay-pike') return 'bay_pike'
   if (id === 'camp:bay-sarn') return 'bay_sarn'

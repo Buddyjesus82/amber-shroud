@@ -86,8 +86,8 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     ? null
     : (state.flags.encounterHere ? encounterSpeaker(state) : null) ??
     pressureFace(state) ??
-    (scene.id === 'camp:bay' && bayLookout(state) ? 'Jaxson "Oil-Tooth" Vance' : null) ??
-    (scene.id === 'maw:tuner' && state.door === 'prisoner' ? 'Oil-Tooth' : null) ??
+    (scene.id === 'camp:bay' && bayLookout(state) ? 'Jaxson Vance' : null) ??
+    (scene.id === 'maw:tuner' && state.door === 'prisoner' ? 'Jaxson' : null) ??
     scene.speaker
   const shopOpen = isShopOpen(state)
   const hookRow = !!(!overlay && !shopOpen && hub && hookOn && hook && showNav)
@@ -226,7 +226,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
   }
 
   const coverKey = playCoverKey(state, scene)
-  const artSrc = `${import.meta.env.BASE_URL}covers/${playCoverFile(coverKey)}?v=46`
+  const artSrc = `${import.meta.env.BASE_URL}covers/${playCoverFile(coverKey)}?v=47`
   const [bandTop, bandBot] = coverBand(coverKey)
   const artBand = { '--band-top': bandTop, '--band-bot': bandBot } as CSSProperties
 

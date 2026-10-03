@@ -1,6 +1,6 @@
 import { wornCount } from './kit'
 import { ITEMS } from './content/catalog'
-import type { Choice, Cond, Effect, FlagMap, GameState, ItemId } from './types'
+import type { Choice, Cond, DoorId, Effect, FlagMap, GameState, ItemId } from './types'
 
 export type ShopShelf = 'buy' | 'sell'
 export type Money = { glints?: number; scrap?: number }
@@ -16,6 +16,8 @@ export type StockOffer = {
   extraRemove?: Partial<Record<ItemId, number>>
   flash: string
   tags: string[]
+  /** Only sold in these doors. */
+  doors?: DoorId[]
 }
 
 export type Vendor = {
@@ -81,6 +83,7 @@ const KAELEN_STOCK: StockOffer[] = [
     label: 'Buy a Hauler Pack',
     sub: 'A bigger bag. Carries 20. Pay 2 Glints or 4 scrap.',
     cost: { glints: 2, scrap: 4 },
+    doors: ['prisoner'],
     onceFlag: 'kaelenSoldHauler',
     extraFlag: { kaelenSoldHauler: true },
     flash: '"Cartel frame. The hauler who owned it does not need it. It carries twenty."',
@@ -92,6 +95,7 @@ const KAELEN_STOCK: StockOffer[] = [
     label: 'Buy a Vessel Cloth — two Glints',
     sub: 'Garment. Worn, Cartel eyes read a cup until someone looks closely. Equip it in Gear.',
     cost: { glints: 2 },
+    doors: ['prisoner'],
     onceFlag: 'kaelenSoldCloth',
     extraFlag: { kaelenSoldCloth: true },
     flash: '"Gold thread off a Vessel who stopped walking. Wear it near the Cartel and they see a cup. Do not let anyone look at you long."',
@@ -206,6 +210,18 @@ const SILAS_STOCK: StockOffer[] = [
     flash: '"Canvas that outlived three owners. It keeps the noon off. It does not keep the Strays from knowing you."',
     tags: ['cloak', 'dust', 'canvas'],
   },
+  {
+    id: 'hauler',
+    item: 'hauler_pack',
+    label: 'Buy a Hauler Pack',
+    sub: 'A bigger bag. Carries 20. Pay 2 Glints or 4 scrap.',
+    cost: { glints: 2, scrap: 4 },
+    doors: ['outcast'],
+    onceFlag: 'silasSoldHauler',
+    extraFlag: { silasSoldHauler: true },
+    flash: '"A hauler frame off a dead caravan. It carries twenty. Keep it out of the noon."',
+    tags: ['pack', 'bag', 'hauler', 'sack'],
+  },
 ]
 
 const KNIFE_TONE: Record<string, { sub: string; flash: string }> = {
@@ -277,8 +293,8 @@ export function kaelenOffers(state: GameState): StockOffer[] {
   const rows = [...basics, wrap, cloak]
   const tone = KNIFE_TONE[hub] ?? KNIFE_TONE.camp04
   rows.push({ ...kaelenPiece('knife'), sub: tone.sub, flash: tone.flash })
-  rows.push(kaelenPiece('hauler'))
-  if (state.door !== 'vessel') rows.push(kaelenPiece('cloth'))
+  // Hauler Pack and Vessel Cloth: Prisoner door only. Kaelen is a cameo in the other doors.
+  if (state.door === 'prisoner') rows.push(kaelenPiece('hauler'), kaelenPiece('cloth'))
   return rows
 }
 
@@ -297,7 +313,8 @@ export function kaelenBuyFlash(state: GameState): string {
 }
 
 function offersFor(state: GameState, vendor: Vendor): StockOffer[] {
-  return vendor.id === 'kaelen' ? kaelenOffers(state) : vendor.stock
+  const all = vendor.id === 'kaelen' ? kaelenOffers(state) : vendor.stock
+  return all.filter((o) => !o.doors || o.doors.includes(state.door))
 }
 
 const VENDORS: Vendor[] = [
@@ -347,6 +364,18 @@ const VENDORS: Vendor[] = [
         flash: 'Took it off a clerk who guarded his ledger better than his neck. Swing it, or it\'s just dead weight.',
         tags: ['baton', 'shock', 'weapon'],
       },
+    {
+      id: 'hauler',
+      item: 'hauler_pack',
+      label: 'Buy a Hauler Pack',
+      sub: 'A bigger bag. Carries 20. Pay 2 Glints or 4 scrap.',
+      cost: { glints: 2, scrap: 4 },
+      doors: ['vessel'],
+      onceFlag: 'zafirSoldHauler',
+      extraFlag: { zafirSoldHauler: true },
+      flash: '"A hauler frame. Carries twenty. Approach goods, Approach luck."',
+      tags: ['pack', 'bag', 'hauler', 'sack'],
+    },
     ],
     changeScrap: true,
     buyScrip: true,
@@ -360,7 +389,7 @@ const VENDORS: Vendor[] = [
     stock: SILAS_STOCK,
     changeScrap: true,
     openBuyFlash:
-      '"A Drop. Salve. A rag wrap, a dust cloak, a needle for hard resin. Glints or scrap. I do not take Cartel scrip. Scrip tastes like a leash."',
+      '"A Drop. Salve. A rag wrap, a dust cloak, a needle for hard resin. A hauler frame. Glints or scrap. I do not take Cartel scrip. Scrip tastes like a leash."',
     openSellFlash: '"I am shade, not a pawn shop. Unequipped junk I will still weigh. Keys stay yours."',
     sellFlash: '"I am shade, not a pawn shop. Still. Noon is uglier with a heavier pack."',
   },

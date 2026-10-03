@@ -89,7 +89,7 @@ const FIGHT_SECTIONS: HelpSection[] = [
       },
       {
         bullet: true,
-        text: "Prisoner, at Oil-Tooth's stall, Skiff Bay, or his Maw bench, once you work with him: he pulls you up. 2 Health. Costs 1 scrap, or 1 Sap if you have no scrap.",
+        text: "Prisoner, at Jaxson's stall, Skiff Bay, or his Maw bench, once you work with him: he pulls you up. 2 Health. Costs 1 scrap, or 1 Sap if you have no scrap.",
       },
       { bullet: true, text: 'Outcast, on the Noon Spine, once you have helped Corvin Pryce: he pulls you up. 2 Health. Costs 1 Sap.' },
       { bullet: true, text: 'In Red Maw with Ossa as an ally: she pulls you up. 2 Health. Costs a Drop, or 1 Sap if you have no Drop.' },
@@ -170,6 +170,8 @@ const TRADE_SECTIONS: HelpSection[] = [
       { key: 'WHO', text: 'Buy and Sell shelves: Kaelen the Sifter in Camp-04 and the Threshold, Silas Vane in his shade on the Spine, and Zafir at the Maw stall.' },
       { key: 'BUY', text: 'buy <item>, for example buy a drop. Prices are on the shelf.' },
       { key: 'SELL', text: 'Unequipped items only. Keys never. They pay less than they charge.' },
+      { key: 'HAULER', text: 'A Hauler Pack (carries 20) costs 2 Glints or 4 scrap, once. Prisoner: Kaelen at the Wire. Outcast: Silas on the Spine. Vessel: Zafir at the Maw stall. In any door it can also turn up when you scavenge.' },
+      { key: 'CLOTH', text: 'Vessel Cloth costs 2 Glints, once, from Kaelen in the Prisoner door. In the Outcast door it only turns up when you scavenge.' },
       { key: 'RUMORS', text: 'Kaelen sells rumors in Camp-04 and the Threshold: Glints buy intel, scrap buys side trouble. On the Spine, Korvan Drell trades leads for a Drop or scrap.' },
     ],
   },

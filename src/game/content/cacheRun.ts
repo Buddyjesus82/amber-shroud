@@ -2,7 +2,7 @@ import type { Scene } from '../types'
 
 // Cache Run: shared destination, door-different roads.
 //   leave → (Prisoner pipe / Outcast noon / Vessel hymn)
-//   Prisoner: Clerk Rell → Oil-Tooth on the stolen Strider → Ossa as escaped property
+//   Prisoner: Clerk Rell → Jaxson on the stolen Strider → Ossa as escaped property
 //   Outcast: Silas on the cut → Nim the Cut-Fee → Ossa as kin
 //   Vessel: Seeker runners → Zafir who will not shop a cup → Sybella
 //   All three still spend at Sybella → (hollow) → land → maw:rim
@@ -115,7 +115,7 @@ The road is not shared. The destination is. What it costs you depends on the lif
     ],
   },
 
-  // --- Prisoner: Cartel escape / Oil-Tooth / wire heat ---
+  // --- Prisoner: Cartel escape / Jaxson / wire heat ---
   {
     id: 'ch1:p-pipe',
     chapterId: 'cache-run',
@@ -262,7 +262,7 @@ A payroll drone ticks behind the grate. Shard-Hound tracks are in the wash. If y
           ticks: 1,
           heat: { cartel: -1 },
           flag: { rellMet: true, rellChip: true },
-          flash: 'He salutes a chip Overseer Valerius does not know is missing. He lets you walk as property. Oil-Tooth\'s stolen Strider is coughing farther south.',
+          flash: 'He salutes a chip Overseer Valerius does not know is missing. He lets you walk as property. Jaxson\'s stolen Strider is coughing farther south.',
         },
       },
       {
@@ -275,7 +275,7 @@ A payroll drone ticks behind the grate. Shard-Hound tracks are in the wash. If y
           heat: { cartel: 1 },
           pressure: 1,
           flag: { rellMet: true, rellLied: true },
-          flash: 'Clerk Rell writes the fake name next to your real wash-line number. He lets you pass. Cartel Heat rises. Oil-Tooth\'s stolen Strider is coughing on the far wash.',
+          flash: 'Clerk Rell writes the fake name next to your real wash-line number. He lets you pass. Cartel Heat rises. Jaxson\'s stolen Strider is coughing on the far wash.',
         },
       },
       {
@@ -288,7 +288,7 @@ A payroll drone ticks behind the grate. Shard-Hound tracks are in the wash. If y
           sap: -1,
           heat: { cartel: 2 },
           flag: { rellMet: true, rellBolt: true },
-          flash: 'Clerk Rell does not chase you. He files you as escaped. Shard-Hounds read filings, so Cartel Heat rises harder. The next machine on the wash is Oil-Tooth\'s stolen hull.',
+          flash: 'Clerk Rell does not chase you. He files you as escaped. Shard-Hounds read filings, so Cartel Heat rises harder. The next machine on the wash is Jaxson\'s stolen hull.',
         },
       },
     ],
@@ -322,8 +322,8 @@ A payroll drone ticks behind the grate. Shard-Hound tracks are in the wash. If y
     chapterId: 'cache-run',
     kind: 'talk',
     title: 'Stolen Hull',
-    speaker: 'Jaxson "Oil-Tooth" Vance',
-    body: `The stolen Strider coughs. Oil-Tooth is under the hull.
+    speaker: 'Jaxson Vance',
+    body: `The stolen Strider coughs. Jaxson is under the hull.
 
 "Bleed-Cut. The machine is hotwired. Shard-Hounds are on the wash behind you. I am going west until the brass cools. Red Maw is south of that.
 
@@ -344,13 +344,13 @@ Ride the last mile and I drop you with Ossa. Walk, and the Cartel keeps your tra
       {
         id: 'ride',
         label: 'Ride the last mile',
-        sub: 'Oil-Tooth drops you with Ossa. The Cartel will notice a stolen hull.',
+        sub: 'Jaxson drops you with Ossa. The Cartel will notice a stolen hull.',
         effects: {
           goto: 'ch1:p-ossa',
           ticks: 1,
           heat: { cartel: 1 },
           flag: { oilRoad: true, oilRide: true },
-          flash: 'The stolen Strider screams. Oil-Tooth drops you on the south road, where Ossa keeps her stilts. The Cartel will notice a stolen hull.',
+          flash: 'The stolen Strider screams. Jaxson drops you on the south road, where Ossa keeps her stilts. The Cartel will notice a stolen hull.',
         },
       },
       {
@@ -396,7 +396,7 @@ Ride the last mile and I drop you with Ossa. Walk, and the Cartel keeps your tra
     intents: [
       {
         tags: ['ride', 'strider', 'hull', 'hotwire'],
-        reply: 'Oil-Tooth drops you with Ossa. The stolen hull goes west without you. The Cartel will notice it.',
+        reply: 'Jaxson drops you with Ossa. The stolen hull goes west without you. The Cartel will notice it.',
         effects: { goto: 'ch1:p-ossa', ticks: 1, heat: { cartel: 1 }, flag: { oilRoad: true, oilRide: true } },
       },
       {
@@ -1479,7 +1479,7 @@ The skiff is coming. What you have heard about the woman on it is all you get be
       {
         if: { any: [{ flag: 'oilRide' }, { flag: 'oilRoad' }, { flag: 'oilTag' }, { flag: 'jaxsonInside' }] },
         mode: 'append',
-        body: `Jaxson "Oil-Tooth" Vance sees the sail and does not smirk. "Seeker, run."`,
+        body: `Jaxson Vance sees the sail and does not smirk. "Seeker, run."`,
       },
       {
         if: { all: [{ flag: 'oilRefused' }, { flagUnset: 'oilRide' }, { flagUnset: 'oilRoad' }] },
@@ -1870,7 +1870,7 @@ You are on the Approach. What you gave the sand is still on you.`,
       {
         if: { flag: 'oilRide' },
         mode: 'append',
-        body: `Oil-Tooth's cough is still on the west wind. He did not stay. Cartel Heat did.`,
+        body: `Jaxson's cough is still on the west wind. He did not stay. Cartel Heat did.`,
       },
       {
         if: { flag: 'rellBolt' },

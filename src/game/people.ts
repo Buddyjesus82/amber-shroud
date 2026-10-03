@@ -104,10 +104,10 @@ He knows the traps on the dry ford and uses them to protect Dune-Strays, as pena
   },
   oiltooth: {
     id: 'oiltooth',
-    name: 'Oil-Tooth',
-    aliases: ['oil-tooth', 'oil tooth', 'oiltooth', 'jaxson', 'vance', 'brass jaw'],
+    name: 'Jaxson',
+    aliases: ['jaxson', 'vance', 'jaxson vance', 'brass jaw'],
     metFlag: 'metOilTooth',
-    card: `Jaxson "Oil-Tooth" Vance — burly, grease-stained, permanent smirk, cybernetic brass jaw catching the steam-light. Scorched welding leathers with corporate inventory tags he never cut off. An oversized wrench when he is not hiding it.
+    card: `Jaxson Vance — burly, grease-stained, permanent smirk, cybernetic brass jaw catching the steam-light. Scorched welding leathers with corporate inventory tags he never cut off. An oversized wrench when he is not hiding it.
 
 Prison-break technical inside man. Reckless. Charismatic. Anti-authority. Humor as a shield. Observant of security weaknesses. He has skimmed Oasis Sap for a lifetime of repairing Ironclad Skiff-Striders. He hotwires. Headings are Kaelen's.`,
     scenes: [
@@ -122,14 +122,14 @@ Prison-break technical inside man. Reckless. Charismatic. Anti-authority. Humor 
     later: {
       'camp:cages': `Holding pens. Each cage a ribcage for a penniless laborer. Yours still smells like the last Bleed. Cartel Scrip in the hem.
 
-Oil-Tooth is still in the next bunk, brass jaw working. The job is the station, then a Strider.`,
+Jaxson is still in the next bunk, brass jaw working. The job is the station, then a Strider.`,
       'camp:lean': `The stall is hot metal and skimmed sap. The oversized wrench is in his fist.
 
 "Bleed-Cut. Great Bleed is coming. You sabotage the guard station. I hotwire a Strider."`,
-      'camp:jaxson': `"Valerius is the first thing you have to get out from under," Oil-Tooth says, smirking around the brass. "Tower. Baton. He hunts anyone skimming Sap. I have watched the guard station until I could draw it in grease.
+      'camp:jaxson': `"Valerius is the first thing you have to get out from under," Jaxson says, smirking around the brass. "Tower. Baton. He hunts anyone skimming Sap. I have watched the guard station until I could draw it in grease.
 
 Great Bleed hits, you sabotage that station. I hotwire a Strider. We leave the pens. Rumors are Kaelen, at the Wire."`,
-      'ch1:p-oil': `The stolen Strider coughs like a guilty throat. Oil-Tooth is under the hull anyway — brass, leather, tags he still has not cut off. He hotwired. He will not tour. Red Maw is south of his cowardice.`,
+      'ch1:p-oil': `The stolen Strider coughs like a guilty throat. Jaxson is under the hull anyway — brass, leather, tags he still has not cut off. He hotwired. He will not tour. Red Maw is south of his cowardice.`,
     },
   },
   kaelen: {

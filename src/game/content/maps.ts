@@ -16,7 +16,7 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
       { id: 'bay', name: 'Skiff Bay', sceneId: 'camp:bay', x: 84, y: 50 },
       { id: 'yard', name: 'Bleed Yard', short: 'Yard', sceneId: 'camp:yard', x: 32, y: 68 },
       { id: 'pens', name: 'Holding Pens', short: 'Pens', sceneId: 'camp:cages', x: 16, y: 94 },
-      { id: 'lean', name: "Oil-Tooth's Stall", short: 'Stall', sceneId: 'camp:lean', x: 48, y: 90 },
+      { id: 'lean', name: "Jaxson's Stall", short: 'Stall', sceneId: 'camp:lean', x: 48, y: 90 },
       { id: 'wire', name: 'The Wire', sceneId: 'camp:wire', x: 78, y: 108, mawExit: true },
     ],
     edges: [

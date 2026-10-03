@@ -129,7 +129,7 @@ export const GLOBAL_INTENTS: IntentRule[] = [
     tags: ['trade', 'buy', 'sell', 'shop', 'merchant', 'barter'],
     show: { door: 'prisoner' },
     reply:
-      'Kaelen the Sifter trades from Buy and Sell shelves — scrap for a Drop of Oasis Sap, Glints for intel. Zafir keeps a stall at the Bone Market — Hound Hide, Drops, a pawned baton. Oil-Tooth is a different job. He hotwires. He does not sell.',
+      'Kaelen the Sifter trades from Buy and Sell shelves — scrap for a Drop of Oasis Sap, Glints for intel. Zafir keeps a stall at the Bone Market — Hound Hide, Drops, a pawned baton. Jaxson is a different job. He hotwires. He does not sell.',
     effects: {},
   },
   {
@@ -149,7 +149,7 @@ export const GLOBAL_INTENTS: IntentRule[] = [
   {
     tags: ['ask'],
     show: { door: 'prisoner' },
-    reply: 'Ask who? Name them — who is Kaelen, who is Oil-Tooth — or ask a mouth that is here. The desert does not guess.',
+    reply: 'Ask who? Name them — who is Kaelen, who is Jaxson — or ask a mouth that is here. The desert does not guess.',
     effects: {},
   },
   {

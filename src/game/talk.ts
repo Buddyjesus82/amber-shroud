@@ -66,7 +66,7 @@ const kaelen: IntentRule[] = [
   },
   {
     tags: HELP,
-    reply: '"Help is a church word. I do arithmetic. Scrap in, Drop out. Glints in, heading out. Oil-Tooth still hotwires."',
+    reply: '"Help is a church word. I do arithmetic. Scrap in, Drop out. Glints in, heading out. Jaxson still hotwires."',
     effects: { ticks: 1 },
   },
   {

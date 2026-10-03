@@ -36,7 +36,7 @@ export const RUMORS: Rumor[] = [
     id: 'hoard',
     title: 'Unpermitted Hoard',
     flag: 'relicRumor',
-    body: "Oil-Tooth's stash and a clerk-mark crate in the Yard's vat-shadow. Better than a scavenge, if the latch opens. Valerius hunts the people who touch it.",
+    body: "Jaxson's stash and a clerk-mark crate in the Yard's vat-shadow. Better than a scavenge, if the latch opens. Valerius hunts the people who touch it.",
   },
 ]
 

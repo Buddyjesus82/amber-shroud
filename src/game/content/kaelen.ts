@@ -78,7 +78,7 @@ export const campKaelenScenes: Scene[] = [
       },
       {
         tags: ['cut', 'hole', 'wire', 'route', 'escape'],
-        reply: '"A hole is a trade route. I sell those too. Pay on the rumor shelf. Oil-Tooth still hotwires the Strider — that is not me."',
+        reply: '"A hole is a trade route. I sell those too. Pay on the rumor shelf. Jaxson still hotwires the Strider — that is not me."',
         effects: { goto: 'camp:kaelen-rumors' },
       },
       {
@@ -122,7 +122,7 @@ Three: cheaper leads. Side trouble. Relics Valerius hunts. When the Great Bleed 
           ticks: 1,
           goto: 'camp:wire',
           flash:
-            '"Kallik owed the Maw. Cache is real. Sybella is more real. Red Maw. Second rib. You want a Strider, that is Oil-Tooth. You wanted the heading. You have it."',
+            '"Kallik owed the Maw. Cache is real. Sybella is more real. Red Maw. Second rib. You want a Strider, that is Jaxson. You wanted the heading. You have it."',
         },
       },
       {
@@ -136,7 +136,7 @@ Three: cheaper leads. Side trouble. Relics Valerius hunts. When the Great Bleed 
           ticks: 1,
           goto: 'camp:wire',
           flash:
-            '"Kallik owed the Maw. Cache is real. Sybella is more real. Red Maw. Second rib. Heading is yours. Strider is still Oil-Tooth."',
+            '"Kallik owed the Maw. Cache is real. Sybella is more real. Red Maw. Second rib. Heading is yours. Strider is still Jaxson."',
         },
       },
       {
@@ -163,7 +163,7 @@ Three: cheaper leads. Side trouble. Relics Valerius hunts. When the Great Bleed 
       {
         id: 'bleed',
         label: 'Buy when the Great Bleed hits the guard station',
-        sub: '1 scrap. Timing Oil-Tooth can use.',
+        sub: '1 scrap. Timing Jaxson can use.',
         show: { flagUnset: 'bleedIntel' },
         enable: { item: 'scrap' },
         locked: 'Need 1 scrap',
@@ -173,7 +173,7 @@ Three: cheaper leads. Side trouble. Relics Valerius hunts. When the Great Bleed 
           ticks: 1,
           goto: 'camp:kaelen-rumors',
           flash:
-            '"Steam-vent on the west bolt. Bleed-hour. Guards look at the vats. Tell Oil-Tooth I sold a clock."',
+            '"Steam-vent on the west bolt. Bleed-hour. Guards look at the vats. Tell Jaxson I sold a clock."',
         },
       },
       {
@@ -243,7 +243,7 @@ You walked here. This is the side trouble you paid for, then spent roads to touc
           flag: { relicLooked: true },
           ticks: 1,
           flash:
-            'Nine teeth scratched on the latch. Oil-Tooth\'s stash, or a cousin of his tinkering. The crate is a fight if you force it and a haul if the teeth seat.',
+            'Nine teeth scratched on the latch. Jaxson\'s stash, or a cousin of his tinkering. The crate is a fight if you force it and a haul if the teeth seat.',
         },
       },
       {

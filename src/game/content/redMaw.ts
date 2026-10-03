@@ -711,7 +711,7 @@ You can rest here or haul parts for him. None of it opens Kallik's cache.`,
       {
         if: { door: 'prisoner' },
         mode: 'replace',
-        body: `A wrecked Skiff-Strider, half sunk in a rib's shadow. Jaxson "Oil-Tooth" Vance has made a bench of it. Hoarded parts. A way-out rig that is not a way out yet. The brass jaw ticks when he works.
+        body: `A wrecked Skiff-Strider, half sunk in a rib's shadow. Jaxson Vance has made a bench of it. Hoarded parts. A way-out rig that is not a way out yet. The brass jaw ticks when he works.
 
 "Repairs. A side job hauling parts. Salve if you are cut. I build exits for people the Hollows keep. You are early." You can bind his cut, rest, or haul. None of it opens Kallik's cache.`,
       },
