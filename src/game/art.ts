@@ -30,6 +30,7 @@ export type CoverKey =
   | 'bay_vetch'
   | 'hotwire'
   | 'carapace'
+  | 'jodi'
 
 const FILES: Record<CoverKey, string> = {
   world: 'world.png',
@@ -57,6 +58,7 @@ const FILES: Record<CoverKey, string> = {
   bay_vetch: 'bay_vetch.jpg',
   hotwire: 'hotwire.jpg',
   carapace: 'carapace.jpg',
+  jodi: 'jodi.jpg',
 }
 
 /**
@@ -96,6 +98,8 @@ export const COVER_BAND: Record<CoverKey, [number, number]> = {
   // Oil-Tooth on his back under the hull, the spark, the toolbox.
   hotwire: [0.2, 0.9],
   carapace: [0.0, 0.75],
+  // Jodi's face, the snake on her arm, and the vulture behind her are in the top half.
+  jodi: [0.04, 0.5],
 }
 
 export function coverBand(key: CoverKey): [number, number] {
@@ -120,8 +124,7 @@ const PERSON_COVER: Record<PersonId, CoverKey> = {
   korvan: 'spine',
   mira: 'spine',
   corvin: 'spine',
-  // Jodi's portrait is not painted yet. covers/jodi.jpg goes here when it is.
-  jodi: 'spine',
+  jodi: 'jodi',
   carapace: 'carapace',
 }
 
