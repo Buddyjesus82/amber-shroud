@@ -368,6 +368,16 @@ function authored(state: GameState, scene: Scene): string[] {
     return lines
   }
 
+  if (id === 'spine:jodi') {
+    if (on(state, 'jodiTook')) push(lines, 'The snake lies on her pile. She does not trade with you now.')
+    else {
+      if (!on(state, 'jodiDrop')) push(lines, '2 scrap buys the Drop the vultures found.')
+      if (!on(state, 'jodiSalve')) push(lines, '1 Glint buys the Resin Salve the rats dug up.')
+      push(lines, 'Her snake lies near the scrap pile.')
+    }
+    return lines
+  }
+
   if (id === 'spine:corvin') {
     if (on(state, 'corvinHelped')) push(lines, 'He waits for you at the dry ford on the road east. On this ridge he pulls you up if you go down.')
     else push(lines, 'A Drop, or sweeping his prints out of the wash, is help he will remember.')

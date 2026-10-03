@@ -6,9 +6,7 @@ import { HOLLOW_PULL } from '../sandSign'
  * each hand gets a small scene off `spine:shade` with talk, trade or take, a back button, and typed
  * intents. Taking from a hand raises Stray Heat, which wakes the Spine hunt through markStrayNotice.
  *
- * Korvan Drell and Mira Thorn are live. The third slot is Jodi.
- * TODO(designer): Jodi's card (who she is, what she carries, what she trades). Until then the slot
- * stays `live: false` and never renders; scripts/smoke.ts checks that.
+ * Korvan Drell, Mira Thorn, and Jodi Hollowmere are live. Jodi is a thank-you cameo for tester Jodi.
  */
 export const SHADE_HANDS_LIVE = true
 
@@ -38,8 +36,13 @@ export const SHADE_HANDS: ShadeHand[] = [
     tookFlag: 'miraTook',
     live: true,
   },
-  // Jodi. Not written yet.
-  { sceneId: 'spine:shade-c', walkLabel: 'TODO_STRAY_C', tookFlag: 'shadeCTook', live: false },
+  {
+    sceneId: 'spine:jodi',
+    walkLabel: 'Sit near the woman with the snake',
+    walkSub: 'Jodi Hollowmere. Her vultures and sand rats bring her scraps. She trades what they find.',
+    tookFlag: 'jodiTook',
+    live: true,
+  },
 ]
 
 function liveHands(): ShadeHand[] {
@@ -307,9 +310,117 @@ She sees the brand. She does not turn away, and she does not speak. She goes bac
   ],
 }
 
+/** Jodi's lines. She talks to her animals, loud enough for you to hear. */
+export const JODI_LINES = {
+  arrive: `She says to the nearest vulture, "Look who walked in, Pastor. Still breathing. Don't get your hopes up."`,
+  trade: `She says to the snake, "He's paying, Grudge. We don't bite customers."`,
+  bite: `She says to the vultures, "He reached. They always reach." She rubs two old punctures on her own wrist. "Grudge got me twice last month. I liked the second one."`,
+} as const
+
+const JODI_BITE =
+  'You reach for the pile. The snake on her shoulders drops its head and bites your hand before you touch anything. It hurts all the way up the arm. You back out of the shade with nothing.'
+
+export const JODI_SCENE: Scene = {
+  id: 'spine:jodi',
+  hubId: 'spine',
+  kind: 'talk',
+  title: 'Jodi Hollowmere',
+  speaker: 'Jodi Hollowmere',
+  body: `On the sunny side of Silas's shade, a woman sits on a heap of torn canvas with her boots crossed. Long dark red hair, black lipstick, ink down her chest and both arms. Her wraps are ripped at the knees. A sand python lies over her shoulders and down one arm, and a goat skull hangs from her belt. Two vultures stand on a rusted frame behind her. Sand rats run in and out of a pile of scrap at her feet, each one carrying something.
+
+She sees the brand. She looks at it longer than anyone else on the Spine has, then moves the pile a little closer to the snake.
+
+${JODI_LINES.arrive}`,
+  variants: [
+    {
+      if: { flag: 'jodiTook' },
+      mode: 'replace',
+      body: `Jodi feeds the vultures with her back to the sun and her eyes on you. The snake lies across the scrap pile now. She does not trade with you again.`,
+    },
+  ],
+  choices: [
+    {
+      id: 'drop',
+      label: 'Trade 2 scrap for the Drop the vultures found',
+      sub: 'Costs 2 scrap. A capped Drop the birds pulled off a dead traveler.',
+      group: 'side',
+      show: { all: [{ flagUnset: 'jodiDrop' }, { flagUnset: 'jodiTook' }] },
+      enable: { itemMin: ['scrap', 2] },
+      locked: 'Need 2 scrap',
+      effects: {
+        remove: { scrap: 2 },
+        add: { vial_drop: 1 },
+        flag: { jodiDrop: true },
+        ticks: 1,
+        flash: `${JODI_LINES.trade} She takes the scrap and sets the capped Drop on the sand between you. Drop +1.`,
+      },
+    },
+    {
+      id: 'salve',
+      label: 'Trade a Glint for the Resin Salve the rats dug up',
+      sub: 'Costs 1 Glint. A Resin Salve, still sealed.',
+      group: 'side',
+      show: { all: [{ flagUnset: 'jodiSalve' }, { flagUnset: 'jodiTook' }] },
+      enable: { item: 'glints' },
+      locked: 'Need 1 Glint',
+      effects: {
+        remove: { glints: 1 },
+        add: { salve: 1 },
+        flag: { jodiSalve: true },
+        ticks: 1,
+        flash: 'A sand rat drags the salve out of the pile and drops it by your boot. Jodi holds the Glint up to the light and pockets it. Resin Salve +1.',
+      },
+    },
+    {
+      id: 'take',
+      label: 'Take from her scrap pile while she feeds the birds',
+      sub: 'The snake lies near the pile. Stray Heat rises, and the Strays notice.',
+      tone: 'danger',
+      show: { all: [{ flagUnset: 'jodiTook' }, { healthMin: 3 }] },
+      effects: {
+        health: -2,
+        heat: { strays: 1 },
+        flag: { jodiTook: true },
+        goto: 'spine:shade',
+        ticks: 1,
+        flash: `${JODI_BITE} Health -2. Stray Heat rises. ${JODI_LINES.bite}`,
+      },
+    },
+    {
+      id: 'take',
+      label: 'Take from her scrap pile while she feeds the birds',
+      sub: 'The snake lies near the pile. Stray Heat rises, and the Strays notice.',
+      tone: 'danger',
+      show: { all: [{ flagUnset: 'jodiTook' }, { not: { healthMin: 3 } }] },
+      effects: {
+        sap: -1,
+        heat: { strays: 1 },
+        flag: { jodiTook: true },
+        goto: 'spine:shade',
+        ticks: 1,
+        flash: `${JODI_BITE} The bite burns and you sweat it out. Sap -1. Stray Heat rises. ${JODI_LINES.bite}`,
+      },
+    },
+    backToShade,
+    hungerFromShade('Jodi lifts a hand without looking up. The vultures watch you go.'),
+  ],
+  intents: [
+    {
+      tags: ['snake', 'python', 'grudge'],
+      reply: 'The snake tastes the air in your direction. Jodi strokes its head with one finger.',
+      effects: { ticks: 1 },
+    },
+    {
+      tags: ['vulture', 'vultures', 'birds', 'rats', 'critters', 'animals', 'skull'],
+      reply: 'The vultures watch you. The sand rats keep bringing scraps to the pile.',
+      effects: { ticks: 1 },
+    },
+  ],
+}
+
 /** Scenes for each live hand. */
 export function shadeHandScenes(): Scene[] {
   if (!SHADE_HANDS_LIVE) return []
-  const byId: Record<string, Scene> = { 'spine:korvan': KORVAN_SCENE, 'spine:mira': MIRA_SCENE }
+  const byId: Record<string, Scene> = { 'spine:korvan': KORVAN_SCENE, 'spine:mira': MIRA_SCENE, 'spine:jodi': JODI_SCENE }
   return liveHands().map((h) => byId[h.sceneId]).filter(Boolean)
 }

@@ -120,6 +120,8 @@ const PERSON_COVER: Record<PersonId, CoverKey> = {
   korvan: 'spine',
   mira: 'spine',
   corvin: 'spine',
+  // Jodi's portrait is not painted yet. covers/jodi.jpg goes here when it is.
+  jodi: 'spine',
   carapace: 'carapace',
 }
 

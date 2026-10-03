@@ -49,7 +49,7 @@ import { equippedShell } from '../src/game/kit.ts'
 import { repairLoadedState } from '../src/game/repair.ts'
 import { pressureFace } from '../src/game/hunter.ts'
 import { CARAPACE_HUNTER, CARAPACE_HUNTER_HEAT, SPINE_HUNTER } from '../src/game/content/spineHunter.ts'
-import { SHADE_HANDS_LIVE } from '../src/game/content/shadeHands.ts'
+import { JODI_LINES, SHADE_HANDS_LIVE } from '../src/game/content/shadeHands.ts'
 import { SILAS_JOB_FLAGS, SILAS_JOB_LIVE } from '../src/game/content/silasJob.ts'
 import { canSkim } from '../src/game/scavenge.ts'
 import { canTravelTo, edgeSap, HUB_MAPS, nodeIdForScene, route } from '../src/game/map.ts'
@@ -2631,7 +2631,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v43'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v44'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -2653,7 +2653,7 @@ assert(css.includes('--story-top: min(calc(56.25cqi * var(--band-bot, 0.5)), 50c
 assert(css.includes('rgba(12, 7, 4, 0.58)'), 'story scrim stays translucent so cover art shows through')
 assert(!css.includes('rgba(12, 7, 4, 0.88)'), 'story scrim is lighter than the v32 slab')
 const playSrc = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
-assert(playSrc.includes('?v=43'), 'scene cover URLs are cache-busted with the service worker')
+assert(playSrc.includes('?v=44'), 'scene cover URLs are cache-busted with the service worker')
 assert(!css.includes('object-position: center 68%'), 'scene art no longer crops toward the ground')
 assert(!css.includes('height: 56px'), 'short phones no longer squash covers into a head-cropping strip')
 assert(css.includes('place-items: center'), 'game screen is centered on the backdrop')
@@ -2906,7 +2906,7 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(fresh.sceneId === 'spine:ridge' && !fresh.flags.hungerKnown, 'Outcast starts on the ridge without a heading')
   const ridgeHook = HUBS.spine.hungerHook
   assert(ridgeHook && !isChoiceOn(fresh, ridgeHook.show), "Spine hub hook stays shut on Silas's Tip alone")
-  for (const scene of ['spine:ridge', 'spine:shade', 'spine:silas', 'spine:well', 'spine:korvan', 'spine:mira', 'spine:corvin', 'spine:hound', 'spine:tip']) {
+  for (const scene of ['spine:ridge', 'spine:shade', 'spine:silas', 'spine:well', 'spine:korvan', 'spine:mira', 'spine:jodi', 'spine:corvin', 'spine:hound', 'spine:tip']) {
     const at = applyEffect(fresh, { goto: scene, flag: quiet })
     assert(!visibleChoices(at).some((c) => c.effects.startChapter === 'cache-run' && c.tone !== 'danger'), `${scene}: no Hunger exit before a heading`)
   }
@@ -2945,7 +2945,7 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(val.flags.hungerKnown, 'asking at Hound Sign still names the skiff')
 
   // Help and look on Spine ground.
-  for (const scene of ['spine:ridge', 'spine:well', 'spine:hound', 'spine:shade', 'spine:silas', 'spine:silas-cache', 'spine:korvan', 'spine:mira', 'spine:corvin']) {
+  for (const scene of ['spine:ridge', 'spine:well', 'spine:hound', 'spine:shade', 'spine:silas', 'spine:silas-cache', 'spine:korvan', 'spine:mira', 'spine:jodi', 'spine:corvin']) {
     const at = applyEffect(fresh, { goto: scene, flag: quiet })
     assertHelpResolves(at, `outcast ${scene}`)
     const looked = interpret(at, 'look')
@@ -2963,10 +2963,10 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(!/\bthis is not\b|\bnot a\b/i.test(JSON.stringify(SPINE_HUNTER)), 'Spine hunter copy has no "this is not X" lines')
 
   // Scaffolds never reach a player.
-  assert(SHADE_HANDS_LIVE && !SILAS_JOB_LIVE, 'shade walk-ups are live (Korvan, Mira); the Silas job is a scaffold, off')
+  assert(SHADE_HANDS_LIVE && !SILAS_JOB_LIVE, 'shade walk-ups are live (Korvan, Mira, Jodi); the Silas job is a scaffold, off')
   const shade = applyEffect(fresh, { goto: 'spine:shade', flag: quiet })
   assert(!visibleChoices(shade).some((c) => /TODO/.test(c.label)), 'shade shows no placeholder walk-ups')
-  assert(ids(shade).includes('walk-korvan') && ids(shade).includes('walk-mira'), 'shade walks up to Korvan and Mira')
+  assert(ids(shade).includes('walk-korvan') && ids(shade).includes('walk-mira') && ids(shade).includes('walk-jodi'), 'shade walks up to Korvan, Mira, and Jodi')
   for (const scene of ALL_SCENES) {
     const text = JSON.stringify(scene)
     assert(!/TODO_STRAY/.test(text), `${scene.id} carries no walk-up placeholder`)
@@ -3798,8 +3798,8 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(!ids(midFight).includes('enc-skip'), 'Give the road only before the first exchange')
   const feintRow = encounterChoices(midFight).find((c) => c.id === 'enc-feint')!
   const trickRow = encounterChoices(midFight).find((c) => c.id === 'enc-trick')!
-  assert(!isChoiceOn(feintRow, midFight) && /already set/.test(String(feintRow.locked)), 'feint locks with a reason')
-  assert(!isChoiceOn(trickRow, midFight) && /Already used/.test(String(trickRow.locked)), 'sand trick locks with a reason')
+  assert(!isChoiceOn(midFight, feintRow.enable) && /already set/.test(String(feintRow.locked)), 'feint locks with a reason')
+  assert(!isChoiceOn(midFight, trickRow.enable) && /Already used/.test(String(trickRow.locked)), 'sand trick locks with a reason')
 
   // Guard takes 2 off, 1 off against Valerius; you do not hit.
   for (let t = 0; t < 30; t++) {
@@ -3874,7 +3874,7 @@ function assertHelpResolves(s: GameState, where: string) {
   const latched = fv('prisoner', 2, 'tick', { encounterLatched: true, encounterRound: 1 }, 5)
   assert(ids(latched).includes('enc-pull'), 'Pull shows while the tick is on')
   const runRow = encounterChoices(latched).find((c) => c.id === 'enc-run')!
-  assert(!isChoiceOn(runRow, latched) && /tick/i.test(String(runRow.locked)), 'Run locks while latched, with a reason')
+  assert(!isChoiceOn(latched, runRow.enable) && /tick/i.test(String(runRow.locked)), 'Run locks while latched, with a reason')
   assert(go(latched, 'guard').sap === latched.sap - 1, 'a latched tick drinks 1 Sap a round')
   const pulled = go(latched, 'pull')
   assert(pulled.sap === latched.sap && !pulled.flags.encounterLatched, 'pulling the tick stops the drain')
@@ -3923,7 +3923,7 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(harp.flag?.encounterPinned === true, 'the harpoon pins you')
   const pinnedS = fv('outcast', 1, 'carapace', { encounterPinned: true, encounterRound: 1 }, 9)
   const pinRun = encounterChoices(pinnedS).find((c) => c.id === 'enc-run')!
-  assert(!isChoiceOn(pinRun, pinnedS) && /harpoon/.test(String(pinRun.locked)), 'Run locks while pinned, with a reason')
+  assert(!isChoiceOn(pinnedS, pinRun.enable) && /harpoon/.test(String(pinRun.locked)), 'Run locks while pinned, with a reason')
 
   // Handler: a failed run lets the hound bite.
   let houndBite = false
@@ -4011,6 +4011,56 @@ function assertHelpResolves(s: GameState, where: string) {
   const auto = fightTopicMidFight(HELP_TOPICS.find((t) => t.id === 'fight')!)
   assert(!CRIT_WORDS.test(topicLines(auto).join('\n')), 'the fight card that opens itself mid-fight has no crit text')
   assert(/CRIT:/.test(topicText(HELP_TOPICS.find((t) => t.id === 'fight')!)), 'typed help fight still explains crits')
+}
+
+// ---- Jodi Hollowmere: walk-up Stray in Silas's shade (Outcast) ----
+{
+  const quiet = { encounterAt: 9999 }
+  const at = (fx: Parameters<typeof applyEffect>[1] = {}) => applyEffect(applyEffect(newGame('outcast'), { goto: 'spine:jodi', flag: quiet }), fx)
+  const shade = applyEffect(newGame('outcast'), { goto: 'spine:shade', flag: quiet })
+  assert(ids(shade).includes('walk-jodi'), 'shade walks up to Jodi')
+  assert(pick(shade, 'walk-jodi').sceneId === 'spine:jodi', 'the walk-up lands at Jodi')
+  const scene = getScene('spine:jodi')
+  const all = JSON.stringify(scene)
+  assert(/brand/.test(scene.body) && /snake/.test(scene.body) && /vultures/.test(scene.body), 'Jodi sees the brand; snake and vultures on the card')
+  assert(!/\b(power|magic|gift|curse|you did|what you did|this is not|not a)\b/i.test(all), 'Jodi has no powers and never says what he did')
+  assert(!/\b(raccoon|skunk|squirrel|possum|opossum|bat|forest)\b/i.test(all), 'only desert critters')
+  for (const line of Object.values(JODI_LINES)) assert(all.includes(JSON.stringify(line).slice(1, 30)), 'each Jodi line reaches the scene')
+
+  // Trades: visible locks that name the cost, then a real swap.
+  const broke = at({ remove: { scrap: 99, glints: 99 } })
+  const dropRow = visibleChoices(broke).find((c) => c.id === 'drop')!
+  const salveRow = visibleChoices(broke).find((c) => c.id === 'salve')!
+  assert(dropRow && !isChoiceOn(broke, dropRow.enable) && dropRow.locked === 'Need 2 scrap', 'Drop trade locked with what it needs')
+  assert(salveRow && !isChoiceOn(broke, salveRow.enable) && salveRow.locked === 'Need 1 Glint', 'salve trade locked with what it needs')
+  const rich = at({ add: { scrap: 2, glints: 1 } })
+  const d = pick(rich, 'drop')
+  assert((d.items.vial_drop ?? 0) === (rich.items.vial_drop ?? 0) + 1 && (d.items.scrap ?? 0) === (rich.items.scrap ?? 0) - 2, 'Jodi trades 2 scrap for a Drop')
+  assert(!ids(d).includes('drop') && (d.flash ?? '').includes(JODI_LINES.trade), 'the Drop trade happens once, with her line')
+  const sv = pick(d, 'salve')
+  assert((sv.items.salve ?? 0) === (d.items.salve ?? 0) + 1 && (sv.items.glints ?? 0) === (d.items.glints ?? 0) - 1, 'Jodi trades a Glint for a Resin Salve')
+  assert(sv.heat.strays === rich.heat.strays, 'trading with Jodi adds no Stray Heat')
+
+  // Stealing: the snake bites, you leave the shade, Stray Heat rises.
+  const full = at({ health: 6 })
+  const bit = pick(full, 'take')
+  assert(bit.health === full.health - 2 && bit.sceneId === 'spine:shade', 'the snake bites for 2 Health and you are back in the shade')
+  assert(bit.heat.strays === full.heat.strays + 1 && bit.flags.strayNotice && bit.flags.jodiTook, 'stealing from Jodi raises Stray Heat and wakes the Strays')
+  assert((bit.items.scrap ?? 0) === (full.items.scrap ?? 0), 'the theft gets nothing')
+  assert((bit.flash ?? '').includes(JODI_LINES.bite), 'her line after the bite')
+  const back = applyEffect(bit, { goto: 'spine:jodi' })
+  assert(!ids(back).includes('drop') && !ids(back).includes('salve') && !ids(back).includes('take'), 'no trades or theft after she has been robbed')
+  assert(/does not trade with you again/.test(sceneProse(back)), 'her card says she will not trade again')
+  const low = { ...at(), health: 2 }
+  const lowBit = pick(low, 'take')
+  assert(lowBit.health === 2 && lowBit.sap === low.sap - 1 && lowBit.sceneId === 'spine:shade', 'at low Health the bite costs Sap instead')
+  assert(visibleChoices(full).filter((c) => c.id === 'take').length === 1, 'one take row shows at a time')
+
+  // Typed: who, brand, look.
+  assert(/Jodi Hollowmere/.test(interpret(full, 'who is jodi').flash ?? ''), 'who is jodi answers')
+  const asked = interpret(full, 'what does my brand mean').flash ?? ''
+  assert(/We don't tell him/.test(asked), 'Jodi refuses to say what the brand means')
+  assert(/Glint/.test(interpret(full, 'look').flash ?? ''), 'look at Jodi names her prices')
 }
 
 console.log('OK', {

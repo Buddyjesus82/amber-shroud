@@ -463,6 +463,32 @@ const mira: IntentRule[] = [
   },
 ]
 
+const jodi: IntentRule[] = [
+  {
+    tags: [...TALK, ...HELP],
+    show: { flagUnset: 'jodiTook' },
+    reply: 'She answers the vulture instead of you. "He wants to chat, Pastor. Tell him we trade. Scrap for the Drop, a Glint for the salve."',
+    effects: { ticks: 1 },
+  },
+  {
+    tags: TRADE,
+    show: { flagUnset: 'jodiTook' },
+    reply: '"Two scrap for the Drop. One Glint for the salve. The rats set the prices."',
+    effects: { ticks: 1 },
+  },
+  {
+    tags: [...TALK, ...HELP, ...TRADE],
+    show: { flag: 'jodiTook' },
+    reply: 'She feeds the vultures and watches your hands.',
+    effects: { ticks: 1 },
+  },
+  {
+    tags: THREAT,
+    reply: 'The snake lifts its head off her shoulder. Jodi grins at you with black lips and waits.',
+    effects: { heat: { strays: 1 }, pressure: 1, ticks: 1 },
+  },
+]
+
 const corvin: IntentRule[] = [
   {
     tags: TALK,
@@ -509,6 +535,7 @@ const BY_PERSON: Record<PersonId, IntentRule[]> = {
   korvan,
   mira,
   corvin,
+  jodi,
   carapace: [],
   handler: [
     {
