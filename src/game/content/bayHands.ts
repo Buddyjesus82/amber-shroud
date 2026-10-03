@@ -34,7 +34,7 @@ function walkPhrases(names: string[]): string[] {
 const pike = ['pike', 'scraper', 'north hull', 'north bay', "pike's skiff", "pike's bay", 'his skiff']
 const sarn = ['sarn', 'rigger', 'east cradle', 'east bay', "sarn's skiff", "sarn's bay"]
 const vetch = ['vetch', 'welder', 'south skid', 'south bay', "vetch's skiff", "vetch's bay"]
-const oil = ['jaxson', 'vance', 'jaxson vance', 'brass jaw']
+const oil = ['jaxson', 'vance', 'jaxson vance', 'oil-tooth', 'oiltooth', 'oil tooth', 'brass jaw']
 
 export const BAY_HUB = 'camp:bay'
 export const BAY_PIKE = 'camp:bay-pike'
@@ -53,11 +53,11 @@ const wrenchFree: Cond = { all: [hasWrench, { flagUnset: 'wrenchBayTrade' }] }
 
 // ── Shared lines and effects. Hub typed intents and the bay screens use the same ones. ──
 
-export const PIKE_TALK = 'Pike does not stop scraping. "Cord is on the post. Take it and I did not see you."'
+export const PIKE_TALK = 'Pike does not stop scraping. "Cord is on the post. Take it and I did not see you. Oil-Tooth would say the same."'
 export const SARN_TALK =
-  'Sarn counts a bolt out loud so the bay can hear the work. "Brass jaw keeps a stall. I keep a number. Do not promote me."'
+  'Sarn counts a bolt out loud so the bay can hear the work. "Oil-Tooth keeps a stall. I keep a number. Do not promote me."'
 export const VETCH_TALK =
-  'Vetch lifts the mask a finger. "Talk is sparks. You want cord, Pike has it on his post. You want a fight, find a guard."'
+  'Vetch lifts the mask a finger. "Talk is sparks. You want cord, Pike has it on his post. You want a ride, Oil-Tooth has the skiff. You want a fight, find a guard."'
 
 export const BOLT_NEEDS_WRENCH =
   'The resin bolt is threaded tight into the knee joint. You need a wrench to turn it out.'

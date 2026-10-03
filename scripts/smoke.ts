@@ -24,6 +24,7 @@ import {
 import { DOORS, HUBS, ITEMS } from '../src/game/content/catalog.ts'
 import { ALL_SCENES, getScene } from '../src/game/content/index.ts'
 import { PEOPLE } from '../src/game/people.ts'
+import { PIKE_TALK, SARN_TALK, VETCH_TALK } from '../src/game/content/bayHands.ts'
 import { heatFactions } from '../src/game/heat.ts'
 import { GLOBAL_INTENTS } from '../src/game/intent.ts'
 import { wakeEffect } from '../src/game/downed.ts'
@@ -2636,7 +2637,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v47'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v48'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -2658,7 +2659,7 @@ assert(css.includes('--story-top: min(calc(56.25cqi * var(--band-bot, 0.5)), 50c
 assert(css.includes('rgba(12, 7, 4, 0.58)'), 'story scrim stays translucent so cover art shows through')
 assert(!css.includes('rgba(12, 7, 4, 0.88)'), 'story scrim is lighter than the v32 slab')
 const playSrc = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
-assert(playSrc.includes('?v=47'), 'scene cover URLs are cache-busted with the service worker')
+assert(playSrc.includes('?v=48'), 'scene cover URLs are cache-busted with the service worker')
 assert(!css.includes('object-position: center 68%'), 'scene art no longer crops toward the ground')
 assert(!css.includes('height: 56px'), 'short phones no longer squash covers into a head-cropping strip')
 assert(css.includes('place-items: center'), 'game screen is centered on the backdrop')
@@ -4200,17 +4201,36 @@ function assertHelpResolves(s: GameState, where: string) {
   for (const t of newText) assert(!/\bthis is not\b|\bit is not a\b/i.test(t), `plain line: ${t}`)
 }
 
-// Jaxson Vance: no Oil-Tooth name anywhere; lookups by first name and surname.
+// Jaxson "Oil-Tooth" Vance: the nickname is his alone; lookups by name, surname, and nickname.
 {
   assert(PEOPLE.oiltooth.name === 'Jaxson Vance' || PEOPLE.oiltooth.name === 'Jaxson', 'Jaxson is named Jaxson')
   assert(PEOPLE.oiltooth.aliases.includes('vance') && PEOPLE.oiltooth.aliases.includes('jaxson'), 'jaxson and vance are aliases')
-  assert(!PEOPLE.oiltooth.aliases.some((a) => /oil|tooth/.test(a)), 'no Oil-Tooth alias for Jaxson')
-  for (const ask of ['who is jaxson', 'who is vance']) {
+  for (const a of ['oil-tooth', 'oiltooth', 'oil tooth']) assert(PEOPLE.oiltooth.aliases.includes(a), `Jaxson answers to ${a}`)
+  assert(/Jaxson "Oil-Tooth" Vance/.test(PEOPLE.oiltooth.card) && /call him Oil-Tooth because of the brass jaw/.test(PEOPLE.oiltooth.card), 'his card names the nickname and why')
+  for (const p of Object.values(PEOPLE)) {
+    if (p.id === 'oiltooth') continue
+    assert(!/oil.?tooth/i.test(`${p.name} ${p.aliases.join(' ')}`), `${p.id} does not answer to Oil-Tooth`)
+  }
+  for (const ask of ['who is jaxson', 'who is vance', 'who is oil-tooth', 'who is oiltooth', 'who is oil tooth']) {
     assert(/cybernetic brass jaw/.test(interpret(pick(newGame('prisoner'), 'pens'), ask).flash ?? ''), `"${ask}" returns his card`)
   }
   const srcDir = join(process.cwd(), 'src')
   const walk = (d: string): string[] => readdirSync(d, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(join(d, e.name)) : [join(d, e.name)]))
-  for (const f of walk(srcDir)) assert(!/Oil-Tooth/i.test(readFileSync(f, 'utf8')), `no Oil-Tooth name in ${f}`)
+  // Oil-Tooth only ever means Jaxson: never after another first name, never a family or a title for anyone else.
+  let uses = 0
+  for (const f of walk(srcDir)) {
+    const txt = readFileSync(f, 'utf8')
+    for (const m of txt.matchAll(/(\S+)\s+"?Oil-Tooth"?(\s+\S+)?/g)) {
+      const before = m[1].replace(/^["'`(]+/, '')
+      const name = /^[A-Z][a-z]+$/.test(before) && !['Jaxson', 'The', 'Tell', 'Ask', 'Find', 'People', 'Call', 'Like'].includes(before)
+      assert(!name, `Oil-Tooth after another name in ${f}: ${m[0]}`)
+    }
+    assert(!/Oil-Tooth(?:s'|s)?\s+(?:family|clan|kin|brother|sister|cousin|father|mother|son|daughter)/i.test(txt), `no Oil-Tooth family in ${f}`)
+    assert(!/(?:Greg|Marta)\s+Oil-Tooth/.test(txt), `Greg and Marta are not Oil-Tooth in ${f}`)
+    uses += (txt.match(/Oil-Tooth/g) ?? []).length
+  }
+  assert(uses >= 5, 'other people use the Oil-Tooth nickname in some lines')
+  assert(/Oil-Tooth/.test(PIKE_TALK + SARN_TALK + VETCH_TALK), 'a Skiff Bay hand says Oil-Tooth')
 }
 console.log('OK', {
   prisoner: Object.keys(DOORS.prisoner.items),

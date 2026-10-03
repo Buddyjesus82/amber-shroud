@@ -105,9 +105,11 @@ He knows the traps on the dry ford and uses them to protect Dune-Strays, as pena
   oiltooth: {
     id: 'oiltooth',
     name: 'Jaxson',
-    aliases: ['jaxson', 'vance', 'jaxson vance', 'brass jaw'],
+    aliases: ['jaxson', 'vance', 'jaxson vance', 'oil-tooth', 'oiltooth', 'oil tooth', 'brass jaw'],
     metFlag: 'metOilTooth',
-    card: `Jaxson Vance — burly, grease-stained, permanent smirk, cybernetic brass jaw catching the steam-light. Scorched welding leathers with corporate inventory tags he never cut off. An oversized wrench when he is not hiding it.
+    card: `Jaxson "Oil-Tooth" Vance — burly, grease-stained, permanent smirk, cybernetic brass jaw catching the steam-light. Scorched welding leathers with corporate inventory tags he never cut off. An oversized wrench when he is not hiding it.
+
+People call him Oil-Tooth because of the brass jaw. He got it saving an apprentice, and the name came with it. Nobody else in Camp-04 gets to wear it.
 
 Prison-break technical inside man. Reckless. Charismatic. Anti-authority. Humor as a shield. Observant of security weaknesses. He has skimmed Oasis Sap for a lifetime of repairing Ironclad Skiff-Striders. He hotwires. Headings are Kaelen's.`,
     scenes: [

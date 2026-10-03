@@ -66,7 +66,7 @@ const kaelen: IntentRule[] = [
   },
   {
     tags: HELP,
-    reply: '"Help is a church word. I do arithmetic. Scrap in, Drop out. Glints in, heading out. Jaxson still hotwires."',
+    reply: '"Help is a church word. I do arithmetic. Scrap in, Drop out. Glints in, heading out. Oil-Tooth still hotwires."',
     effects: { ticks: 1 },
   },
   {
@@ -90,7 +90,7 @@ const kaelen: IntentRule[] = [
 const valerius: IntentRule[] = [
   {
     tags: TALK,
-    reply: '"Out of position is the whole conversation. Useful scrapes. Escaped spends a Hound. Pick which line I write."',
+    reply: '"Out of position is the whole conversation. Useful scrapes. Escaped spends a Hound. Oil-Tooth thinks I cannot hear his jokes from the tower. I hear every one. Pick which line I write."',
     effects: { ticks: 1, pressure: 1 },
   },
   {
