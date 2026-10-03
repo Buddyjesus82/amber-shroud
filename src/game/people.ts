@@ -17,6 +17,7 @@ export type PersonId =
   | 'korvan'
   | 'mira'
   | 'corvin'
+  | 'jodi'
   | 'carapace'
 
 export type Person = {
@@ -65,6 +66,19 @@ Wary. Ostracized. He lives at the edge of Silas's shade and trades fragments of 
 She does not speak. She guards people who are looking for the truth, and she has no use for people looking for profit.`,
     scenes: ['spine:mira'],
     later: {},
+  },
+  jodi: {
+    id: 'jodi',
+    name: 'Jodi Hollowmere',
+    aliases: ['jodi', 'hollowmere', 'jodi hollowmere', 'snake woman', 'woman with the snake'],
+    metFlag: 'metJodi',
+    card: `Jodi Hollowmere. A Dune-Stray who keeps carrion birds and sand rats on the sunny side of Silas's shade. Two vultures, a sand python named Grudge, and more rats than she will count. They bring her what they find on the dead, and she trades it.
+
+Dark, funny, a little wild. She has been through worse than most on the Spine and takes pain without much fuss. She is careful anyway. She talks to her animals more than to people, and she keeps the snake between her pile and anyone she does not know.`,
+    scenes: ['spine:jodi'],
+    later: {
+      'spine:jodi': `Jodi sits on her canvas heap with the snake over her shoulders. The vultures shift on their frame when you come back.`,
+    },
   },
   corvin: {
     id: 'corvin',

@@ -22,6 +22,11 @@ function speakerRefusal(state: GameState): string {
       : '"I know what it means. I will not say it. You don\'t remember. They do."'
   }
   if (id === 'spine:mira') return 'Mira looks at the brand, then back at the sand. She says nothing.'
+  if (id === 'spine:jodi') {
+    return state.flags.jodiTook
+      ? 'Jodi watches your hands and says nothing.'
+      : 'Jodi looks at the brand for a long moment, then says to the snake, "He wants to know. We don\'t tell him."'
+  }
   if (id === 'spine:corvin') return '"I don\'t know Stray marks. The Strays do. They won\'t say it to you, and I\'m not going to guess."'
   if (id.startsWith('spine:silas') || id === 'spine:shade' || id === 'ch1:o-silas') {
     return 'Silas does not look at it. "I do not ask what you did. I ask what you pay."'
