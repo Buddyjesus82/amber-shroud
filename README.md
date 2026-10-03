@@ -7,7 +7,7 @@ This is not a tabletop clone. There are no skill checks. The only roll is a smal
 ## Play
 
 1. **New game** and pick a start door — kits are distinct and each door walks its own Hunger road to the same Maw:
-   - **Ironwood Break** (Prisoner) — Cartel Scrip only in the holding pens. Jaxson Vance is the inside man (sabotage + hotwire). **Kaelen the Sifter** is at the Wire (scrap → Drops of Oasis Sap; Glints → intel).
+   - **Ironwood Break** (Prisoner) — Cartel Scrip only in the holding pens. Jaxson "Oil-Tooth" Vance is the inside man (sabotage + hotwire). **Kaelen the Sifter** is at the Wire (scrap → Drops of Oasis Sap; Glints → intel).
    - **First Drop** (Outcast) — empty vial, Silas's tip. Sap is thin. Stray lean. Kaelen still sells Drops and rumors at the dry well / dusk. Silas's tip opens his shade-cut; the Red Maw heading costs a Glint or a debt on Silas's tab. Stray-raising acts get you noticed, and Stray Heat sends a Stray collector after you on the Spine.
    - **Vessel** (Cult) — Drop, rusted dagger, Oram's map, cloth. Seeker / Thalia pressure. **Kaelen the Sifter** buys false routes in Cup-Shadow (hymn-shade off the paddock / court edge) — same Buy/Sell bones, Seeker-leaning rumors. Map walk. They do not ride.
 2. Roam the hub: open **Map** (next to Heat / Gear). Walk **connected routes** only — no teleport. Each hop costs **Sap**; Camp-04 is farthest from Red Maw / First Spires (4 legs), Bleached Spine closer (2), Outer Threshold closest (1). Longer roads cost more hops (a few edges cost 2). At 0 Sap you get an authored crisis, not a random death.

@@ -112,7 +112,7 @@ Overseer Valerius is the shadow over the Yard. Getting out from under him is the
         effects: { goto: 'camp:vats', ticks: 1, sap: -1, pressure: 1 },
       },
       {
-        tags: ['jaxson', 'lean', 'vance', 'bunk'],
+        tags: ['jaxson', 'oil-tooth', 'oiltooth', 'lean', 'vance', 'bunk'],
         reply: "Jaxson's stall sits off the line. The next bunk in the pens is his. He hotwires. Kaelen works the Wire.",
         effects: { goto: 'camp:lean' },
       },
@@ -300,6 +300,8 @@ Jaxson named a west bolt at the Guard Station. That is a different pipe. This co
 
 The bunk next to you is Jaxson Vance. He is burly and grease-stained, with a permanent smirk and a cybernetic brass jaw in the steam-light. Scorched welding leathers. Corporate tags he never cut off. An oversized wrench, when he is not hiding it.
 
+People call him Oil-Tooth because of that brass jaw. He got it saving an apprentice.
+
 He is the one who can break you out. He hotwires Ironclad Skiff-Striders, and he has skimmed Oasis Sap for as long as he has repaired them. The jokes are a shield. He watches the guards more closely than he lets on.
 
 Kaelen the Sifter sells rumors at the Wire.`,
@@ -369,7 +371,7 @@ Kaelen the Sifter sells rumors at the Wire.`,
     ],
     intents: [
       {
-        tags: ['jaxson', 'vance', 'talk', 'hotwire'],
+        tags: ['jaxson', 'oil-tooth', 'oiltooth', 'vance', 'talk', 'hotwire'],
         reply: 'The brass jaw turns. Humor as a shield. He has been waiting for the Bleed.',
         effects: { goto: 'camp:jaxson', ticks: 1 },
       },

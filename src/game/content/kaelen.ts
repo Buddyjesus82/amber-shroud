@@ -78,7 +78,7 @@ export const campKaelenScenes: Scene[] = [
       },
       {
         tags: ['cut', 'hole', 'wire', 'route', 'escape'],
-        reply: '"A hole is a trade route. I sell those too. Pay on the rumor shelf. Jaxson still hotwires the Strider — that is not me."',
+        reply: '"A hole is a trade route. I sell those too. Pay on the rumor shelf. Oil-Tooth still hotwires the Strider. That is not me."',
         effects: { goto: 'camp:kaelen-rumors' },
       },
       {
@@ -173,7 +173,7 @@ Three: cheaper leads. Side trouble. Relics Valerius hunts. When the Great Bleed 
           ticks: 1,
           goto: 'camp:kaelen-rumors',
           flash:
-            '"Steam-vent on the west bolt. Bleed-hour. Guards look at the vats. Tell Jaxson I sold a clock."',
+            '"Steam-vent on the west bolt. Bleed-hour. Guards look at the vats. Tell Oil-Tooth I sold a clock."',
         },
       },
       {
