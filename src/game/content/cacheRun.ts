@@ -3,7 +3,7 @@ import type { Scene } from '../types'
 // Cache Run: shared destination, door-different roads.
 //   leave → (Prisoner pipe / Outcast noon / Vessel hymn)
 //   Prisoner: Clerk Rell → Jaxson on the stolen Strider → Ossa as escaped property
-//   Outcast: Silas on the cut → Nim the Cut-Fee → Ossa as kin
+//   Outcast: Silas on the cut → Drennick Voss at the shade toll → Ossa as kin
 //   Vessel: Seeker runners → Zafir who will not shop a cup → Sybella
 //   All three still spend at Sybella → (hollow) → land → maw:rim
 //   Unconditional finale: sybella "maw" always lands. Vessel may bargain. Prisoner/Outcast get a hunt-mark, never her help.
@@ -79,7 +79,7 @@ The road is not shared. The destination is. What it costs you depends on the lif
       {
         id: 'go',
         label: 'Walk noon country',
-        sub: 'Walk into noon. Costs sap. Silas, then Nim, then Ossa — each one may charge you for shade.',
+        sub: 'Walk into noon. Costs sap. Silas, then Drennick, then Ossa — each one may charge you for shade.',
         tone: 'hunger',
         show: { door: 'outcast' },
         effects: { goto: 'ch1:o-noon', ticks: 1, sap: -1, pressure: 1 },
@@ -555,7 +555,7 @@ The straight wash is a kiln. A rib of rock hides a cut if you know where to look
       {
         id: 'ford',
         label: 'Meet Corvin at the dry ford',
-        sub: 'He walks you past the traps to Ossa. Costs sap. Nim\'s shade is off this line.',
+        sub: 'He walks you past the traps to Ossa. Costs sap. Drennick\'s shade is off this line.',
         show: { flag: 'corvinHelped' },
         effects: {
           goto: 'ch1:o-ossa',
@@ -569,7 +569,7 @@ The straight wash is a kiln. A rib of rock hides a cut if you know where to look
       {
         id: 'noon',
         label: 'Take the noon slope',
-        sub: 'Faster, and the sun costs more sap. Nim the Cut-Fee is still waiting in the next shade.',
+        sub: 'Faster, and the sun costs more sap. Drennick Voss is still waiting in the next shade.',
         effects: {
           goto: 'ch1:o-tax',
           ticks: 1,
@@ -581,7 +581,7 @@ The straight wash is a kiln. A rib of rock hides a cut if you know where to look
       {
         id: 'rib',
         label: 'Hug the bone-rib shade',
-        sub: 'Slower, and cheaper in sap. Nim the Cut-Fee still charges you at the next shade.',
+        sub: 'Slower, and cheaper in sap. Drennick Voss still charges you at the next shade.',
         effects: {
           goto: 'ch1:o-tax',
           ticks: 1,
@@ -617,30 +617,30 @@ The straight wash is a kiln. A rib of rock hides a cut if you know where to look
     speaker: 'Silas',
     body: `Silas Vane is older than the well's disappointment. The tent is gone. What he has now is a rag on a rib of rock. One eye is milk. The other is counting.
 
-"Noon-Empty. I sold you one minute of shade. This is a different minute. Talk is not free on the road either. South of here is Nim the Cut-Fee. She collects what I only sell. Pay me to sit, walk on and pay her, or become a story the wash tells."`,
+"Noon-Empty. I sold you one minute of shade. This is a different minute. Talk is not free on the road either. South of here is Drennick Voss. He collects what I only sell. Pay me to sit, walk on and pay him, or become a story the wash tells."`,
     variants: [
       {
         if: { item: 'vial_empty' },
         mode: 'append',
-        body: `He hears the empty glass tick. "That sound is a password if Nim is in a good religion today."`,
+        body: `He hears the empty glass tick. "That sound is a password if Drennick is in a good mood today."`,
       },
     ],
     choices: [
       {
         id: 'minute',
         label: 'Buy the next minute of shade',
-        sub: 'You rest. Sap holds. He still will not walk you to Red Maw. Nim is next.',
+        sub: 'You rest. Sap holds. He still will not walk you to Red Maw. Drennick is next.',
         effects: {
           goto: 'ch1:o-tax',
           ticks: 1,
           flag: { silasRoad: true, silasMinute: true },
-          flash: 'He sells you another minute of shade. He does not fill your vial. Nim the Cut-Fee is the next person who will charge you.',
+          flash: 'He sells you another minute of shade. He does not fill your vial. Drennick Voss is the next person who will charge you.',
         },
       },
       {
         id: 'drop',
         label: 'Buy a smear of Drop — 1 Glint',
-        sub: 'Costs 1 Glint. Sap comes back a little. Nim is still ahead.',
+        sub: 'Costs 1 Glint. Sap comes back a little. Drennick is still ahead.',
         show: { item: 'glints' },
         effects: {
           remove: { glints: 1 },
@@ -648,13 +648,13 @@ The straight wash is a kiln. A rib of rock hides a cut if you know where to look
           goto: 'ch1:o-tax',
           ticks: 1,
           flag: { silasRoad: true, silasSold: true },
-          flash: 'He spends your Glint and wets your lip from a smear in the rag. Sap comes back a little. "I still do not take Cartel scrip. Nim takes worse."',
+          flash: 'He spends your Glint and wets your lip from a smear in the rag. Sap comes back a little. "I still do not take Cartel scrip. Drennick takes worse."',
         },
       },
       {
         id: 'on',
-        label: 'Walk on. Nim collects the fee.',
-        sub: 'No payment here. Nim the Cut-Fee is the next person in the shade.',
+        label: 'Walk on. Drennick collects the fee.',
+        sub: 'No payment here. Drennick Voss is the next person in the shade.',
         tone: 'quiet',
         effects: {
           goto: 'ch1:o-tax',
@@ -667,18 +667,18 @@ The straight wash is a kiln. A rib of rock hides a cut if you know where to look
     intents: [
       {
         tags: ['shade', 'minute', 'rest', 'sit', 'pay'],
-        reply: 'He sells the minute. Nim sells the tax.',
+        reply: 'He sells the minute. Drennick takes the fee.',
         effects: { goto: 'ch1:o-tax', ticks: 1, flag: { silasRoad: true, silasMinute: true } },
       },
       {
         tags: ['drop', 'drink', 'buy', 'glint'],
         show: { item: 'glints' },
-        reply: 'A smear. Not a future. Nim is still the next mouth.',
+        reply: 'A smear. Not a future. Drennick is still the next mouth.',
         effects: { remove: { glints: 1 }, sap: 2, goto: 'ch1:o-tax', ticks: 1, flag: { silasRoad: true, silasSold: true } },
       },
       {
-        tags: ['ask', 'talk', 'hello', 'say', 'tell', 'nim', 'south', 'on'],
-        reply: '"South. Nim the Cut-Fee. Shade-road is not free twice."',
+        tags: ['ask', 'talk', 'hello', 'say', 'tell', 'drennick', 'voss', 'south', 'on'],
+        reply: '"South. Drennick Voss. Shade-road is not free twice."',
         effects: { goto: 'ch1:o-tax', ticks: 1, flag: { silasRoad: true } },
       },
     ],
@@ -687,86 +687,86 @@ The straight wash is a kiln. A rib of rock hides a cut if you know where to look
     id: 'ch1:o-tax',
     chapterId: 'cache-run',
     kind: 'talk',
-    title: 'Cut-Fee',
-    speaker: 'Nim',
-    body: `Nim the Cut-Fee sits the shade like a toll. Resin under the nails. A knife that has only ever been for minutes.
+    title: 'Shade Toll',
+    speaker: 'Drennick Voss',
+    body: `Drennick Voss sits the shade like a toll. Resin under the nails. A knife that has only ever been for minutes. He runs the line between the Strays and the Cartel, and this shade is his stop on it.
 
-She looks at the brand once and then talks to the air beside your head. "Shade-road is not free. I collect from anyone, even you. Glint, scratch, empty glass, or you run noon and I tell the wash your name."`,
+He looks at the brand once and then talks to the air beside your head. "Shade-road is not free. I collect from anyone, even you. Glint, scratch, empty glass, or you run noon and I tell the wash your name."`,
     variants: [
       {
         if: { flag: 'silasCut' },
         mode: 'append',
-        body: `Her eyes snag on the scratch in your palm. "He still sending me thirsty people with his handwriting. That is almost a discount."`,
+        body: `His eyes snag on the scratch in your palm. "Silas is still sending me thirsty people with his handwriting. That is almost a discount."`,
       },
       {
         if: { item: 'vial_empty' },
         mode: 'append',
-        body: `She hears the empty vial tick. "Honesty about thirst is a Stray password. Spend it here, or save it for Ossa. Not both as a speech."`,
+        body: `He hears the empty vial tick. "Honesty about thirst is a Stray password. Spend it here, or save it for Ossa. Not both as a speech."`,
       },
     ],
     choices: [
       {
         id: 'glint',
         label: 'Pay a Glint for the shade',
-        sub: 'Costs 1 Glint. She lets you through to Ossa. No extra Stray Heat.',
+        sub: 'Costs 1 Glint. He lets you through to Ossa. No extra Stray Heat.',
         show: { item: 'glints' },
         effects: {
           remove: { glints: 1 },
           goto: 'ch1:o-ossa',
           ticks: 1,
-          flag: { nimMet: true, nimPaid: true },
-          flash: 'Nim pockets the Glint. "Ossa is south. She falls funny. Don\'t rob family."',
+          flag: { drennickMet: true, drennickPaid: true },
+          flash: 'Drennick pockets the Glint. "Ossa is south. She falls funny. Don\'t rob family."',
         },
       },
       {
         id: 'tip',
         label: "Show Silas's scratch as password",
-        sub: 'The scratch stays in your hand. She lets you through because Silas sent you. No Glint spent.',
+        sub: 'The scratch stays in your hand. He lets you through because Silas sent you. No Glint spent.',
         show: { item: 'silas_tip' },
         effects: {
           goto: 'ch1:o-ossa',
           ticks: 1,
-          flag: { nimMet: true, nimSilas: true },
-          flash: 'She does not take the scratch. She takes the fact that Silas wrote it. Ossa is south of here.',
+          flag: { drennickMet: true, drennickSilas: true },
+          flash: 'He does not take the scratch. He takes the fact that Silas wrote it. Ossa is south of here.',
         },
       },
       {
         id: 'empty',
         label: 'Admit the empty vial',
-        sub: 'You admit the vial is empty. She lets you pass and gives back a little sap.',
+        sub: 'You admit the vial is empty. He lets you pass and gives back a little sap.',
         show: { all: [{ item: 'vial_empty' }, { not: { item: 'vial_drop' } }] },
         effects: {
           sap: 1,
           goto: 'ch1:o-ossa',
           ticks: 1,
-          flag: { nimMet: true, nimEmpty: true, emptyShown: true },
-          flash: 'She does not fill the vial. She nods and lets you pass. A little sap comes back. "Ossa likes that sound. I like not burying you."',
+          flag: { drennickMet: true, drennickEmpty: true, emptyShown: true },
+          flash: 'He does not fill the vial. He nods and lets you pass. A little sap comes back. "Ossa likes that sound. I have buried enough people. I like not burying you."',
         },
       },
       {
         id: 'owe',
-        label: 'Owe her a Drop later',
-        sub: 'You walk now. Stray Heat rises. She will collect a Drop from you later, at Red Maw.',
+        label: 'Owe him a Drop later',
+        sub: 'You walk now. Stray Heat rises. He will collect a Drop from you later, at Red Maw.',
         effects: {
           goto: 'ch1:o-ossa',
           ticks: 1,
           heat: { strays: 1 },
-          flag: { nimMet: true, nimOwed: true },
-          flash: 'She lets you walk without paying. Stray Heat rises. "I will find you at Red Maw. Ossa is first. Try not to rob family."',
+          flag: { drennickMet: true, drennickOwed: true },
+          flash: 'He lets you walk without paying. Stray Heat rises. "I will find you at Red Maw. Ossa is first. Try not to rob family."',
         },
       },
       {
         id: 'run',
         label: 'Run through noon. Skip the fee.',
-        sub: 'Costs sap. Stray Heat rises harder. She tells the wash your name.',
+        sub: 'Costs sap. Stray Heat rises harder. He tells the wash your name.',
         tone: 'danger',
         effects: {
           goto: 'ch1:o-ossa',
           ticks: 1,
           sap: -1,
           heat: { strays: 2 },
-          flag: { nimMet: true, nimRun: true },
-          flash: 'Nim does not chase you. She tells the wash your name. It costs sap, and Stray Heat rises harder. Ossa will have heard it.',
+          flag: { drennickMet: true, drennickRun: true },
+          flash: 'Drennick does not chase you. He tells the wash your name. It costs sap, and Stray Heat rises harder. Ossa will have heard it.',
         },
       },
     ],
@@ -774,30 +774,30 @@ She looks at the brand once and then talks to the air beside your head. "Shade-r
       {
         tags: ['pay', 'glint', 'buy', 'tax'],
         show: { item: 'glints' },
-        reply: 'She pockets it. Kin south.',
-        effects: { remove: { glints: 1 }, goto: 'ch1:o-ossa', ticks: 1, flag: { nimMet: true, nimPaid: true } },
+        reply: 'He pockets it. Kin south.',
+        effects: { remove: { glints: 1 }, goto: 'ch1:o-ossa', ticks: 1, flag: { drennickMet: true, drennickPaid: true } },
       },
       {
         tags: ['silas', 'scratch', 'tip', 'password'],
         show: { item: 'silas_tip' },
-        reply: 'She takes the fact of the scratch, not the scrap of it.',
-        effects: { goto: 'ch1:o-ossa', ticks: 1, flag: { nimMet: true, nimSilas: true } },
+        reply: 'He takes the fact of the scratch, not the scrap of it.',
+        effects: { goto: 'ch1:o-ossa', ticks: 1, flag: { drennickMet: true, drennickSilas: true } },
       },
       {
         tags: ['empty', 'vial', 'thirst', 'dry'],
         show: { item: 'vial_empty' },
         reply: 'Honesty about thirst is a Stray password.',
-        effects: { sap: 1, goto: 'ch1:o-ossa', ticks: 1, flag: { nimMet: true, nimEmpty: true, emptyShown: true } },
+        effects: { sap: 1, goto: 'ch1:o-ossa', ticks: 1, flag: { drennickMet: true, drennickEmpty: true, emptyShown: true } },
       },
       {
         tags: ['run', 'flee', 'noon', 'skip'],
-        reply: 'She names you. Stilts hear names.',
-        effects: { goto: 'ch1:o-ossa', ticks: 1, sap: -1, heat: { strays: 2 }, flag: { nimMet: true, nimRun: true } },
+        reply: 'He names you. Stilts hear names.',
+        effects: { goto: 'ch1:o-ossa', ticks: 1, sap: -1, heat: { strays: 2 }, flag: { drennickMet: true, drennickRun: true } },
       },
       {
         tags: ['owe', 'later', 'debt', 'ask', 'talk', 'hello'],
-        reply: 'She talks past your head. "You know what you did. Walk. I collect at the bite."',
-        effects: { goto: 'ch1:o-ossa', ticks: 1, heat: { strays: 1 }, flag: { nimMet: true, nimOwed: true } },
+        reply: 'He talks past your head. "You know what you did. You walked out and they did not. I walked out of the Great Bleed the same way. Walk. I collect at the bite."',
+        effects: { goto: 'ch1:o-ossa', ticks: 1, heat: { strays: 1 }, flag: { drennickMet: true, drennickOwed: true } },
       },
     ],
   },
@@ -814,12 +814,12 @@ She stops when she sees your face. She looks at it a beat too long, and her hand
 "Thirsty," she says, the way she would say it to any stranger on the road. "I don't let thirsty people die on my sand. Show empty glass if you have it. Don't lunge."`,
     variants: [
       {
-        if: { flag: 'nimRun' },
+        if: { flag: 'drennickRun' },
         mode: 'append',
-        body: `"Nim named you," she adds. "I heard it. I am still here. Hiding you is a different promise."`,
+        body: `"Drennick named you," she adds. "I heard it. I am still here. Hiding you is a different promise."`,
       },
       {
-        if: { flag: 'nimSilas' },
+        if: { flag: 'drennickSilas' },
         mode: 'append',
         body: `"You showed his scratch. Good. Passwords are cheaper than blood."`,
       },
@@ -1284,7 +1284,7 @@ She is alive. Angry. Breathing. "Walk," she says, from the ground. "If Sybella a
         mode: 'replace',
         body: `You take the vial from kin. She takes a fall she planned for.
 
-"Family," she says, from the ground, like a slur. "Nim will hear. Silas will hear. Walk. If Sybella asks, I will describe a Stray who robbed the wrong height."`,
+"Family," she says, from the ground, like a slur. "Drennick will hear. Silas will hear. Walk. If Sybella asks, I will describe a Stray who robbed the wrong height."`,
       },
     ],
     choices: [
@@ -1878,9 +1878,9 @@ You are on the Approach. What you gave the sand is still on you.`,
         body: `Clerk Rell's tablet still has your number. Filings outrun stolen hulls.`,
       },
       {
-        if: { flag: 'nimOwed' },
+        if: { flag: 'drennickOwed' },
         mode: 'append',
-        body: `Nim will collect in the Approach. Shade-road debts do not cool at the bite.`,
+        body: `Drennick will collect in the Approach. Shade-road debts do not cool at the bite.`,
       },
       {
         if: { flag: 'ossaKin' },

@@ -609,7 +609,7 @@ function authored(state: GameState, scene: Scene): string[] {
   }
 
   if (id === 'ch1:o-tax') {
-    push(lines, 'Nim collects the minute Silas only sold. A Glint, a scratch, an empty glass, or a run.')
+    push(lines, 'Drennick Voss collects the minute Silas only sold. A Glint, a scratch, an empty glass, or a run.')
     return lines
   }
 

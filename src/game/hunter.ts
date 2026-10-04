@@ -246,7 +246,7 @@ export function spineHunterKindAt(strays: number): 'collector' | 'carapace' {
 function spineHuntChoices(state: GameState): Choice[] {
   const hunter = spineHunterFor(state)
   const carapace = hunter.kind === 'carapace'
-  const who = carapace ? 'The Carapace hunter' : 'The collector'
+  const who = carapace ? 'Nim' : 'The collector'
   const pay: Choice[] = carapace
     ? [
         {

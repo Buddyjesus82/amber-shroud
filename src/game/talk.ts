@@ -162,15 +162,15 @@ const silas: IntentRule[] = [
   },
 ]
 
-const nim: IntentRule[] = [
+const drennick: IntentRule[] = [
   {
     tags: TALK,
-    reply: 'She talks to the air beside your head. "You know what you did. I collect anyway. Pay or run noon."',
+    reply: 'He talks to the air beside your head. "You know what you did. My crew went into the Bleed and I came out alone. I know what it is to be the one who walks out. I collect anyway. Pay or run noon."',
     effects: { ticks: 1 },
   },
   {
     tags: HELP,
-    reply: '"Help is a Glint, a scratch, or empty glass. I do not pour. I tax."',
+    reply: '"Help is a Glint, a scratch, or empty glass. I do not pour. I tax. I also do not let thirsty people die in my shade, so pay me."',
     effects: { ticks: 1 },
   },
   {
@@ -525,7 +525,7 @@ const BY_PERSON: Record<PersonId, IntentRule[]> = {
   valerius,
   rell,
   silas,
-  nim,
+  drennick,
   zafir,
   ossa,
   sybella,
@@ -565,7 +565,7 @@ export function talkIntentsFor(sceneId: string): IntentRule[] {
   }
   if (match(sceneId, ['spine:silas', 'spine:shade', 'spine:tip', 'spine:ridge', 'ch1:o-silas'])) return silas
   if (match(sceneId, ['ch1:p-clerk'])) return rell
-  if (match(sceneId, ['ch1:o-tax'])) return nim
+  if (match(sceneId, ['ch1:o-tax'])) return drennick
   if (match(sceneId, ['ch1:v-runners'])) return brin
   if (match(sceneId, ['maw:zafir', 'ch1:v-zafir', 'maw:market'])) return zafir
   if (match(sceneId, ['maw:ossa', 'maw:stilt', 'ch1:ossa', 'ch1:p-ossa', 'ch1:o-ossa'])) return ossa

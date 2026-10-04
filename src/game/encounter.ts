@@ -346,7 +346,7 @@ export function encounterChoices(state: GameState): Choice[] {
   const rows: Choice[] = [
     {
       id: 'enc-fight',
-      label: `Fight the ${spec.name}`,
+      label: `Fight ${whoOf(spec)}`,
       sub: f.encounterFeint ? 'Strike. Your feint is set: swing +2.' : 'Strike vs Shell. Health takes the hits.',
       tone: 'danger',
       enable: { healthMin: 1 },
@@ -582,8 +582,11 @@ function roll(state: GameState, salt: string, n: number): number {
   return hash(state, `${salt}:${state.flags.encounterKind ?? ''}`, Number(state.flags.encounterRound ?? 0) + 1) % n
 }
 
+/** Named people: no "the" in front. */
+const PROPER_KINDS: EncounterKind[] = ['overseer', 'carapace']
+
 function whoOf(spec: Spec): string {
-  return spec.kind === 'overseer' ? spec.name : `the ${spec.name}`
+  return PROPER_KINDS.includes(spec.kind) ? spec.name : `the ${spec.name}`
 }
 
 function cap(s: string): string {
@@ -624,7 +627,7 @@ export function resolveEncounter(
     }
   }
   if (how === 'skip') {
-    const line = `You give the ${spec.name} the road. No loot. No bill.`
+    const line = `You give ${whoOf(spec)} the road. No loot. No bill.`
     return holdCard(state, spec, line, line)
   }
   const snatched = typeof f.encounterSnatch === 'string' && f.encounterSnatch ? (f.encounterSnatch as ItemId) : null
@@ -739,7 +742,7 @@ export function resolveEncounter(
   if (sandAnswers(state) && !grip && c.yourHp <= 2 && dmgIn > 0 && roll(state, 'grip', 10) < 6) {
     dmgIn = 0
     grip = true
-    notes.push(sandGripLine(spec.name, BEAST_KINDS.includes(spec.kind), roll(state, 'gripForm', 2) ? 'mirage' : 'slide'))
+    notes.push(sandGripLine(spec.name, BEAST_KINDS.includes(spec.kind), roll(state, 'gripForm', 2) ? 'mirage' : 'slide', PROPER_KINDS.includes(spec.kind)))
   }
 
   const sapLoss = latched && move !== 'pull' && f.encounterLatched ? 1 : 0

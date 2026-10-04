@@ -161,7 +161,7 @@ function combatHit(state: GameState, scene: Scene, hay: string): DoHit | null {
 /** A bribe is seen by whoever is actually on this ground. No faction, no Heat. */
 function witnessedBribe(state: GameState): { cartel?: 1; seekers?: 1; strays?: 1 } | undefined {
   const who = personAtScene(state.sceneId)
-  if (who?.id === 'silas' || who?.id === 'nim' || who?.id === 'zafir') return undefined
+  if (who?.id === 'silas' || who?.id === 'drennick' || who?.id === 'zafir') return undefined
   const id = state.sceneId
   if (state.hubId === 'threshold' || id.startsWith('thresh:') || id.startsWith('ch1:v-')) return { seekers: 1 }
   if (

@@ -18,7 +18,7 @@ export const HEAT_FACTIONS: Record<
   },
   seekers: {
     name: 'Seekers',
-    watch: 'cloth, vessels, Sybella',
+    watch: 'Cloth, Vessels, Sybella',
     body: 'Seekers want a cup that holds. Thalia loves a Vessel. Sybella hunts what the sand should not have let walk — for the faith, not for you. Seeker Heat is hymns, runners, and a skiff. She does not aid Cartel. She does not aid Dune-Strays.',
   },
   strays: {
@@ -35,13 +35,13 @@ const BY_DOOR: Partial<Record<DoorId, Partial<Record<Faction, HeatCard>>>> = {
   outcast: {
     seekers: {
       name: 'Seekers',
-      watch: 'runners, skiffs, Sybella',
+      watch: 'Runners, Skiffs, Sybella',
       body: 'Seekers want a cup that holds. Sybella hunts what the sand should not have let walk — for the faith, not for you. Seeker Heat is hymns, runners, and a skiff. She does not aid Cartel. She does not aid Dune-Strays.',
     },
     strays: {
       name: 'Strays',
-      watch: 'Silas, Nim, Ossa',
-      body: 'Dune-Strays collect favors and shade. Silas sells minutes. Nim collects the shade-road fee. Stray Heat is being known. Known is not safe.',
+      watch: 'Silas, Drennick Voss, Ossa, Nim',
+      body: 'Dune-Strays collect favors and shade. Silas sells minutes. Drennick Voss collects the shade-road fee. At Stray Heat 4, Nim the Carapace hunter takes the hunt on the Spine. Stray Heat is being known. Known is not safe.',
     },
   },
   vessel: {

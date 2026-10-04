@@ -95,8 +95,30 @@ function markOldFirstDrop(state: GameState): GameState {
   return had ? { ...state, flags: { ...state.flags, firstDropMarked: true } } : state
 }
 
+/** Old saves: the shade-road toll was Nim; it is Drennick Voss now. The name Nim belongs to the Carapace hunter. */
+const OLD_NIM_FLAGS: Record<string, string> = {
+  metNim: 'metDrennick',
+  nimMet: 'drennickMet',
+  nimPaid: 'drennickPaid',
+  nimSilas: 'drennickSilas',
+  nimEmpty: 'drennickEmpty',
+  nimOwed: 'drennickOwed',
+  nimRun: 'drennickRun',
+}
+
+export function migrateNimFlags(state: GameState): GameState {
+  const old = Object.keys(OLD_NIM_FLAGS).filter((k) => k in state.flags)
+  if (!old.length) return state
+  const flags = { ...state.flags }
+  for (const k of old) {
+    if (!(OLD_NIM_FLAGS[k] in flags)) flags[OLD_NIM_FLAGS[k]] = flags[k]
+    delete flags[k]
+  }
+  return { ...state, flags }
+}
+
 export function repairLoadedState(state: GameState): GameState {
-  const base = markOldFirstDrop(migrateEquipped(state))
+  const base = markOldFirstDrop(migrateNimFlags(migrateEquipped(state)))
   const sceneId = repairSceneId(base)
   if (sceneId === base.sceneId && hasScene(sceneId) && sceneFitsDoor(sceneId, base.door)) {
     const scene = getScene(sceneId, base.door)

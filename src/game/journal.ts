@@ -33,6 +33,12 @@ export const RUMORS: Rumor[] = [
     body: 'Valerius wants a diagram and your feet. Sybella wants the sand to keep what the First Spire seals. They press from opposite sides. A lever, later, if you live long enough to use it.',
   },
   {
+    id: 'draven',
+    title: 'Caius Draven',
+    flag: 'heardDraven',
+    body: 'Valerius says the Carapace hunter was Caius Draven, a Cartel mercenary leader cast out after an expedition went wrong. Draven went over to the Dune-Strays and took the name Nim. He tracks people for pay and does not stop.',
+  },
+  {
     id: 'hoard',
     title: 'Unpermitted Hoard',
     flag: 'relicRumor',
