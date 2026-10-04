@@ -26,6 +26,7 @@ import { ALL_SCENES, getScene } from '../src/game/content/index.ts'
 import { PEOPLE } from '../src/game/people.ts'
 import { PIKE_TALK, SARN_TALK, VETCH_TALK } from '../src/game/content/bayHands.ts'
 import { heatFactions } from '../src/game/heat.ts'
+import { RUMORS } from '../src/game/journal.ts'
 import { GLOBAL_INTENTS } from '../src/game/intent.ts'
 import { wakeEffect } from '../src/game/downed.ts'
 import { BRAND_LOOK } from '../src/game/brand.ts'
@@ -2637,7 +2638,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v48'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v49'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -2659,7 +2660,7 @@ assert(css.includes('--story-top: min(calc(56.25cqi * var(--band-bot, 0.5)), 50c
 assert(css.includes('rgba(12, 7, 4, 0.58)'), 'story scrim stays translucent so cover art shows through')
 assert(!css.includes('rgba(12, 7, 4, 0.88)'), 'story scrim is lighter than the v32 slab')
 const playSrc = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
-assert(playSrc.includes('?v=48'), 'scene cover URLs are cache-busted with the service worker')
+assert(playSrc.includes('?v=49'), 'scene cover URLs are cache-busted with the service worker')
 assert(!css.includes('object-position: center 68%'), 'scene art no longer crops toward the ground')
 assert(!css.includes('height: 56px'), 'short phones no longer squash covers into a head-cropping strip')
 assert(css.includes('place-items: center'), 'game screen is centered on the backdrop')
@@ -3484,7 +3485,7 @@ function assertHelpResolves(s: GameState, where: string) {
   const noon = quietly(applyEffect(helped, { goto: 'ch1:o-noon', startChapter: 'cache-run', flag: { hungerKnown: true } }))
   assert(ids(noon).includes('ford'), 'helped Corvin waits at the dry ford')
   const forded = pick(noon, 'ford')
-  assert(forded.sceneId === 'ch1:o-ossa' && forded.flags.corvinRoad && !forded.flags.nimMet, 'Corvin walks you past the traps to Ossa')
+  assert(forded.sceneId === 'ch1:o-ossa' && forded.flags.corvinRoad && !forded.flags.drennickMet, 'Corvin walks you past the traps to Ossa')
   const bareNoon = quietly(applyEffect(ridge, { goto: 'ch1:o-noon', startChapter: 'cache-run' }))
   assert(ids(bareNoon).includes('noon') && !ids(bareNoon).includes('ford'), 'no ford line before you help him')
   const downOnSpine = { ...helped, sceneId: 'spine:well', hubId: 'spine', sap: 4, health: 0, flags: { ...helped.flags, downed: true, downedKind: 'collector' } }
@@ -3576,12 +3577,12 @@ function assertHelpResolves(s: GameState, where: string) {
   const low = spineAt(3)
   assert(low.flags.hunterHere && pressureFace(low) === SPINE_HUNTER.face, 'Stray Heat 3 is still the collector')
   const hi = spineAt(4)
-  assert(hi.flags.hunterHere && pressureFace(hi) === 'Carapace hunter', 'Stray Heat 4 fields the Carapace hunter')
+  assert(hi.flags.hunterHere && pressureFace(hi) === 'Nim', 'Stray Heat 4 fields the Carapace hunter')
   assert(hi.flags.spineHunterKind === 'carapace' && hi.flags.metCarapace, 'the hunt locks the carapace face and marks him met')
   assert(/harpoon rifle with a serrated head/.test(bodyOf(hi)) && /Someone paid me for yours/.test(bodyOf(hi)), 'his append shows on the Spine ground')
   assert(playCoverKey(hi, sceneOf(hi)) === 'carapace', 'his portrait is the scene art during the hunt')
   const cooled = { ...hi, heat: { ...hi.heat, strays: 1 } }
-  assert(pressureFace(cooled) === 'Carapace hunter', 'cooling Heat mid-hunt keeps the same face')
+  assert(pressureFace(cooled) === 'Nim', 'cooling Heat mid-hunt keeps the same face')
   const heated = { ...low, heat: { ...low.heat, strays: 8 } }
   assert(pressureFace(heated) === SPINE_HUNTER.face, 'raising Heat mid-hunt keeps the collector')
   assert(!ids(hi).includes('spine-scrap') && !ids(hi).includes('spine-glint'), 'he takes no scrap and no Glint')
@@ -4231,6 +4232,42 @@ function assertHelpResolves(s: GameState, where: string) {
   }
   assert(uses >= 5, 'other people use the Oil-Tooth nickname in some lines')
   assert(/Oil-Tooth/.test(PIKE_TALK + SARN_TALK + VETCH_TALK), 'a Skiff Bay hand says Oil-Tooth')
+}
+// Nim is the Carapace hunter (old Cartel name Caius Draven). The shade toll is Drennick Voss.
+{
+  assert(PEOPLE.carapace.name === 'Nim' && CARAPACE_HUNTER.face === 'Nim' && CARAPACE_HUNTER.encounter.name === 'Nim', 'the Carapace hunter is Nim')
+  for (const a of ['nim', 'draven', 'caius', 'carapace hunter']) assert(PEOPLE.carapace.aliases.includes(a), `hunter answers to ${a}`)
+  assert(!PEOPLE.drennick.aliases.includes('nim'), 'Drennick does not answer to Nim')
+  assert(/Caius Draven/.test(PEOPLE.carapace.card) && /Shard-Born Striders/.test(PEOPLE.carapace.card), 'hunter card keeps the bio and names Draven')
+  assert(!/shard-hound/i.test(PEOPLE.carapace.card + CARAPACE_HUNTER.append + CARAPACE_HUNTER.look + CARAPACE_HUNTER.encounter.line), 'Nim is never called a Shard-Hound')
+  assert(/Ironwood roots/.test(PEOPLE.drennick.card) && /Great Bleed/.test(PEOPLE.drennick.card) && /only survivor/.test(PEOPLE.drennick.card), 'Drennick card is the new bio')
+  const tax = applyEffect(newGame('outcast'), { goto: 'ch1:o-tax', startChapter: 'cache-run' } as never)
+  for (const ask of ['who is nim', 'who is draven', 'who is caius']) {
+    assert(/Carapace hunter/.test(interpret({ ...tax, flags: { ...tax.flags, metCarapace: true } }, ask).flash ?? ''), `"${ask}" gives the hunter card`)
+    assert(!/Ironwood roots/.test(interpret(tax, ask).flash ?? ''), `"${ask}" never gives Drennick`)
+  }
+  assert(/Ironwood roots/.test(interpret(tax, 'who is drennick').flash ?? ''), '"who is drennick" gives his card')
+  if (tax.sceneId === 'ch1:o-tax') {
+    assert(/Drennick Voss/.test(bodyOf(tax)) && !/\bNim\b/.test(bodyOf(tax)), 'the shade toll is Drennick')
+    assert(/You know what you did/.test(interpret(tax, 'talk to drennick').flash ?? ''), 'Drennick keeps "You know what you did"')
+  }
+  // Valerius on the Spine names Draven; the journal keeps it.
+  const val = applyEffect(newGame('outcast'), { goto: 'spine:valerius', flag: { encounterAt: 99999 } })
+  const asked = pick(val, 'draven')
+  assert(asked.flags.heardDraven && /Draven went over to the sand-rats/.test(asked.flash ?? ''), 'Valerius names Caius Draven')
+  assert(RUMORS.some((r) => r.flag === 'heardDraven' && /Caius Draven/.test(r.body)), 'journal keeps the Draven rumor')
+  // Save migration: old Nim toll flags become Drennick flags.
+  const oldSave = { ...newGame('outcast'), flags: { ...newGame('outcast').flags, metNim: true, nimMet: true, nimRun: true } } as GameState
+  const moved = repairLoadedState(oldSave)
+  assert(moved.flags.metDrennick && moved.flags.drennickMet && moved.flags.drennickRun && !('metNim' in moved.flags) && !('nimRun' in moved.flags), 'old Nim flags map to Drennick')
+  // Heat lists: every watcher entry is capitalized.
+  for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
+    for (const [f, card] of Object.entries(heatFactions(door))) {
+      for (const part of card.watch.split(', ')) assert(/^[A-Z]/.test(part), `${door} ${f} watch entry is capitalized: ${part}`)
+    }
+  }
+  assert(heatFactions('outcast').seekers.watch === 'Runners, Skiffs, Sybella', 'Outcast Seekers list is capitalized')
+  assert(/Drennick Voss/.test(heatFactions('outcast').strays.watch), 'Outcast Strays list names Drennick')
 }
 console.log('OK', {
   prisoner: Object.keys(DOORS.prisoner.items),

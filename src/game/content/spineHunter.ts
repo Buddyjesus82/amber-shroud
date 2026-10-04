@@ -52,28 +52,28 @@ export const SPINE_HUNTER: SpineHunter = {
 export const CARAPACE_HUNTER_HEAT = 4
 
 /**
- * The Carapace hunter.
- * TODO(designer): his Dune-Stray name (taken after he defected) and his old Cartel name.
- * Until then game text calls him "the Carapace hunter". He is not a Shard-Hound; shard-hounds are beasts.
+ * The Carapace hunter: Nim. Nim is the Dune-Stray name he took after he defected.
+ * His old Cartel name is Caius Draven; Cartel people use it (spine:valerius, journal rumor "draven").
+ * He is never a Shard-Hound; shard-hounds are beasts.
  */
 export const CARAPACE_HUNTER: SpineHunter = {
   kind: 'carapace',
-  face: 'Carapace hunter',
+  face: 'Nim',
   append: `A man in a hood walks up the slope without hurrying. His armor is patched together from glassy black carapace, plates cut off Shard-Born Striders he has killed. A cracked respirator covers his face. A heavy harpoon rifle with a serrated head rides across his back. Scars show where the plates do not meet.
 
 He stops at a distance he has chosen and kneels. He pours a pinch of amber sand from his glove onto the ground between you, the way someone else would say a prayer.
 
-"The sands want blood for what they give," he says through the mask. "Someone paid me for yours." You stay on this ground. Fight, hide, or pick a road. He does not take scrap.`,
-  look: 'The Carapace hunter is on this ground: carapace armor, cracked respirator, a serrated harpoon rifle. He was hired for you. He does not take scrap.',
-  fightLabel: 'Fight the Carapace hunter',
+"The sands want blood for what they give," he says through the mask. "I am Nim. Someone paid me for yours." A Cartel rank mark has been scraped off one of his shoulder plates. You stay on this ground. Fight, hide, or pick a road. He does not take scrap.`,
+  look: 'Nim, the Carapace hunter, is on this ground: carapace armor, cracked respirator, a serrated harpoon rifle. He was hired for you. He does not take scrap.',
+  fightLabel: 'Fight Nim',
   fightSub: 'Strike 4, Shell 2, Health 3. A weapon and armor help.',
   fightOpen: 'He stands, unslings the harpoon rifle, and holds it like a spear. This ground is the fight.',
   encounter: {
-    name: 'Carapace hunter',
+    name: 'Nim',
     strike: 4,
     shell: 2,
     hp: 3,
-    line: 'The Carapace hunter. Shard-Born carapace plates, a cracked respirator, a serrated harpoon rifle held like a spear. He was Cartel once. Now he hunts runaways and stolen Glance-Shards for pay.',
+    line: 'Nim, the Carapace hunter. Shard-Born carapace plates, a cracked respirator, a serrated harpoon rifle held like a spear. He was Cartel once. Now he hunts runaways and stolen Glance-Shards for pay.',
   },
   art: 'carapace',
 }

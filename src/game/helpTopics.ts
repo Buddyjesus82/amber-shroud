@@ -66,7 +66,7 @@ const FIGHT_SECTIONS: HelpSection[] = [
       { key: 'Hound-handler', text: 'Running is harder. A failed run lets the hound bite too.' },
       { key: 'Valerius', text: 'Guard only takes 1 off his baton.' },
       { key: 'Stray collector', text: 'Hurt, he offers to call it square: Stray Heat -1, no loot.' },
-      { key: 'Carapace hunter', text: 'Opens with the harpoon: +1 and you are pinned. No Run until you land a hit.' },
+      { key: 'Nim', text: 'The Carapace hunter, at Stray Heat 4 or more on the Spine. Opens with the harpoon: +1 and you are pinned. No Run until you land a hit.' },
     ],
   },
   {

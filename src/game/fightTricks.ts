@@ -17,7 +17,7 @@ import type { GameState } from './types'
  *  - Hound-handler: running is harder, and a failed run lets the hound bite (+1).
  *  - Overseer Valerius: Guard blunts only 1 of his baton.
  *  - Stray collector: hurt to 1 Health, he offers to call the debt square (Stray Heat -1, no loot).
- *  - Carapace hunter: his first shot is the harpoon (+1) and it pins you; no Run until you land a hit.
+ *  - Nim, the Carapace hunter: his first shot is the harpoon (+1) and it pins you; no Run until you land a hit.
  *
  * TODO(seekers): No Seekers of the Shroud encounter kind exists yet (Seeker turf rolls cutters,
  * jackals, ticks, and scavengers). When one is added, build it from this lore (Oct 2, 2026):
@@ -113,7 +113,7 @@ export const OPENERS: Record<EncounterKind, string[]> = {
   ],
   carapace: [
     '',
-    'The Carapace hunter levels the harpoon rifle from range. The barbed head points at your chest.',
+    'Nim levels the harpoon rifle from range. The barbed head points at your chest.',
     'He fires first and says nothing. The harpoon line is already in the air.',
   ],
 }
@@ -136,15 +136,16 @@ export type GripForm = 'slide' | 'mirage'
  * Outcast only, at most once a fight. The sand either slides out from under the enemy, or a mirage of
  * him draws the swing (the hero casts it; the game never says so). Either way the hit misses.
  */
-export function sandGripLine(name: string, beast: boolean, form: GripForm = 'slide'): string {
+export function sandGripLine(name: string, beast: boolean, form: GripForm = 'slide', proper = false): string {
+  const the = proper ? name : `the ${name}`
   if (form === 'mirage') {
     return beast
-      ? `The air shimmers. For a moment there are two of you, and the ${name} lunges at the one that is not there. Its bite closes on nothing.`
-      : `The air shimmers. For a moment there are two of you, and the ${name} swings at the one that is not there. The blow cuts through heat.`
+      ? `The air shimmers. For a moment there are two of you, and ${the} lunges at the one that is not there. Its bite closes on nothing.`
+      : `The air shimmers. For a moment there are two of you, and ${the} swings at the one that is not there. The blow cuts through heat.`
   }
   return beast
-    ? `The sand under the ${name} slides out from under its feet, all at once. Its bite goes wide.`
-    : `The sand under the ${name}'s boots slides out from under them, all at once. The swing goes wide.`
+    ? `The sand under ${the} slides out from under its feet, all at once. Its bite goes wide.`
+    : `The sand under ${the}'s boots slides out from under them, all at once. The swing goes wide.`
 }
 
 /** Only the Outcast player. Enemies and the rest of the fight are the same on every door. */

@@ -6,7 +6,7 @@ export type PersonId =
   | 'valerius'
   | 'rell'
   | 'silas'
-  | 'nim'
+  | 'drennick'
   | 'thalia'
   | 'oram'
   | 'brin'
@@ -35,13 +35,13 @@ export type Person = {
 export const PEOPLE: Record<PersonId, Person> = {
   carapace: {
     id: 'carapace',
-    name: 'Carapace hunter',
-    // TODO(designer): his Dune-Stray name and his old Cartel name. Never "Shard-Hound"; shard-hounds are beasts.
-    aliases: ['carapace hunter', 'carapace', 'bounty hunter', 'tracker', 'harpoon'],
+    name: 'Nim',
+    // Nim is his Dune-Stray name. Caius Draven is his old Cartel name. Never "Shard-Hound"; shard-hounds are beasts.
+    aliases: ['nim', 'carapace hunter', 'carapace', 'bounty hunter', 'tracker', 'harpoon', 'draven', 'caius', 'caius draven'],
     metFlag: 'metCarapace',
-    card: `The Carapace hunter. A scarred bounty hunter in patched armor made from the glassy black carapace of Shard-Born Striders he has killed. A cracked respirator mask under a hood. A heavy serrated harpoon rifle.
+    card: `Nim, the Carapace hunter. A scarred bounty hunter in patched armor made from the glassy black carapace of Shard-Born Striders he has killed. A cracked respirator mask under a hood. A heavy serrated harpoon rifle.
 
-He was a high-ranking Cartel mercenary until a failed expedition got him cast out. He took a Dune-Stray name after he left. Now he tracks runaways and stolen Glance-Shards for whoever pays. Cold, relentless, superstitious. He believes the amber sands demand blood and treats every hunt as a ritual. Someone hired him to track you.`,
+He was a high-ranking Cartel mercenary until a failed expedition got him cast out. He took the Dune-Stray name Nim after he left. His old Cartel name is Caius Draven, and Cartel people still use it. Now he tracks runaways and stolen Glance-Shards for whoever pays. Cold, relentless, superstitious. He believes the amber sands demand blood and treats every hunt as a ritual. Someone hired him to track you.`,
     scenes: [],
     later: {},
   },
@@ -227,20 +227,20 @@ He sells shade by the minute. Talk is not free. Drops are a fairy tale he still 
       'spine:silas': `He pours nothing into a cup and drinks it with ceremony.
 
 "Cartel Hounds on the east wash. Seeker skiff on the south wind — blonde, kohl like a bruise, hunting batteries that walk. And you, with a vial that sounds empty even when you don't shake it."`,
-      'ch1:o-silas': `The tent is now a rag on a rib. Milk eye. Accounting eye. "I sold you a minute. This is a different minute. South is Nim. She collects what I only sell."`,
+      'ch1:o-silas': `The tent is now a rag on a rib. Milk eye. Accounting eye. "I sold you a minute. This is a different minute. South is Drennick Voss. He collects what I only sell."`,
     },
   },
-  nim: {
-    id: 'nim',
-    name: 'Nim',
-    aliases: ['nim', 'cut-fee', 'cut fee', 'cutfee'],
-    metFlag: 'metNim',
-    card: `Nim the Cut-Fee sits shade like a toll. Resin under the nails. A knife that has only ever been for minutes.
+  drennick: {
+    id: 'drennick',
+    name: 'Drennick Voss',
+    aliases: ['drennick', 'drennick voss', 'voss', 'cut-fee', 'cut fee', 'cutfee', 'toll'],
+    metFlag: 'metDrennick',
+    card: `Drennick Voss. Born in the shadow of the Ironwood roots and raised as a Logging Cartel Sifter runner. His job was to retrieve memory-pearls before the Gilded Hollows could claim them. At 18 he survived the Great Bleed storm alone, when a hollow automaton swallowed his whole crew. It left him with the only map to a hidden cache.
 
-Silas sells the minute. She collects it. A Glint, a scratch, an empty glass — or she names you to the wash and lets noon finish the job. She is the tax on being Stray in daylight.`,
+He now runs the dangerous perimeter between the Dune-Strays and the Cartel, carrying secrets that could get him killed. On the shade-road south of Silas he collects the fee: a Glint, a scratch, an empty glass, or he names you to the wash. He carries the guilt of being the only survivor, and it drives him to take impossible risks to save others. He is hiding the location of the cache, which is empty now, because he suspects an insider betrayed his crew. He knows the Strays are coming for him next.`,
     scenes: ['ch1:o-tax'],
     later: {
-      'ch1:o-tax': `Resin under the nails. Shade like a till. "Noon-Empty. Pay or run noon. I tell the wash your name either way if you cheap me."`,
+      'ch1:o-tax': `Drennick sits the same shade. Resin under the nails. "Noon-Empty. Pay or run noon. I tell the wash your name either way if you cheap me."`,
     },
   },
   thalia: {

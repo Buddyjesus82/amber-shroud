@@ -272,14 +272,14 @@ function hunterScene(state: GameState): string | null {
   const id = state.hubId ? map[state.hubId] : null
   if (!id || state.sceneId === id) return null
   if (id === 'camp:hunter' && !campHeard(state)) return null
-  // Spine wakes when the Strays have a reason to look (theft, debt, a run past Nim), or a long linger.
+  // Spine wakes when the Strays have a reason to look (theft, debt, a run past Drennick), or a long linger.
   if (id === 'spine:hunter' && !straysHeard(state) && state.pressure < 6) return null
   return id
 }
 
 /**
  * Strays noticed you. Mirrors markCartelNotice: any Stray-raising act on Spine ground
- * (well skim, Silas's mercy or tab, a theft, a run past Nim) gives the Spine hunt a reason.
+ * (well skim, Silas's mercy or tab, a theft, a run past Drennick) gives the Spine hunt a reason.
  */
 function markStrayNotice(prev: GameState, next: GameState, fx: Effect): GameState {
   if (next.flags.strayNotice) return next

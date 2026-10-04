@@ -472,6 +472,17 @@ Overseer Valerius has come out from Ironwood in a dust coat. He walks behind the
             '"Sybella. Wants walking amber. Red Maw is her current church. If you go, go useful or go buried." He almost smiles. "Ironwood will be behind you either way."',
         },
       },
+      {
+        id: 'draven',
+        label: 'Ask about the hunter in carapace armor',
+        show: { flagUnset: 'heardDraven' },
+        effects: {
+          flag: { heardDraven: true },
+          ticks: 1,
+          flash:
+            '"Draven," he says, and the name tastes old in his mouth. "Caius Draven. He led Ironwood mercenaries until an expedition went wrong and we cast him out. Draven went over to the sand-rats. They call him Nim now. If he is hunting you, someone paid him, and he does not stop."',
+        },
+      },
       { id: 'back', label: 'Back onto the ridge', tone: 'quiet', effects: { goto: 'spine:ridge' } },
       {
         id: 'hunger',

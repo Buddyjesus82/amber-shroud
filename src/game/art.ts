@@ -19,7 +19,7 @@ export type CoverKey =
   | 'kaelen'
   | 'oiltooth'
   | 'silas'
-  | 'nim'
+  | 'drennick'
   | 'oram'
   | 'brin'
   | 'rell'
@@ -47,7 +47,7 @@ const FILES: Record<CoverKey, string> = {
   kaelen: 'kaelen.jpg',
   oiltooth: 'oiltooth.jpg',
   silas: 'silas.jpg',
-  nim: 'nim.jpg',
+  drennick: 'drennick.jpg',
   oram: 'oram.jpg',
   brin: 'brin.jpg',
   rell: 'rell.jpg',
@@ -82,7 +82,7 @@ export const COVER_BAND: Record<CoverKey, [number, number]> = {
   kaelen: [0.05, 0.72],
   oiltooth: [0.05, 0.78],
   silas: [0.0, 0.6],
-  nim: [0.05, 0.78],
+  drennick: [0.05, 0.78],
   oram: [0.1, 0.9],
   brin: [0.05, 0.72],
   rell: [0.1, 0.85],
@@ -112,7 +112,7 @@ const PERSON_COVER: Record<PersonId, CoverKey> = {
   valerius: 'valerius',
   rell: 'rell',
   silas: 'silas',
-  nim: 'nim',
+  drennick: 'drennick',
   thalia: 'thalia',
   oram: 'oram',
   brin: 'brin',
