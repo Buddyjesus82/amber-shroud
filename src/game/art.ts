@@ -82,7 +82,8 @@ export const COVER_BAND: Record<CoverKey, [number, number]> = {
   kaelen: [0.05, 0.72],
   oiltooth: [0.05, 0.78],
   silas: [0.0, 0.6],
-  drennick: [0.05, 0.78],
+  // Drennick's face and glasses are in the top 60%.
+  drennick: [0.0, 0.62],
   oram: [0.1, 0.9],
   brin: [0.05, 0.72],
   rell: [0.1, 0.85],
