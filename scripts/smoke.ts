@@ -2638,7 +2638,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v49'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v50'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -2660,7 +2660,7 @@ assert(css.includes('--story-top: min(calc(56.25cqi * var(--band-bot, 0.5)), 50c
 assert(css.includes('rgba(12, 7, 4, 0.58)'), 'story scrim stays translucent so cover art shows through')
 assert(!css.includes('rgba(12, 7, 4, 0.88)'), 'story scrim is lighter than the v32 slab')
 const playSrc = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
-assert(playSrc.includes('?v=49'), 'scene cover URLs are cache-busted with the service worker')
+assert(playSrc.includes('?v=50'), 'scene cover URLs are cache-busted with the service worker')
 assert(!css.includes('object-position: center 68%'), 'scene art no longer crops toward the ground')
 assert(!css.includes('height: 56px'), 'short phones no longer squash covers into a head-cropping strip')
 assert(css.includes('place-items: center'), 'game screen is centered on the backdrop')
@@ -4260,13 +4260,24 @@ function assertHelpResolves(s: GameState, where: string) {
   const oldSave = { ...newGame('outcast'), flags: { ...newGame('outcast').flags, metNim: true, nimMet: true, nimRun: true } } as GameState
   const moved = repairLoadedState(oldSave)
   assert(moved.flags.metDrennick && moved.flags.drennickMet && moved.flags.drennickRun && !('metNim' in moved.flags) && !('nimRun' in moved.flags), 'old Nim flags map to Drennick')
-  // Heat lists: every watcher entry is capitalized.
+  // Heat lists: names first and capitalized; then common nouns in lowercase (a proper adjective like "Seeker" may lead).
+  const NAMES = new Set([...Object.values(PEOPLE).map((p) => p.name), 'Jaxson', 'Silas', 'Ossa', 'Brin and Kesh', 'Kaelen the Sifter', 'Ironwood', 'Shard-Hounds', 'Dune-Strays'])
+  const PROPER_ADJ = ['Seeker', 'Cartel', 'Stray']
   for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
     for (const [f, card] of Object.entries(heatFactions(door))) {
-      for (const part of card.watch.split(', ')) assert(/^[A-Z]/.test(part), `${door} ${f} watch entry is capitalized: ${part}`)
+      let commonSeen = false
+      for (const part of card.watch.split(', ')) {
+        const name = NAMES.has(part)
+        const common = !name && (/^[a-z]/.test(part) || (PROPER_ADJ.includes(part.split(' ')[0]) && /^[a-z]/.test(part.split(' ')[1] ?? '')))
+        assert(name || common, `${door} ${f} watch entry is a known name or a lowercase common noun: ${part}`)
+        if (common) commonSeen = true
+        else assert(!commonSeen, `${door} ${f} watch list puts names first: ${card.watch}`)
+        if (common) assert(!/\b[A-Z]/.test(part.split(' ').slice(1).join(' ')) || /hymn-road/.test(part), `${door} ${f} common noun stays lowercase: ${part}`)
+      }
+      assert(!/\brunners?\b/i.test(f === 'seekers' ? card.watch + card.body : ''), `${door} Seekers line has no runners`)
     }
   }
-  assert(heatFactions('outcast').seekers.watch === 'Runners, Skiffs, Sybella', 'Outcast Seekers list is capitalized')
+  assert(heatFactions('outcast').seekers.watch === 'Sybella, Seeker skiffs', 'Outcast Seekers list is Sybella, Seeker skiffs')
   assert(/Drennick Voss/.test(heatFactions('outcast').strays.watch), 'Outcast Strays list names Drennick')
 }
 console.log('OK', {

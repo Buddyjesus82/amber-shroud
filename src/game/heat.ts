@@ -13,13 +13,13 @@ export const HEAT_FACTIONS: Record<
 > = {
   cartel: {
     name: 'Cartel',
-    watch: 'Ironwood, Valerius, Hounds',
+    watch: 'Ironwood, Valerius, Shard-Hounds',
     body: 'Ironwood Break writes names in ledgers. Overseer Valerius hunts Sap thieves and unpermitted relic hoarders. Shard-Hounds follow the chip. Cartel Heat is patrol, paper, and a muzzle.',
   },
   seekers: {
     name: 'Seekers',
-    watch: 'Cloth, Vessels, Sybella',
-    body: 'Seekers want a cup that holds. Thalia loves a Vessel. Sybella hunts what the sand should not have let walk — for the faith, not for you. Seeker Heat is hymns, runners, and a skiff. She does not aid Cartel. She does not aid Dune-Strays.',
+    watch: 'Sybella, Seeker skiffs',
+    body: 'Seekers want a cup that holds. Sybella hunts what the sand should not have let walk — for the faith, not for you. Seeker Heat is hymns and a skiff. She does not aid Cartel. She does not aid Dune-Strays.',
   },
   strays: {
     name: 'Strays',
@@ -35,8 +35,8 @@ const BY_DOOR: Partial<Record<DoorId, Partial<Record<Faction, HeatCard>>>> = {
   outcast: {
     seekers: {
       name: 'Seekers',
-      watch: 'Runners, Skiffs, Sybella',
-      body: 'Seekers want a cup that holds. Sybella hunts what the sand should not have let walk — for the faith, not for you. Seeker Heat is hymns, runners, and a skiff. She does not aid Cartel. She does not aid Dune-Strays.',
+      watch: 'Sybella, Seeker skiffs',
+      body: 'Seekers want a cup that holds. Sybella hunts what the sand should not have let walk — for the faith, not for you. Seeker Heat is hymns and a skiff. She does not aid Cartel. She does not aid Dune-Strays.',
     },
     strays: {
       name: 'Strays',
@@ -45,9 +45,14 @@ const BY_DOOR: Partial<Record<DoorId, Partial<Record<Faction, HeatCard>>>> = {
     },
   },
   vessel: {
+    seekers: {
+      name: 'Seekers',
+      watch: 'Sybella, Thalia, Brin and Kesh, Seeker spears on the hymn-road',
+      body: 'Seekers want a cup that holds. Thalia loves a Vessel. Brin and Kesh walk the hymn-road with spears. Sybella hunts what the sand should not have let walk — for the faith, not for you. Seeker Heat is hymns, spears, and a skiff. She does not aid Cartel. She does not aid Dune-Strays.',
+    },
     strays: {
       name: 'Strays',
-      watch: 'Dune-Strays, Ossa',
+      watch: 'Ossa, Dune-Strays',
       body: 'Dune-Strays collect favors and shade. Ossa keeps her stilts near Red Maw. Stray Heat is being known. Known is not safe.',
     },
   },
