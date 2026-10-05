@@ -2639,7 +2639,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v53'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v54'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -2661,7 +2661,7 @@ assert(css.includes('--story-top: min(calc(56.25cqi * var(--band-bot, 0.5)), 50c
 assert(css.includes('rgba(12, 7, 4, 0.58)'), 'story scrim stays translucent so cover art shows through')
 assert(!css.includes('rgba(12, 7, 4, 0.88)'), 'story scrim is lighter than the v32 slab')
 const playSrc = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
-assert(playSrc.includes('?v=53'), 'scene cover URLs are cache-busted with the service worker')
+assert(playSrc.includes('?v=54'), 'scene cover URLs are cache-busted with the service worker')
 assert(!css.includes('object-position: center 68%'), 'scene art no longer crops toward the ground')
 assert(!css.includes('height: 56px'), 'short phones no longer squash covers into a head-cropping strip')
 assert(css.includes('place-items: center'), 'game screen is centered on the backdrop')
@@ -4494,6 +4494,12 @@ function assertHelpResolves(s: GameState, where: string) {
   const vessel = getScene('open:vessel')!.body
   assert(/sealed/.test(vessel) && /What opens it is at Red Maw/.test(vessel), 'Vessel opening: the Seekers send you to Red Maw for what opens the Spire')
   assert(/What opens it is at Red Maw/.test(HUBS.threshold.hungerHook!.sub ?? ''), 'Threshold Hunger hook gives the Seeker reason to go to the Maw')
+}
+
+// First SW install must not reload the page (it would bounce a new player out of the intro).
+{
+  const mainSrc = readFileSync('src/main.tsx', 'utf8')
+  assert(/const hadController = Boolean\(navigator\.serviceWorker\.controller\)/.test(mainSrc) && mainSrc.includes('!hadController'), 'controllerchange reloads only on an update, not on first install')
 }
 
 console.log('OK', {
