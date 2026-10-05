@@ -153,7 +153,9 @@ A niche in the wall holds a sacrament Drop behind a lattice. Taking it from a ch
     speaker: 'Thalia',
     body: `Thalia loves you with a violence that thinks it is worship. Gold tracks down her face.
 
-"Vessel. Cup. The desert poured itself into a person and chose you." Her hands hover. She will not quite touch. "There is a cache the Maw keeps — Kallik's sin. If you drink it, you become what the hymns promised. Sybella already rides to keep anyone else from becoming."`,
+"Vessel. Cup. The desert poured itself into a person and chose you." Her hands hover. She will not quite touch. "There is a cache the Maw keeps — Kallik's sin. If you drink it, you become what the hymns promised. Sybella already rides to keep anyone else from becoming."
+
+"The Spire will not open for us. What opens it is at Red Maw. Go to the Maw and bring it back to the Threshold."`,
     choices: [
       {
         id: 'play',
@@ -188,7 +190,7 @@ A niche in the wall holds a sacrament Drop behind a lattice. Taking it from a ch
           ticks: 1,
           goto: 'thresh:thalia',
           flash:
-            '"She was faithful before I was High Seeker. The Cartel and the Strays made her bitter. She would bury the road in sand before she let an enemy reach the First Spire. She will reason with you. Then she will decide what the desert keeps."',
+            '"She was faithful before I was High Seeker. The Cartel and the Strays made her bitter. She would bury the road in sand before she let an enemy reach the Spire. She will reason with you. Then she will decide what the desert keeps."',
         },
       },
       { id: 'back', label: 'Bow and withdraw', tone: 'quiet', effects: { goto: 'thresh:court' } },

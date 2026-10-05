@@ -30,7 +30,7 @@ export const RUMORS: Rumor[] = [
     id: 'opposed',
     title: 'Two hunters',
     flag: 'heardOpposed',
-    body: 'Valerius wants a diagram and your feet. Sybella wants the sand to keep what the First Spire seals. They press from opposite sides. A lever, later, if you live long enough to use it.',
+    body: 'Valerius wants a diagram and your feet. Sybella wants the sand to keep what the Spire seals. They press from opposite sides. A lever, later, if you live long enough to use it.',
   },
   {
     id: 'draven',

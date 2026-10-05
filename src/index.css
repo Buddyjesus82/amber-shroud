@@ -1871,3 +1871,115 @@ h2 {
   color: #ffb199;
   font-size: 0.78rem;
 }
+
+/* Intro lore cards: the full still on top, the text below it. Text never sits over the art. */
+.intro-screen {
+  container-type: size;
+  padding: calc(0.5rem + var(--safe-t)) 0 calc(0.9rem + var(--safe-b));
+  gap: 0.6rem;
+  min-height: 0;
+}
+
+.intro-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0.8rem 0 1rem;
+  flex: 0 0 auto;
+}
+
+.intro-count {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.intro-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: rgba(232, 163, 23, 0.22);
+}
+
+.intro-dot.seen {
+  background: var(--amber-dim);
+}
+
+.intro-dot.on {
+  background: var(--amber-2);
+}
+
+.intro-skip {
+  font-size: 0.9rem;
+}
+
+.intro-art {
+  position: relative;
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+  background: #070402;
+  border-top: 1px solid rgba(232, 163, 23, 0.25);
+  border-bottom: 1px solid rgba(232, 163, 23, 0.25);
+}
+
+.intro-art .intro-fill {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(14px) brightness(0.45);
+  transform: scale(1.12);
+}
+
+.intro-art .intro-img {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 44vh;
+  object-fit: contain;
+}
+
+@supports (height: 1cqh) {
+  /* Never taller than half the card, so the text and buttons always fit under the full image. */
+  .intro-art .intro-img {
+    max-height: 50cqh;
+  }
+}
+
+.intro-panel {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 0.2rem 1.15rem 0;
+  -webkit-overflow-scrolling: touch;
+}
+
+.intro-panel h2 {
+  font-size: 1.2rem;
+  margin: 0 0 0.5rem;
+}
+
+.intro-panel p {
+  margin: 0;
+  color: var(--paper);
+  font-size: 1.02rem;
+  line-height: 1.5;
+}
+
+.intro-actions {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 0.6rem;
+  padding: 0 1rem;
+}
+
+.intro-actions .btn {
+  flex: 1 1 0;
+}
+
+.intro-actions .intro-back {
+  flex: 0 0 34%;
+}

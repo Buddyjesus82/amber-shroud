@@ -1,4 +1,4 @@
-const CACHE = 'amber-shroud-v52'
+const CACHE = 'amber-shroud-v53'
 const SCOPE = self.location.pathname.replace(/sw\.js$/, '')
 
 self.addEventListener('install', (event) => {
@@ -36,6 +36,12 @@ self.addEventListener('install', (event) => {
         `${SCOPE}covers/hotwire.jpg`,
         `${SCOPE}covers/carapace.jpg`,
         `${SCOPE}covers/jodi.jpg`,
+        `${SCOPE}intro/world.jpg`,
+        `${SCOPE}intro/sap.jpg`,
+        `${SCOPE}intro/cartel.jpg`,
+        `${SCOPE}intro/seekers.jpg`,
+        `${SCOPE}intro/strays.jpg`,
+        `${SCOPE}intro/doors.jpg`,
       ]),
     ),
   )

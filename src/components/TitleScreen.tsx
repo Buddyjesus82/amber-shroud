@@ -7,6 +7,7 @@ type Props = {
   lastWhen: string | null
   booting: boolean
   onNew: () => void
+  onIntro: () => void
   onContinue: () => void
   onEraseLast: () => void
   onEraseAll: () => void
@@ -18,6 +19,7 @@ export function TitleScreen({
   lastWhen,
   booting,
   onNew,
+  onIntro,
   onContinue,
   onEraseLast,
   onEraseAll,
@@ -59,11 +61,14 @@ export function TitleScreen({
         <p className="save-hint">Add to Home Screen for stronger saves on iPhone.</p>
         <button type="button" className="btn btn-gold" onClick={onNew}>
           New game
-          <small>Pick Prisoner, Outcast, or Vessel</small>
+          <small>Short intro, then pick Prisoner, Outcast, or Vessel</small>
         </button>
         <button type="button" className="btn btn-ghost" onClick={onContinue} disabled={!hasSave}>
           Continue{lastLabel ? ` ${lastLabel}` : ''}
           <small>{continueSub}</small>
+        </button>
+        <button type="button" className="text-link" data-replay-intro onClick={onIntro}>
+          Watch the intro
         </button>
         {hasSave && lastDoor ? (
           <button type="button" className="text-link" onClick={onEraseLast}>

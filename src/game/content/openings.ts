@@ -73,6 +73,8 @@ Your first goal: get a Drop of Oasis Sap into that vial before the midday heat d
 
 You wear their Vessel and nod like one. Outer Threshold is a church built out of dunes and bad memory. Thalia weeps gold. Oram counted Striders, then counted you, then tore a heading from his ledger because cups crack and thieves reach Red Maw. A rusted dagger sits against your ribs under the gold thread — kitchen steel, dishonest, yours.
 
+The Spire stands past the paddock, sealed. The Seekers are camped at its door and cannot open it. What opens it is at Red Maw, so they are sending their Vessel down the road to bring it back. That is you.
+
 The sacrament on your tongue is a real Drop. The rest is theater. Seeker Heat is already a hymn.`,
     choices: [
       {
