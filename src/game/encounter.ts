@@ -435,6 +435,24 @@ export function encounterChoices(state: GameState): Choice[] {
       effects: { resolveEncounter: 'seeker', ticks: 1 },
     },
     {
+      id: 'enc-resin',
+      label: 'Draw resin',
+      sub:
+        state.flags.encounterController && !state.flags.encounterControllerDown
+          ? 'Seeker Extractor. Once a fight. Cut the siphon filament so the husk cannot be re-charged. No hit on the husk; it still hits you.'
+          : 'Seeker Extractor. Once a fight. Draw resin under the plates: scrap +1, Sap +1. The core stays lit. The husk still hits you.',
+      show: {
+        all: [
+          { flagEq: ['encounterKind', 'husk'] },
+          { equipped: 'seeker_extractor' },
+          { flagUnset: 'encounterResinTried' },
+        ],
+      },
+      enable: { healthMin: 1 },
+      locked: 'Too hurt to fight.',
+      effects: { resolveEncounter: 'resin', ticks: 1 },
+    },
+    {
       id: 'enc-pull',
       label: 'Pull the tick off',
       sub: state.equipped?.hands === 'hide_gloves' ? 'Stops the Sap drain. The Hide Gloves let you strike in the same exchange.' : 'No attack. Stops the Sap drain.',
@@ -528,8 +546,24 @@ export function carriesSalve(state: GameState, kind: EncounterKind): boolean {
   return (h >>> 0) % 100 < HUMAN_SALVE_PCT
 }
 
+/** First extractor: 1 in 8. Already owned: 1 in 40. Only when a Seeker walked the husk. */
+export const EXTRACTOR_DROP_IN = 8
+export const EXTRACTOR_DUPE_IN = 40
+
+export function extractorDrop(state: GameState, kind: EncounterKind): Partial<Record<ItemId, number>> {
+  if (kind !== 'husk' || !state.flags.encounterController) return {}
+  const owned = (state.items.seeker_extractor ?? 0) > 0
+  const every = owned ? EXTRACTOR_DUPE_IN : EXTRACTOR_DROP_IN
+  let h = (Math.imul(seed(state) + 0x51eed, 374761393) + 668265263) >>> 0
+  for (const ch of `ex:${kind}:${state.ticks}`) h = Math.imul(h ^ ch.charCodeAt(0), 2246822519) >>> 0
+  h ^= h >>> 15
+  h = Math.imul(h, 3266489917) >>> 0
+  if ((h >>> 0) % every !== 0) return {}
+  return { seeker_extractor: 1 }
+}
+
 function lootFor(state: GameState, kind: EncounterKind): Partial<Record<ItemId, number>> {
-  const add = pocketLoot(state, kind)
+  const add = { ...pocketLoot(state, kind), ...extractorDrop(state, kind) }
   if (carriesSalve(state, kind)) add.salve = (add.salve ?? 0) + 1
   return add
 }
@@ -593,6 +627,7 @@ export const ENCOUNTER_FLAGS = [
   'encounterControllerDown',
   'encounterHuskRevived',
   'encounterCoreTried',
+  'encounterResinTried',
   'encounterLatched',
   'encounterFeint',
   'encounterStun',
@@ -640,7 +675,7 @@ function holdCard(state: GameState, spec: Spec, card: string, short: string, ext
   }
 }
 
-export type FightMove = 'fight' | 'guard' | 'feint' | 'trick' | 'run' | 'pull' | 'deal' | 'core' | 'seeker'
+export type FightMove = 'fight' | 'guard' | 'feint' | 'trick' | 'run' | 'pull' | 'deal' | 'core' | 'seeker' | 'resin'
 
 /** 1 in 10 landed hits, both sides. The Shard-pup lands them twice as often. */
 export const CRIT_IN_10 = 1
@@ -793,6 +828,21 @@ export function resolveEncounter(
       notes.push('You cut the Seeker down. The extractor blade drops. The husk cannot be re-charged.')
     } else {
       notes.push('The Seeker slips behind the husk. The extractor stays live.')
+    }
+  }
+  let resinTried = !!f.encounterResinTried
+  let resinLoot: Partial<Record<ItemId, number>> | undefined
+  let resinSap = 0
+  if (move === 'resin') {
+    resinTried = true
+    dmgOut = 0
+    if (f.encounterController && !controllerDown) {
+      controllerDown = true
+      notes.push('You slide the Seeker Extractor under a plate and cut the siphon filament. The Seeker loses the line. The husk cannot be re-charged.')
+    } else {
+      resinLoot = { scrap: 1 }
+      resinSap = 1
+      notes.push('You draw living heat under the plates. Resin liquefies without cracking the core. Scrap +1. Sap +1. The husk still stands.')
     }
   }
   if (move === 'guard') {
@@ -961,6 +1011,7 @@ export function resolveEncounter(
     encounterTrickUsed: trickUsed,
     encounterGrip: grip,
     encounterCoreTried: coreTried,
+    encounterResinTried: resinTried,
     encounterControllerDown: controllerDown,
     encounterHuskRevived: huskRevived,
     encounterController: !!f.encounterController,
@@ -1008,10 +1059,12 @@ export function resolveEncounter(
   const tail = events.length ? `\n\n${events.join(' ')}` : ''
   const standing = `${hitCard}${tail}\n\nThey still stand. Their Health ${theirHp}/${f.encounterPair ? 2 : Math.max(spec.hp, c.theirHp)}. Yours ${yourHp}/${max}. No loot yet.`
   flag.encounterClash = standing
+  const sapTotal = (sap ?? 0) + resinSap
   return {
     fx: {
       health: healthDelta,
-      sap,
+      sap: sapTotal || undefined,
+      add: resinLoot,
       remove: Object.keys(remove).length ? remove : undefined,
       ticks: 0,
       flag,

@@ -20,6 +20,7 @@ import type { GameState } from './types'
  *  - Nim, the Carapace hunter: his first shot is the harpoon (+1) and it pins you; no Run until you land a hit.
  *  - Amber Husk: Seeker Spire construct. High Shell/Health, no stall walk-off, Guard -1, sand 1 in 10.
  *    Aim for the core once (5 in 10 double damage). A Seeker controller can re-charge it once unless cut down.
+ *    Rare Seeker Extractor drop (1 in 8) only when a Seeker walked the husk. Draw resin once if you wield it.
  *
  * TODO(seekers): Cloth-wrapped Seeker runners (hooked blades, hum) are not an encounter kind yet.
  * Husks cover Seeker turf constructs. When runners are added, build them from this lore (Oct 2, 2026):
