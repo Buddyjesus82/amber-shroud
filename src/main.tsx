@@ -20,7 +20,7 @@ if (import.meta.env.PROD && 'serviceWorker' in navigator) {
     window.location.reload()
   })
   navigator.serviceWorker.addEventListener('message', (event) => {
-    if (event.data?.type === 'SW_UPDATED' && navigator.serviceWorker.controller && !refreshing) {
+    if (event.data?.type === 'SW_UPDATED' && hadController && !refreshing) {
       refreshing = true
       window.location.reload()
     }
