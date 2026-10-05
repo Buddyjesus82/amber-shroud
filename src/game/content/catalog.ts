@@ -308,12 +308,12 @@ export const HUBS: Record<string, HubDef> = {
     ],
     hungerHook: {
       label: 'Take the rumor into the dunes',
-      sub: 'First Spires: days south. Four roads from the pens. Then the Hunger.',
+      sub: 'Red Maw: days south. Four roads from the pens. Then the Hunger.',
       sceneId: 'ch1:leave',
       show: { flag: 'hungerKnown' },
     },
     mawLegs: 4,
-    mawNote: 'First Spires sit days beyond the Wire. Cartel hinterland — farthest from the Maw.',
+    mawNote: 'Red Maw is days beyond the Wire. Cartel hinterland: the farthest door from the Maw.',
   },
   spine: {
     id: 'spine',
@@ -329,12 +329,12 @@ export const HUBS: Record<string, HubDef> = {
     ],
     hungerHook: {
       label: 'Walk the Hunger toward Red Maw',
-      sub: 'First Spires: a hard day east-south. Closer than Ironwood. Not close.',
+      sub: 'Red Maw: a hard day east-south. Closer than Ironwood. Not close.',
       sceneId: 'ch1:leave',
       show: { flag: 'hungerKnown' },
     },
     mawLegs: 2,
-    mawNote: 'First Spires are a hard day east-south. Stray country sits nearer the bite than Camp-04.',
+    mawNote: 'Red Maw is a hard day east-south. Stray country sits nearer the bite than Camp-04.',
   },
   threshold: {
     id: 'threshold',
@@ -351,12 +351,12 @@ export const HUBS: Record<string, HubDef> = {
     ],
     hungerHook: {
       label: 'Ride the stolen Strider into Hunger',
-      sub: 'First Spires: the paddock already faces them. Shortest Hunger-road.',
+      sub: 'The Spire is sealed. What opens it is at Red Maw. Shortest Hunger-road.',
       sceneId: 'ch1:leave',
       show: { any: [{ flag: 'hungerKnown' }, { item: 'oram_map' }] },
     },
     mawLegs: 1,
-    mawNote: 'First Spires stand off the paddock. Seeker fringe is the Maw’s doorstep.',
+    mawNote: 'The sealed Spire stands off the paddock. What opens it is at Red Maw, one short road away.',
   },
   redmaw: {
     id: 'redmaw',
@@ -379,6 +379,6 @@ export const HUBS: Record<string, HubDef> = {
       show: { flag: 'chapter1Done' },
     },
     mawLegs: 0,
-    mawNote: 'Red Maw Approach. The Spires are the teeth around you.',
+    mawNote: 'Red Maw Approach. All three roads end here. The sealed Spire waits past the Threshold.',
   },
 }

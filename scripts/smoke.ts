@@ -27,6 +27,7 @@ import { PEOPLE } from '../src/game/people.ts'
 import { PIKE_TALK, SARN_TALK, VETCH_TALK } from '../src/game/content/bayHands.ts'
 import { heatFactions } from '../src/game/heat.ts'
 import { RUMORS } from '../src/game/journal.ts'
+import { INTRO_CARDS } from '../src/game/intro.ts'
 import { GLOBAL_INTENTS } from '../src/game/intent.ts'
 import { wakeEffect } from '../src/game/downed.ts'
 import { BRAND_LOOK } from '../src/game/brand.ts'
@@ -2638,7 +2639,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v52'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v53'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -2660,7 +2661,7 @@ assert(css.includes('--story-top: min(calc(56.25cqi * var(--band-bot, 0.5)), 50c
 assert(css.includes('rgba(12, 7, 4, 0.58)'), 'story scrim stays translucent so cover art shows through')
 assert(!css.includes('rgba(12, 7, 4, 0.88)'), 'story scrim is lighter than the v32 slab')
 const playSrc = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
-assert(playSrc.includes('?v=52'), 'scene cover URLs are cache-busted with the service worker')
+assert(playSrc.includes('?v=53'), 'scene cover URLs are cache-busted with the service worker')
 assert(!css.includes('object-position: center 68%'), 'scene art no longer crops toward the ground')
 assert(!css.includes('height: 56px'), 'short phones no longer squash covers into a head-cropping strip')
 assert(css.includes('place-items: center'), 'game screen is centered on the backdrop')
@@ -4465,6 +4466,34 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(!encounterChoices({ ...held, flags: { ...held.flags, encounterResinTried: true } }).some((c) => c.id === 'enc-resin'), 'Draw resin is once per fight')
   assert(/Draw resin|Seeker Extractor/.test(topicText(HELP_TOPICS.find((t) => t.id === 'fight')!)), 'fight help names Draw resin')
   assert(/Seeker Extractor/.test(topicText(HELP_TOPICS.find((t) => t.id === 'gear')!)), 'gear help names the extractor perk')
+}
+
+// Intro cards: six skippable lore cards at New Game, before the door choice. Spire lore lock.
+{
+  assert(INTRO_CARDS.map((c) => c.id).join(',') === 'world,sap,cartel,seekers,strays,doors', 'six intro cards in order')
+  for (const c of INTRO_CARDS) {
+    assert(readdirSync('public/intro').includes(c.img), `intro still exists: ${c.img}`)
+    assert(sw.includes(`intro/${c.img}`), `service worker caches intro/${c.img}`)
+    assert(c.text.length > 40 && c.text.length < 330, `intro card ${c.id} is short enough for a phone`)
+  }
+  const seek = INTRO_CARDS.find((c) => c.id === 'seekers')!.text
+  assert(/cannot open/.test(seek) && /Red Maw/.test(seek), 'Seekers card: they wait at a door they cannot open; the way in is at Red Maw')
+  const doorsCard = INTRO_CARDS.find((c) => c.id === 'doors')!.text
+  assert(/Red Maw/.test(doorsCard) && /opens the Spire/.test(doorsCard), 'doors card: the Vessel is sent to Red Maw for what opens the Spire')
+  const app = readFileSync('src/App.tsx', 'utf8')
+  assert(app.includes("setView('intro')") && app.includes("setView(replay ? 'title' : 'doors')"), 'New game runs the intro, then the door choice')
+  const intro = readFileSync('src/components/IntroCards.tsx', 'utf8')
+  assert(intro.includes('data-intro-skip') && intro.includes('data-intro-next'), 'intro has Skip and Next')
+  assert(readFileSync('src/components/TitleScreen.tsx', 'utf8').includes('Watch the intro'), 'intro can be replayed from the title')
+  const css = readFileSync('src/index.css', 'utf8')
+  assert(/\.intro-art \.intro-img \{[^}]*object-fit: contain/.test(css), 'intro still is shown whole (contain), text sits below it')
+  // The Spire is sealed and stands by the Threshold; nothing calls the Maw's rocks the Spires any more.
+  const lore = ALL_SCENES.map((x) => x.body + JSON.stringify(x.variants ?? []) + JSON.stringify(x.choices)).join('\n')
+    + JSON.stringify(HUBS) + JSON.stringify(PEOPLE) + JSON.stringify(RUMORS)
+  assert(!/First Spires? (are|is) the teeth|Spires are the teeth/.test(lore), 'Red Maw is the hub, not the Spire')
+  const vessel = getScene('open:vessel')!.body
+  assert(/sealed/.test(vessel) && /What opens it is at Red Maw/.test(vessel), 'Vessel opening: the Seekers send you to Red Maw for what opens the Spire')
+  assert(/What opens it is at Red Maw/.test(HUBS.threshold.hungerHook!.sub ?? ''), 'Threshold Hunger hook gives the Seeker reason to go to the Maw')
 }
 
 console.log('OK', {

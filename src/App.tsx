@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { DoorSelect } from './components/DoorSelect'
+import { IntroCards } from './components/IntroCards'
 import { PlayScreen } from './components/PlayScreen'
 import { TitleScreen } from './components/TitleScreen'
 import { newGame } from './game/engine'
@@ -18,7 +19,7 @@ import {
 } from './game/save'
 import type { DoorId, GameState } from './game/types'
 
-type View = 'title' | 'doors' | 'play'
+type View = 'title' | 'intro' | 'replay' | 'doors' | 'play'
 
 function saveSnapshot() {
   return {
@@ -119,6 +120,19 @@ export default function App() {
     )
   }
 
+  if (view === 'intro' || view === 'replay') {
+    const replay = view === 'replay'
+    return (
+      <IntroCards
+        doneLabel={replay ? 'Back to title' : 'Choose a door'}
+        onDone={() => {
+          refreshSaves()
+          setView(replay ? 'title' : 'doors')
+        }}
+      />
+    )
+  }
+
   if (view === 'doors') {
     return (
       <DoorSelect
@@ -152,8 +166,9 @@ export default function App() {
       booting={booting}
       onNew={() => {
         refreshSaves()
-        setView('doors')
+        setView('intro')
       }}
+      onIntro={() => setView('replay')}
       onContinue={() => {
         const s = loadSave()
         if (s) {

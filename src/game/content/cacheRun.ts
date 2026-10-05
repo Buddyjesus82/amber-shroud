@@ -49,17 +49,17 @@ The road is not shared. The destination is. What it costs you depends on the lif
       {
         if: { door: 'prisoner' },
         mode: 'append',
-        body: `Camp-04's sirens are thinning behind you. The First Spires are days south of the wire, through Cartel country. Scrip will not buy the dunes. If the Cartel sees you leave, their Heat will.`,
+        body: `Camp-04's sirens are thinning behind you. Red Maw is days south of the wire, through Cartel country. Scrip will not buy the dunes. If the Cartel sees you leave, their Heat will.`,
       },
       {
         if: { door: 'outcast' },
         mode: 'append',
-        body: `Noon follows. First Spires are a hard day east-south — closer than Ironwood, not a doorstep. The vial is still a dry throat unless you filled it.`,
+        body: `Noon follows. Red Maw is a hard day east-south — closer than Ironwood, not a doorstep. The vial is still a dry throat unless you filled it.`,
       },
       {
         if: { door: 'vessel' },
         mode: 'append',
-        body: `Oram's map is already a crime. The First Spires already face the paddock you left. This is the shortest road to Red Maw. If the Seekers see you, their Heat follows.`,
+        body: `Oram's map is already a crime. The sealed Spire is at your back. The Seekers sent you for what opens it, and it is at Red Maw. This is the shortest road there. They expect a holy walk, not a thief on a Strider. If the Seekers see you, their Heat follows.`,
       },
       {
         if: { flag: 'cacheBlind' },
@@ -896,7 +896,7 @@ She stops when she sees your face. She looks at it a beat too long, and her hand
     title: 'Hymn-Road',
     body: `The hymn is already on this road. Gold-dust on the wind. Seeker runners are crossing the second rib like a net.
 
-A Vessel on the run is easy to hear. Thalia made you easy to hear. If you still have Oram's map, it is a heading you can use.`,
+The Seekers sent their Vessel to Red Maw for what opens the Spire, and they meant to walk you there on a leash. A Vessel on the road alone is easy to hear. Thalia made you easy to hear. If you still have Oram's map, it is a heading you can use.`,
     variants: [
       {
         if: { item: 'oram_map' },

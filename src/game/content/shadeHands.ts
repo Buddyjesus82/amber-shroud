@@ -168,7 +168,7 @@ He cannot see through the amber. He heard the shade go quiet when you walked in,
         flag: { korvanStory: true },
         ticks: 1,
         flash:
-          '"I kept records for the Seekers. In the First Spires I found a memory-fragment that said the doctrine was wrong, and I said so. They named me heretic. The Cartel did the rest. They call it amber-waxing: molten sap poured over the mouth and the eyes. A Dune-Stray cut me out of a holding cart and carried me here. The amber talks. Voices, all day, low, from inside it. I trade pieces of the history the Seekers buried for water and a place to sit."',
+          '"I kept records for the Seekers. In the sand outside the Spire I found a memory-fragment that said the doctrine was wrong, and I said so. They named me heretic. The Cartel did the rest. They call it amber-waxing: molten sap poured over the mouth and the eyes. A Dune-Stray cut me out of a holding cart and carried me here. The amber talks. Voices, all day, low, from inside it. I trade pieces of the history the Seekers buried for water and a place to sit."',
       },
     },
     {
