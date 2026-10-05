@@ -12,14 +12,14 @@ export function IntroCards({ onDone, doneLabel }: Props) {
   const [i, setI] = useState(0)
   const card = INTRO_CARDS[i]
   const last = i === INTRO_CARDS.length - 1
-  const src = `${import.meta.env.BASE_URL}intro/${card.img}?v=56`
+  const src = `${import.meta.env.BASE_URL}intro/${card.img}?v=57`
 
   useEffect(() => {
     // Warm the next still so Next does not flash an empty frame.
     const next = INTRO_CARDS[i + 1]
     if (!next) return
     const img = new Image()
-    img.src = `${import.meta.env.BASE_URL}intro/${next.img}?v=56`
+    img.src = `${import.meta.env.BASE_URL}intro/${next.img}?v=57`
   }, [i])
 
   return (
