@@ -49,17 +49,17 @@ The road is not shared. The destination is. What it costs you depends on the lif
       {
         if: { door: 'prisoner' },
         mode: 'append',
-        body: `Camp-04's sirens are thinning behind you. Red Maw is days south of the wire, through Cartel country. Scrip will not buy the dunes. If the Cartel sees you leave, their Heat will.`,
+        body: `Camp-04's sirens are thinning behind you. Red Maw is days east of the wire, through Cartel country. Scrip will not buy the dunes. If the Cartel sees you leave, their Heat will.`,
       },
       {
         if: { door: 'outcast' },
         mode: 'append',
-        body: `Noon follows. Red Maw is a hard day east-south — closer than Ironwood, not a doorstep. The vial is still a dry throat unless you filled it.`,
+        body: `Noon follows. Red Maw is a hard day south — closer than Ironwood, not a doorstep. The vial is still a dry throat unless you filled it.`,
       },
       {
         if: { door: 'vessel' },
         mode: 'append',
-        body: `Oram's map is already a crime. The sealed Spire is at your back. The Seekers sent you for what opens it, and it is at Red Maw. This is the shortest road there. They expect a holy walk, not a thief on a Strider. If the Seekers see you, their Heat follows.`,
+        body: `Oram's map is already a crime. The sealed Spire is at your back. The Seekers sent you for what opens it, and it is at Red Maw. This is the shortest road there, west. They expect a holy walk, not a thief on a Strider. If the Seekers see you, their Heat follows.`,
       },
       {
         if: { flag: 'cacheBlind' },
@@ -262,7 +262,7 @@ A payroll drone ticks behind the grate. Shard-Hound tracks are in the wash. If y
           ticks: 1,
           heat: { cartel: -1 },
           flag: { rellMet: true, rellChip: true },
-          flash: 'He salutes a chip Overseer Valerius does not know is missing. He lets you walk as property. Jaxson\'s stolen Strider is coughing farther south.',
+          flash: 'He salutes a chip Overseer Valerius does not know is missing. He lets you walk as property. Jaxson\'s stolen Strider is coughing farther west.',
         },
       },
       {
@@ -325,7 +325,7 @@ A payroll drone ticks behind the grate. Shard-Hound tracks are in the wash. If y
     speaker: 'Jaxson Vance',
     body: `The stolen Strider coughs. Jaxson is under the hull.
 
-"Bleed-Cut. The machine is hotwired. Shard-Hounds are on the wash behind you. I am going west until the brass cools. Red Maw is south of that.
+"Bleed-Cut. The machine is hotwired. Shard-Hounds are on the wash behind you. I am going west until the brass cools. Red Maw is the other way, east.
 
 Ride the last mile and I drop you with Ossa. Walk, and the Cartel keeps your trail. Or I cut the Cartel tag out of your cuff, and you are harder to track."`,
     variants: [
@@ -350,7 +350,7 @@ Ride the last mile and I drop you with Ossa. Walk, and the Cartel keeps your tra
           ticks: 1,
           heat: { cartel: 1 },
           flag: { oilRoad: true, oilRide: true },
-          flash: 'The stolen Strider screams. Jaxson drops you on the south road, where Ossa keeps her stilts. The Cartel will notice a stolen hull.',
+          flash: 'The stolen Strider screams. Jaxson drops you on the east road, where Ossa keeps her stilts. The Cartel will notice a stolen hull.',
         },
       },
       {
@@ -375,12 +375,12 @@ Ride the last mile and I drop you with Ossa. Walk, and the Cartel keeps your tra
           goto: 'ch1:p-ossa',
           ticks: 1,
           flag: { oilRoad: true, oilWrench: true },
-          flash: 'You seat the loose joint with the wrench and keep the tool. He nods. "Ossa is south. I go west. Don\'t make me famous."',
+          flash: 'You seat the loose joint with the wrench and keep the tool. He nods. "Ossa is east. I go west. Don\'t make me famous."',
         },
       },
       {
         id: 'walk',
-        label: 'Refuse the ride. Walk south.',
+        label: 'Refuse the ride. Walk east.',
         sub: 'You walk to Ossa alone. Costs sap. The Cartel does not get a stolen-hull report from this.',
         tone: 'quiet',
         effects: {
@@ -411,8 +411,8 @@ Ride the last mile and I drop you with Ossa. Walk, and the Cartel keeps your tra
         effects: { goto: 'ch1:p-ossa', ticks: 1, flag: { oilRoad: true, oilWrench: true } },
       },
       {
-        tags: ['walk', 'refuse', 'no', 'south'],
-        reply: 'He lets you walk. Ossa is south. The Cartel does not get a stolen-hull report from this.',
+        tags: ['walk', 'refuse', 'no', 'south', 'east'],
+        reply: 'He lets you walk. Ossa is east. The Cartel does not get a stolen-hull report from this.',
         effects: { goto: 'ch1:p-ossa', ticks: 1, sap: -1, flag: { oilRoad: true, oilRefused: true } },
       },
     ],

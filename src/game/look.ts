@@ -334,8 +334,8 @@ function authored(state: GameState, scene: Scene): string[] {
     } else {
       push(lines, 'Silas sells minutes down-slope. The ridge itself does not.')
     }
-    if (!on(state, 'sawMawHaze')) push(lines, 'Reading the wash shows a red bruise to the east and south.')
-    else push(lines, 'The bruise east and south is the Maw road.')
+    if (!on(state, 'sawMawHaze')) push(lines, 'Reading the wash shows a red bruise to the south.')
+    else push(lines, 'The bruise to the south is the Maw road.')
     if (state.sap <= 2) push(lines, 'Your sight is fraying. A drink matters more than another look at the rock.')
     return lines
   }
@@ -343,7 +343,7 @@ function authored(state: GameState, scene: Scene): string[] {
   if (id === 'spine:tip') {
     if (has(state, 'vial_empty')) push(lines, 'The smear in the crack will fill the empty vial. It is a lie that still wets a tongue.')
     else if (!on(state, 'silasSmear')) push(lines, 'You can lick the smear and leave the glass empty.')
-    else push(lines, 'The crack is spent. The bruise east-south is the road that is left.')
+    else push(lines, 'The crack is spent. The bruise to the south is the road that is left.')
     return lines
   }
 
@@ -379,7 +379,7 @@ function authored(state: GameState, scene: Scene): string[] {
   }
 
   if (id === 'spine:corvin') {
-    if (on(state, 'corvinHelped')) push(lines, 'He waits for you at the dry ford on the road east. On this ridge he pulls you up if you go down.')
+    if (on(state, 'corvinHelped')) push(lines, 'He waits for you at the dry ford on the road south. On this ridge he pulls you up if you go down.')
     else push(lines, 'A Drop, or sweeping his prints out of the wash, is help he will remember.')
     return lines
   }
@@ -420,7 +420,7 @@ function authored(state: GameState, scene: Scene): string[] {
   }
 
   if (id === 'spine:hunter') {
-    push(lines, 'The Strays are watching this stretch of ridge. East, or back under the canvas.')
+    push(lines, 'The Strays are watching this stretch of ridge. South, or back under the canvas.')
     return lines
   }
 

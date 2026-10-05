@@ -76,7 +76,7 @@ const hungerFromShade = (flash: string): Choice => ({
 })
 
 const KORVAN_LEAD =
-  '"Red Maw, east-south. A man named Kallik buried Drops and Glints there and carved a nine-tooth gear on the second rib from the jaw. The cache is bait. A Seeker named Sybella rides a sand-skiff around it. She hunts people who carry sap and keep walking. Go if you are going."'
+  '"Red Maw, south. A man named Kallik buried Drops and Glints there and carved a nine-tooth gear on the second rib from the jaw. The cache is bait. A Seeker named Sybella rides a sand-skiff around it. She hunts people who carry sap and keep walking. Go if you are going."'
 
 const leadFx = {
   add: { kallik_mark: 1, cache_map: 1 },
@@ -222,10 +222,10 @@ He cannot see through the amber. He heard the shade go quiet when you walked in,
 }
 
 const MIRA_HOLLOW_DRAWING =
-  'After a while she draws in the sand with one finger: a ring with a hole in the middle. She points east-south, toward Red Maw, taps the ring twice, and shakes her head. A Gilded Hollow. Do not step in one. She brushes the drawing away.'
+  'After a while she draws in the sand with one finger: a ring with a hole in the middle. She points south, toward Red Maw, taps the ring twice, and shakes her head. A Gilded Hollow. Do not step in one. She brushes the drawing away.'
 
 /** Outcast, first time: he feels the Hollow pull while the drawing is in the sand. See sandSign.ts. */
-const MIRA_HOLLOW_DRAWING_PULL = `After a while she draws in the sand with one finger: a ring with a hole in the middle. She points east-south, toward Red Maw, taps the ring twice, and shakes her head. A Gilded Hollow. Do not step in one.
+const MIRA_HOLLOW_DRAWING_PULL = `After a while she draws in the sand with one finger: a ring with a hole in the middle. She points south, toward Red Maw, taps the ring twice, and shakes her head. A Gilded Hollow. Do not step in one.
 
 ${HOLLOW_PULL}
 

@@ -131,7 +131,7 @@ Jaxson is still in the next bunk, brass jaw working. The job is the station, the
       'camp:jaxson': `"Valerius is the first thing you have to get out from under," Jaxson says, smirking around the brass. "Tower. Baton. He hunts anyone skimming Sap. I have watched the guard station until I could draw it in grease.
 
 Great Bleed hits, you sabotage that station. I hotwire a Strider. We leave the pens. Rumors are Kaelen, at the Wire."`,
-      'ch1:p-oil': `The stolen Strider coughs like a guilty throat. Jaxson is under the hull anyway — brass, leather, tags he still has not cut off. He hotwired. He will not tour. Red Maw is south of his cowardice.`,
+      'ch1:p-oil': `The stolen Strider coughs like a guilty throat. Jaxson is under the hull anyway — brass, leather, tags he still has not cut off. He hotwired. He will not tour. Red Maw is east of his cowardice.`,
     },
   },
   kaelen: {

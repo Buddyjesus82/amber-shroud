@@ -34,7 +34,7 @@ You go to your knees in resin-slick dust. Jaxson is suddenly there — burly, gr
 
 You wake with sand in your teeth and a Drop in your vial you did not earn. Whoever poured it did not stay to be thanked. With that brand on your face, nobody would.
 
-"First Drop," a voice says. "Last warning. East is the Maw. Stay and you become a story the well tells."`,
+"First Drop," a voice says. "Last warning. South is the Maw. Stay and you become a story the well tells."`,
     choices: [
       {
         id: 'up',
