@@ -40,7 +40,7 @@ export const INTRO_CARDS: IntroCard[] = [
     id: 'seekers',
     title: 'The Seekers',
     img: 'seekers.jpg',
-    alt: 'Wrapped Seekers kneel before a burning amber shard on an altar while an Amber Husk stands behind them',
+    alt: 'Wrapped Seekers with Damascus falchions ring a burning amber shard on an altar while an Amber Husk stands behind them',
     text: 'The Seekers worship the shards and walk Amber Husks to guard what they claim. They are camped at the Outer Threshold, outside the Spire, and they cannot open its door. The way in lies at Red Maw.',
   },
   {
