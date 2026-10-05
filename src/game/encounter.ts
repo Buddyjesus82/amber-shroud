@@ -4,9 +4,9 @@ import { check } from './logic'
 import { disguiseActive, equippedShell, equippedStrike } from './kit'
 import { CARAPACE_HUNTER, SPINE_HUNTER } from './content/spineHunter'
 import type { Choice, Effect, FlagMap, GameState, ItemId } from './types'
-import { hash, OPENERS, sandAnswers, PAIR_LINE, sandGripLine, TERRAINS, terrainPool, type Terrain, type TerrainId } from './fightTricks'
+import { hash, OPENERS, sandAnswers, PAIR_LINE, HUSK_CONTROLLER_LINE, sandGripLine, TERRAINS, terrainPool, type Terrain, type TerrainId } from './fightTricks'
 
-export type EncounterKind = 'jackal' | 'cutter' | 'tick' | 'pup' | 'scavenger' | 'patrol' | 'handler' | 'overseer' | 'collector' | 'carapace'
+export type EncounterKind = 'jackal' | 'cutter' | 'tick' | 'pup' | 'scavenger' | 'patrol' | 'handler' | 'overseer' | 'collector' | 'carapace' | 'husk'
 
 /** Fight hits. Sap stays thirst/travel. */
 export const HEALTH_MAX = 6
@@ -88,6 +88,14 @@ const SPECS: Spec[] = [
   // Spine hunter fight. Copy and stats live in content/spineHunter.ts.
   { kind: 'collector', ...SPINE_HUNTER.encounter },
   { kind: 'carapace', ...CARAPACE_HUNTER.encounter },
+  {
+    kind: 'husk',
+    name: 'Amber Husk',
+    strike: 2,
+    shell: 3,
+    hp: 3,
+    line: 'An Amber Husk. Calcified resin and bone, man-height and hunched, amber core under the rib cage. It keeps coming until the heart is shattered.',
+  },
 ]
 
 const TEACH = 'Fight or give the road. The rules: help fight.'
@@ -195,16 +203,33 @@ export function encounterGround(state: GameState): boolean {
 export function pickEncounterKind(state: GameState): EncounterKind {
   const n = seed(state)
   const turf = turfFaction(state)
+  // High Seeker Heat can field a husk on any road: Seekers walk husks beyond Spire ground.
+  if (state.heat.seekers >= 5 && n % 5 === 0) return 'husk'
   if (turf === 'cartel') {
     const pool: EncounterKind[] = ['pup', 'pup', 'cutter', 'jackal', 'tick']
     return pool[n % pool.length]
   }
   if (turf === 'seekers') {
-    const pool: EncounterKind[] = ['cutter', 'cutter', 'jackal', 'tick', 'scavenger']
+    const pool: EncounterKind[] =
+      state.heat.seekers >= 3
+        ? ['husk', 'husk', 'cutter', 'jackal', 'tick', 'scavenger']
+        : ['cutter', 'cutter', 'jackal', 'tick', 'scavenger']
     return pool[n % pool.length]
   }
   const pool: EncounterKind[] = ['scavenger', 'scavenger', 'jackal', 'jackal', 'tick']
   return pool[n % pool.length]
+}
+
+/** Spire-adjacent and Vessel hymn ground: husks cling to stone like gargoyles. */
+export function huskGround(state: GameState): boolean {
+  const id = state.sceneId
+  return (
+    state.hubId === 'threshold' ||
+    id.startsWith('thresh:') ||
+    id.startsWith('ch1:v-') ||
+    id.startsWith('maw:') ||
+    state.hubId === 'redmaw'
+  )
 }
 
 export function enemyHealth(kind: EncounterKind): number {
@@ -297,7 +322,9 @@ function openerOf(state: GameState, spec: Spec): string {
   const list = OPENERS[spec.kind] ?? []
   const i = Number(state.flags.encounterOpen ?? 0)
   const line = list[i] || spec.line
-  return state.flags.encounterPair ? `${line} ${PAIR_LINE}` : line
+  if (state.flags.encounterPair) return `${line} ${PAIR_LINE}`
+  if (state.flags.encounterController) return `${line} ${HUSK_CONTROLLER_LINE}`
+  return line
 }
 
 /** Encounter interrupt body only — never the place underneath. */
@@ -356,7 +383,10 @@ export function encounterChoices(state: GameState): Choice[] {
     {
       id: 'enc-guard',
       label: 'Guard',
-      sub: spec.kind === 'overseer' ? 'No attack. His baton hits 1 lighter this round.' : 'No attack. Their hit is 2 lighter this round.',
+      sub:
+        spec.kind === 'overseer' || spec.kind === 'husk'
+          ? 'No attack. Their hit is 1 lighter this round.'
+          : 'No attack. Their hit is 2 lighter this round.',
       enable: { healthMin: 1 },
       locked: 'Too hurt to fight.',
       effects: { resolveEncounter: 'guard', ticks: 1 },
@@ -372,10 +402,37 @@ export function encounterChoices(state: GameState): Choice[] {
     {
       id: 'enc-trick',
       label: 'Throw sand in their eyes',
-      sub: 'Once a fight. No attack. 4 in 10: they miss this round and the next.',
+      sub:
+        spec.kind === 'husk'
+          ? 'Once a fight. No attack. A husk has no eyes: sand almost never works.'
+          : 'Once a fight. No attack. 4 in 10: they miss this round and the next.',
       enable: { all: [{ healthMin: 1 }, { flagUnset: 'encounterTrickUsed' }] },
       locked: 'Already used this fight.',
       effects: { resolveEncounter: 'trick', ticks: 1 },
+    },
+    {
+      id: 'enc-core',
+      label: 'Aim for the core',
+      sub: 'Once a fight. About half the time you crack the amber heart for a heavy blow. Otherwise you miss this exchange and they hit you.',
+      show: { all: [{ flagEq: ['encounterKind', 'husk'] }, { flagUnset: 'encounterCoreTried' }] },
+      enable: { healthMin: 1 },
+      locked: 'Too hurt to fight.',
+      effects: { resolveEncounter: 'core', ticks: 1 },
+    },
+    {
+      id: 'enc-seeker',
+      label: 'Cut the Seeker down',
+      sub: 'No hit on the husk. Often you drop the Seeker and stop the extractor. The husk still hits you this exchange.',
+      show: {
+        all: [
+          { flagEq: ['encounterKind', 'husk'] },
+          { flag: 'encounterController' },
+          { flagUnset: 'encounterControllerDown' },
+        ],
+      },
+      enable: { healthMin: 1 },
+      locked: 'Too hurt to fight.',
+      effects: { resolveEncounter: 'seeker', ticks: 1 },
     },
     {
       id: 'enc-pull',
@@ -481,6 +538,13 @@ function pocketLoot(state: GameState, kind: EncounterKind): Partial<Record<ItemI
   if (kind === 'jackal') return { scrap: 2 }
   if (kind === 'tick') return { vial_drop: 1 }
   if (kind === 'pup') return { glints: 1, scrap: 1 }
+  if (kind === 'husk') {
+    const roll = pocket(state)
+    // Resin scrap from the plates; sometimes a Drop from the core. Never salve, never gear.
+    if (roll <= 3) return { scrap: 2 }
+    if (roll <= 6) return { scrap: 1, vial_drop: 1 }
+    return { scrap: 1 }
+  }
   const roll = pocket(state)
   if (kind === 'cutter') {
     if (roll === 0 || roll === 1) return { scrap: 1, shiv: 1 }
@@ -525,6 +589,10 @@ export const ENCOUNTER_FLAGS = [
   'encounterTerrain',
   'encounterOpen',
   'encounterPair',
+  'encounterController',
+  'encounterControllerDown',
+  'encounterHuskRevived',
+  'encounterCoreTried',
   'encounterLatched',
   'encounterFeint',
   'encounterStun',
@@ -572,7 +640,7 @@ function holdCard(state: GameState, spec: Spec, card: string, short: string, ext
   }
 }
 
-export type FightMove = 'fight' | 'guard' | 'feint' | 'trick' | 'run' | 'pull' | 'deal'
+export type FightMove = 'fight' | 'guard' | 'feint' | 'trick' | 'run' | 'pull' | 'deal' | 'core' | 'seeker'
 
 /** 1 in 10 landed hits, both sides. The Shard-pup lands them twice as often. */
 export const CRIT_IN_10 = 1
@@ -647,8 +715,11 @@ export function resolveEncounter(
   const round = Number(f.encounterRound ?? 0) + 1
   const max = state.healthMax ?? HEALTH_MAX
   const notes: string[] = []
-  // Hide Gloves: pull the tick and strike in the same exchange.
-  const attacking = move === 'fight' || (move === 'pull' && !!f.encounterLatched && state.equipped?.hands === 'hide_gloves')
+  // Hide Gloves: pull the tick and strike in the same exchange. Aim for the core is an attack that can miss.
+  const attacking =
+    move === 'fight' ||
+    move === 'core' ||
+    (move === 'pull' && !!f.encounterLatched && state.equipped?.hands === 'hide_gloves')
 
   // Swings after ground, feint, and a numb arm.
   let swingOut = c.swingOut
@@ -702,8 +773,30 @@ export function resolveEncounter(
   let feintNext = false
   let trickUsed = !!f.encounterTrickUsed
   let latched = !!f.encounterLatched
+  let coreTried = !!f.encounterCoreTried
+  let controllerDown = !!f.encounterControllerDown
+  let huskRevived = !!f.encounterHuskRevived
+  if (move === 'core') {
+    coreTried = true
+    if (roll(state, 'core', 10) < 5) {
+      dmgOut *= 2
+      notes.push('You aim for the amber heart under the ribs. The strike cracks the core: a heavy blow.')
+    } else {
+      dmgOut = 0
+      notes.push('You aim for the amber heart and miss. The plates turn the blow.')
+    }
+  }
+  if (move === 'seeker') {
+    dmgOut = 0
+    if (roll(state, 'seeker', 10) < 6) {
+      controllerDown = true
+      notes.push('You cut the Seeker down. The extractor blade drops. The husk cannot be re-charged.')
+    } else {
+      notes.push('The Seeker slips behind the husk. The extractor stays live.')
+    }
+  }
   if (move === 'guard') {
-    const cut = spec.kind === 'overseer' ? 1 : 2
+    const cut = spec.kind === 'overseer' || spec.kind === 'husk' ? 1 : 2
     dmgIn = Math.max(0, dmgIn - cut)
     notes.push(`You guard. Their hit is ${cut} lighter.`)
   } else if (move === 'feint') {
@@ -712,12 +805,21 @@ export function resolveEncounter(
     notes.push('You feint and slip back. Their hit is 1 lighter. Your next Strike gets +2.')
   } else if (move === 'trick') {
     trickUsed = true
-    if (roll(state, 'trick', 10) < 4) {
+    const odds = spec.kind === 'husk' ? 1 : 4
+    if (roll(state, 'trick', 10) < odds) {
       dmgIn = 0
       stunNext = true
-      notes.push(`You throw a fistful of sand into ${who}'s eyes. They miss this round and the next.`)
+      notes.push(
+        spec.kind === 'husk'
+          ? `You throw a fistful of sand. Against the odds it fouls a joint, and the husk misses this round and the next.`
+          : `You throw a fistful of sand into ${who}'s eyes. They miss this round and the next.`,
+      )
     } else {
-      notes.push(`You throw a fistful of sand. ${cap(who)} turns away and it misses.`)
+      notes.push(
+        spec.kind === 'husk'
+          ? `You throw a fistful of sand. The husk has no eyes. The plates do not care.`
+          : `You throw a fistful of sand. ${cap(who)} turns away and it misses.`,
+      )
     }
   } else if (move === 'pull' && latched) {
     latched = false
@@ -748,11 +850,23 @@ export function resolveEncounter(
   const sapLoss = latched && move !== 'pull' && f.encounterLatched ? 1 : 0
   if (sapLoss) notes.push('The tick drinks. Sap -1.')
 
-  const theirHp = Math.max(0, c.theirHp - dmgOut)
+  let theirHp = Math.max(0, c.theirHp - dmgOut)
   const yourHp = Math.max(0, c.yourHp - dmgIn)
   const healthDelta = yourHp - c.yourHp
   if (dmgOut > 0) pinned = false
   if (f.encounterPair && c.theirHp >= 2 && theirHp === 1) notes.push('One jackal drops. The other keeps coming.')
+  // Seeker extractor: once per fight, re-charge the husk unless the Seeker is already down.
+  if (
+    theirHp <= 0 &&
+    spec.kind === 'husk' &&
+    f.encounterController &&
+    !controllerDown &&
+    !huskRevived
+  ) {
+    theirHp = 2
+    huskRevived = true
+    notes.push('The Seeker drives the extractor into a plate. Resin floods the core. The husk stands again, Health 2.')
+  }
 
   const youLine = attacking
     ? `You Strike ${c.strike}+${swingOut} vs their Shell ${spec.shell} → ${dmgOut}`
@@ -786,9 +900,14 @@ export function resolveEncounter(
     const loot = lootLine(add)
     const back = snatched ? ` You take back your ${ITEMS[snatched]?.name ?? snatched}.` : ''
     const stagger = yourHp <= 0
+    const huskWin = spec.kind === 'husk'
     const outcome = stagger
-      ? `They drop. You drop with them. ${loot}. Health 0/${max}.${back}`
-      : `They drop. ${loot}.${back}`
+      ? huskWin
+        ? `The amber heart shatters. You drop with it. ${loot}. Health 0/${max}.${back}`
+        : `They drop. You drop with them. ${loot}. Health 0/${max}.${back}`
+      : huskWin
+        ? `The amber heart shatters. The husk falls still. ${loot}.${back}`
+        : `They drop. ${loot}.${back}`
     return holdCard(state, spec, `${hitCard}\n\n${outcome}`, outcome, {
       health: stagger ? -c.yourHp : healthDelta,
       add,
@@ -841,6 +960,10 @@ export function resolveEncounter(
     encounterLatched: latched,
     encounterTrickUsed: trickUsed,
     encounterGrip: grip,
+    encounterCoreTried: coreTried,
+    encounterControllerDown: controllerDown,
+    encounterHuskRevived: huskRevived,
+    encounterController: !!f.encounterController,
   }
   const remove: Partial<Record<ItemId, number>> = {}
   if (spec.kind === 'tick' && !latched && move !== 'pull' && dmgIn > 0) {
@@ -943,6 +1066,13 @@ export function fightStartFlags(state: GameState, kind: EncounterKind): FlagMap 
   const terrain = pool[hash(state, `ground:${kind}`) % pool.length]
   const open = hash(state, `open:${kind}`) % 3
   const pair = kind === 'jackal' && hash(state, 'pair') % 10 < 4
+  // Near Spire stone a husk often wakes alone. Elsewhere, or at higher Seeker Heat, a Seeker walks it.
+  let controller = false
+  if (kind === 'husk') {
+    const roll = hash(state, 'huskCtrl') % 10
+    if (huskGround(state) && state.heat.seekers < 5) controller = roll < 4
+    else controller = roll < 7
+  }
   return {
     encounterHere: true,
     encounterKind: kind,
@@ -951,12 +1081,16 @@ export function fightStartFlags(state: GameState, kind: EncounterKind): FlagMap 
     encounterTerrain: terrain,
     encounterOpen: open,
     encounterPair: pair,
+    encounterController: controller,
   }
 }
 
 /** Every per-fight flag except the ones a new fight sets. */
 export const FIGHT_RESET = ENCOUNTER_FLAGS.filter(
-  (k) => !['encounterHere', 'encounterKind', 'encounterHp', 'encounterTerrain', 'encounterOpen', 'encounterPair'].includes(k),
+  (k) =>
+    !['encounterHere', 'encounterKind', 'encounterHp', 'encounterTerrain', 'encounterOpen', 'encounterPair', 'encounterController'].includes(
+      k,
+    ),
 )
 
 /** Open a road fight on the current ground. Strike vs Shell stays in the encounter card. */

@@ -118,7 +118,7 @@ export type Effect = {
   returnHunterFrom?: boolean
   returnCrisisFrom?: boolean
   /** Optional roam fight. Strike + 0-2 swing vs Shell, min 1 damage. */
-  resolveEncounter?: 'fight' | 'skip' | 'guard' | 'feint' | 'trick' | 'run' | 'pull' | 'deal' | 'disguise'
+  resolveEncounter?: 'fight' | 'skip' | 'guard' | 'feint' | 'trick' | 'run' | 'pull' | 'deal' | 'disguise' | 'core' | 'seeker'
   /** Bag full: take held finds back up to the free room. */
   bagRetry?: boolean
   /** Bag full: leave the held finds behind. */
