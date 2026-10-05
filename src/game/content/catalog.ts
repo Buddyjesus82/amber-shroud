@@ -308,7 +308,7 @@ export const HUBS: Record<string, HubDef> = {
     ],
     hungerHook: {
       label: 'Take the rumor into the dunes',
-      sub: 'Red Maw: days south. Four roads from the pens. Then the Hunger.',
+      sub: 'Red Maw: days east. Four roads from the pens. Then the Hunger.',
       sceneId: 'ch1:leave',
       show: { flag: 'hungerKnown' },
     },
@@ -329,12 +329,12 @@ export const HUBS: Record<string, HubDef> = {
     ],
     hungerHook: {
       label: 'Walk the Hunger toward Red Maw',
-      sub: 'Red Maw: a hard day east-south. Closer than Ironwood. Not close.',
+      sub: 'Red Maw: a hard day south. Closer than Ironwood. Not close.',
       sceneId: 'ch1:leave',
       show: { flag: 'hungerKnown' },
     },
     mawLegs: 2,
-    mawNote: 'Red Maw is a hard day east-south. Stray country sits nearer the bite than Camp-04.',
+    mawNote: 'Red Maw is a hard day south. Stray country sits nearer the bite than Camp-04.',
   },
   threshold: {
     id: 'threshold',
@@ -356,7 +356,7 @@ export const HUBS: Record<string, HubDef> = {
       show: { any: [{ flag: 'hungerKnown' }, { item: 'oram_map' }] },
     },
     mawLegs: 1,
-    mawNote: 'The sealed Spire stands off the paddock. What opens it is at Red Maw, one short road away.',
+    mawNote: 'The sealed Spire stands off the paddock. What opens it is at Red Maw, one short road west.',
   },
   redmaw: {
     id: 'redmaw',
@@ -379,6 +379,6 @@ export const HUBS: Record<string, HubDef> = {
       show: { flag: 'chapter1Done' },
     },
     mawLegs: 0,
-    mawNote: 'Red Maw Approach. All three roads end here. The sealed Spire waits past the Threshold.',
+    mawNote: 'Red Maw Approach. All three roads end here. The sealed Spire waits east, past the Threshold.',
   },
 }

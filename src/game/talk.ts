@@ -212,7 +212,7 @@ const oiltoothRoad: IntentRule[] = [
   {
     tags: TALK,
     reply:
-      'Brass ticks. "I hotwired. I will not tour. Ride the last mile and I drop you with Ossa, walk south on your own, or I cut the Cartel tag out of your cuff. Red Maw is south of where I am willing to go."',
+      'Brass ticks. "I hotwired. I will not tour. Ride the last mile and I drop you with Ossa, walk east on your own, or I cut the Cartel tag out of your cuff. Red Maw is east, the way I am not willing to go."',
     effects: { ticks: 1 },
   },
   {
@@ -222,7 +222,7 @@ const oiltoothRoad: IntentRule[] = [
   },
   {
     tags: TRADE,
-    reply: '"I do not sell Drops on a stolen hull. I sell a mile you might survive. Ossa is south. I go west."',
+    reply: '"I do not sell Drops on a stolen hull. I sell a mile you might survive. Ossa is east. I go west."',
     effects: { ticks: 1 },
   },
   {
@@ -504,7 +504,7 @@ const corvin: IntentRule[] = [
   {
     tags: HELP,
     show: { flag: 'corvinHelped' },
-    reply: '"Find me at the dry ford when you walk east. If you go down on this ridge, I\'ll come get you."',
+    reply: '"Find me at the dry ford when you walk south. If you go down on this ridge, I\'ll come get you."',
     effects: { ticks: 1 },
   },
   {

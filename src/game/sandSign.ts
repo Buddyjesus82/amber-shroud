@@ -23,7 +23,7 @@ export const AMBER_WARM =
 
 /** Mira's Hollow drawing, once. */
 export const HOLLOW_PULL =
-  'While the ring is in the sand, you feel a pull under your ribs toward the east-south, steady, like a rope tied there. When she brushes the drawing away, it stops.'
+  'While the ring is in the sand, you feel a pull under your ribs toward the south, steady, like a rope tied there. When she brushes the drawing away, it stops.'
 
 /** Typed, once each. */
 export const SAND_TOUCH =

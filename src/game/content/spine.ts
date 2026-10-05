@@ -27,13 +27,13 @@ Down-slope: a tent the color of old teeth. Silas Vane sells shade by the minute.
       {
         id: 'scan',
         label: 'Read the wash for a heading',
-        sub: 'Costs sap. You look east and south for the red haze of Red Maw.',
+        sub: 'Costs sap. You look south for the red haze of Red Maw.',
         effects: {
           ticks: 1,
           sap: -1,
           flag: { sawMawHaze: true },
           flash:
-            'East-south, a bruise of red in the heat. Maw-country. People bury fortunes there because they think the Maw is a lock. It is a mouth.',
+            'South, a bruise of red in the heat. Maw-country. People bury fortunes there because they think the Maw is a lock. It is a mouth.',
         },
       },
       {
@@ -89,7 +89,7 @@ Down-slope: a tent the color of old teeth. Silas Vane sells shade by the minute.
     title: "Silas's Cut",
     body: `The scratch leads under a rib of rock the noon pretends not to own. Shade. A smear of sap in a crack — not a Drop, a lie that still wets the tongue.
 
-The Hunger is a red bruise east-south. You could fill the empty vial with this smear and call it a first Drop, or you could save the tip for a later spend.`,
+The Hunger is a red bruise to the south. You could fill the empty vial with this smear and call it a first Drop, or you could save the tip for a later spend.`,
     choices: [
       {
         id: 'fill',
@@ -134,7 +134,7 @@ The Hunger is a red bruise east-south. You could fill the empty vial with this s
           startChapter: 'cache-run',
           goto: 'ch1:leave',
           ticks: 1,
-          flash: 'The smear is behind you. The bruise east-south is not.',
+          flash: 'The smear is behind you. The bruise to the south is not.',
         },
       },
     ],
@@ -513,18 +513,18 @@ Overseer Valerius has come out from Ironwood in a dust coat. He walks behind the
     title: 'Hunted Ground',
     body: `Someone on the Spine has your name. The Strays who turned their backs on you are watching this stretch of ridge now, and the one who comes for you will not be the last.
 
-You can run east, or get back under Silas's canvas.`,
+You can run south, or get back under Silas's canvas.`,
     choices: [
       {
         id: 'east',
-        label: 'Take the Hunger east',
+        label: 'Take the Hunger south',
         tone: 'hunger',
         show: { flag: 'hungerKnown' },
         effects: { startChapter: 'cache-run', goto: 'ch1:leave', heat: { cartel: 1 } },
       },
       {
         id: 'blind',
-        label: 'Run east anyway',
+        label: 'Run south anyway',
         tone: 'danger',
         show: { flagUnset: 'hungerKnown' },
         effects: {
@@ -565,7 +565,7 @@ He looks at the brand. He does not turn away.
         mode: 'replace',
         body: `Corvin is behind the same slab, coat inside out, watching the wash.
 
-"When you walk east, find me at the dry ford," he says. "I'll take you past the traps. If you go down on this ridge, I'll come get you."`,
+"When you walk south, find me at the dry ford," he says. "I'll take you past the traps. If you go down on this ridge, I'll come get you."`,
       },
     ],
     choices: [
@@ -582,7 +582,7 @@ He looks at the brand. He does not turn away.
           flag: { corvinHelped: true, corvinWater: true },
           ticks: 1,
           flash:
-            'He drinks it slowly, like he forgot how. "Thank you. When you walk east, find me at the dry ford and I\'ll take you past the traps. If you go down on this ridge, I\'ll come get you."',
+            'He drinks it slowly, like he forgot how. "Thank you. When you walk south, find me at the dry ford and I\'ll take you past the traps. If you go down on this ridge, I\'ll come get you."',
         },
       },
       {
@@ -596,7 +596,7 @@ He looks at the brand. He does not turn away.
           flag: { corvinHelped: true, corvinSwept: true },
           ticks: 1,
           flash:
-            'You drag a strip of canvas over his prints until the wash shows only Hound sign. Cartel Heat rises. Corvin nods. "When you walk east, find me at the dry ford. I\'ll take you past the traps. If you go down on this ridge, I\'ll come get you."',
+            'You drag a strip of canvas over his prints until the wash shows only Hound sign. Cartel Heat rises. Corvin nods. "When you walk south, find me at the dry ford. I\'ll take you past the traps. If you go down on this ridge, I\'ll come get you."',
         },
       },
       {
@@ -618,7 +618,7 @@ He looks at the brand. He does not turn away.
       },
       {
         id: 'hunger',
-        label: 'Walk east toward Red Maw',
+        label: 'Walk south toward Red Maw',
         sub: 'You have a heading. Corvin waits at the dry ford if you helped him.',
         tone: 'hunger',
         show: { flag: 'hungerKnown' },

@@ -2639,7 +2639,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v55'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v56'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -2661,7 +2661,7 @@ assert(css.includes('--story-top: min(calc(56.25cqi * var(--band-bot, 0.5)), 50c
 assert(css.includes('rgba(12, 7, 4, 0.58)'), 'story scrim stays translucent so cover art shows through')
 assert(!css.includes('rgba(12, 7, 4, 0.88)'), 'story scrim is lighter than the v32 slab')
 const playSrc = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
-assert(playSrc.includes('?v=55'), 'scene cover URLs are cache-busted with the service worker')
+assert(playSrc.includes('?v=56'), 'scene cover URLs are cache-busted with the service worker')
 assert(!css.includes('object-position: center 68%'), 'scene art no longer crops toward the ground')
 assert(!css.includes('height: 56px'), 'short phones no longer squash covers into a head-cropping strip')
 assert(css.includes('place-items: center'), 'game screen is centered on the backdrop')
@@ -4500,6 +4500,16 @@ function assertHelpResolves(s: GameState, where: string) {
 {
   const mainSrc = readFileSync('src/main.tsx', 'utf8')
   assert(/const hadController = Boolean\(navigator\.serviceWorker\.controller\)/.test(mainSrc) && mainSrc.includes('!hadController') && mainSrc.includes("'SW_UPDATED' && hadController"), 'SW reloads (controllerchange and SW_UPDATED) only on an update, not on first install')
+}
+
+// Road compass matches the world map: Camp-04 east to the Maw, Spine south, Threshold west.
+{
+  const all = ALL_SCENES.map((x) => x.body + JSON.stringify(x.variants ?? []) + JSON.stringify(x.choices) + JSON.stringify(x.intents ?? [])).join('\n')
+    + JSON.stringify(HUBS) + readFileSync('src/game/content/maps.ts', 'utf8') + readFileSync('src/game/talk.ts', 'utf8')
+    + readFileSync('src/game/look.ts', 'utf8') + readFileSync('src/game/hunter.ts', 'utf8') + JSON.stringify(PEOPLE)
+  assert(!/east-south|east and south|walk east, find me|ford when you walk east|walking east to the Maw|label: 'Hunger south'|Red Maw is (days )?south|Maw-country.{0,3}South|South is Maw-country|East is the Maw|Ossa is south\. I go west/.test(all), 'no old compass for the Maw roads')
+  assert(/label: '← Red Maw, west'/.test(readFileSync('src/game/content/maps.ts', 'utf8')), 'Threshold map exit points west to Red Maw')
+  assert(/days east/.test(HUBS.camp04.hungerHook!.sub ?? '') && /hard day south/.test(HUBS.spine.hungerHook!.sub ?? ''), 'Camp-04 road runs east, Spine road runs south')
 }
 
 console.log('OK', {

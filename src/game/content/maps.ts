@@ -7,7 +7,7 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
     width: 100,
     height: 132,
     defaultNode: 'pens',
-    blurb: 'Cartel wire. South is Maw-country — days away. The sealed Spire is farther still. Walk only the roads that connect.',
+    blurb: 'Cartel wire. East is Maw-country — days away. The sealed Spire is farther still. Walk only the roads that connect.',
     maw: { x: 78, y: 124, label: 'Maw / dunes' },
     nodes: [
       { id: 'tower', name: 'Overseer', sceneId: 'camp:tower', x: 68, y: 10 },
@@ -63,7 +63,7 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
     width: 100,
     height: 120,
     defaultNode: 'ridge',
-    blurb: 'Stray country. Red Maw sits a hard day east-south — nearer than Ironwood, not a doorstep.',
+    blurb: 'Stray country. Red Maw sits a hard day south — nearer than Ironwood, not a doorstep.',
     maw: { x: 86, y: 112, label: 'Maw-haze' },
     nodes: [
       { id: 'ridge', name: 'Noon Spine', short: 'Ridge', sceneId: 'spine:ridge', x: 30, y: 26 },
@@ -100,8 +100,8 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
     width: 100,
     height: 120,
     defaultNode: 'court',
-    blurb: 'Seeker fringe. The sealed Spire stands past the paddock. What opens it is at Red Maw, the shortest road from here.',
-    maw: { x: 58, y: 112, label: 'Hunger south' },
+    blurb: 'Seeker fringe. The sealed Spire stands past the paddock. What opens it is at Red Maw, a short road west.',
+    maw: { x: 18, y: 98, label: '← Red Maw, west' },
     nodes: [
       { id: 'court', name: 'Threshold Court', short: 'Court', sceneId: 'thresh:court', x: 50, y: 40 },
       { id: 'cell', name: 'False Vessel Cell', short: 'Cell', sceneId: 'thresh:cell', x: 20, y: 36 },
@@ -138,7 +138,7 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
     width: 100,
     height: 120,
     defaultNode: 'rim',
-    blurb: 'You are at the bite. All three roads end here. The sealed Spire waits past the Threshold. The Lip is the only road into the walking dark.',
+    blurb: 'You are at the bite. All three roads end here. The sealed Spire waits east, past the Threshold. The Lip is the only road into the walking dark.',
     maw: { x: 88, y: 96, label: 'The Maw' },
     nodes: [
       { id: 'rim', name: 'Maw Rim', short: 'Rim', sceneId: 'maw:rim', x: 50, y: 48 },

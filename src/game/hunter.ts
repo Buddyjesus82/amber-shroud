@@ -321,15 +321,15 @@ function spineHuntChoices(state: GameState): Choice[] {
     },
     {
       id: 'spine-bargain',
-      label: 'Bargain the east',
+      label: 'Bargain the south road',
       sub: 'Sap and Stray Heat. You stay.',
       effects: stay(state, {
         sap: -1,
         heat: { strays: 1 },
         pressure: 1,
         flash: carapace
-          ? 'You tell him you are walking east to the Maw. "Then I walk east," he says, and lets you be for now. Stray Heat rises.'
-          : 'You tell the collector you are walking east to the Maw. They let you be for now. Stray Heat rises.',
+          ? 'You tell him you are walking south to the Maw. "Then I walk south," he says, and lets you be for now. Stray Heat rises.'
+          : 'You tell the collector you are walking south to the Maw. They let you be for now. Stray Heat rises.',
       }),
     },
   ]
