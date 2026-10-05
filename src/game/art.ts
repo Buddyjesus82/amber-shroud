@@ -149,6 +149,7 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
     if (kind === 'overseer') return 'valerius'
     if (kind === 'patrol') return 'rell'
     if (kind === 'scavenger' || kind === 'cutter') return 'hunger'
+    if (kind === 'husk') return 'threshold'
     if (kind === 'collector') return SPINE_HUNTER.art
     if (kind === 'carapace') return CARAPACE_HUNTER.art
   }

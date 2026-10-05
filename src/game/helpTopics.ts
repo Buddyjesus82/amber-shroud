@@ -36,7 +36,9 @@ const FIGHT_SECTIONS: HelpSection[] = [
       { key: 'Fight', text: 'One exchange per tap. Plain Strike against Strike.' },
       { key: 'Guard', text: 'You do not hit this exchange. Their hit on you is 2 less.' },
       { key: 'Feint', text: 'You do not hit this exchange. Their hit on you is 1 less, and your next Fight gets swing +2. You cannot feint again until you Fight.' },
-      { key: 'Throw sand', text: 'Once per fight. You do not hit. 4 in 10 they miss this exchange and the next. If it fails, they hit as normal.' },
+      { key: 'Throw sand', text: 'Once per fight. You do not hit. About 4 in 10 they miss this exchange and the next. If it fails, they hit as normal. Against an Amber Husk (no eyes), sand almost never works.' },
+      { key: 'Aim for the core', text: 'Amber Husk only, once per fight. About half the time you crack the amber heart for a heavy blow. Otherwise you miss that exchange and they hit you.' },
+      { key: 'Cut the Seeker down', text: 'When a Seeker walks an Amber Husk. No hit on the husk. Often you drop the Seeker so the husk cannot be re-charged. The husk still hits you that exchange.' },
       { key: 'Run', text: 'About 6 in 10 to get away. Ground, a hound, or a pin changes the odds. A failed run gives them a free hit. No loot.' },
       { key: 'Pull the tick', text: 'Only while an amber-tick is latched on. Stops the Sap drain. With Hide Gloves on, you also strike that exchange.' },
       { key: 'Deal', text: 'Only when a hurt enemy offers one. Ends the fight on their terms.' },
@@ -67,6 +69,7 @@ const FIGHT_SECTIONS: HelpSection[] = [
       { key: 'Valerius', text: 'Guard only takes 1 off his baton.' },
       { key: 'Stray collector', text: 'Hurt, he offers to call it square: Stray Heat -1, no loot.' },
       { key: 'Nim', text: 'The Carapace hunter, at Stray Heat 4 or more on the Spine. Opens with the harpoon: +1 and you are pinned. No Run until you land a hit.' },
+      { key: 'Amber Husk', text: 'Seeker Spire construct. Strike 2, Shell 3, Health 3. No pain or fear: empty rounds do not make it leave. Guard only takes 1 off. Sand almost never works. Shatter the amber core to drop it. A Seeker with an extractor can re-charge it once unless you cut the Seeker down first.' },
     ],
   },
   {

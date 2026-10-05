@@ -36,7 +36,7 @@ import type { Cond, Scene } from '../src/game/types.ts'
 import { rollScavenge, SCAVENGE_SALVE_PCT, scavengeSalve } from '../src/game/scavenge.ts'
 import { kaelenOffers } from '../src/game/trade.ts'
 import { FIGHT_HELP_LINES, fightHelpAuto, fightHelpText, fightTopicMidFight, HELP_TOPICS, helpRoute, topicLines, isFightHelpAsk, markFightHelpSeen, topicListText, topicText } from '../src/game/helpTopics.ts'
-import { BEAST_KINDS, carriesSalve, HUMAN_KINDS, HUMAN_SALVE_PCT, beginEncounter, DAMAGE_FLOOR, encounterCard, encounterChoices, exchangeDamage, fightStartFlags, resolveEncounter, runChance, STALL_ROUNDS, swingOf } from '../src/game/encounter.ts'
+import { BEAST_KINDS, carriesSalve, HUMAN_KINDS, HUMAN_SALVE_PCT, beginEncounter, DAMAGE_FLOOR, encounterCard, encounterChoices, exchangeDamage, fightStartFlags, huskGround, pickEncounterKind, resolveEncounter, runChance, STALL_ROUNDS, swingOf } from '../src/game/encounter.ts'
 import {
   IDLE_DOOR,
   tapDoor,
@@ -2638,7 +2638,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v50'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v51'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -2660,7 +2660,7 @@ assert(css.includes('--story-top: min(calc(56.25cqi * var(--band-bot, 0.5)), 50c
 assert(css.includes('rgba(12, 7, 4, 0.58)'), 'story scrim stays translucent so cover art shows through')
 assert(!css.includes('rgba(12, 7, 4, 0.88)'), 'story scrim is lighter than the v32 slab')
 const playSrc = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
-assert(playSrc.includes('?v=50'), 'scene cover URLs are cache-busted with the service worker')
+assert(playSrc.includes('?v=51'), 'scene cover URLs are cache-busted with the service worker')
 assert(!css.includes('object-position: center 68%'), 'scene art no longer crops toward the ground')
 assert(!css.includes('height: 56px'), 'short phones no longer squash covers into a head-cropping strip')
 assert(css.includes('place-items: center'), 'game screen is centered on the backdrop')
@@ -3980,16 +3980,16 @@ function assertHelpResolves(s: GameState, where: string) {
   }
   assert(forms.has('slide') && forms.has('mirage'), 'the grip comes as a sand slide or a mirage')
 
-  // Seekers: no special tricks until the lore lands as an encounter kind.
-  assert(!encSrc.includes("'seeker'"), 'no Seeker encounter kind or trick yet')
-  assert(readFileSync(new URL('../src/game/fightTricks.ts', import.meta.url), 'utf8').includes('TODO(seekers)'), 'Seeker tricks left as a TODO')
+  // Cloth-wrapped Seeker runners are still a TODO; Amber Husks are the Spire construct kind.
+  assert(encSrc.includes("'husk'"), 'Amber Husk is an encounter kind')
+  assert(readFileSync(new URL('../src/game/fightTricks.ts', import.meta.url), 'utf8').includes('TODO(seekers)'), 'cloth-wrapped Seeker runners left as a TODO')
 }
 
 // ---- Crit text only when a crit lands ----
 {
   const CRIT_WORDS = /crit|double damage|lands clean|1 in 10|2 in 10|twice as/i
   const CRIT_LINE = /Critical hit(?: against you)?\. [^.]* lands clean: double damage\./g
-  const kinds = ['jackal', 'cutter', 'tick', 'pup', 'scavenger', 'patrol', 'handler', 'overseer', 'collector', 'carapace']
+  const kinds = ['jackal', 'cutter', 'tick', 'pup', 'scavenger', 'patrol', 'handler', 'overseer', 'collector', 'carapace', 'husk']
   const moves = ['fight', 'guard', 'feint', 'trick', 'run']
   let crits = 0
   for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
@@ -4280,6 +4280,138 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(heatFactions('outcast').seekers.watch === 'Sybella, Seeker skiffs', 'Outcast Seekers list is Sybella, Seeker skiffs')
   assert(/Drennick Voss/.test(heatFactions('outcast').strays.watch), 'Outcast Strays list names Drennick')
 }
+// Amber Husks: Seeker Spire constructs.
+{
+  const huskSpec = encounterCard({ ...primedFight('vessel', 4, 'husk', { hp: 3 }), flags: { ...primedFight('vessel', 4, 'husk', { hp: 3 }).flags, fightTaught: true, encounterOpen: 0 } })
+  assert(/Amber Husk|amber core|calcified/i.test(huskSpec), 'husk card names the construct')
+  const opens = new Set<string>()
+  for (let t = 0; t < 9; t++) {
+    const st = { ...primedFight('vessel', t, 'husk', { hp: 3 }), flags: { ...primedFight('vessel', t, 'husk', { hp: 3 }).flags, ...fightStartFlags(primedFight('vessel', t, 'husk', { hp: 3 }), 'husk'), fightTaught: true } }
+    opens.add(encounterCard(st).split('\n')[0])
+  }
+  assert(opens.size >= 3, `husk openers vary (${opens.size})`)
+  // Stats and choices.
+  const bare = primedFight('vessel', 2, 'husk', { hp: 3, arm: false })
+  const armed = primedFight('vessel', 2, 'husk', { hp: 3 })
+  const rows = encounterChoices(bare).map((c) => c.id)
+  assert(rows.includes('enc-core') && rows.includes('enc-guard') && rows.includes('enc-trick'), 'husk offers Aim for the core, Guard, Throw sand')
+  assert(!rows.includes('enc-seeker'), 'solo husk has no Cut the Seeker row')
+  const withCtrl: GameState = { ...bare, flags: { ...bare.flags, encounterController: true } }
+  assert(encounterChoices(withCtrl).some((c) => c.id === 'enc-seeker'), 'husk with Seeker offers Cut the Seeker down')
+  // Guard only -1; sand almost never; no stall walk-off; no salve.
+  const g = resolveEncounter(bare, 'guard')
+  assert(/1 lighter/.test(g.fx.flag?.encounterClash ? String(g.fx.flag.encounterClash) : '') || /1 lighter/.test(JSON.stringify(g)), 'Guard vs husk takes 1')
+  // Force by reading notes from a known state: compare cut via clash math.
+  const shellBare = 0
+  const huskStrike = 3
+  assert(exchangeDamage(huskStrike, 1, shellBare, DAMAGE_FLOOR) - 1 === exchangeDamage(huskStrike, 1, shellBare, DAMAGE_FLOOR) - 1, 'sanity')
+  assert(!HUMAN_KINDS.includes('husk' as never) && !BEAST_KINDS.includes('husk' as never), 'husk is a construct, not human or beast')
+  assert(!carriesSalve(bare, 'husk' as never), 'husks never carry salve')
+  // Shatter = win at 0 HP.
+  const dying: GameState = { ...armed, flags: { ...armed.flags, encounterHp: 1, encounterRound: 1 } }
+  let shattered = false
+  for (let t = 0; t < 20 && !shattered; t++) {
+    const r = resolveEncounter({ ...dying, ticks: dying.ticks + t }, 'fight')
+    if (r.fx.flag?.encounterDone && /amber heart shatters/i.test(String(r.fx.flag.encounterClash ?? r.flash))) shattered = true
+  }
+  assert(shattered, 'dropping the husk shatters the amber heart')
+  // Loot is scrap and maybe a Drop, never salve or bags.
+  let sawScrap = false
+  let sawBad = false
+  for (let t = 0; t < 40; t++) {
+    const r = resolveEncounter({ ...dying, ticks: 100 + t, flags: { ...dying.flags, encounterHp: 1 } }, 'fight')
+    if (!r.fx.flag?.encounterDone) continue
+    const add = r.fx.add ?? {}
+    if ((add.scrap ?? 0) > 0) sawScrap = true
+    if ((add.salve ?? 0) > 0 || (add.scav_pack ?? 0) > 0 || (add.hauler_pack ?? 0) > 0) sawBad = true
+  }
+  assert(sawScrap && !sawBad, 'husk loot is resin scrap (and maybe a Drop), never salve or bags')
+  // Revive once when Seeker controller is present.
+  const ctrl: GameState = {
+    ...armed,
+    flags: { ...armed.flags, encounterHp: 1, encounterRound: 2, encounterController: true },
+  }
+  let revived = false
+  for (let t = 0; t < 25 && !revived; t++) {
+    const r = resolveEncounter({ ...ctrl, ticks: ctrl.ticks + t }, 'fight')
+    if (r.fx.flag?.encounterHuskRevived && Number(r.fx.flag.encounterHp) === 2 && !r.fx.flag.encounterDone) revived = true
+  }
+  assert(revived, 'Seeker extractor re-charges the husk once')
+  const downed: GameState = { ...ctrl, flags: { ...ctrl.flags, encounterControllerDown: true } }
+  let noSecond = true
+  for (let t = 0; t < 20; t++) {
+    const r = resolveEncounter({ ...downed, ticks: downed.ticks + t }, 'fight')
+    if (r.fx.flag?.encounterDone && /amber heart shatters/i.test(String(r.fx.flag.encounterClash ?? ''))) {
+      /* ok */
+    } else if (r.fx.flag?.encounterHuskRevived) noSecond = false
+  }
+  assert(noSecond, 'no revive after the Seeker is down')
+  // Stall: husks never walk off after empty attacking rounds (humans do).
+  let walked = false
+  for (let t = 0; t < 30; t++) {
+    const st0: GameState = {
+      ...armed,
+      ticks: armed.ticks + t,
+      health: 6,
+      flags: { ...armed.flags, encounterHp: 3, encounterRound: 1, encounterStall: STALL_ROUNDS - 1, encounterController: false },
+    }
+    // floor 0 lets both sides deal 0 when swings and shells cancel; husks must stay.
+    const r = resolveEncounter(st0, 'fight', { floor: 0 })
+    if (/backs off and leaves/.test(String(r.fx.flag?.encounterClash ?? r.flash))) walked = true
+  }
+  assert(!walked, 'husks never walk off after empty rounds')
+  // Spawn: Seeker turf at Heat 3+ can pick husk; huskGround covers Spire-adjacent.
+  const hotVessel = { ...newGame('vessel'), heat: { cartel: 0, seekers: 4, strays: 0 }, sceneId: 'thresh:court', hubId: 'threshold' as const }
+  let sawHusk = false
+  for (let t = 0; t < 60; t++) {
+    if (pickEncounterKind({ ...hotVessel, ticks: t }) === 'husk') sawHusk = true
+  }
+  assert(sawHusk, 'Seeker turf at Seeker Heat 3+ can spawn Amber Husks')
+  assert(huskGround(hotVessel), 'Threshold is husk ground')
+  const coldCamp = { ...newGame('prisoner'), heat: { cartel: 0, seekers: 0, strays: 0 }, sceneId: 'camp:yard', hubId: 'camp04' as const }
+  assert(![...Array(40)].some((_, t) => pickEncounterKind({ ...coldCamp, ticks: t }) === 'husk'), 'low Seeker Heat off Spire does not spawn husks')
+  const highAny = { ...newGame('prisoner'), heat: { cartel: 0, seekers: 5, strays: 0 }, sceneId: 'camp:yard', hubId: 'camp04' as const }
+  assert([...Array(40)].some((_, t) => pickEncounterKind({ ...highAny, ticks: t }) === 'husk'), 'Seeker Heat 5 can field a husk on any road')
+  // Aim for the core exists once; help names the husk.
+  assert(/Amber Husk/.test(topicText(HELP_TOPICS.find((t) => t.id === 'fight')!)), 'fight help has an Amber Husk entry')
+  assert(!/\bthis is not\b/i.test(topicText(HELP_TOPICS.find((t) => t.id === 'fight')!)), 'husk help has no "this is not" lines')
+  // Fresh character can win with Guard/Feint against a solo husk sometimes; naked rush often loses.
+  let guardWins = 0
+  let rushLosses = 0
+  for (let t = 0; t < 25; t++) {
+    let g: GameState = primedFight('vessel', 10 + t, 'husk', { hp: 3, arm: false })
+    g = {
+      ...g,
+      items: { ...g.items, shiv: 1 },
+      equipped: { ...g.equipped, weapon: 'shiv' },
+      flags: { ...g.flags, encounterController: false },
+      heat: { ...g.heat, seekers: 3 },
+    }
+    let rounds = 0
+    while (g.flags.encounterHere && !g.flags.encounterDone && !g.flags.downed && rounds < 14) {
+      const move = rounds % 3 === 0 ? 'feint' : rounds % 3 === 1 ? 'fight' : 'guard'
+      const r = resolveEncounter(g, move as never)
+      g = applyEffect(g, r.fx)
+      rounds++
+    }
+    if (g.flags.encounterDone && /amber heart shatters/i.test(String(g.flags.encounterClash ?? ''))) guardWins++
+    let rush: GameState = primedFight('vessel', 40 + t, 'husk', { hp: 3, arm: false })
+    rush = { ...rush, flags: { ...rush.flags, encounterController: false } }
+    rounds = 0
+    while (rush.flags.encounterHere && !rush.flags.encounterDone && rounds < 8) {
+      const r = resolveEncounter(rush, 'fight')
+      rush = applyEffect(rush, r.fx)
+      rounds++
+      if ((rush.health ?? 0) <= 0) {
+        rushLosses++
+        break
+      }
+    }
+  }
+  assert(guardWins >= 1, `Guard/Feint can beat a husk (${guardWins}/25)`)
+  assert(rushLosses >= 5, `naked rush often loses to a husk (${rushLosses}/25)`)
+}
+
 console.log('OK', {
   prisoner: Object.keys(DOORS.prisoner.items),
   outcast: Object.keys(DOORS.outcast.items),

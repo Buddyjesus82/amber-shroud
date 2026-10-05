@@ -18,9 +18,11 @@ import type { GameState } from './types'
  *  - Overseer Valerius: Guard blunts only 1 of his baton.
  *  - Stray collector: hurt to 1 Health, he offers to call the debt square (Stray Heat -1, no loot).
  *  - Nim, the Carapace hunter: his first shot is the harpoon (+1) and it pins you; no Run until you land a hit.
+ *  - Amber Husk: Seeker Spire construct. High Shell/Health, no stall walk-off, Guard -1, sand 1 in 10.
+ *    Aim for the core once (5 in 10 double damage). A Seeker controller can re-charge it once unless cut down.
  *
- * TODO(seekers): No Seekers of the Shroud encounter kind exists yet (Seeker turf rolls cutters,
- * jackals, ticks, and scavengers). When one is added, build it from this lore (Oct 2, 2026):
+ * TODO(seekers): Cloth-wrapped Seeker runners (hooked blades, hum) are not an encounter kind yet.
+ * Husks cover Seeker turf constructs. When runners are added, build them from this lore (Oct 2, 2026):
  *  - Cloth wrappings, hooked blades. They come in threes and fan out: one feints to test you,
  *    one circles wide, one hangs back with a pale hand raised and hums.
  *  - The hum shivers salt crystals and glass loose. Make it a real mechanic: it builds over rounds
@@ -116,7 +118,17 @@ export const OPENERS: Record<EncounterKind, string[]> = {
     'Nim levels the harpoon rifle from range. The barbed head points at your chest.',
     'He fires first and says nothing. The harpoon line is already in the air.',
   ],
+  husk: [
+    'An Amber Husk peels off the stone like a gargoyle waking. Calcified resin and bone, man-height and hunched. Under the rib plates a core of amber glows. It comes for you without a sound.',
+    'Deadman filaments snap along the rock. An Amber Husk unfolds from the wall — amber-hardened plates, fused limbs, a glowing heart under the cage. It does not stop.',
+    'A Spire construct blocks the road: an Amber Husk, resin and bone fused into plates, amber core burning under the ribs. It was built to harvest. Now it harvests you.',
+  ],
 }
+
+/** Appended when a Seeker controller walks the husk. */
+export const HUSK_CONTROLLER_LINE =
+  'A Seeker with an extractor blade stands behind it, fist on a siphon filament. Drop the Seeker or the husk can be re-charged once.'
+
 
 export const PAIR_LINE = 'A second dust-jackal circles behind you. While both stand, one bites at your flank.'
 
