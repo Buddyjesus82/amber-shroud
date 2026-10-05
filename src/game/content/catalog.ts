@@ -223,6 +223,15 @@ export const ITEMS: Record<ItemId, ItemDef> = {
     bag: 20,
     desc: 'A Cartel hauler frame with a canvas sack lashed to it. Carries 20.',
   },
+  seeker_extractor: {
+    id: 'seeker_extractor',
+    name: 'Seeker Extractor',
+    kind: 'weapon',
+    slot: 'weapon',
+    strike: 3,
+    perk: 'In an Amber Husk fight, once: Draw resin — take scrap and a little Sap without shattering the core, or cut the Seeker\'s siphon if one is walking the husk.',
+    desc: 'A thin Seeker blade forged to draw living heat and liquefy resin seals under husk plates without shattering the core. Main hand, Strike 3.',
+  },
 }
 
 export const DOORS: Record<string, DoorDef> = {

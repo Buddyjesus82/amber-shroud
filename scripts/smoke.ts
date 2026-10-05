@@ -36,7 +36,7 @@ import type { Cond, Scene } from '../src/game/types.ts'
 import { rollScavenge, SCAVENGE_SALVE_PCT, scavengeSalve } from '../src/game/scavenge.ts'
 import { kaelenOffers } from '../src/game/trade.ts'
 import { FIGHT_HELP_LINES, fightHelpAuto, fightHelpText, fightTopicMidFight, HELP_TOPICS, helpRoute, topicLines, isFightHelpAsk, markFightHelpSeen, topicListText, topicText } from '../src/game/helpTopics.ts'
-import { BEAST_KINDS, carriesSalve, HUMAN_KINDS, HUMAN_SALVE_PCT, beginEncounter, DAMAGE_FLOOR, encounterCard, encounterChoices, exchangeDamage, fightStartFlags, huskGround, pickEncounterKind, resolveEncounter, runChance, STALL_ROUNDS, swingOf } from '../src/game/encounter.ts'
+import { BEAST_KINDS, carriesSalve, EXTRACTOR_DROP_IN, EXTRACTOR_DUPE_IN, extractorDrop, HUMAN_KINDS, HUMAN_SALVE_PCT, beginEncounter, DAMAGE_FLOOR, encounterCard, encounterChoices, exchangeDamage, fightStartFlags, huskGround, pickEncounterKind, resolveEncounter, runChance, STALL_ROUNDS, swingOf } from '../src/game/encounter.ts'
 import {
   IDLE_DOOR,
   tapDoor,
@@ -2638,7 +2638,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v51'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v52'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -2660,7 +2660,7 @@ assert(css.includes('--story-top: min(calc(56.25cqi * var(--band-bot, 0.5)), 50c
 assert(css.includes('rgba(12, 7, 4, 0.58)'), 'story scrim stays translucent so cover art shows through')
 assert(!css.includes('rgba(12, 7, 4, 0.88)'), 'story scrim is lighter than the v32 slab')
 const playSrc = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
-assert(playSrc.includes('?v=51'), 'scene cover URLs are cache-busted with the service worker')
+assert(playSrc.includes('?v=52'), 'scene cover URLs are cache-busted with the service worker')
 assert(!css.includes('object-position: center 68%'), 'scene art no longer crops toward the ground')
 assert(!css.includes('height: 56px'), 'short phones no longer squash covers into a head-cropping strip')
 assert(css.includes('place-items: center'), 'game screen is centered on the backdrop')
@@ -4410,6 +4410,61 @@ function assertHelpResolves(s: GameState, where: string) {
   }
   assert(guardWins >= 1, `Guard/Feint can beat a husk (${guardWins}/25)`)
   assert(rushLosses >= 5, `naked rush often loses to a husk (${rushLosses}/25)`)
+}
+
+// Seeker Extractor: rare drop from a Seeker walking a husk; Draw resin perk.
+{
+  assert(ITEMS.seeker_extractor.strike === 3 && ITEMS.seeker_extractor.slot === 'weapon', 'Seeker Extractor is Main hand Strike 3')
+  assert(/living heat|liquefy resin|without shattering/i.test(ITEMS.seeker_extractor.desc), 'extractor lore matches Jeramie')
+  assert(EXTRACTOR_DROP_IN === 8 && EXTRACTOR_DUPE_IN === 40, 'drop is 1 in 8, dupe 1 in 40')
+  const alone = primedFight('vessel', 5, 'husk', { hp: 1 })
+  const soloFlags = { ...alone.flags, encounterController: false, encounterHp: 1 }
+  let soloDrop = false
+  for (let t = 0; t < 80; t++) {
+    const r = resolveEncounter({ ...alone, ticks: 200 + t, flags: { ...soloFlags } }, 'fight')
+    if ((r.fx.add?.seeker_extractor ?? 0) > 0) soloDrop = true
+  }
+  assert(!soloDrop, 'husk alone never drops a Seeker Extractor')
+  // Controller flag stays set after the Seeker is cut down; revive is already spent or Seeker is down.
+  const ctrl = {
+    ...alone,
+    flags: { ...alone.flags, encounterController: true, encounterControllerDown: true, encounterHp: 1 },
+  }
+  let drops = 0
+  for (let t = 0; t < 160; t++) {
+    const r = resolveEncounter({ ...ctrl, ticks: 300 + t, items: { ...ctrl.items }, flags: { ...ctrl.flags, encounterHp: 1 } }, 'fight')
+    if ((r.fx.add?.seeker_extractor ?? 0) > 0) drops++
+  }
+  assert(drops >= 8 && drops <= 40, `controller husk drops extractor ~1 in 8 (${drops}/160)`)
+  let dupes = 0
+  for (let t = 0; t < 200; t++) {
+    const owned = {
+      ...ctrl,
+      ticks: 500 + t,
+      items: { ...ctrl.items, seeker_extractor: 1 },
+      flags: { ...ctrl.flags, encounterHp: 1 },
+    }
+    const r = resolveEncounter(owned, 'fight')
+    if ((r.fx.add?.seeker_extractor ?? 0) > 0) dupes++
+  }
+  assert(dupes <= 12, `once owned, dupes are rare (${dupes}/200)`)
+  assert(!extractorDrop({ ...alone, flags: { ...alone.flags, encounterController: false } }, 'scavenger' as never).seeker_extractor, 'no extractor from non-husk fights')
+  // Draw resin choice and effects.
+  const held: GameState = {
+    ...primedFight('vessel', 7, 'husk', { hp: 3 }),
+    items: { ...primedFight('vessel', 7, 'husk', { hp: 3 }).items, seeker_extractor: 1 },
+    equipped: { weapon: 'seeker_extractor' },
+    flags: { ...primedFight('vessel', 7, 'husk', { hp: 3 }).flags, encounterController: true, encounterHp: 3 },
+  }
+  assert(encounterChoices(held).some((c) => c.id === 'enc-resin'), 'equipped extractor offers Draw resin')
+  const cut = resolveEncounter(held, 'resin')
+  assert(cut.fx.flag?.encounterControllerDown && cut.fx.flag?.encounterResinTried && !(cut.fx.add?.scrap), 'Draw resin vs live Seeker cuts the siphon')
+  const noCtrl: GameState = { ...held, flags: { ...held.flags, encounterController: false, encounterResinTried: false } }
+  const draw = resolveEncounter(noCtrl, 'resin')
+  assert((draw.fx.add?.scrap ?? 0) === 1 && draw.fx.sap === 1 && Number(draw.fx.flag?.encounterHp) === 3, 'Draw resin without Seeker takes scrap and Sap, husk lives')
+  assert(!encounterChoices({ ...held, flags: { ...held.flags, encounterResinTried: true } }).some((c) => c.id === 'enc-resin'), 'Draw resin is once per fight')
+  assert(/Draw resin|Seeker Extractor/.test(topicText(HELP_TOPICS.find((t) => t.id === 'fight')!)), 'fight help names Draw resin')
+  assert(/Seeker Extractor/.test(topicText(HELP_TOPICS.find((t) => t.id === 'gear')!)), 'gear help names the extractor perk')
 }
 
 console.log('OK', {
