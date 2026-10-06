@@ -124,7 +124,6 @@ export default function App() {
     const replay = view === 'replay'
     return (
       <IntroCards
-        doneLabel={replay ? 'Back to title' : 'Choose a door'}
         onDone={() => {
           refreshSaves()
           setView(replay ? 'title' : 'doors')

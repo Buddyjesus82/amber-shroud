@@ -38,12 +38,15 @@ export function TitleScreen({
   return (
     <div className="screen title-screen">
       <div className="title-hero">
-        <img src={`${import.meta.env.BASE_URL}covers/world.png`} alt="The Amber Shroud — three factions, one desert" />
+        <img className="title-fill" src={`${import.meta.env.BASE_URL}covers/world.jpg?v=58`} alt="" aria-hidden="true" />
         <div className="title-veil" />
+        <div className="title-art">
+          <img src={`${import.meta.env.BASE_URL}covers/world.jpg?v=58`} alt="The Amber Shroud — three factions, one desert" />
+        </div>
         <div className="title-copy">
           <p className="kicker">A desert of Drops, Glints, and bad religion</p>
           <h1>
-            The Amber
+            The Amber{' '}
             <br />
             Shroud
           </h1>

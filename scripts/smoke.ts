@@ -27,7 +27,7 @@ import { PEOPLE } from '../src/game/people.ts'
 import { PIKE_TALK, SARN_TALK, VETCH_TALK } from '../src/game/content/bayHands.ts'
 import { heatFactions } from '../src/game/heat.ts'
 import { RUMORS } from '../src/game/journal.ts'
-import { INTRO_CARDS } from '../src/game/intro.ts'
+import { INTRO_CARDS, INTRO_FADE_MS, introCardMs } from '../src/game/intro.ts'
 import { GLOBAL_INTENTS } from '../src/game/intent.ts'
 import { wakeEffect } from '../src/game/downed.ts'
 import { BRAND_LOOK } from '../src/game/brand.ts'
@@ -2639,7 +2639,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v57'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v58'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -2661,7 +2661,7 @@ assert(css.includes('--story-top: min(calc(56.25cqi * var(--band-bot, 0.5)), 50c
 assert(css.includes('rgba(12, 7, 4, 0.58)'), 'story scrim stays translucent so cover art shows through')
 assert(!css.includes('rgba(12, 7, 4, 0.88)'), 'story scrim is lighter than the v32 slab')
 const playSrc = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
-assert(playSrc.includes('?v=57'), 'scene cover URLs are cache-busted with the service worker')
+assert(playSrc.includes('?v=58'), 'scene cover URLs are cache-busted with the service worker')
 assert(!css.includes('object-position: center 68%'), 'scene art no longer crops toward the ground')
 assert(!css.includes('height: 56px'), 'short phones no longer squash covers into a head-cropping strip')
 assert(css.includes('place-items: center'), 'game screen is centered on the backdrop')
@@ -4483,7 +4483,9 @@ function assertHelpResolves(s: GameState, where: string) {
   const app = readFileSync('src/App.tsx', 'utf8')
   assert(app.includes("setView('intro')") && app.includes("setView(replay ? 'title' : 'doors')"), 'New game runs the intro, then the door choice')
   const intro = readFileSync('src/components/IntroCards.tsx', 'utf8')
-  assert(intro.includes('data-intro-skip') && intro.includes('data-intro-next'), 'intro has Skip and Next')
+  assert(intro.includes('data-intro-skip') && !intro.includes('data-intro-next') && !/>\s*Back\s*</.test(intro), 'intro auto-plays: Skip only, no Next or Back')
+  assert(intro.includes('data-intro-stage') && intro.includes('setPaused((p) => !p)'), 'tapping the intro pauses and resumes')
+  assert(intro.includes("document.visibilityState === 'hidden'"), 'intro does not advance while the app is in the background')
   assert(readFileSync('src/components/TitleScreen.tsx', 'utf8').includes('Watch the intro'), 'intro can be replayed from the title')
   const css = readFileSync('src/index.css', 'utf8')
   assert(/\.intro-art \.intro-img \{[^}]*object-fit: contain/.test(css), 'intro still is shown whole (contain), text sits below it')
@@ -4510,6 +4512,27 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(!/east-south|east and south|walk east, find me|ford when you walk east|walking east to the Maw|label: 'Hunger south'|Red Maw is (days )?south|Maw-country.{0,3}South|South is Maw-country|East is the Maw|Ossa is south\. I go west/.test(all), 'no old compass for the Maw roads')
   assert(/label: '← Red Maw, west'/.test(readFileSync('src/game/content/maps.ts', 'utf8')), 'Threshold map exit points west to Red Maw')
   assert(/days east/.test(HUBS.camp04.hungerHook!.sub ?? '') && /hard day south/.test(HUBS.spine.hungerHook!.sub ?? ''), 'Camp-04 road runs east, Spine road runs south')
+}
+
+// Intro cinematic timing + title art framing.
+{
+  for (const c of INTRO_CARDS) {
+    const ms = introCardMs(c)
+    assert(ms >= 8000 && ms <= 13000, `intro scene ${c.id} holds 8-13 s (${ms})`)
+  }
+  assert(introCardMs(INTRO_CARDS.find((c) => c.id === 'doors')!) > introCardMs(INTRO_CARDS.find((c) => c.id === 'cartel')!), 'longer text holds longer')
+  assert(INTRO_FADE_MS >= 800 && INTRO_FADE_MS <= 2500, 'scenes crossfade')
+  const css = readFileSync('src/index.css', 'utf8')
+  assert(/@media \(prefers-reduced-motion: reduce\)[\s\S]*\.intro-layer\.on \.intro-img[\s\S]*animation: none/.test(css), 'reduced motion: no pan or zoom')
+  for (const kf of ['intro-kb-in', 'intro-kb-out', 'intro-kb-in-right', 'intro-kb-out-left']) {
+    const body = css.slice(css.indexOf(`@keyframes ${kf} {`), css.indexOf('}\n}', css.indexOf(`@keyframes ${kf} {`)))
+    assert(/transform: scale\(1\)/.test(body) && !/scale\(1\.(1[0-9]|[2-9])/.test(body), `${kf} starts or ends on the whole picture and zooms 8% at most`)
+  }
+  // Title art: the whole picture full width (contain), no cover-crop of the scene, no baked-in title text.
+  assert(/\.title-art img \{[^}]*object-fit: contain/.test(css), 'title art is shown whole')
+  assert(!/\.title-hero img \{[^}]*object-fit: cover/.test(css), 'title art is not cover-cropped')
+  assert(readdirSync('public/covers').includes('world.jpg') && !readdirSync('public/covers').includes('world.png'), 'clean title art (world.jpg) replaces the lettered world.png')
+  assert(sw.includes('covers/world.jpg'), 'SW caches the clean title art')
 }
 
 console.log('OK', {
