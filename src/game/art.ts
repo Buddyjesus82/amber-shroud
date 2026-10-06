@@ -33,7 +33,7 @@ export type CoverKey =
   | 'jodi'
 
 const FILES: Record<CoverKey, string> = {
-  world: 'world.png',
+  world: 'world.jpg',
   hunger: 'hunger.png',
   camp04: 'camp04.jpg',
   spine: 'spine.jpg',

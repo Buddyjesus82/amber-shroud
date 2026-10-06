@@ -58,3 +58,14 @@ export const INTRO_CARDS: IntroCard[] = [
     text: 'Pick where you wake. Prisoner: Camp-04, the longest road. Outcast: the Bleached Spine, north. Vessel: the Outer Threshold, where the Seekers send you to Red Maw to bring back what opens the Spire. All three roads meet at Red Maw before the Spire.',
   },
 ]
+
+/** Crossfade between scenes, ms. */
+export const INTRO_FADE_MS = 1400
+
+/**
+ * How long a scene plays before it crossfades to the next, ms. About 8.5-13 s:
+ * enough to read the card comfortably, longer for longer text.
+ */
+export function introCardMs(card: IntroCard): number {
+  return Math.round(Math.min(13000, Math.max(8500, 4000 + card.text.length * 34)))
+}
