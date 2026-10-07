@@ -117,7 +117,7 @@ export const GLOBAL_INTENTS: IntentRule[] = [
   },
   {
     tags: ['inventory', 'pack', 'pocket', 'items', 'gear', 'kit'],
-    reply: 'Everything you carry is in Gear, in four tabs: Worn, Consumables, Scrap & trade, and Key items. Tap a piece to equip it. Your bag holds a set number of things; key items, coin, and worn gear ride free. Type look at my gear for a quick count.',
+    reply: 'Everything you carry is in Gear, in four tabs: Worn, Consumables, Scrap & trade, and Key items. Tap a piece to equip it. Your bag has a set number of slots: a stack of small goods is one slot, each spare weapon or wearable is one; key items, coin, and worn gear ride free. Type look at my gear for a quick count.',
     effects: {},
   },
   {

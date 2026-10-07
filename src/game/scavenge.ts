@@ -91,7 +91,7 @@ const EXTRA_LINES: Partial<Record<ItemId, string>> = {
   scrap_buckler: ' A riveted hubcap with a strap on the back. A Scrap Buckler.',
   sinew_cord: ' A coil of Sinew Cord. Good for stitching.',
   ceremonial_cloth: ' Folded under a stone: a Vessel Cloth, gold thread and all. Somebody walked as a cup out here and stopped.',
-  hauler_pack: ' A Hauler Pack, a Cartel frame with the sack still lashed on. It carries 20.',
+  hauler_pack: ' A Hauler Pack, a Cartel frame with the sack still lashed on. It has 20 bag slots.',
 }
 
 export function scavengeExtra(state: GameState): ItemId | null {

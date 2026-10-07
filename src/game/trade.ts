@@ -1,4 +1,4 @@
-import { wornCount } from './kit'
+import { bagCap, bagFits, bagLoad, wornCount } from './kit'
 import { ITEMS } from './content/catalog'
 import type { Choice, Cond, DoorId, Effect, FlagMap, GameState, ItemId } from './types'
 
@@ -81,7 +81,7 @@ const KAELEN_STOCK: StockOffer[] = [
     id: 'hauler',
     item: 'hauler_pack',
     label: 'Buy a Hauler Pack',
-    sub: 'A bigger bag. Carries 20. Pay 2 Glints or 4 scrap.',
+    sub: 'A bigger bag: 20 slots. Pay 2 Glints or 4 scrap.',
     cost: { glints: 2, scrap: 4 },
     doors: ['prisoner'],
     onceFlag: 'kaelenSoldHauler',
@@ -214,7 +214,7 @@ const SILAS_STOCK: StockOffer[] = [
     id: 'hauler',
     item: 'hauler_pack',
     label: 'Buy a Hauler Pack',
-    sub: 'A bigger bag. Carries 20. Pay 2 Glints or 4 scrap.',
+    sub: 'A bigger bag: 20 slots. Pay 2 Glints or 4 scrap.',
     cost: { glints: 2, scrap: 4 },
     doors: ['outcast'],
     onceFlag: 'silasSoldHauler',
@@ -368,7 +368,7 @@ const VENDORS: Vendor[] = [
       id: 'hauler',
       item: 'hauler_pack',
       label: 'Buy a Hauler Pack',
-      sub: 'A bigger bag. Carries 20. Pay 2 Glints or 4 scrap.',
+      sub: 'A bigger bag: 20 slots. Pay 2 Glints or 4 scrap.',
       cost: { glints: 2, scrap: 4 },
       doors: ['vessel'],
       onceFlag: 'zafirSoldHauler',
@@ -500,6 +500,23 @@ function offerLabel(offer: StockOffer, cost: Money): string {
   return `${base} — ${moneyLabel(cost)}`
 }
 
+/** Never true: a row locked for a reason the Cond language cannot say (a full bag). */
+const NEVER: Cond = { not: {} }
+
+/** Does the bought piece fit, after paying? More of a stack you carry always fits. */
+export function buyFits(state: GameState, offer: Pick<StockOffer, 'item' | 'extraRemove'>, cost: Money): boolean {
+  const pay = pickPay(state, cost) ?? {}
+  const remove: Partial<Record<ItemId, number>> = { ...pay }
+  if (pay.glints && offer.extraRemove) {
+    for (const id of Object.keys(offer.extraRemove) as ItemId[]) remove[id] = (remove[id] ?? 0) + (offer.extraRemove[id] ?? 0)
+  }
+  return bagFits(state, { [offer.item]: 1 }, remove)
+}
+
+export function bagFullNote(state: GameState): string {
+  return `Bag full (${bagLoad(state)}/${bagCap(state)} slots). Drop something to free a slot`
+}
+
 function buyRows(state: GameState, vendor: Vendor): Choice[] {
   const rows: Choice[] = []
   for (const offer of offersFor(state, vendor)) {
@@ -513,8 +530,8 @@ function buyRows(state: GameState, vendor: Vendor): Choice[] {
         label: offerLabel(offer, opt.cost),
         sub: offer.sub,
         group: 'buy',
-        enable: moneyCond(opt.cost),
-        locked: `Need ${moneyLabel(opt.cost)}`,
+        enable: canPay(state, opt.cost) && !buyFits(state, offer, opt.cost) ? NEVER : moneyCond(opt.cost),
+        locked: canPay(state, opt.cost) && !buyFits(state, offer, opt.cost) ? bagFullNote(state) : `Need ${moneyLabel(opt.cost)}`,
         effects: {
           pay: opt.cost,
           payGlintRemove: opt.cost.glints ? offer.extraRemove : undefined,
@@ -697,6 +714,9 @@ export function matchShopText(state: GameState, text: string): { effects: Effect
       }
       if (canG) cost = { glints: named.cost.glints }
       else if (canS) cost = { scrap: named.cost.scrap }
+    }
+    if (cost && canPay(state, cost) && !buyFits(state, named, cost)) {
+      return { effects: { flag: { shopShelf: 'buy' }, flash: `${bagFullNote(state)} first.` }, verb: 'buy' }
     }
     if (cost && canPay(state, cost)) {
       const flag = knownFlag(vendor, state.sceneId, named.extraFlag)

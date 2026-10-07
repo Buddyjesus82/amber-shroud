@@ -214,14 +214,14 @@ export const ITEMS: Record<ItemId, ItemDef> = {
     name: 'Scav Pack',
     kind: 'key',
     bag: 14,
-    desc: 'A stitched canvas pack with a cord strap. Carries 14.',
+    desc: 'A stitched canvas pack with a cord strap. 14 bag slots.',
   },
   hauler_pack: {
     id: 'hauler_pack',
     name: 'Hauler Pack',
     kind: 'key',
     bag: 20,
-    desc: 'A Cartel hauler frame with a canvas sack lashed to it. Carries 20.',
+    desc: 'A Cartel hauler frame with a canvas sack lashed to it. 20 bag slots.',
   },
   seeker_extractor: {
     id: 'seeker_extractor',

@@ -35,7 +35,7 @@ import { FIRST_DROP_DONE, FIRST_DROP_GOAL } from '../src/game/firstDrop.ts'
 import { AMBER_WARM, HANDS_LOOK, HOLLOW_PULL, SAND_DOWN, SAND_LOW, SAND_SIGN_FLAGS, SAND_TOUCH, sandGround, sandSignsSeen } from '../src/game/sandSign.ts'
 import type { Cond, Scene } from '../src/game/types.ts'
 import { rollScavenge, SCAVENGE_SALVE_PCT, scavengeSalve } from '../src/game/scavenge.ts'
-import { kaelenOffers } from '../src/game/trade.ts'
+import { buyFits, kaelenOffers } from '../src/game/trade.ts'
 import { FIGHT_HELP_LINES, fightHelpAuto, fightHelpText, fightTopicMidFight, HELP_TOPICS, helpRoute, topicLines, isFightHelpAsk, markFightHelpSeen, topicListText, topicText } from '../src/game/helpTopics.ts'
 import { BEAST_KINDS, carriesSalve, EXTRACTOR_DROP_IN, EXTRACTOR_DUPE_IN, extractorDrop, HUMAN_KINDS, HUMAN_SALVE_PCT, beginEncounter, DAMAGE_FLOOR, encounterCard, encounterChoices, exchangeDamage, fightStartFlags, huskGround, pickEncounterKind, resolveEncounter, runChance, STALL_ROUNDS, swingOf } from '../src/game/encounter.ts'
 import {
@@ -45,7 +45,7 @@ import {
   tapOverwriteConfirm,
   tapResume,
 } from '../src/game/doorPick.ts'
-import type { DoorId, GameState } from '../src/game/types.ts'
+import type { DoorId, GameState, ItemId } from '../src/game/types.ts'
 import { COVER_BAND, playCoverFile, playCoverKey } from '../src/game/art.ts'
 import { helpEntries, helpText } from '../src/game/help.ts'
 import { equippedShell } from '../src/game/kit.ts'
@@ -2662,7 +2662,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v64'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v65'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -2684,7 +2684,7 @@ assert(css.includes('--story-top: min(calc(56.25cqi * var(--band-bot, 0.5)), 50c
 assert(css.includes('rgba(12, 7, 4, 0.58)'), 'story scrim stays translucent so cover art shows through')
 assert(!css.includes('rgba(12, 7, 4, 0.88)'), 'story scrim is lighter than the v32 slab')
 const playSrc = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
-assert(playSrc.includes('?v=64'), 'scene cover URLs are cache-busted with the service worker')
+assert(playSrc.includes('?v=65'), 'scene cover URLs are cache-busted with the service worker')
 assert(!css.includes('object-position: center 68%'), 'scene art no longer crops toward the ground')
 assert(!css.includes('height: 56px'), 'short phones no longer squash covers into a head-cropping strip')
 assert(css.includes('place-items: center'), 'game screen is centered on the backdrop')
@@ -4169,22 +4169,69 @@ function assertHelpResolves(s: GameState, where: string) {
   const pulledBare = applyEffect(latched, { resolveEncounter: 'pull', ticks: 1 })
   const pulledGloved = applyEffect(gloved, { resolveEncounter: 'pull', ticks: 1 })
   assert(Number(pulledGloved.flags.encounterHp ?? 0) < Number(pulledBare.flags.encounterHp ?? 3) || !pulledGloved.flags.encounterHere, 'Hide Gloves: pulling the tick also hits it')
-  // bag
+  // bag: capacity counts SLOTS. A stack of small goods is one slot; each spare weapon or wearable is one; worn gear rides free.
   const b0 = newGame('prisoner')
-  assert(GK.bagCap(b0) === 10, 'bag carries 10')
-  assert(GK.bagFree('ossa_token' as never) || GK.bagFree('glint' as never) || true, 'free items exist')
-  const full: GameState = { ...b0, items: { ...b0.items, scrap: 10 - GK.bagLoad({ ...b0, items: { ...b0.items, scrap: 0 } }) } }
-  assert(GK.bagLoad(full) === 10, 'test bag is exactly full')
-  const over = GK.fitBag(full, { ...full, items: { ...full.items, vial_drop: (full.items.vial_drop ?? 0) + 1 }, flash: 'You find a Drop.' })
-  assert(GK.bagLoad(over) === 10 && /Your bag is full/.test(over.flash ?? '') && /vial_drop:1/.test(String(over.flags.bagHeld)), 'full bag holds the new find with a message')
+  assert(GK.bagCap(b0) === 10, 'bag has 10 slots')
+  const bagBare: GameState = { ...b0, items: {}, equipped: {} as GameState['equipped'], flags: { ...b0.flags } }
+  delete bagBare.flags.bagHeld
+  const withItems = (items: GameState['items'], equipped: GameState['equipped'] = {} as GameState['equipped']): GameState => ({ ...bagBare, items, equipped })
+  assert(GK.bagLoad(withItems({ vial_drop: 6 })) === 1, '6 Drops count as 1 slot')
+  assert(GK.bagLoad(withItems({ shiv: 1, wrench: 1 })) === 2, '2 different weapons count as 2 slots')
+  assert(GK.bagLoad(withItems({ shiv: 2 })) === 2, 'two of the same weapon do not stack')
+  assert(GK.bagLoad(withItems({ head_wrap: 1, hide_wrap: 1, scrap_buckler: 1 })) === 3, 'armor and wearables never stack')
+  assert(GK.bagLoad(withItems({ shiv: 1 }, { weapon: 'shiv' } as GameState['equipped'])) === 0, 'worn gear rides free')
+  assert(GK.bagLoad(withItems({ shiv: 2 }, { weapon: 'shiv' } as GameState['equipped'])) === 1, 'a spare of a worn weapon takes a slot')
+  assert(GK.bagLoad(withItems({ vial_drop: 3, salve: 4, scrap: 9, sinew_cord: 2 })) === 4, 'Drops, salves, scrap, and cord each stack into one slot')
+  assert(GK.bagLoad(withItems({ glints: 12, scrip: 3, cache_map: 1, vial_empty: 4, scav_pack: 1, hauler_pack: 1, ossa_token: 1 })) === 0, 'coin, key items, empty vials, and bags ride free')
+  const STACKS: ItemId[] = ['vial_drop', 'salve', 'scrap', 'sinew_cord']
+  for (const id of Object.keys(ITEMS) as ItemId[]) {
+    if (GK.bagFree(id)) continue
+    assert(GK.bagStacks(id) === STACKS.includes(id), `${id} stacks only if it is a small good`)
+    if (ITEMS[id].slot) assert(!GK.bagStacks(id), `${id} is wearable, so it never stacks`)
+  }
+  const full = withItems({ vial_drop: 2, scrap: 5, rusted_dagger: 4, needle_knife: 4 })
+  assert(GK.bagLoad(full) === 10, 'test bag is exactly full (2 stacks + 8 blades)')
+  assert(GK.bagLine(full) === 'Bag 10/10 slots', 'bag counter reads in slots')
+  const more = GK.fitBag(full, { ...full, items: { ...full.items, vial_drop: 5 }, flash: 'You find Drops.' })
+  assert(more.items.vial_drop === 5 && !more.flags.bagHeld && GK.bagLoad(more) === 10, 'a full bag still accepts more of a stack it already has')
+  const over = GK.fitBag(full, { ...full, items: { ...full.items, salve: 2 }, flash: 'You find salve.' })
+  assert(!over.items.salve && GK.bagLoad(over) === 10 && /Your bag is full \(10\/10 slots\)/.test(over.flash ?? '') && /salve:2/.test(String(over.flags.bagHeld)), 'a full bag refuses a new item type, holding the whole stack')
+  const blade = GK.fitBag(full, { ...full, items: { ...full.items, shiv: 1 } })
+  assert(!blade.items.shiv && /shiv:1/.test(String(blade.flags.bagHeld)), 'a full bag refuses a new weapon')
+  const moreBlade = GK.fitBag(full, { ...full, items: { ...full.items, needle_knife: 5 } })
+  assert(moreBlade.items.needle_knife === 4 && /needle_knife:1/.test(String(moreBlade.flags.bagHeld)), 'another copy of a carried weapon still needs its own slot')
+  assert(GK.bagFits(full, { scrap: 3 }) && !GK.bagFits(full, { salve: 1 }) && GK.bagFits(full, { salve: 1 }, { scrap: 5 }), 'bagFits: more of a stack fits; a new type needs a freed slot')
+  assert(GK.bagFits(full, { hauler_pack: 1 }), 'a bag always fits (it rides free)')
   const rows = visibleChoices(over).map((c) => c.id)
-  assert(rows.includes('bag-drop-scrap') && rows.includes('bag-leave'), 'full bag offers drop and leave')
+  assert(rows.includes('bag-drop-scrap') && rows.includes('bag-drop-rusted_dagger') && rows.includes('bag-leave'), 'full bag offers drop and leave')
+  assert(/Drop all 5 Scrap/.test(visibleChoices(over).find((c) => c.id === 'bag-drop-scrap')?.label ?? ''), 'dropping a stack to free a slot drops the whole stack')
   const swapped = pick(over, 'bag-drop-scrap')
-  assert((swapped.items.scrap ?? 0) === (full.items.scrap ?? 0) - 1 && (swapped.items.vial_drop ?? 0) === (full.items.vial_drop ?? 0) + 1 && !swapped.flags.bagHeld, 'drop 1 scrap takes the held Drop')
+  assert(!(swapped.items.scrap ?? 0) && swapped.items.salve === 2 && !swapped.flags.bagHeld && GK.bagLoad(swapped) === 10, 'dropping the scrap stack takes the held salve')
+  const swapped2 = pick(over, 'bag-drop-rusted_dagger')
+  assert(swapped2.items.rusted_dagger === 3 && swapped2.items.salve === 2 && !swapped2.flags.bagHeld, 'dropping one dagger takes the held salve')
   const left = pick(over, 'bag-leave')
   assert(!left.flags.bagHeld && GK.bagLoad(left) === 10, 'leave it clears the held find')
   const walked = applyEffect(over, { goto: 'camp:lean' })
   assert(!walked.flags.bagHeld, 'walking away leaves the held find')
+  const dropAll = GE.dropStack(full, 'scrap')
+  assert(!(dropAll.items.scrap ?? 0) && GK.bagLoad(dropAll) === 9, 'Drop all frees the stack slot')
+  // Old saves: unit counts collapse into slots; an over-cap bag keeps everything but takes nothing new.
+  const oldFull = withItems({ scrap: 7, vial_drop: 3 })
+  assert(GK.bagLoad(oldFull) === 2, 'an old save that was full by count now has free slots')
+  const oldOver = withItems({ rusted_dagger: 6, needle_knife: 6 })
+  const loadedOver = repairLoadedState(oldOver)
+  assert(loadedOver.items.rusted_dagger === 6 && loadedOver.items.needle_knife === 6 && GK.bagLoad(loadedOver) === 12, 'an over-cap old save loads with nothing deleted')
+  const overFind = GK.fitBag(loadedOver, { ...loadedOver, items: { ...loadedOver.items, vial_drop: 1 } })
+  assert(!overFind.items.vial_drop && overFind.items.rusted_dagger === 6 && /vial_drop:1/.test(String(overFind.flags.bagHeld)), 'an over-cap bag blocks new pickups')
+  const lighter = applyEffect(loadedOver, { remove: { rusted_dagger: 1 } })
+  const stillOver = GK.fitBag(lighter, { ...lighter, items: { ...lighter.items, salve: 1 } })
+  assert(!stillOver.items.salve && GK.bagLoad(stillOver) === 11, 'still over the cap after one drop: still blocked')
+  const freed = withItems({ rusted_dagger: 4, needle_knife: 5 })
+  assert(GK.fitBag(freed, { ...freed, items: { ...freed.items, salve: 1 } }).items.salve === 1, 'once slots free up, pickups work again')
+  // Buying: a full bag locks the buy instead of taking the money.
+  assert(!buyFits({ ...full, items: { ...full.items, glints: 3 } }, { item: 'salve' }, { glints: 1 }), 'a full bag cannot buy a new item type')
+  assert(buyFits({ ...full, items: { ...full.items, glints: 3 } }, { item: 'vial_drop' }, { glints: 1 }), 'a full bag can buy more of a stack it carries')
+  assert(buyFits(full, { item: 'salve' }, { scrap: 5 }), 'paying with the whole scrap stack frees the slot for the buy')
   assert(GK.bagLoad({ ...full, items: { ...full.items, scav_pack: 1, hauler_pack: 1 } }) === 10, 'bags and key items ride free')
   // craft
   const noCord = GE.craftScavPack({ ...b0, items: { ...b0.items, scrap: 3 } })
@@ -4193,7 +4240,7 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(made.items.scav_pack === 1 && !(made.items.sinew_cord ?? 0) && GK.bagCap(made) === 14, 'Scav Pack crafted, bag carries 14')
   assert(interpret({ ...b0, items: { ...b0.items, scrap: 3, sinew_cord: 1 } }, 'craft pack').items.scav_pack === 1, 'typed craft pack stitches it')
   assert(GK.bagCap({ ...b0, items: { ...b0.items, hauler_pack: 1, scav_pack: 1 } }) === 20, 'Hauler Pack carries 20')
-  assert(/Bag \d+\/10/.test(interpret(b0, 'look at my gear').flash ?? ''), 'look at my gear shows the bag')
+  assert(/Bag \d+\/10 slots/.test(interpret(b0, 'look at my gear').flash ?? ''), 'look at my gear shows the bag in slots')
   // scavenge extras and Kaelen
   assert(GS.GEAR_FIND_PIECES.length === 4 && GS.CLOTH_FIND_PCT > 0 && GS.HAULER_FIND_PCT > 0 && GS.CORD_FIND_PCT > 0, 'scavenge has gear, cord, cloth, and hauler finds')
   // Kaelen is a Prisoner NPC: the Hauler Pack and Vessel Cloth come from him only in that door.
