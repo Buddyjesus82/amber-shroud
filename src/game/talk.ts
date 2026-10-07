@@ -516,7 +516,7 @@ const jodi: IntentRule[] = [
   {
     tags: TRADE,
     show: { flagUnset: 'jodiTook' },
-    reply: '"Two scrap for the Drop. One Glint for the salve. The rats set the prices."',
+    reply: '"Two scrap for the Drop. One Glint for the salve. The rats set the prices. The girls check the change."',
     effects: { ticks: 1 },
   },
   {
@@ -527,7 +527,7 @@ const jodi: IntentRule[] = [
   },
   {
     tags: THREAT,
-    reply: 'The snake lifts its head off her shoulder. Jodi grins at you with black lips and waits.',
+    reply: 'The snake lifts its head off her shoulder. Jodi thumbs the stopper half out of the spider jar, grins at you with black lips, and waits.',
     effects: { heat: { strays: 1 }, pressure: 1, ticks: 1 },
   },
 ]

@@ -1469,8 +1469,9 @@ assert(fought.flags.encounterHere && fought.flags.encounterDone, 'win holds the 
 assert((fought.items.scrap ?? 0) >= 2, 'winning a jackal yields saleable scrap')
 assert(fought.health < 6, 'Health takes the incoming hit, not Sap')
 assert(fought.sap === 6, 'Sap is unchanged by a win')
-assert(/You Strike 2\+[0-2] vs their Shell 1 → [1-9]/.test(bodyOf(fought)), 'fight result shows your compare line with the swing')
-assert(/Their Strike 2\+[0-2] vs your Shell 0 → [1-9]/.test(bodyOf(fought)), `fight result shows their compare line with the swing: ${bodyOf(fought)}`)
+assert(/You hit the [^\n]+ for [1-9]/.test(bodyOf(fought)), 'fight result says plainly what you hit for')
+assert(/The [^\n]+ hits you for [1-9]/.test(bodyOf(fought)), `fight result says plainly what they hit you for: ${bodyOf(fought)}`)
+assert(!/→|vs their Shell \d+ →|Strike \d+\+\d+/.test(bodyOf(fought)), 'fight result has no maths')
 assert(!bodyOf(fought).includes('cooked resin'), 'outcome card does not bleed Yard prose')
 assert(!(fought.flash ?? '').includes('Strike'), 'compares live on the card, not a stacked flash')
 const foughtOn = pick(fought, 'enc-continue')
@@ -1508,8 +1509,8 @@ assert(/You Strike 2 vs their Shell 2/.test(bodyOf(s)), 'Vessel dagger vs pup Sh
   assert((loss.items.glints ?? 0) === beforeGlints, 'lose compare does not pay Glints')
   assert(loss.health === Math.max(0, 6 - (4 + inSwing)), `Shard-pup Strike 4+${inSwing} vs Shell 0 takes ${4 + inSwing} Health; cloth is not armor`)
   if (!loss.flags.downed) {
-    assert(new RegExp(`You Strike 2\\+${outSwing} vs their Shell 2 → ${Math.max(1, outSwing)}`).test(bodyOf(loss)), `Fight body is the compare with the swing (out ${outSwing} in ${inSwing}): ${bodyOf(loss).slice(0, 200)}`)
-    assert(new RegExp(`Their Strike 4\\+${inSwing} vs your Shell 0 → ${4 + inSwing}`).test(bodyOf(loss)), 'incoming compare is on the card')
+    assert(new RegExp(`You hit [^\\n]+ for ${Math.max(1, outSwing)}[ .]`).test(bodyOf(loss)), `Fight body says what you hit for (out ${outSwing} in ${inSwing}): ${bodyOf(loss).slice(0, 200)}`)
+    assert(new RegExp(`hits you for ${4 + inSwing}[ .]`).test(bodyOf(loss)), 'Fight body says what they hit you for')
   }
   let drop = loss
   for (let i = 0; i < 6 && drop.flags.encounterHere && !drop.flags.encounterDone && !drop.flags.downed; i++) drop = pick(drop, 'enc-fight')
@@ -2662,7 +2663,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v65'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v66'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -2684,7 +2685,7 @@ assert(css.includes('--story-top: min(calc(56.25cqi * var(--band-bot, 0.5)), 50c
 assert(css.includes('rgba(12, 7, 4, 0.58)'), 'story scrim stays translucent so cover art shows through')
 assert(!css.includes('rgba(12, 7, 4, 0.88)'), 'story scrim is lighter than the v32 slab')
 const playSrc = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
-assert(playSrc.includes('?v=65'), 'scene cover URLs are cache-busted with the service worker')
+assert(playSrc.includes('?v=66'), 'scene cover URLs are cache-busted with the service worker')
 assert(!css.includes('object-position: center 68%'), 'scene art no longer crops toward the ground')
 assert(!css.includes('height: 56px'), 'short phones no longer squash covers into a head-cropping strip')
 assert(css.includes('place-items: center'), 'game screen is centered on the backdrop')
@@ -3233,8 +3234,8 @@ function assertHelpResolves(s: GameState, where: string) {
       rounds++
       const card = String(f.flags.encounterClash ?? '')
       if (f.flags.encounterHere) {
-        assert(/You Strike 1\+[0-2] vs their Shell 2 → [1-9]/.test(card), `round log shows the swing (${card.slice(0, 80)})`)
-        assert(/Their Strike 3\+[0-2] vs your Shell 3 → [1-9]/.test(card), 'their line shows the swing')
+        assert(/You hit [^\n]+ for [1-9]/.test(card), `round log says what you hit for (${card.slice(0, 80)})`)
+        assert(/hits you for [1-9]/.test(card), 'round log says what they hit you for')
       }
       if (!f.flags.encounterDone && f.flags.encounterHere) {
         assert(Number(f.flags.encounterHp) < lastHp && f.health < lastHealth, 'both sides lose at least 1 Health every round')
@@ -3515,6 +3516,10 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(kDrop.flags.hungerKnown && kDrop.flags.sybellaNamed && (kDrop.items.kallik_mark ?? 0) === 1, 'Korvan trades a Drop for the Hunger lead')
   const kHound = pick(applyEffect(kor, { add: { scrap: 1 } }), 'hound')
   assert(kHound.flags.korvanHoundRumor && /Corvin/.test(kHound.flash ?? '') && ids(kHound).includes('hound-walk'), 'Korvan sells the east wash lead and names Corvin')
+  const kFresh = { ...kHound, sap: 6, flags: { ...kHound.flags, encounterAt: 99999 } }
+  const washed = pick(kFresh, 'hound-walk')
+  assert(washed.sceneId === 'spine:hound' && !/No road/.test(washed.flash ?? ''), `Walk the east wash really walks there: ${washed.sceneId} ${washed.flash}`)
+  assert(washed.sap === 4, `the east wash costs 2 Sap (${kFresh.sap} → ${washed.sap})`)
   const kTook = pick(kor, 'take')
   assert(kTook.flags.korvanTook && kTook.flags.strayNotice && !ids(kTook).includes('hunger-scrap'), 'taking from Korvan wakes the Strays and closes his trade')
   const mira = pick(pick(shade, 'walk-mira'), 'sit')
@@ -3860,12 +3865,15 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(!isChoiceOn(midFight, feintRow.enable) && /already set/.test(String(feintRow.locked)), 'feint locks with a reason')
   assert(!isChoiceOn(midFight, trickRow.enable) && /Already used/.test(String(trickRow.locked)), 'sand trick locks with a reason')
 
+  // A crit is its own line under the hit it doubled: "Critical Strike! 6".
+  const CRIT_YOU = /^You hit [^\n]*\n\nCritical Strike! \d+/m
+  const CRIT_THEM = /hits you for [^\n]*\n\nCritical Strike! \d+/
   // Guard takes 2 off, 1 off against Valerius; you do not hit.
   for (let t = 0; t < 30; t++) {
     const s = fv('prisoner', t, 'cutter')
     const plain = resolveEncounter(s, 'fight').fx
     const guard = resolveEncounter(s, 'guard').fx
-    if (/Critical hit against/.test(String(plain.flag?.encounterClash ?? ''))) continue
+    if (CRIT_THEM.test(String(plain.flag?.encounterClash ?? ''))) continue
     const pin = -(plain.health ?? 0)
     assert(-(guard.health ?? 0) === Math.max(0, pin - 2), 'Guard takes 2 off the hit')
     assert(guard.flag?.encounterHp === 3, 'Guard does not hit back')
@@ -3874,13 +3882,14 @@ function assertHelpResolves(s: GameState, where: string) {
     const s = fv('prisoner', t, 'overseer')
     const a = resolveEncounter(s, 'fight').fx
     const b = resolveEncounter(s, 'guard').fx
-    if (/Critical hit against/.test(String(a.flag?.encounterClash ?? '')) || a.flag == null || b.flag == null) continue
+    if (CRIT_THEM.test(String(a.flag?.encounterClash ?? '')) || a.flag == null || b.flag == null) continue
     assert(-(b.health ?? 0) === Math.max(0, -(a.health ?? 0) - 1), 'Valerius: Guard takes only 1 off')
   }
   // Feint: 1 lighter now, +2 swing next.
   const feinted = go(fv('vessel', 4, 'cutter'), 'feint')
   assert(feinted.flags.encounterFeint === true, 'feint sets up the next strike')
-  assert(/swing \+2/i.test(bodyOf(go({ ...feinted, health: 6 }, 'fight'))), 'the next Fight says the feint paid off')
+  assert(/You hit [^\n]+ for \d+ \([^)]*feint \+2/.test(bodyOf(go({ ...feinted, health: 6 }, 'fight'))), 'the next Fight names the feint in brackets')
+  assert(/the [^\n]+ hits you for \d+ \([^)]*feint −1|misses you \([^)]*feint −1/i.test(bodyOf(feinted)), `the feint round names the lighter hit: ${bodyOf(feinted).slice(0, 200)}`)
 
   // Crits about 1 in 10, both sides, with their own log line.
   let critYou = 0
@@ -3888,17 +3897,21 @@ function assertHelpResolves(s: GameState, where: string) {
   let critPup = 0
   for (let t = 0; t < 400; t++) {
     const card = String(resolveEncounter(fv('prisoner', t, 'cutter', {}, 20), 'fight').fx.flag?.encounterClash ?? '')
-    if (/Critical hit\. Yours/.test(card)) critYou++
-    if (/Critical hit against you/.test(card)) critThem++
+    if (CRIT_YOU.test(card)) {
+      critYou++
+      const m = card.match(/^You hit [^\n]* for (\d+)[^\n]*\n\nCritical Strike! (\d+)/m)!
+      assert(Number(m[2]) === 2 * Number(m[1]), `the crit line shows the doubled hit: ${card.slice(0, 120)}`)
+    }
+    if (CRIT_THEM.test(card)) critThem++
     const pup = String(resolveEncounter(fv('prisoner', t, 'pup', {}, 20), 'fight').fx.flag?.encounterClash ?? '')
-    if (/Critical hit against you/.test(pup)) critPup++
+    if (CRIT_THEM.test(pup)) critPup++
   }
   assert(critYou > 15 && critYou < 70, `your crits near 1 in 10 (${critYou}/400)`)
   assert(critThem > 15 && critThem < 70, `their crits near 1 in 10 (${critThem}/400)`)
   assert(critPup > critThem, `the Shard-pup crits more often (${critPup} vs ${critThem})`)
   for (let t = 0; t < 200; t++) {
     const r = resolveEncounter(fv('prisoner', t, 'cutter', {}, 20), 'fight').fx
-    if (/Critical hit against you/.test(String(r.flag?.encounterClash ?? ''))) assert(6 + (r.health ?? 0) > 0, 'a crit never drops you from full Health in one exchange')
+    if (CRIT_THEM.test(String(r.flag?.encounterClash ?? ''))) assert(6 + (r.health ?? 0) > 0, 'a crit never drops you from full Health in one exchange')
   }
 
   // Ground: named on the card and moves the numbers.
@@ -3940,7 +3953,7 @@ function assertHelpResolves(s: GameState, where: string) {
 
   // Dust-jackal pair flanks for +1 while both stand.
   let flank = false
-  for (let t = 0; t < 20 && !flank; t++) flank = /second jackal bites/.test(bodyOf(go(fv('prisoner', t, 'jackal', { encounterPair: true }, 2), 'fight')))
+  for (let t = 0; t < 20 && !flank; t++) flank = /\(second jackal \+1\)/.test(bodyOf(go(fv('prisoner', t, 'jackal', { encounterPair: true }, 2), 'fight')))
   assert(flank, 'the jackal pair flanks')
 
   // Scavenger snatch, return on a kill, escape otherwise, and the deal.
@@ -3975,7 +3988,7 @@ function assertHelpResolves(s: GameState, where: string) {
   let shocked = false
   for (let t = 0; t < 40 && !shocked; t++) shocked = resolveEncounter(fv('prisoner', t, 'patrol', {}, 9), 'fight').fx.flag?.encounterShocked === true
   assert(shocked, 'the patrol baton can numb your arm')
-  assert(/numb from the baton\. Swing 0/.test(String(resolveEncounter(fv('prisoner', 1, 'patrol', { encounterShocked: true }, 9), 'fight').fx.flag?.encounterClash ?? '')), 'a numb arm swings 0')
+  assert(/\(numb arm\)/.test(String(resolveEncounter(fv('prisoner', 1, 'patrol', { encounterShocked: true }, 9), 'fight').fx.flag?.encounterClash ?? '')), 'a numb arm swings 0')
 
   // Carapace hunter harpoon pins you.
   const harp = resolveEncounter(fv('outcast', 1, 'carapace', {}, 9), 'guard').fx
@@ -3986,7 +3999,7 @@ function assertHelpResolves(s: GameState, where: string) {
 
   // Handler: a failed run lets the hound bite.
   let houndBite = false
-  for (let t = 0; t < 40 && !houndBite; t++) houndBite = /hound gets a bite/.test(bodyOf(go(fv('prisoner', t, 'handler', {}, 9), 'run')))
+  for (let t = 0; t < 40 && !houndBite; t++) houndBite = /hound bite \+1/.test(bodyOf(go(fv('prisoner', t, 'handler', {}, 9), 'run')))
   assert(houndBite, 'a failed run from the handler lets the hound bite')
 
   // Sand trick: sometimes they miss this round and the next.
@@ -3996,7 +4009,7 @@ function assertHelpResolves(s: GameState, where: string) {
     if (a.flags.encounterStun) {
       blinded = true
       assert(a.flags.encounterTrickUsed === true, 'the sand trick is spent')
-      assert(/→ 0$/m.test(bodyOf(go(a, 'fight'))), 'blinded, they miss the next round')
+      assert(/misses \(sand in the eyes\)\./.test(bodyOf(go(a, 'fight'))), 'blinded, they miss the next round')
     }
   }
   assert(blinded, 'the sand trick can land')
@@ -4040,7 +4053,7 @@ function assertHelpResolves(s: GameState, where: string) {
 // ---- Crit text only when a crit lands ----
 {
   const CRIT_WORDS = /crit|double damage|lands clean|1 in 10|2 in 10|twice as/i
-  const CRIT_LINE = /Critical hit(?: against you)?\. [^.]* lands clean: double damage\./g
+  const CRIT_LINE = /Critical Strike! \d+/g
   const kinds = ['jackal', 'cutter', 'tick', 'pup', 'scavenger', 'patrol', 'handler', 'overseer', 'collector', 'carapace', 'husk']
   const moves = ['fight', 'guard', 'feint', 'trick', 'run']
   let crits = 0
@@ -4054,6 +4067,7 @@ function assertHelpResolves(s: GameState, where: string) {
         for (const how of moves) {
           const fx = resolveEncounter(s, how as 'fight').fx
           const card = String(fx.flag?.encounterClash ?? '')
+          assert(!/→|vs (?:their|your) Shell \d+ →|Strike \d+\+\d+|Swing \+?\d/.test(card), `${door} ${kind} ${how}: result lines carry no maths (${card.slice(0, 120)})`)
           const found = card.match(CRIT_LINE) ?? []
           crits += found.length
           assert(!CRIT_WORDS.test(card.replace(CRIT_LINE, '')), `${door} ${kind} ${how}: only the crit log line mentions crits`)
@@ -4082,6 +4096,9 @@ function assertHelpResolves(s: GameState, where: string) {
   const scene = getScene('spine:jodi')
   const all = JSON.stringify(scene)
   assert(/brand/.test(scene.body) && /snake/.test(scene.body) && /vultures/.test(scene.body), 'Jodi sees the brand; snake and vultures on the card')
+  assert(/spiders/.test(scene.body) && /spider/.test(PEOPLE.jodi.card) && /Grudge/.test(PEOPLE.jodi.card) && /Pastor/.test(PEOPLE.jodi.card), 'spiders join Grudge and Pastor on her card and in the scene')
+  assert(/spiders rush the glass/.test(interpret(at(), 'spiders').flash ?? ''), 'typed spiders gets her spider line')
+  assert(/sand-spiders/.test(interpret(at(), 'look at the spiders').flash ?? ''), 'look at the spiders sees them')
   assert(!/\b(power|magic|gift|curse|you did|what you did|this is not|not a)\b/i.test(all), 'Jodi has no powers and never says what he did')
   assert(!/\b(raccoon|skunk|squirrel|possum|opossum|bat|forest)\b/i.test(all), 'only desert critters')
   for (const line of Object.values(JODI_LINES)) assert(all.includes(JSON.stringify(line).slice(1, 30)), 'each Jodi line reaches the scene')
@@ -4399,7 +4416,7 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(encounterChoices(withCtrl).some((c) => c.id === 'enc-seeker'), 'husk with Seeker offers Cut the Seeker down')
   // Guard only -1; sand almost never; no stall walk-off; no salve.
   const g = resolveEncounter(bare, 'guard')
-  assert(/1 lighter/.test(g.fx.flag?.encounterClash ? String(g.fx.flag.encounterClash) : '') || /1 lighter/.test(JSON.stringify(g)), 'Guard vs husk takes 1')
+  assert(/\(guard −1\)/.test(String(g.fx.flag?.encounterClash ?? '')), 'Guard vs husk takes 1')
   // Force by reading notes from a known state: compare cut via clash math.
   const shellBare = 0
   const huskStrike = 3
@@ -4702,6 +4719,27 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(!/\.map-node\.(here|next|far) \.map-label \{[^}]*(background:|box-shadow)/.test(css), 'no state brings the plate back')
   const sheetSrc = readFileSync(join(process.cwd(), 'src/components/MapSheet.tsx'), 'utf8')
   assert(sheetSrc.includes('layoutLabels(') && sheetSrc.includes('onClick={() => tap(n)}'), 'MapSheet lays labels out and nodes still tap to travel')
+}
+
+// Never offer travel you cannot take: every authored travel button or typed travel reaches a connected node.
+{
+  const bad: string[] = []
+  for (const sc of ALL_SCENES) {
+    const rows = [...(sc.choices ?? []).map((c) => ({ id: c.id, fx: c.effects })), ...(sc.intents ?? []).map((r, k) => ({ id: `intent-${k}`, fx: r.effects }))]
+    for (const r of rows) {
+      const to = r.fx?.travel
+      if (!to) continue
+      const maps = Object.values(HUB_MAPS).filter((m) => nodeIdForScene(m, sc.id) || m.hubId === sc.hubId)
+      if (!maps.length) bad.push(`${sc.id} ${r.id}: not on a map`)
+      for (const m of maps) {
+        const a = nodeIdForScene(m, sc.id, true)!
+        const b = nodeIdForScene(m, to)
+        if (!b) bad.push(`${sc.id} ${r.id}: ${to} not on ${m.hubId}`)
+        else if (a !== b && edgeSap(m, a, b) == null) bad.push(`${sc.id} ${r.id}: no road ${a} → ${b}`)
+      }
+    }
+  }
+  assert(!bad.length, `travel buttons with no road: ${bad.join('; ')}`)
 }
 
 console.log('OK', {

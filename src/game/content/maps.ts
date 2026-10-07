@@ -76,6 +76,8 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
       { a: 'ridge', b: 'well' },
       { a: 'shade', b: 'well' },
       { a: 'well', b: 'hound', sap: 2 },
+      // The east wash: Korvan's heading runs straight down it from Silas's shade to Hound Sign.
+      { a: 'shade', b: 'hound', sap: 2 },
     ],
     sceneNode: {
       'spine:ridge': 'ridge',

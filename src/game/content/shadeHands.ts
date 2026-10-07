@@ -39,7 +39,7 @@ export const SHADE_HANDS: ShadeHand[] = [
   {
     sceneId: 'spine:jodi',
     walkLabel: 'Sit near the woman with the snake',
-    walkSub: 'Jodi Hollowmere. Her vultures and sand rats bring her scraps. She trades what they find.',
+    walkSub: 'Jodi Hollowmere. Her vultures and sand rats bring her scraps; her spiders guard them. She trades what they find.',
     tookFlag: 'jodiTook',
     live: true,
   },
@@ -156,7 +156,7 @@ He cannot see through the amber. He heard the shade go quiet when you walked in,
     {
       id: 'hound-walk',
       label: 'Walk the east wash',
-      sub: 'Hound Sign. The deserter hides behind the rock there.',
+      sub: 'Down the wash to Hound Sign. 2 Sap. The deserter hides behind the rock there.',
       show: { flag: 'korvanHoundRumor' },
       effects: { travel: 'spine:hound' },
     },
@@ -315,10 +315,11 @@ export const JODI_LINES = {
   arrive: `She says to the nearest vulture, "Look who walked in, Pastor. Still breathing. Don't get your hopes up."`,
   trade: `She says to the snake, "He's paying, Grudge. We don't bite customers."`,
   bite: `She says to the vultures, "He reached. They always reach." She rubs two old punctures on her own wrist. "Grudge got me twice last month. I liked the second one."`,
+  spiders: `She taps the jar and the spiders rush the glass. "Easy, girls. He's only looking." She says it to them, not you.`,
 } as const
 
 const JODI_BITE =
-  'You reach for the pile. The snake on her shoulders drops its head and bites your hand before you touch anything. It hurts all the way up the arm. You back out of the shade with nothing.'
+  'You reach for the pile. The snake on her shoulders drops its head and bites your hand before you touch anything. It hurts all the way up the arm. You back out of the shade with nothing, slapping a sand-spider off your sleeve.'
 
 export const JODI_SCENE: Scene = {
   id: 'spine:jodi',
@@ -326,7 +327,7 @@ export const JODI_SCENE: Scene = {
   kind: 'talk',
   title: 'Jodi Hollowmere',
   speaker: 'Jodi Hollowmere',
-  body: `On the sunny side of Silas's shade, a woman sits on a heap of torn canvas with her boots crossed. Long dark red hair, black lipstick, ink down her chest and both arms. Her wraps are ripped at the knees. A sand python lies over her shoulders and down one arm, and a goat skull hangs from her belt. Two vultures stand on a rusted frame behind her. Sand rats run in and out of a pile of scrap at her feet, each one carrying something.
+  body: `On the sunny side of Silas's shade, a woman sits on a heap of torn canvas with her boots crossed. Long dark red hair, black lipstick, ink down her chest and both arms. Her wraps are ripped at the knees. A sand python lies over her shoulders and down one arm, and a goat skull hangs from her belt. A stoppered jar of black sand-spiders sits by her boot, and two more of them walk the seams of her wraps like they own them. Two vultures stand on a rusted frame behind her. Sand rats run in and out of a pile of scrap at her feet, each one carrying something.
 
 She sees the brand. She looks at it longer than anyone else on the Spine has, then moves the pile a little closer to the snake.
 
@@ -335,7 +336,7 @@ ${JODI_LINES.arrive}`,
     {
       if: { flag: 'jodiTook' },
       mode: 'replace',
-      body: `Jodi feeds the vultures with her back to the sun and her eyes on you. The snake lies across the scrap pile now. She does not trade with you again.`,
+      body: `Jodi feeds the vultures with her back to the sun and her eyes on you. The snake lies across the scrap pile now, and the spider jar sits open beside it. She does not trade with you again.`,
     },
   ],
   choices: [
@@ -368,13 +369,13 @@ ${JODI_LINES.arrive}`,
         add: { salve: 1 },
         flag: { jodiSalve: true },
         ticks: 1,
-        flash: 'A sand rat drags the salve out of the pile and drops it by your boot. Jodi holds the Glint up to the light and pockets it. Resin Salve +1.',
+        flash: 'A sand rat drags the salve out of the pile and drops it by your boot. A spider walks once around the seal before Jodi flicks it back to her sleeve. "She checked it. It\'s clean." Jodi holds the Glint up to the light and pockets it. Resin Salve +1.',
       },
     },
     {
       id: 'take',
       label: 'Take from her scrap pile while she feeds the birds',
-      sub: 'The snake lies near the pile. Stray Heat rises, and the Strays notice.',
+      sub: 'The snake lies near the pile, and the spiders are loose. Stray Heat rises, and the Strays notice.',
       tone: 'danger',
       show: { all: [{ flagUnset: 'jodiTook' }, { healthMin: 3 }] },
       effects: {
@@ -389,7 +390,7 @@ ${JODI_LINES.arrive}`,
     {
       id: 'take',
       label: 'Take from her scrap pile while she feeds the birds',
-      sub: 'The snake lies near the pile. Stray Heat rises, and the Strays notice.',
+      sub: 'The snake lies near the pile, and the spiders are loose. Stray Heat rises, and the Strays notice.',
       tone: 'danger',
       show: { all: [{ flagUnset: 'jodiTook' }, { not: { healthMin: 3 } }] },
       effects: {
@@ -411,8 +412,13 @@ ${JODI_LINES.arrive}`,
       effects: { ticks: 1 },
     },
     {
+      tags: ['spider', 'spiders', 'jar', 'girls'],
+      reply: JODI_LINES.spiders,
+      effects: { ticks: 1 },
+    },
+    {
       tags: ['vulture', 'vultures', 'birds', 'rats', 'critters', 'animals', 'skull'],
-      reply: 'The vultures watch you. The sand rats keep bringing scraps to the pile.',
+      reply: 'The vultures watch you. The sand rats keep bringing scraps to the pile. In the jar by her boot, the spiders stack on each other to see you better.',
       effects: { ticks: 1 },
     },
   ],

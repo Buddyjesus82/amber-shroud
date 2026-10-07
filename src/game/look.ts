@@ -377,7 +377,7 @@ function authored(state: GameState, scene: Scene): string[] {
     else {
       if (!on(state, 'jodiDrop')) push(lines, '2 scrap buys the Drop the vultures found.')
       if (!on(state, 'jodiSalve')) push(lines, '1 Glint buys the Resin Salve the rats dug up.')
-      push(lines, 'Her snake lies near the scrap pile.')
+      push(lines, 'Her snake lies near the scrap pile. Her spiders walk the edge of it.')
     }
     return lines
   }

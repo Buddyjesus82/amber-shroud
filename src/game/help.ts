@@ -193,8 +193,11 @@ export function sceneSearch(state: GameState, target: string): Effect | null {
       }
     }
   }
+  if (id === 'spine:jodi' && (t.includes('spider') || t.includes('jar'))) {
+    return { flash: 'A stoppered jar of black sand-spiders by her boot, and two loose ones on the seams of her wraps. They watch your hands as closely as she does.' }
+  }
   if (id === 'spine:ridge' && (t.includes('track') || t.includes('print') || t === 'wash')) {
-    return { flash: 'Hound tracks run along the eastern wash, past the Dry Well, toward Hound Sign.' }
+    return { flash: 'Hound tracks run down the east wash, from below Silas\'s shade to Hound Sign. The Dry Well road gets there too.' }
   }
   if (id === 'spine:well') {
     if (t.includes('brick') || t.includes('carving') || t.includes('words')) {

@@ -26,6 +26,7 @@ const FIGHT_SECTIONS: HelpSection[] = [
       { key: 'SWING', text: 'Each exchange, both sides add 0, 1, or 2 to Strike.' },
       { key: 'DAMAGE', text: 'Strike + swing - Shell. Never less than 1. You and the enemy hit each other in the same exchange.' },
       { key: 'HEALTH', text: 'Hits take Health. You start at 6. Sap is for thirst and walking.' },
+      { key: 'LOG', text: 'After each exchange the log says it plainly: "You hit the jackal for 3." and "The jackal hits you for 1." Anything that changed a hit is named in brackets, like (feint +2) or (high ground +1).' },
       { key: 'GEAR', text: 'Main hand sets Strike; a short blade or club in the Off hand adds 1. Body, Cloak, Head, Legs, Hands, and a shield add to Shell, up to 5. A garment adds nothing in a fight.' },
       { key: 'ENEMY', text: 'The fight card lists their Strike, Shell, and Health.' },
     ],
