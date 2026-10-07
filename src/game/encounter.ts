@@ -374,7 +374,7 @@ export function encounterChoices(state: GameState): Choice[] {
     {
       id: 'enc-fight',
       label: `Fight ${whoOf(spec)}`,
-      sub: f.encounterFeint ? 'Strike. Your feint is set: swing +2.' : 'Strike vs Shell. Health takes the hits.',
+      sub: f.encounterFeint ? 'Strike. Your feint is set: next hit +2.' : 'Strike vs Shell. Health takes the hits.',
       tone: 'danger',
       enable: { healthMin: 1 },
       locked: 'Too hurt to fight.',
@@ -756,54 +756,71 @@ export function resolveEncounter(
     move === 'core' ||
     (move === 'pull' && !!f.encounterLatched && state.equipped?.hands === 'hide_gloves')
 
-  // Swings after ground, feint, and a numb arm.
+  // Swings after ground, feint, and a numb arm. Named extras go in brackets on the hit lines (no maths).
   let swingOut = c.swingOut
   let swingIn = c.swingIn
-  if (attacking && f.encounterFeint) {
-    swingOut += 2
-    notes.push('Your feint pays off. Swing +2.')
-  }
+  const outTags: string[] = []
+  const inTags: string[] = []
   if (attacking && f.encounterShocked) {
     swingOut = 0
-    notes.push('Your arm is still numb from the baton. Swing 0.')
+    outTags.push('numb arm')
+  } else if (attacking && f.encounterFeint) {
+    swingOut += 2
+    outTags.push('feint +2')
   }
+  const outRaw = swingOut
+  const inRaw = swingIn
   swingOut = Math.max(0, swingOut + ground.you)
   swingIn = Math.max(0, swingIn + ground.them)
+  if (attacking && swingOut > outRaw) outTags.push(`high ground +${swingOut - outRaw}`)
+  if (attacking && swingOut < outRaw) outTags.push(`loose sand −${outRaw - swingOut}`)
+  if (swingIn < inRaw) inTags.push(`sun in their eyes −${inRaw - swingIn}`)
   if (ground.cap != null) {
+    const o = swingOut
+    const i = swingIn
     swingOut = Math.min(ground.cap, swingOut)
     swingIn = Math.min(ground.cap, swingIn)
+    if (attacking && swingOut < o) outTags.push('blowing sand')
+    if (swingIn < i) inTags.push('blowing sand')
   }
   let theirStrike = Math.max(0, spec.strike + ground.strike)
+  if (theirStrike < spec.strike) inTags.push(`steam vent −${spec.strike - theirStrike}`)
   let pinned = !!f.encounterPinned
   if (spec.kind === 'carapace' && round === 1) {
     theirStrike += 1
     pinned = true
-    notes.push('His first shot is the harpoon. Strike +1, and the line pins you: no Run until you land a hit.')
+    inTags.push('harpoon +1')
+    notes.push('The harpoon line pins you. No running until you land a hit.')
   }
 
   let dmgOut = attacking ? exchangeDamage(c.strike, swingOut, spec.shell, floor) : 0
   let dmgIn = exchangeDamage(theirStrike, swingIn, c.shell, floor)
 
+  let critOut = false
   if (attacking && dmgOut > 0 && roll(state, 'critYou', 10) < CRIT_IN_10) {
     dmgOut *= 2
-    notes.push('Critical hit. Yours lands clean: double damage.')
+    critOut = true
   }
+  // dmgInPlain: the same hit without the crit, for the plain hit line above the crit line.
+  let dmgInPlain = dmgIn
+  let critIn = false
   const critOdds = spec.kind === 'pup' ? CRIT_IN_10 * 2 : CRIT_IN_10
   if (dmgIn > 0 && roll(state, 'critThem', 10) < critOdds) {
     dmgIn *= 2
     // A crit never takes you from full Health to Down in one exchange.
     if (c.yourHp >= max) dmgIn = Math.min(dmgIn, max - 1)
-    notes.push(`Critical hit against you. ${cap(who)} lands clean: double damage.`)
+    critIn = true
+  }
+  const hitIn = (fn: (d: number) => number) => {
+    dmgIn = fn(dmgIn)
+    dmgInPlain = fn(dmgInPlain)
   }
   if (f.encounterPair && c.theirHp >= 2) {
-    dmgIn += 1
-    notes.push('The second jackal bites at your flank. +1.')
+    hitIn((d) => d + 1)
+    inTags.push('second jackal +1')
   }
   let stunNext = false
-  if (f.encounterStun) {
-    dmgIn = 0
-    notes.push(`${cap(who)} is still clawing sand out of their eyes. They miss.`)
-  }
+  if (f.encounterStun) hitIn(() => 0)
 
   let feintNext = false
   let trickUsed = !!f.encounterTrickUsed
@@ -815,9 +832,10 @@ export function resolveEncounter(
     coreTried = true
     if (roll(state, 'core', 10) < 5) {
       dmgOut *= 2
-      notes.push('You aim for the amber heart under the ribs. The strike cracks the core: a heavy blow.')
+      outTags.push('cracked the core ×2')
     } else {
       dmgOut = 0
+      critOut = false
       notes.push('You aim for the amber heart and miss. The plates turn the blow.')
     }
   }
@@ -847,29 +865,27 @@ export function resolveEncounter(
   }
   if (move === 'guard') {
     const cut = spec.kind === 'overseer' || spec.kind === 'husk' ? 1 : 2
-    dmgIn = Math.max(0, dmgIn - cut)
-    notes.push(`You guard. Their hit is ${cut} lighter.`)
+    hitIn((d) => Math.max(0, d - cut))
+    inTags.push(`guard −${cut}`)
+    notes.push('You guard.')
   } else if (move === 'feint') {
-    dmgIn = Math.max(0, dmgIn - 1)
+    hitIn((d) => Math.max(0, d - 1))
     feintNext = true
-    notes.push('You feint and slip back. Their hit is 1 lighter. Your next Strike gets +2.')
+    inTags.push('feint −1')
+    notes.push('You feint and slip back. Your next hit gets +2.')
   } else if (move === 'trick') {
     trickUsed = true
     const odds = spec.kind === 'husk' ? 1 : 4
     if (roll(state, 'trick', 10) < odds) {
-      dmgIn = 0
+      hitIn(() => 0)
       stunNext = true
       notes.push(
         spec.kind === 'husk'
-          ? `You throw a fistful of sand. Against the odds it fouls a joint, and the husk misses this round and the next.`
-          : `You throw a fistful of sand into ${who}'s eyes. They miss this round and the next.`,
+          ? 'Your sand fouls a joint. The husk misses this round and the next.'
+          : `You throw sand in ${who}'s eyes. They miss this round and the next.`,
       )
     } else {
-      notes.push(
-        spec.kind === 'husk'
-          ? `You throw a fistful of sand. The husk has no eyes. The plates do not care.`
-          : `You throw a fistful of sand. ${cap(who)} turns away and it misses.`,
-      )
+      notes.push(spec.kind === 'husk' ? 'You throw sand. The husk has no eyes.' : `You throw sand. ${cap(who)} turns away.`)
     }
   } else if (move === 'pull' && latched) {
     latched = false
@@ -883,8 +899,8 @@ export function resolveEncounter(
     } else {
       notes.push(`You try to run. ${cap(who)} catches you.`)
       if (spec.kind === 'handler') {
-        dmgIn += 1
-        notes.push('The hound gets a bite in while you turn. +1.')
+        hitIn((d) => d + 1)
+        inTags.push('hound bite +1')
       }
     }
   }
@@ -892,7 +908,7 @@ export function resolveEncounter(
   // Outcast only, once a fight: when it is going badly, the sand takes the hit for him. Never explained.
   let grip = !!f.encounterGrip
   if (sandAnswers(state) && !grip && c.yourHp <= 2 && dmgIn > 0 && roll(state, 'grip', 10) < 6) {
-    dmgIn = 0
+    hitIn(() => 0)
     grip = true
     notes.push(sandGripLine(spec.name, BEAST_KINDS.includes(spec.kind), roll(state, 'gripForm', 2) ? 'mirage' : 'slide', PROPER_KINDS.includes(spec.kind)))
   }
@@ -918,12 +934,21 @@ export function resolveEncounter(
     notes.push('The Seeker drives the extractor into a plate. Resin floods the core. The husk stands again, Health 2.')
   }
 
-  const youLine = attacking
-    ? `You Strike ${c.strike}+${swingOut} vs their Shell ${spec.shell} → ${dmgOut}`
-    : 'You do not attack this round.'
+  // Plain result lines: who hit whom for how much. Named extras in brackets; a crit gets its own line.
+  const tags = (t: string[]) => (t.length ? ` (${t.join(', ')})` : '')
+  const critLine = (n: number) => `\n\nCritical Strike! ${n}`
+  const youLine = !attacking
+    ? 'You do not attack this round.'
+    : dmgOut <= 0
+      ? `You miss ${who}${tags(outTags)}.`
+      : `You hit ${who} for ${critOut ? dmgOut / 2 : dmgOut}${tags(outTags)}.${critOut ? critLine(dmgOut) : ''}`
   const themLine = f.encounterStun
-    ? `Their Strike ${theirStrike} → 0`
-    : `Their Strike ${theirStrike}+${swingIn} vs your Shell ${c.shell} → ${dmgIn}`
+    ? `${cap(who)} misses (sand in the eyes).`
+    : dmgIn <= 0
+      ? `${cap(who)} misses you${tags(inTags)}.`
+      : critIn && dmgIn > dmgInPlain
+        ? `${cap(who)} hits you for ${dmgInPlain}${tags(inTags)}.${critLine(dmgIn)}`
+        : `${cap(who)} hits you for ${dmgIn}${tags(inTags)}.`
   const hitCard = `${youLine}\n\n${themLine}${notes.length ? `\n\n${notes.join(' ')}` : ''}`
   const sap = sapLoss ? -sapLoss : undefined
 

@@ -72,14 +72,14 @@ She does not speak. She guards people who are looking for the truth, and she has
   jodi: {
     id: 'jodi',
     name: 'Jodi Hollowmere',
-    aliases: ['jodi', 'hollowmere', 'jodi hollowmere', 'snake woman', 'woman with the snake'],
+    aliases: ['jodi', 'hollowmere', 'jodi hollowmere', 'snake woman', 'woman with the snake', 'spider woman'],
     metFlag: 'metJodi',
-    card: `Jodi Hollowmere. A Dune-Stray who keeps carrion birds and sand rats on the sunny side of Silas's shade. Two vultures, a sand python named Grudge, and more rats than she will count. They bring her what they find on the dead, and she trades it.
+    card: `Jodi Hollowmere. A Dune-Stray who keeps carrion birds and sand rats on the sunny side of Silas's shade. Two vultures (the big one is Pastor), a sand python named Grudge, a jar of black sand-spiders she calls her girls, and more rats than she will count. They bring her what they find on the dead, and she trades it.
 
 Dark, funny, a little wild. She has been through worse than most on the Spine and takes pain without much fuss. She is careful anyway. She talks to her animals more than to people, and she keeps the snake between her pile and anyone she does not know.`,
     scenes: ['spine:jodi'],
     later: {
-      'spine:jodi': `Jodi sits on her canvas heap with the snake over her shoulders. The vultures shift on their frame when you come back.`,
+      'spine:jodi': `Jodi sits on her canvas heap with the snake over her shoulders and a spider walking the back of her hand. The vultures shift on their frame when you come back.`,
     },
   },
   corvin: {
