@@ -17,7 +17,7 @@ Overseer Valerius is the shadow in the tower. Getting out from under him is the 
       {
         id: 'pens',
         label: 'Sit up. Acknowledge Jaxson.',
-        sub: 'Gear: Cartel Scrip only. The jaw in the next bunk will not shut up. Kaelen the Sifter is a rumor at the Wire.',
+        sub: 'Gear: Cartel Scrip only. The jaw in the next bunk will not shut up.',
         effects: {
           enterHub: 'camp04',
           goto: 'camp:cages',

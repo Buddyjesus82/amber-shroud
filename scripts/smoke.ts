@@ -2639,7 +2639,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v60'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v61'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -2661,7 +2661,7 @@ assert(css.includes('--story-top: min(calc(56.25cqi * var(--band-bot, 0.5)), 50c
 assert(css.includes('rgba(12, 7, 4, 0.58)'), 'story scrim stays translucent so cover art shows through')
 assert(!css.includes('rgba(12, 7, 4, 0.88)'), 'story scrim is lighter than the v32 slab')
 const playSrc = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
-assert(playSrc.includes('?v=60'), 'scene cover URLs are cache-busted with the service worker')
+assert(playSrc.includes('?v=61'), 'scene cover URLs are cache-busted with the service worker')
 assert(!css.includes('object-position: center 68%'), 'scene art no longer crops toward the ground')
 assert(!css.includes('height: 56px'), 'short phones no longer squash covers into a head-cropping strip')
 assert(css.includes('place-items: center'), 'game screen is centered on the backdrop')
@@ -2869,6 +2869,21 @@ function assertHelpResolves(s: GameState, where: string) {
     assert(!ids(showing).includes('kaelen-pass'), `Kaelen does not stop in ${sceneId}`)
   }
   assert(/Kaelen/.test(bodyOf(applyEffect(newGame('prisoner'), { goto: 'camp:jaxson' }))), 'Jaxson may still name Kaelen')
+
+// First talk with Jaxson: Kaelen's name is earned from his Valerius speech, not a premature ask button.
+{
+  const jax = applyEffect(newGame('prisoner'), { goto: 'camp:jaxson' })
+  const body = bodyOf(jax)
+  assert(/Kaelen the Sifter/.test(body) && /Valerius/.test(body), 'Jaxson names Kaelen in the same breath as Valerius')
+  assert(jax.flags.kaelenKnown, 'hearing Jaxson\'s Valerius speech marks Kaelen known')
+  const labels = getScene('camp:jaxson').choices.map((c) => c.label).join(' | ')
+  assert(!/Ask where Kaelen|Ask about Kaelen/i.test(labels), 'no premature Ask-about-Kaelen button on first talk')
+  const pens = bodyOf(applyEffect(newGame('prisoner'), { goto: 'camp:cages' }))
+  assert(!/\bKaelen\b/.test(pens), 'pens do not name Kaelen before Jaxson does')
+  const pensLabels = getScene('camp:cages').choices.map((c) => `${c.label} ${c.sub ?? ''}`).join(' | ')
+  assert(!/\bKaelen\b/.test(pensLabels), 'pens choices do not front-load Kaelen\'s name')
+}
+
 }
 
 {
