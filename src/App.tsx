@@ -19,7 +19,7 @@ import {
 } from './game/save'
 import type { DoorId, GameState } from './game/types'
 
-type View = 'title' | 'intro' | 'replay' | 'doors' | 'play'
+type View = 'title' | 'intro' | 'doors' | 'play'
 
 function saveSnapshot() {
   return {
@@ -120,13 +120,14 @@ export default function App() {
     )
   }
 
-  if (view === 'intro' || view === 'replay') {
-    const replay = view === 'replay'
+  // New game and "Watch the intro" both end on the door choice (finish or Skip). Reaching the doors
+  // never touches saves: a slot is only overwritten when a door is picked and started (confirmed).
+  if (view === 'intro') {
     return (
       <IntroCards
         onDone={() => {
           refreshSaves()
-          setView(replay ? 'title' : 'doors')
+          setView('doors')
         }}
       />
     )
@@ -167,7 +168,10 @@ export default function App() {
         refreshSaves()
         setView('intro')
       }}
-      onIntro={() => setView('replay')}
+      onIntro={() => {
+        refreshSaves()
+        setView('intro')
+      }}
       onContinue={() => {
         const s = loadSave()
         if (s) {
