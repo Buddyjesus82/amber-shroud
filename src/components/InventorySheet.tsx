@@ -1,10 +1,12 @@
 import { useState } from 'react'
-import { bindSalve, canCraftScavPack, craftScavPack, drinkDrop, dropItem, equipBlock, equipItem, sapLabel, unequipSlot } from '../game/engine'
+import { bindSalve, canCraftScavPack, craftScavPack, drinkDrop, dropItem, dropStack, equipBlock, equipItem, sapLabel, unequipSlot } from '../game/engine'
 import { heatFactions } from '../game/heat'
 import {
   bagCap,
+  bagCount,
   bagFree,
   bagLoad,
+  bagStacks,
   bagUnits,
   disguiseActive,
   equippedShell,
@@ -63,13 +65,13 @@ export function InventorySheet({ state, onClose, onChange }: Props) {
           Sap {state.sap}/{state.sapMax} · {sapLabel(state.sap)}. Health {state.health}/{state.healthMax}. Strike{' '}
           {equippedStrike(state)} · Shell {equippedShell(state)} (max {SHELL_CAP}).{' '}
           <b className={load > cap ? 'bag-over' : undefined}>
-            Bag {load}/{cap}
+            Bag {load}/{cap} slots
           </b>
-          {load > cap ? ' Over the limit: new finds stay on the ground.' : ''}
+          {load > cap ? ' Over the limit: nothing new fits until slots free up. More of a stack you carry still fits.' : ''}
         </p>
         {heldText ? (
           <p className="bag-held">
-            On the ground: {heldText}. Your bag is full. Drop something below to pick it up.
+            On the ground: {heldText}. Your bag is full. Drop something below to free a slot and pick it up.
           </p>
         ) : null}
         {disguiseActive(state) ? <p className="bag-held">Vessel Cloth on. Cartel eyes read a cup until someone looks closely.</p> : null}
@@ -224,7 +226,7 @@ function ListTab({
                 <strong>
                   {c.name}
                   {c.n > 1 ? ` ×${c.n}` : ''}
-                  {bagFree(c.id) ? '' : ` · bag ${bagUnits(state, c.id)}`}
+                  {slotNote(state, c.id)}
                 </strong>
                 <span>{c.desc}</span>
               </div>
@@ -248,8 +250,9 @@ function CraftBox({ state, onChange }: { state: GameState; onChange: (s: GameSta
     <div className="craft-box">
       <h3 className="gear-sub">Bag and craft</h3>
       <p className="kit-note">
-        Your bag carries {bagCap(state)}. Key items, coin, and worn gear ride free. A Scav Pack carries 14; a Hauler Pack
-        carries 20.
+        Your bag has {bagCap(state)} slots. A stack of small goods (Drops, salves, scrap, cord) takes one slot however many
+        are in it; each spare weapon or wearable takes its own. Key items, coin, and worn gear ride free. A Scav Pack has 14
+        slots; a Hauler Pack 20.
       </p>
       {owned ? (
         <p className="kit-note">You have a Scav Pack.</p>
@@ -281,11 +284,27 @@ function UseBtn({ state, id, onChange, onClose }: { state: GameState; id: ItemId
   )
 }
 
+/** " · 1 slot" for a stack or a spare piece; " · 2 slots" for two spare pieces; nothing for free items. */
+function slotNote(state: GameState, id: ItemId): string {
+  if (bagFree(id)) return ''
+  const used = bagUnits(state, id)
+  if (!used) return ' · worn'
+  return ` · ${used} slot${used === 1 ? '' : 's'}`
+}
+
 function DropBtn({ state, id, onChange }: { state: GameState; id: ItemId; onChange: (s: GameState) => void }) {
   if (bagFree(id) || bagUnits(state, id) <= 0) return null
+  const stack = bagStacks(id) ? bagCount(state, id) : 0
   return (
-    <button type="button" className="btn btn-tiny btn-ghost" onClick={() => onChange(dropItem(state, id))}>
-      Drop 1
-    </button>
+    <>
+      <button type="button" className="btn btn-tiny btn-ghost" onClick={() => onChange(dropItem(state, id))}>
+        Drop 1
+      </button>
+      {stack > 1 ? (
+        <button type="button" className="btn btn-tiny btn-ghost" onClick={() => onChange(dropStack(state, id))}>
+          Drop all
+        </button>
+      ) : null}
+    </>
   )
 }

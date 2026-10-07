@@ -66,7 +66,7 @@ import {
 import { talkFallback, talkIntentsFor } from './talk'
 import { applyScavenge, canScavenge, canSkim, skimHeat, skimLocked } from './scavenge'
 import { writeSave } from './save'
-import { bagCap, bagFree, bagLoad, bagUnits, disguiseActive, fitBag, gearLookLine, heldNames, heldOf, SCAV_PACK_LOCKED, SCAV_PACK_RECIPE, SLOT_LABEL, slotsFor, takeHeld, wornCount } from './kit'
+import { bagCap, bagCount, bagFree, bagLoad, bagStacks, bagUnits, disguiseActive, fitBag, gearLookLine, heldNames, heldOf, SCAV_PACK_LOCKED, SCAV_PACK_RECIPE, SLOT_LABEL, slotsFor, takeHeld, wornCount } from './kit'
 import { DISGUISE_SOFTEN_NOTE, disguiseArrival, softenCartel } from './disguise'
 import { repairSceneId } from './repair'
 import { isRumorCounter, matchRumorText, rumorChoices } from './rumors'
@@ -699,6 +699,15 @@ export function dropItem(state: GameState, id: ItemId): GameState {
   return applyEffect(state, { remove: { [id]: 1 }, bagRetry: !!state.flags.bagHeld, flash: `You drop the ${def.name}.` })
 }
 
+/** Drop a whole stack (it frees its one bag slot). Worn pieces never stack. */
+export function dropStack(state: GameState, id: ItemId): GameState {
+  const def = ITEMS[id]
+  const n = bagCount(state, id)
+  if (!def || !n) return persist({ ...state, flash: 'You do not have that to drop.' })
+  if (!bagStacks(id) || n === 1) return dropItem(state, id)
+  return applyEffect(state, { remove: { [id]: n }, bagRetry: !!state.flags.bagHeld, flash: `You drop the ${def.name} ×${n}. One bag slot frees up.` })
+}
+
 /** Craft: stitch a Scav Pack from 3 scrap and 1 Sinew Cord. Carries 14. */
 export function craftScavPack(state: GameState): GameState {
   if ((state.items.scav_pack ?? 0) > 0) return persist({ ...state, flash: 'You already have a Scav Pack.' })
@@ -707,7 +716,7 @@ export function craftScavPack(state: GameState): GameState {
     remove: { scrap: SCAV_PACK_RECIPE.scrap, sinew_cord: SCAV_PACK_RECIPE.sinew_cord },
     add: { scav_pack: 1 },
     ticks: 1,
-    flash: 'You bend the scrap into a frame and stitch canvas over it with the cord. Scav Pack: your bag now carries 14.',
+    flash: 'You bend the scrap into a frame and stitch canvas over it with the cord. Scav Pack: your bag now has 14 slots.',
   })
 }
 
@@ -1298,20 +1307,26 @@ export function visibleChoices(state: GameState): Choice[] {
   return [...bag, ...withKaelenPass(state, rows)]
 }
 
-/** Bag full: drop something to take what is on the ground, or leave it. */
+/** Bag full: drop something to free a slot and take what is on the ground, or leave it. */
 function bagChoices(state: GameState): Choice[] {
   const held = heldOf(state.flags)
   if (!Object.keys(held).length) return []
   const names = heldNames(held)
+  const slots = `Bag ${bagLoad(state)}/${bagCap(state)} slots.`
   const rows: Choice[] = (Object.keys(state.items) as ItemId[])
     .filter((id) => bagUnits(state, id) > 0 && !bagFree(id))
-    .map((id) => ({
-      id: `bag-drop-${id}`,
-      label: `Drop 1 ${ITEMS[id].name} to take the ${names}`,
-      sub: `Bag ${bagLoad(state)}/${bagCap(state)}. The ${ITEMS[id].name} stays here.`,
-      tone: 'quiet' as const,
-      effects: { remove: { [id]: 1 }, bagRetry: true, flash: `You drop the ${ITEMS[id].name} and pick up what fits.` },
-    }))
+    .map((id) => {
+      // A stack frees its slot only when the whole stack goes.
+      const n = bagStacks(id) ? bagCount(state, id) : 1
+      const what = n > 1 ? `all ${n} ${ITEMS[id].name}` : `1 ${ITEMS[id].name}`
+      return {
+        id: `bag-drop-${id}`,
+        label: `Drop ${what} to take the ${names}`,
+        sub: `${slots} ${n > 1 ? 'The stack stays here.' : `The ${ITEMS[id].name} stays here.`}`,
+        tone: 'quiet' as const,
+        effects: { remove: { [id]: n }, bagRetry: true, flash: `You drop ${n > 1 ? `the ${ITEMS[id].name} ×${n}` : `the ${ITEMS[id].name}`} and pick up what fits.` },
+      }
+    })
   rows.push({
     id: 'bag-leave',
     label: `Leave the ${names}`,

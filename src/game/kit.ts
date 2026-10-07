@@ -102,6 +102,17 @@ export function bagFree(id: ItemId): boolean {
   return def.kind === 'key' || def.kind === 'currency' || id === 'vial_empty' || id === 'ossa_token' || def.bag != null
 }
 
+/**
+ * Small goods stack: a whole stack takes ONE bag slot, however many are in it (Drops, salves, scrap,
+ * sinew, and any other small consumable). Weapons, armor, garments, and anything else you can wear
+ * never stack: one slot each.
+ */
+export function bagStacks(id: ItemId): boolean {
+  const def = ITEMS[id]
+  if (!def || bagFree(id)) return false
+  return def.kind === 'gear' && !def.slot
+}
+
 export function bagCap(state: Pick<GameState, 'items'>): number {
   let cap = BASE_BAG
   for (const id of Object.keys(state.items) as ItemId[]) {
@@ -111,14 +122,22 @@ export function bagCap(state: Pick<GameState, 'items'>): number {
   return cap
 }
 
-/** Units in the bag: everything carried that is not free and not worn. */
-export function bagUnits(state: Pick<GameState, 'items' | 'equipped'>, id: ItemId): number {
+/** Pieces of this item in the bag: everything carried that is not free and not worn. Worn gear rides free. */
+export function bagCount(state: Pick<GameState, 'items' | 'equipped'>, id: ItemId): number {
   if (bagFree(id)) return 0
   const n = state.items[id] ?? 0
   const worn = EQUIP_SLOTS.filter((slot) => state.equipped?.[slot] === id).length
   return Math.max(0, n - worn)
 }
 
+/** Bag slots this item takes: a stack is one slot; each spare weapon or wearable is one slot. */
+export function bagUnits(state: Pick<GameState, 'items' | 'equipped'>, id: ItemId): number {
+  const n = bagCount(state, id)
+  if (!n) return 0
+  return bagStacks(id) ? 1 : n
+}
+
+/** Slots used. */
 export function bagLoad(state: Pick<GameState, 'items' | 'equipped'>): number {
   let n = 0
   for (const id of Object.keys(state.items) as ItemId[]) n += bagUnits(state, id)
@@ -126,7 +145,29 @@ export function bagLoad(state: Pick<GameState, 'items' | 'equipped'>): number {
 }
 
 export function bagLine(state: Pick<GameState, 'items' | 'equipped'>): string {
-  return `Bag ${bagLoad(state)}/${bagCap(state)}`
+  return `Bag ${bagLoad(state)}/${bagCap(state)} slots`
+}
+
+/**
+ * Would the bag take `add` (after `remove`)? More of a stack you already carry always fits.
+ * A bag already over its cap (an old save) takes nothing that needs a new slot until slots free up.
+ */
+export function bagFits(
+  state: Pick<GameState, 'items' | 'equipped'>,
+  add: Partial<Record<ItemId, number>>,
+  remove: Partial<Record<ItemId, number>> = {},
+): boolean {
+  const items = { ...state.items }
+  for (const id of Object.keys(remove) as ItemId[]) {
+    const left = (items[id] ?? 0) - (remove[id] ?? 0)
+    if (left > 0) items[id] = left
+    else delete items[id]
+  }
+  for (const id of Object.keys(add) as ItemId[]) items[id] = (items[id] ?? 0) + (add[id] ?? 0)
+  const next = { ...state, items }
+  const cap = bagCap(next)
+  const after = bagLoad(next)
+  return after <= cap || after <= bagLoad(state)
 }
 
 /** Held finds while the bag is full, as `id:n|id:n`. */
@@ -155,8 +196,9 @@ export function heldNames(held: Partial<Record<ItemId, number>>): string {
 }
 
 /**
- * After a find: anything that does not fit is set aside (flag bagHeld) instead of carried.
- * Only new units are held. A bag that was already over (an old save) keeps what it had.
+ * After a find: anything that needs a slot the bag does not have is set aside (flag bagHeld) instead
+ * of carried. More of a stack you already carry always fits. Only new slots are held; a bag that was
+ * already over (an old save) keeps everything it had, but takes no new slots until some free up.
  */
 export function fitBag(prev: GameState, next: GameState): GameState {
   const cap = bagCap(next)
@@ -169,13 +211,15 @@ export function fitBag(prev: GameState, next: GameState): GameState {
   const grown = (Object.keys(items) as ItemId[]).filter((id) => bagUnits(next, id) > bagUnits(prev, id)).reverse()
   for (const id of grown) {
     if (excess <= 0) break
-    const take = Math.min(excess, bagUnits(next, id) - bagUnits(prev, id))
+    const slots = bagUnits(next, id) - bagUnits(prev, id)
+    // A new stack goes down whole (it is one slot); spare wearables go down one slot at a time.
+    const take = bagStacks(id) ? bagCount(next, id) - bagCount(prev, id) : Math.min(excess, slots)
     items[id] = (items[id] ?? 0) - take
     if (!items[id]) delete items[id]
     held[id] = (held[id] ?? 0) + take
-    excess -= take
+    excess -= bagStacks(id) ? slots : take
   }
-  const note = `Your bag is full (${cap}/${cap}). The ${heldNames(held)} stays on the ground. Drop something to make room, or leave it.`
+  const note = `Your bag is full (${bagLoad({ ...next, items })}/${cap} slots). The ${heldNames(held)} stays on the ground. Drop something to free a slot, or leave it.`
   return {
     ...next,
     items,
@@ -184,18 +228,28 @@ export function fitBag(prev: GameState, next: GameState): GameState {
   }
 }
 
-/** Put held finds into the bag, as many as fit. */
+/** Put held finds into the bag, as many as fit. A stack needs one free slot, or none if you carry some already. */
 export function takeHeld(state: GameState): GameState {
   const held = heldOf(state.flags)
   const items = { ...state.items }
   let room = bagCap(state) - bagLoad(state)
   for (const id of Object.keys(held) as ItemId[]) {
     const n = held[id] ?? 0
-    const take = bagFree(id) ? n : Math.max(0, Math.min(room, n))
+    let take = 0
+    if (bagFree(id)) take = n
+    else if (bagStacks(id)) {
+      if (bagCount({ ...state, items }, id) > 0) take = n
+      else if (room > 0) {
+        take = n
+        room -= 1
+      }
+    } else {
+      take = Math.max(0, Math.min(room, n))
+      room -= take
+    }
     if (!take) continue
     items[id] = (items[id] ?? 0) + take
     held[id] = n - take
-    if (!bagFree(id)) room -= take
   }
   const left = heldString(held)
   const flags = { ...state.flags }
@@ -233,7 +287,7 @@ export function gearLookLine(state: GameState): string {
   const parts = [
     worn.length ? `You wear ${worn.join(', ')}.` : 'You wear nothing that counts in a fight.',
     `Strike ${equippedStrike(state)}, Shell ${equippedShell(state)}.`,
-    `Bag ${bagLoad(state)}/${bagCap(state)}.`,
+    `Bag ${bagLoad(state)}/${bagCap(state)} slots.`,
   ]
   if (state.door !== 'vessel' && state.equipped?.garment === 'ceremonial_cloth') {
     parts.push(state.flags.disguiseBlown ? 'The Vessel Cloth has been seen through. It fools nobody now.' : 'The Vessel Cloth reads as a cup to Cartel eyes.')
