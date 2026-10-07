@@ -226,7 +226,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
   }
 
   const coverKey = playCoverKey(state, scene)
-  const artSrc = `${import.meta.env.BASE_URL}covers/${playCoverFile(coverKey)}?v=62`
+  const artSrc = `${import.meta.env.BASE_URL}covers/${playCoverFile(coverKey)}?v=63`
   const [bandTop, bandBot] = coverBand(coverKey)
   const artBand = { '--band-top': bandTop, '--band-bot': bandBot } as CSSProperties
 

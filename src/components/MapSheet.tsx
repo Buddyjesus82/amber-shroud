@@ -1,8 +1,20 @@
-import { useState } from 'react'
+import { useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { HUBS } from '../game/content/catalog'
 import { travelTo } from '../game/engine'
 import { adjacency, currentNode, edgeSap, hubMapOf, nodeById } from '../game/map'
+import { estimateLabel, layoutLabels, type Box } from '../game/mapLabels'
 import type { GameState, HubMapDef, HubMapNode } from '../game/types'
+
+/** Layout width before the frame is measured (a 390px phone). */
+const GUESS_W = 340
+/** Max label width: long names wrap to two lines instead of shrinking. */
+const LABEL_MAX_W = 118
+
+type Size = { w: number; h: number }
+
+function subFor(mine: boolean, sap: number | null): string {
+  return mine ? 'you' : sap ? `−${sap} sap` : 'far'
+}
 
 type Props = {
   state: GameState
@@ -70,9 +82,100 @@ function HubMapView({
   onHint: (s: string | null) => void
   onTravel: (sceneId: string) => void
 }) {
-  const adj = here ? (adjacency(map).get(here.id) ?? []) : []
-  const adjIds = new Set(adj.map((n) => n.id))
+  const hereId = here?.id ?? null
+  const adjIds = useMemo(
+    () => new Set(hereId ? (adjacency(map).get(hereId) ?? []).map((n) => n.id) : []),
+    [map, hereId],
+  )
   const hubNote = HUBS[map.hubId]?.mawNote
+
+  // Labels sit directly above or below their marker; the side is chosen to avoid collisions.
+  const frameEl = useRef<HTMLDivElement | null>(null)
+  const labelEls = useRef<Record<string, HTMLSpanElement | null>>({})
+  const exitEl = useRef<HTMLSpanElement | null>(null)
+  const [measured, setMeasured] = useState<{ W: number; sizes: Record<string, Size>; exit: Size } | null>(null)
+
+  useLayoutEffect(() => {
+    const el = frameEl.current
+    if (!el) return
+    const measure = () => {
+      const W = el.clientWidth
+      if (!W) return
+      const sizes: Record<string, Size> = {}
+      for (const n of map.nodes) {
+        const lab = labelEls.current[n.id]
+        if (lab) sizes[n.id] = { w: lab.offsetWidth, h: lab.offsetHeight }
+      }
+      const ex = exitEl.current
+      const exit = ex ? { w: ex.offsetWidth, h: ex.offsetHeight } : { w: 0, h: 0 }
+      setMeasured((prev) => {
+        if (
+          prev &&
+          prev.W === W &&
+          prev.exit.w === exit.w &&
+          prev.exit.h === exit.h &&
+          map.nodes.every((n) => prev.sizes[n.id]?.w === sizes[n.id]?.w && prev.sizes[n.id]?.h === sizes[n.id]?.h)
+        ) {
+          return prev
+        }
+        return { W, sizes, exit }
+      })
+    }
+    measure()
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(measure) : null
+    ro?.observe(el)
+    // Web fonts can land after first paint and change label widths.
+    void document.fonts?.ready.then(measure)
+    return () => ro?.disconnect()
+  }, [map, here?.id, adjIds.size])
+
+  const layout = useMemo(() => {
+    const W = measured?.W ?? GUESS_W
+    const H = (W * map.height) / map.width
+    const sizeOf = (n: HubMapNode): Size => {
+      const m = measured?.sizes[n.id]
+      if (m && m.w && m.h) return m
+      const mine = here?.id === n.id
+      const sap = here && adjIds.has(n.id) ? edgeSap(map, here.id, n.id) : null
+      return estimateLabel(n.short ?? n.name, subFor(mine, sap), LABEL_MAX_W)
+    }
+    const ex = measured?.exit && measured.exit.w ? measured.exit : estimateLabel(map.maw.label, null, 150)
+    const ecx = (map.maw.x / map.width) * W
+    const ecy = (map.maw.y / map.height) * H
+    const exitBox: Box = {
+      x: Math.min(Math.max(ecx - ex.w / 2, 6), Math.max(6, W - 6 - ex.w)),
+      y: Math.min(Math.max(ecy - ex.h / 2, 6), Math.max(6, H - 6 - ex.h)),
+      w: ex.w,
+      h: ex.h,
+    }
+    // The compass note is SVG text near the top centre.
+    const compass: Box = { x: W / 2 - 42, y: (4 / map.width) * W, w: 84, h: 16 }
+    const pt = (id: string) => {
+      const n = nodeById(map, id)
+      return n ? [(n.x / map.width) * W, (n.y / map.height) * H] : null
+    }
+    const edges: Array<[number, number, number, number]> = []
+    for (const e of map.edges) {
+      const a = pt(e.a)
+      const b = pt(e.b)
+      if (a && b) edges.push([a[0], a[1], b[0], b[1]])
+    }
+    const placements = layoutLabels({
+      width: W,
+      height: H,
+      nodes: map.nodes.map((n) => ({
+        id: n.id,
+        x: (n.x / map.width) * W,
+        y: (n.y / map.height) * H,
+        ...sizeOf(n),
+        here: here?.id === n.id,
+        side: n.labelSide,
+      })),
+      edges,
+      obstacles: [exitBox, compass],
+    })
+    return { W, H, placements, exit: exitBox }
+  }, [measured, map, here, adjIds])
 
   function tap(node: HubMapNode) {
     if (here && node.id === here.id) {
@@ -98,6 +201,7 @@ function HubMapView({
       <div
         className={`hub-map hub-map-${map.hubId}`}
         style={{ aspectRatio: `${map.width} / ${map.height}` }}
+        ref={frameEl}
       >
         <svg
           className="hub-map-art"
@@ -129,30 +233,26 @@ function HubMapView({
               </g>
             )
           })}
-          <text
-            className="map-maw-label"
-            x={map.maw.x}
-            y={map.maw.y}
-            textAnchor="middle"
-            transform={`rotate(-7 ${map.maw.x} ${map.maw.y})`}
-          >
-            {map.maw.label}
-          </text>
           {here ? <YouMark x={here.x} y={here.y} /> : null}
         </svg>
         <div className="hub-map-nodes">
-          {map.nodes.map((n) => {
+          {map.nodes.map((n, i) => {
             const mine = here?.id === n.id
             const next = adjIds.has(n.id)
             const sap = here && next ? edgeSap(map, here.id, n.id) : null
             const cls = mine ? 'map-node here' : next ? 'map-node next' : 'map-node far'
+            const place = layout.placements[i]
+            const ax = (n.x / map.width) * layout.W
+            const ay = (n.y / map.height) * layout.H
+            const labelStyle: CSSProperties = { left: `${place.box.x - ax}px`, top: `${place.box.y - ay}px` }
             return (
               <button
                 type="button"
                 key={n.id}
-                className={cls}
+                className={`${cls} lab-${place.side}`}
                 style={{ left: `${(n.x / map.width) * 100}%`, top: `${(n.y / map.height) * 100}%` }}
                 data-map-node={n.id}
+                data-label-side={place.side}
                 aria-current={mine ? 'true' : undefined}
                 aria-label={
                   mine
@@ -163,11 +263,27 @@ function HubMapView({
                 }
                 onClick={() => tap(n)}
               >
-                <span>{n.short ?? n.name}</span>
-                {mine ? <small>you</small> : next && sap ? <small>−{sap} sap</small> : <small>far</small>}
+                <i className="map-dot" aria-hidden="true" />
+                <span
+                  className="map-label"
+                  style={labelStyle}
+                  ref={(el) => {
+                    labelEls.current[n.id] = el
+                  }}
+                >
+                  <b>{n.short ?? n.name}</b>
+                  <small>{subFor(mine, sap)}</small>
+                </span>
               </button>
             )
           })}
+          <span
+            className="map-exit-label map-maw-label"
+            style={{ left: `${layout.exit.x}px`, top: `${layout.exit.y}px` }}
+            ref={exitEl}
+          >
+            {map.maw.label}
+          </span>
         </div>
       </div>
       <p className="map-hint">{hint ?? (state.sap <= 2 ? 'Sap is thin. Walks still cost Drops — empty is a crisis.' : `You are at ${here?.name ?? 'an unnamed scrap of ground'}. Tap a connected name.`)}</p>

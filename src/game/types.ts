@@ -199,6 +199,8 @@ export type HubMapNode = {
   x: number
   y: number
   mawExit?: boolean
+  /** Force the Map label above or below the marker (otherwise picked to avoid collisions). */
+  labelSide?: 'above' | 'below'
 }
 
 export type HubMapEdge = {

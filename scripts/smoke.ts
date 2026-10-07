@@ -60,6 +60,7 @@ import { JODI_LINES, SHADE_HANDS_LIVE } from '../src/game/content/shadeHands.ts'
 import { SILAS_JOB_FLAGS, SILAS_JOB_LIVE } from '../src/game/content/silasJob.ts'
 import { canSkim } from '../src/game/scavenge.ts'
 import { canTravelTo, edgeSap, HUB_MAPS, nodeIdForScene, route } from '../src/game/map.ts'
+import { estimateLabel, layoutLabels, layoutProblems, type Box } from '../src/game/mapLabels.ts'
 import {
   clearAllSaves,
   clearSave,
@@ -2661,7 +2662,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v62'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v63'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -2683,7 +2684,7 @@ assert(css.includes('--story-top: min(calc(56.25cqi * var(--band-bot, 0.5)), 50c
 assert(css.includes('rgba(12, 7, 4, 0.58)'), 'story scrim stays translucent so cover art shows through')
 assert(!css.includes('rgba(12, 7, 4, 0.88)'), 'story scrim is lighter than the v32 slab')
 const playSrc = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
-assert(playSrc.includes('?v=62'), 'scene cover URLs are cache-busted with the service worker')
+assert(playSrc.includes('?v=63'), 'scene cover URLs are cache-busted with the service worker')
 assert(!css.includes('object-position: center 68%'), 'scene art no longer crops toward the ground')
 assert(!css.includes('height: 56px'), 'short phones no longer squash covers into a head-cropping strip')
 assert(css.includes('place-items: center'), 'game screen is centered on the backdrop')
@@ -4596,6 +4597,57 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(!/\.title-hero img \{[^}]*object-fit: cover/.test(css), 'title art is not cover-cropped')
   assert(readdirSync('public/covers').includes('world.jpg') && !readdirSync('public/covers').includes('world.png'), 'clean title art (world.jpg) replaces the lettered world.png')
   assert(sw.includes('covers/world.jpg'), 'SW caches the clean title art')
+}
+
+
+// Map labels sit directly above or below their marker, inside the frame, clear of other markers,
+// labels and the exit label, for every hub and every "you are here" node, on a 390px phone (341px map).
+{
+  const W = 341
+  const labelClashes: string[] = []
+  for (const map of Object.values(HUB_MAPS)) {
+    const H = (W * map.height) / map.width
+    const ex = estimateLabel(map.maw.label, null, 200)
+    const exitBox: Box = {
+      x: Math.min(Math.max((map.maw.x / map.width) * W - ex.w / 2, 6), W - 6 - ex.w),
+      y: Math.min(Math.max((map.maw.y / map.height) * H - ex.h / 2, 6), H - 6 - ex.h),
+      w: ex.w,
+      h: ex.h,
+    }
+    const compass: Box = { x: W / 2 - 42, y: (4 / map.width) * W, w: 84, h: 16 }
+    const px = (id: string) => {
+      const n = map.nodes.find((m) => m.id === id)!
+      return [(n.x / map.width) * W, (n.y / map.height) * H] as const
+    }
+    const edges = map.edges.map((e) => [...px(e.a), ...px(e.b)] as [number, number, number, number])
+    for (const here of map.nodes) {
+      const adj = new Set(map.edges.flatMap((e) => (e.a === here.id ? [e.b] : e.b === here.id ? [e.a] : [])))
+      const nodes = map.nodes.map((n) => {
+        const mine = n.id === here.id
+        const sap = adj.has(n.id) ? edgeSap(map, here.id, n.id) : null
+        const sub = mine ? 'you' : sap != null ? `−${sap} sap` : 'far'
+        return { id: n.id, x: (n.x / map.width) * W, y: (n.y / map.height) * H, ...estimateLabel(n.short ?? n.name, sub, 118), here: mine, side: n.labelSide }
+      })
+      const input = { width: W, height: H, nodes, edges, obstacles: [exitBox, compass] }
+      const placed = layoutLabels(input)
+      placed.forEach((p, i) => {
+        const n = nodes[i]
+        const above = p.box.y + p.box.h <= n.y
+        const below = p.box.y >= n.y
+        assert(above || below, `${map.hubId}/${here.id}: ${n.id} label sits above or below its marker`)
+        assert(n.x >= p.box.x && n.x <= p.box.x + p.box.w, `${map.hubId}/${here.id}: ${n.id} label is centred over its marker column`)
+      })
+      for (const b of layoutProblems(input, placed)) labelClashes.push(`${map.hubId} (here=${here.id}): ${b}`)
+    }
+  }
+  assert(!labelClashes.length, `map labels collide: ${labelClashes.join('; ')}`)
+  const css = readFileSync(join(process.cwd(), 'src/index.css'), 'utf8')
+  const labelCss = css.slice(css.indexOf('.map-node .map-label b {'), css.indexOf('.map-node .map-label small {'))
+  assert(/font-size: 1rem/.test(labelCss), 'map label names are 1rem (18px) — readable on a phone')
+  assert(/\.map-node \.map-label \{[^}]*max-width: 118px[^}]*white-space: normal/.test(css), 'long map names wrap rather than shrink')
+  assert(/\.map-exit-label \{[^}]*font-size: 0\.95rem/.test(css), 'exit labels get the same readable treatment')
+  const sheetSrc = readFileSync(join(process.cwd(), 'src/components/MapSheet.tsx'), 'utf8')
+  assert(sheetSrc.includes('layoutLabels(') && sheetSrc.includes('onClick={() => tap(n)}'), 'MapSheet lays labels out and nodes still tap to travel')
 }
 
 console.log('OK', {

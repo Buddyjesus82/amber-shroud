@@ -1142,126 +1142,118 @@ h2 {
   inset: 0;
 }
 
+/*
+ * Map nodes: a charcoal marker at the location, and the name on a parchment plate directly above or
+ * below it (side picked in MapSheet to avoid collisions). The button is a zero-size anchor at the
+ * marker; marker, label and a 44px hit ring are its children, so the whole thing taps.
+ */
 .map-node {
   position: absolute;
-  transform: translate(-50%, -50%) rotate(-1.2deg);
-  min-width: 68px;
-  min-height: 44px;
-  padding: 0.28rem 0.48rem 0.22rem;
-  border-radius: 12px;
-  border: 1px solid var(--line);
-  background: rgba(18, 10, 6, 0.96);
-  color: var(--paper-dim);
-  font-size: 0.68rem;
-  letter-spacing: 0.02em;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.05rem;
+  width: 0;
+  height: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: none;
+  color: #1c140c;
   z-index: 2;
   touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.scrap-sheet .map-node {
-  border: 0;
-  background: radial-gradient(ellipse at 50% 48%, rgba(232, 212, 176, 0.88) 0%, rgba(232, 212, 176, 0.25) 62%, transparent 78%);
-  border-radius: 0;
-  color: #1c140c;
-  font-family: Kalam, Caveat, cursive;
-  font-size: 0.88rem;
-  font-weight: 700;
-  letter-spacing: 0;
-  line-height: 1.05;
-  text-shadow:
-    0 0 6px rgba(228, 203, 160, 0.85),
-    0.4px 0.4px 0 rgba(228, 203, 160, 0.9);
+.map-node .map-dot {
+  position: absolute;
+  left: -7px;
+  top: -7px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #2a1c12;
+  box-shadow:
+    0 0 0 2px rgba(238, 220, 184, 0.9),
+    0 0 0 3px rgba(42, 28, 18, 0.35);
 }
 
-.scrap-sheet .map-node:nth-child(2n) {
-  transform: translate(-50%, -50%) rotate(1.1deg);
-}
-
-.scrap-sheet .map-node:nth-child(3n) {
-  transform: translate(-50%, -50%) rotate(-2.1deg);
-}
-
-.map-node small {
-  font-size: 0.58rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  opacity: 0.78;
-}
-
-.scrap-sheet .map-node small {
-  font-size: 0.62rem;
-  letter-spacing: 0.03em;
-  text-transform: none;
-  font-weight: 400;
-  opacity: 0.82;
-}
-
-.map-node.here {
-  background: #3a2710;
-  color: var(--amber-2);
-  border-color: var(--amber);
-  box-shadow: 0 0 0 1px rgba(244, 193, 90, 0.35);
-}
-
-.scrap-sheet .map-node.here {
-  background: radial-gradient(ellipse at 48% 58%, rgba(28, 20, 12, 0.16), transparent 68%);
-  color: #120c08;
-  box-shadow: none;
-  z-index: 3;
-  font-size: 0.92rem;
-  min-width: 74px;
-  min-height: 48px;
-  padding: 0.4rem 0.62rem 0.32rem;
-}
-
-.scrap-sheet .map-node.here::before {
+.map-node .map-dot::after {
   content: '';
   position: absolute;
-  inset: 1px 4px;
-  border: 1.6px solid #1c140c;
-  border-radius: 48% 54% 46% 56% / 54% 44% 58% 46%;
-  opacity: 0.88;
-  pointer-events: none;
-  transform: rotate(-8deg);
+  inset: -15px;
+  border-radius: 50%;
 }
 
-.map-node.next {
-  color: var(--paper);
-  border-color: rgba(232, 163, 23, 0.7);
-  background: rgba(42, 26, 12, 0.95);
+.map-node.next .map-dot {
+  background: #1c140c;
+  box-shadow:
+    0 0 0 2px rgba(238, 220, 184, 0.95),
+    0 0 0 3.5px #1c140c;
 }
 
-.scrap-sheet .map-node.next {
-  color: #1a120c;
+.map-node.far .map-dot {
+  background: #5a4430;
+  width: 11px;
+  height: 11px;
+  left: -5.5px;
+  top: -5.5px;
+}
+
+/* The "you are here" ring in the art is the marker. */
+.map-node.here .map-dot {
   background: transparent;
   box-shadow: none;
 }
 
-.scrap-sheet .map-node.next::after {
-  content: '';
+.map-node .map-label {
   position: absolute;
-  left: 16%;
-  right: 18%;
-  bottom: 11px;
-  height: 1.5px;
-  background: #2a1c12;
-  opacity: 0.55;
-  transform: rotate(-2deg);
-  pointer-events: none;
+  display: block;
+  width: max-content;
+  max-width: 118px;
+  padding: 1px 6px 2px;
+  border-radius: 7px;
+  background: rgba(238, 220, 184, 0.88);
+  box-shadow: 0 0 0 1px rgba(42, 28, 18, 0.22);
+  text-align: center;
+  white-space: normal;
+  overflow-wrap: break-word;
+  font-family: Kalam, Caveat, cursive;
+  color: #1c140c;
+  text-shadow: 0 0 3px rgba(238, 220, 184, 0.95);
+  pointer-events: auto;
 }
 
-.map-node.far {
-  opacity: 0.55;
+.map-node .map-label b {
+  display: block;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.05;
 }
 
-.scrap-sheet .map-node.far {
-  opacity: 0.78;
+.map-node .map-label small {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 400;
+  line-height: 1.1;
+  opacity: 0.85;
+}
+
+.map-node.here .map-label {
+  background: rgba(244, 226, 190, 0.96);
+  box-shadow: 0 0 0 1.6px #1c140c;
+  color: #120c08;
+  z-index: 3;
+}
+
+.map-node.next .map-label {
+  box-shadow: 0 0 0 1.2px rgba(28, 20, 12, 0.7);
+}
+
+.map-node.far .map-label {
   color: #3a2818;
+  background: rgba(238, 220, 184, 0.78);
+}
+
+.map-node:focus-visible .map-label {
+  outline: 2px solid var(--amber);
+  outline-offset: 1px;
 }
 
 .map-edge,
@@ -1299,8 +1291,7 @@ h2 {
   opacity: 0.42;
 }
 
-.map-compass,
-.map-maw-label {
+.map-compass {
   fill: #3a2a1c;
   font-size: 3.4px;
   letter-spacing: 0.04em;
@@ -1309,9 +1300,26 @@ h2 {
   font-weight: 700;
 }
 
-.map-maw-label {
-  fill: #6a2e18;
-  font-size: 3.7px;
+.map-exit-label {
+  position: absolute;
+  display: block;
+  width: max-content;
+  max-width: 200px;
+  white-space: nowrap;
+  padding: 1px 7px 2px;
+  border-radius: 7px;
+  background: rgba(238, 220, 184, 0.88);
+  box-shadow: 0 0 0 1px rgba(106, 46, 24, 0.45);
+  color: #6a2e18;
+  font-family: Kalam, Caveat, cursive;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.1;
+  text-align: center;
+  text-shadow: 0 0 3px rgba(238, 220, 184, 0.95);
+  transform: rotate(-3deg);
+  pointer-events: none;
+  z-index: 1;
 }
 
 .map-you-smudge {
