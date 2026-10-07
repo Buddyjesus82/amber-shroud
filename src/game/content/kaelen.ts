@@ -78,7 +78,7 @@ export const campKaelenScenes: Scene[] = [
       },
       {
         tags: ['cut', 'hole', 'wire', 'route', 'escape'],
-        reply: '"A hole is a trade route. I sell those too. Pay on the rumor shelf. Oil-Tooth still hotwires the Strider. That is not me."',
+        reply: '"A hole is a trade route. I sell those too. Pay on the rumor shelf. Oil-Tooth still hotwires the Strider."',
         effects: { goto: 'camp:kaelen-rumors' },
       },
       {

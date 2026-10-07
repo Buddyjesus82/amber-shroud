@@ -337,7 +337,7 @@ Ride the last mile and I drop you with Ossa. Walk, and the Cartel keeps your tra
       {
         if: { flag: 'jaxsonInside' },
         mode: 'append',
-        body: `"You already took the job," he adds. "This is the receipt. I am still not Kaelen."`,
+        body: `"You already took the job," he adds. "This is the receipt."`,
       },
     ],
     choices: [

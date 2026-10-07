@@ -246,6 +246,10 @@ function authored(state: GameState, scene: Scene): string[] {
   }
 
   if (id === 'camp:jaxson') {
+    if (!on(state, 'jaxsonPlan') && !on(state, 'jaxsonInside')) {
+      push(lines, 'He says he has a plan to get out. Ask about it.')
+      return lines
+    }
     push(lines, 'Ask him how to beat Valerius and he lays out the plan.')
     if (!on(state, 'jaxsonInside')) push(lines, 'Ask him for the wrench. The station comes after. Kaelen is a different counter.')
     else if (!on(state, 'guardDown')) push(lines, 'He has already given you the job. The vent is west of here.')

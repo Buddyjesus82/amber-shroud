@@ -124,13 +124,7 @@ Prison-break technical inside man. Reckless. Charismatic. Anti-authority. Humor 
     later: {
       'camp:cages': `Holding pens. Each cage a ribcage for a penniless laborer. Yours still smells like the last Bleed. Cartel Scrip in the hem.
 
-Jaxson is still in the next bunk, brass jaw working. The job is the station, then a Strider.`,
-      'camp:lean': `The stall is hot metal and skimmed sap. The oversized wrench is in his fist.
-
-"Bleed-Cut. Great Bleed is coming. You sabotage the guard station. I hotwire a Strider."`,
-      'camp:jaxson': `"Valerius is the first thing you have to get out from under," Jaxson says, smirking around the brass. "Tower. Baton. He hunts anyone skimming Sap. I have watched the guard station until I could draw it in grease.
-
-Great Bleed hits, you sabotage that station. I hotwire a Strider. We leave the pens. I do not sell headings — that is Kaelen the Sifter, at the Wire. Jittery merchant. Glints buy intel. Scrap buys Drops. He is not me."`,
+Jaxson is still in the next bunk, brass jaw working. He has a way out, if you ask.`,
       'ch1:p-oil': `The stolen Strider coughs like a guilty throat. Jaxson is under the hull anyway — brass, leather, tags he still has not cut off. He hotwired. He will not tour. Red Maw is east of his cowardice.`,
     },
   },
