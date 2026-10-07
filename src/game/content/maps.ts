@@ -10,7 +10,7 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
     blurb: 'Cartel wire. East is Maw-country — days away. The sealed Spire is farther still. Walk only the roads that connect.',
     maw: { x: 78, y: 124, label: 'Maw / dunes' },
     nodes: [
-      { id: 'tower', name: 'Overseer', sceneId: 'camp:tower', x: 68, y: 10 },
+      { id: 'tower', name: 'Overseer', sceneId: 'camp:tower', x: 68, y: 8 },
       { id: 'guard', name: 'Guard Station', short: 'Guard', sceneId: 'camp:guard', x: 64, y: 28 },
       { id: 'vents', name: 'Steam Vents', short: 'Vents', sceneId: 'camp:vents', x: 20, y: 40 },
       { id: 'bay', name: 'Skiff Bay', sceneId: 'camp:bay', x: 84, y: 50 },
@@ -139,14 +139,14 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
     height: 120,
     defaultNode: 'rim',
     blurb: 'You are at the bite. All three roads end here. The sealed Spire waits east, past the Threshold. The Lip is the only road into the walking dark.',
-    maw: { x: 88, y: 96, label: 'The Maw' },
+    maw: { x: 86, y: 106, label: 'The Maw' },
     nodes: [
       { id: 'rim', name: 'Maw Rim', short: 'Rim', sceneId: 'maw:rim', x: 50, y: 48 },
       { id: 'market', name: 'Bone Market', short: 'Market', sceneId: 'maw:market', x: 22, y: 38 },
       { id: 'stilt', name: 'Stilt Shade', short: 'Stilts', sceneId: 'maw:stilt', x: 26, y: 74 },
       { id: 'smoke', name: 'Skiff Smoke', short: 'Smoke', sceneId: 'maw:smoke', x: 74, y: 36 },
       { id: 'lip', name: 'Hollow Lip', short: 'Lip', sceneId: 'maw:lip', x: 78, y: 78, mawExit: true },
-      { id: 'tuner', name: 'The Wreck', short: 'Wreck', sceneId: 'maw:tuner', x: 40, y: 92 },
+      { id: 'tuner', name: 'The Wreck', short: 'Wreck', sceneId: 'maw:tuner', x: 42, y: 92 },
     ],
     edges: [
       { a: 'rim', b: 'market' },
