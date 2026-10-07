@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react'
-import { INTRO_CARDS, INTRO_FADE_MS, introCardMs } from '../game/intro'
+import { INTRO_CARDS, INTRO_FADE_MS, INTRO_TEXT_DELAY_MS, INTRO_TEXT_FADE_MS, introCardMs, introMotionMs } from '../game/intro'
 
 type Props = {
   /** Called on Skip and after the last scene. */
@@ -7,11 +7,21 @@ type Props = {
 }
 
 const TICK_MS = 100
+/** A single tick never counts for more than this (a throttled or backgrounded tab cannot jump scenes). */
+const MAX_STEP_MS = 250
+/** Taps this soon after the intro opens are the New game / Watch the intro tap itself (or its echo). */
+const OPEN_TAP_GUARD_MS = 800
 
 /**
  * The intro plays on its own as a slow cinematic: each still pans or zooms (the whole picture is
- * visible at the start or end of the move), the text fades in and holds, then the scene crossfades
- * into the next. Skip intro stays in the corner. Tapping anywhere else pauses and resumes.
+ * visible at the start or end of the move), the text fades in, the reading time runs, then the scene
+ * sits still for INTRO_HOLD_MS before a slow crossfade into the next. Only the current scene (and
+ * the one fading out during a crossfade) is visible; the next scene stays hidden until its turn. Skip intro stays in the corner. Tapping anywhere
+ * else pauses and resumes.
+ *
+ * Advancing is driven by one setTimeout clock measuring real elapsed time (performance.now). It
+ * never waits on CSS animation/transition events, image load events, or the page visibility state
+ * (which iOS Home Screen apps can misreport as hidden), and it starts running immediately.
  * prefers-reduced-motion: no pan or zoom, just the timed crossfade (see index.css).
  */
 export function IntroCards({ onDone }: Props) {
@@ -31,9 +41,10 @@ export function IntroCards({ onDone }: Props) {
     doneRef.current()
   }, [])
 
+  const openedAt = useRef<number | null>(null)
   useEffect(() => {
-    elapsed.current = 0
-  }, [i])
+    openedAt.current = performance.now()
+  }, [])
 
   useEffect(() => {
     if (prev === null) return
@@ -41,24 +52,37 @@ export function IntroCards({ onDone }: Props) {
     return () => window.clearTimeout(t)
   }, [prev])
 
+  // The scene clock. Restarts its timer chain when the scene changes or play resumes; elapsed time
+  // for the current scene survives a pause.
   useEffect(() => {
     if (paused) return
-    const id = window.setInterval(() => {
-      if (document.visibilityState === 'hidden') return
-      elapsed.current += TICK_MS
-      if (elapsed.current < introCardMs(INTRO_CARDS[i])) return
-      elapsed.current = 0
-      if (i >= INTRO_CARDS.length - 1) {
-        finish()
+    let last = performance.now()
+    let timer = 0
+    const tick = () => {
+      const now = performance.now()
+      elapsed.current += Math.min(Math.max(now - last, 0), MAX_STEP_MS)
+      last = now
+      if (elapsed.current >= introCardMs(INTRO_CARDS[i])) {
+        elapsed.current = 0
+        if (i >= INTRO_CARDS.length - 1) {
+          finish()
+          return
+        }
+        setPrev(i)
+        setI(i + 1)
         return
       }
-      setPrev(i)
-      setI(i + 1)
-    }, TICK_MS)
-    return () => window.clearInterval(id)
+      timer = window.setTimeout(tick, TICK_MS)
+    }
+    timer = window.setTimeout(tick, TICK_MS)
+    return () => window.clearTimeout(timer)
   }, [i, paused, finish])
 
-  const toggle = () => setPaused((p) => !p)
+  const toggle = () => {
+    // Ignore the tap that opened the intro (iOS can deliver a late echo of it to the new screen).
+    if (openedAt.current === null || performance.now() - openedAt.current < OPEN_TAP_GUARD_MS) return
+    setPaused((p) => !p)
+  }
   const card = INTRO_CARDS[i]
 
   return (
@@ -90,8 +114,13 @@ export function IntroCards({ onDone }: Props) {
       >
         {INTRO_CARDS.map((c, n) => {
           const state = n === i ? 'on' : n === prev ? 'was' : ''
-          const src = `${import.meta.env.BASE_URL}intro/${c.img}?v=59`
-          const style = { '--dur': `${introCardMs(c) + INTRO_FADE_MS}ms`, '--fade': `${INTRO_FADE_MS}ms` } as CSSProperties
+          const src = `${import.meta.env.BASE_URL}intro/${c.img}?v=60`
+          const style = {
+            '--dur': `${introMotionMs(c)}ms`,
+            '--fade': `${INTRO_FADE_MS}ms`,
+            '--text-delay': `${INTRO_TEXT_DELAY_MS}ms`,
+            '--text-fade': `${INTRO_TEXT_FADE_MS}ms`,
+          } as CSSProperties
           return (
             <section
               key={c.id}
@@ -102,7 +131,7 @@ export function IntroCards({ onDone }: Props) {
             >
               <div className="intro-art">
                 <img className="intro-fill" src={src} alt="" aria-hidden="true" />
-                <img className={`intro-img kb-${n % 4}`} src={src} alt={c.alt} />
+                <img className={`intro-img kb-${n % 4}`} src={src} alt={c.alt} decoding="async" />
               </div>
               <div className="intro-panel">
                 <h2>{c.title}</h2>

@@ -27,7 +27,7 @@ import { PEOPLE } from '../src/game/people.ts'
 import { PIKE_TALK, SARN_TALK, VETCH_TALK } from '../src/game/content/bayHands.ts'
 import { heatFactions } from '../src/game/heat.ts'
 import { RUMORS } from '../src/game/journal.ts'
-import { INTRO_CARDS, INTRO_FADE_MS, introCardMs } from '../src/game/intro.ts'
+import { INTRO_CARDS, INTRO_FADE_MS, INTRO_HOLD_MS, INTRO_TEXT_IN_MS, introCardMs, introMotionMs, introReadMs } from '../src/game/intro.ts'
 import { GLOBAL_INTENTS } from '../src/game/intent.ts'
 import { wakeEffect } from '../src/game/downed.ts'
 import { BRAND_LOOK } from '../src/game/brand.ts'
@@ -2639,7 +2639,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v59'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v60'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -2661,7 +2661,7 @@ assert(css.includes('--story-top: min(calc(56.25cqi * var(--band-bot, 0.5)), 50c
 assert(css.includes('rgba(12, 7, 4, 0.58)'), 'story scrim stays translucent so cover art shows through')
 assert(!css.includes('rgba(12, 7, 4, 0.88)'), 'story scrim is lighter than the v32 slab')
 const playSrc = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
-assert(playSrc.includes('?v=59'), 'scene cover URLs are cache-busted with the service worker')
+assert(playSrc.includes('?v=60'), 'scene cover URLs are cache-busted with the service worker')
 assert(!css.includes('object-position: center 68%'), 'scene art no longer crops toward the ground')
 assert(!css.includes('height: 56px'), 'short phones no longer squash covers into a head-cropping strip')
 assert(css.includes('place-items: center'), 'game screen is centered on the backdrop')
@@ -4492,8 +4492,10 @@ function assertHelpResolves(s: GameState, where: string) {
   }
   const intro = readFileSync('src/components/IntroCards.tsx', 'utf8')
   assert(intro.includes('data-intro-skip') && !intro.includes('data-intro-next') && !/>\s*Back\s*</.test(intro), 'intro auto-plays: Skip only, no Next or Back')
-  assert(intro.includes('data-intro-stage') && intro.includes('setPaused((p) => !p)'), 'tapping the intro pauses and resumes')
-  assert(intro.includes("document.visibilityState === 'hidden'"), 'intro does not advance while the app is in the background')
+  assert(intro.includes('data-intro-stage') && intro.includes('setPaused((p) => !p)') && intro.includes('OPEN_TAP_GUARD_MS'), 'tapping the intro pauses and resumes')
+  assert(!/visibilityState|document\.hidden|onAnimationEnd|onTransitionEnd|onLoad/.test(intro), 'intro clock never waits on visibility, CSS events, or image loads')
+  assert(intro.includes('performance.now()') && intro.includes('MAX_STEP_MS') && intro.includes('OPEN_TAP_GUARD_MS'), 'intro clock is elapsed-time based, clamped, and ignores the opening tap')
+  assert(/useState\(false\)/.test(intro.slice(intro.indexOf('const [paused'), intro.indexOf('const [paused') + 60)), 'intro does not start paused')
   assert(readFileSync('src/components/TitleScreen.tsx', 'utf8').includes('Watch the intro'), 'intro can be replayed from the title')
   const css = readFileSync('src/index.css', 'utf8')
   assert(/\.intro-art \.intro-img \{[^}]*object-fit: contain/.test(css), 'intro still is shown whole (contain), text sits below it')
@@ -4526,10 +4528,13 @@ function assertHelpResolves(s: GameState, where: string) {
 {
   for (const c of INTRO_CARDS) {
     const ms = introCardMs(c)
-    assert(ms >= 8000 && ms <= 13000, `intro scene ${c.id} holds 8-13 s (${ms})`)
+    assert(introReadMs(c) >= 5400, `intro scene ${c.id} keeps at least the old reading time`)
+    assert(ms - INTRO_TEXT_IN_MS - introReadMs(c) >= 4000 && INTRO_HOLD_MS >= 4000, `intro scene ${c.id} holds 4 s+ after reading before the crossfade`)
+    assert(introMotionMs(c) <= ms - INTRO_HOLD_MS, `intro scene ${c.id} picture is still during the hold`)
+    assert(ms >= 12000 && ms <= 18000, `intro scene ${c.id} plays 12-18 s (${ms})`)
   }
   assert(introCardMs(INTRO_CARDS.find((c) => c.id === 'doors')!) > introCardMs(INTRO_CARDS.find((c) => c.id === 'cartel')!), 'longer text holds longer')
-  assert(INTRO_FADE_MS >= 800 && INTRO_FADE_MS <= 2500, 'scenes crossfade')
+  assert(INTRO_FADE_MS >= 1400 && INTRO_FADE_MS <= 2000, 'scenes crossfade slowly (~1.5 s)')
   const css = readFileSync('src/index.css', 'utf8')
   assert(/@media \(prefers-reduced-motion: reduce\)[\s\S]*\.intro-layer\.on \.intro-img[\s\S]*animation: none/.test(css), 'reduced motion: no pan or zoom')
   for (const kf of ['intro-kb-in', 'intro-kb-out', 'intro-kb-in-right', 'intro-kb-out-left']) {

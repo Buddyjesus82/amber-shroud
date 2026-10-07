@@ -1970,15 +1970,15 @@ h2 {
   opacity: 0;
   visibility: hidden;
   transition:
-    opacity var(--fade, 1.4s) ease,
-    visibility 0s linear var(--fade, 1.4s);
+    opacity var(--fade, 1.5s) ease,
+    visibility 0s linear var(--fade, 1.5s);
 }
 
 .intro-layer.on {
   opacity: 1;
   visibility: visible;
   transition:
-    opacity var(--fade, 1.4s) ease,
+    opacity var(--fade, 1.5s) ease,
     visibility 0s;
   z-index: 1;
 }
@@ -2097,7 +2097,7 @@ h2 {
 
 .intro-layer.on .intro-panel,
 .intro-layer.was .intro-panel {
-  animation: intro-text 2.2s ease 0.9s both;
+  animation: intro-text var(--text-fade, 2.2s) ease var(--text-delay, 1.2s) both;
 }
 
 @keyframes intro-text {
