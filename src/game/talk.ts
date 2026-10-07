@@ -1,3 +1,4 @@
+import { HEAR_PLAN, PLAN_HEARD, PLAN_UNHEARD } from './campJob'
 import { personAtScene, type PersonId } from './people'
 import type { IntentRule } from './types'
 
@@ -8,22 +9,40 @@ const TRADE = ['trade', 'buy', 'sell', 'shop', 'barter', 'deal', 'price']
 
 const oiltooth: IntentRule[] = [
   {
+    tags: ['plan', 'what plan', 'ask about plan', 'his plan', 'your plan', 'the plan', 'way out', 'get out'],
+    show: PLAN_UNHEARD,
+    reply: 'He grins around the brass. "Glad you asked."',
+    effects: { ...HEAR_PLAN },
+  },
+  {
     tags: TALK,
-    show: { flagUnset: 'kaelenKnown' },
-    reply:
-      'Brass ticks. "Bleed-Cut. Sabotage the station. I hotwire. That is the talk. Want rumors? There is a trader at the Wire who deals goods. He is not me."',
+    show: PLAN_UNHEARD,
+    reply: 'Brass ticks. "Bleed-Cut. Valerius is the problem. I have a plan to get out of here. Ask about it."',
     effects: { ticks: 1 },
   },
   {
     tags: TALK,
-    show: { flag: 'kaelenKnown' },
+    show: { all: [PLAN_HEARD, { flagUnset: 'kaelenKnown' }] },
+    reply:
+      'Brass ticks. "Bleed-Cut. Sabotage the station. I hotwire. That is the talk. Want rumors? There is a trader at the Wire who deals goods."',
+    effects: { ticks: 1 },
+  },
+  {
+    tags: TALK,
+    show: { all: [PLAN_HEARD, { flag: 'kaelenKnown' }] },
     reply:
       'Brass ticks. "Bleed-Cut. Sabotage the station. I hotwire. That is the talk. Kaelen sells rumors at the Wire if you wanted a different mouth."',
     effects: { ticks: 1 },
   },
   {
     tags: HELP,
-    show: { flagUnset: 'jaxsonInside' },
+    show: PLAN_UNHEARD,
+    reply: '"Help me with my plan and I help you out of here. Ask about it."',
+    effects: { ticks: 1 },
+  },
+  {
+    tags: HELP,
+    show: { all: [{ flagUnset: 'jaxsonInside' }, PLAN_HEARD] },
     reply:
       '"Help is the job. You take the west steam-vent. I take a Strider. Traders can wait. I am the ride."',
     effects: { ticks: 1 },

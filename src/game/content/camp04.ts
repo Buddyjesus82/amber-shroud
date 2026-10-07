@@ -1,4 +1,4 @@
-import { FENCE_HOLE_BACK, TAKE_INSIDE_JOB } from '../campJob'
+import { FENCE_HOLE_BACK, HEAR_PLAN, PLAN_HEARD, PLAN_UNHEARD, TAKE_INSIDE_JOB } from '../campJob'
 import type { Scene } from '../types'
 import {
   bayHandIntents,
@@ -118,12 +118,19 @@ Overseer Valerius is the shadow over the Yard. Getting out from under him is the
       },
       {
         tags: ['kaelen', 'sifter', 'rumor', 'news', 'merchant', 'trade'],
+        show: { flag: 'kaelenKnown' },
         reply: 'Kaelen the Sifter works the Wire. Rumors. Drops.',
         effects: { goto: 'camp:wire' },
       },
       {
+        tags: ['sifter', 'rumor', 'news', 'merchant', 'trade', 'trader'],
+        show: { flagUnset: 'kaelenKnown' },
+        reply: 'Rumors and Drops change hands at the Wire.',
+        effects: { goto: 'camp:wire' },
+      },
+      {
         tags: ['sabotage', 'inside', 'wrench', 'job'],
-        show: { flagUnset: 'jaxsonInside' },
+        show: { all: [{ flagUnset: 'jaxsonInside' }, PLAN_HEARD] },
         reply: TAKE_INSIDE_JOB.flash ?? '',
         effects: { ...TAKE_INSIDE_JOB, goto: 'camp:lean' },
       },
@@ -279,7 +286,7 @@ Jaxson named a west bolt at the Guard Station. That is a different pipe. This co
       },
       {
         tags: ['sabotage', 'inside', 'wrench', 'job'],
-        show: { flagUnset: 'jaxsonInside' },
+        show: { all: [{ flagUnset: 'jaxsonInside' }, PLAN_HEARD] },
         reply: TAKE_INSIDE_JOB.flash ?? '',
         effects: { ...TAKE_INSIDE_JOB, goto: 'camp:lean' },
       },
@@ -314,7 +321,7 @@ He is the one who can break you out. He hotwires Ironclad Skiff-Striders, and he
         id: 'inside',
         label: 'Take the inside job. Take the oversized wrench.',
         sub: 'Sabotage the west steam-vent. He hotwires. Traders at the Wire sell the rest.',
-        show: { flagUnset: 'jaxsonInside' },
+        show: { all: [{ flagUnset: 'jaxsonInside' }, PLAN_HEARD] },
         effects: { ...TAKE_INSIDE_JOB, goto: 'camp:cages' },
       },
       {
@@ -386,7 +393,7 @@ He is the one who can break you out. He hotwires Ironclad Skiff-Striders, and he
       },
       {
         tags: ['sabotage', 'inside', 'wrench', 'job'],
-        show: { flagUnset: 'jaxsonInside' },
+        show: { all: [{ flagUnset: 'jaxsonInside' }, PLAN_HEARD] },
         reply: TAKE_INSIDE_JOB.flash ?? '',
         effects: { ...TAKE_INSIDE_JOB, goto: 'camp:cages' },
       },
@@ -440,6 +447,13 @@ He is the one who can break you out. He hotwires Ironclad Skiff-Striders, and he
 "Bleed-Cut," he says. "The Great Bleed is coming. You sabotage the Guard Station. I hotwire a Strider."`,
     variants: [
       {
+        if: PLAN_UNHEARD,
+        mode: 'replace',
+        body: `The stall is hot metal and skimmed sap. The oversized wrench sits in his fist.
+
+"Bleed-Cut," he says. "The Great Bleed is coming. I have a plan to get out of here."`,
+      },
+      {
         if: { flag: 'striderHot' },
         mode: 'replace',
         body: `The smirk holds. The Strider is live. "Valerius can eat the dust-cloaks. We ride, or you linger like a fool. Kaelen's rumors still cost if you have not paid for a heading."`,
@@ -455,13 +469,19 @@ He is the one who can break you out. He hotwires Ironclad Skiff-Striders, and he
         id: 'inside',
         label: 'Take the inside job. Take the oversized wrench.',
         sub: 'Sabotage the guard station. He hotwires. A trader at the Wire sells the rest.',
-        show: { flagUnset: 'jaxsonInside' },
+        show: { all: [{ flagUnset: 'jaxsonInside' }, PLAN_HEARD] },
         effects: { ...TAKE_INSIDE_JOB, goto: 'camp:lean' },
+      },
+      {
+        id: 'plan',
+        label: 'Ask about his plan',
+        show: PLAN_UNHEARD,
+        effects: { ...HEAR_PLAN },
       },
       {
         id: 'talk',
         label: 'Talk to Jaxson',
-        sub: 'The pitch. Valerius. The ride.',
+        sub: 'Valerius. The way out.',
         effects: { goto: 'camp:jaxson', ticks: 1, pressure: 1 },
       },
       {
@@ -507,7 +527,7 @@ He is the one who can break you out. He hotwires Ironclad Skiff-Striders, and he
     intents: [
       {
         tags: ['hotwire', 'strider', 'inside', 'wrench', 'job'],
-        show: { flagUnset: 'jaxsonInside' },
+        show: { all: [{ flagUnset: 'jaxsonInside' }, PLAN_HEARD] },
         reply: TAKE_INSIDE_JOB.flash ?? '',
         effects: { ...TAKE_INSIDE_JOB, goto: 'camp:lean' },
       },
@@ -522,6 +542,12 @@ He is the one who can break you out. He hotwires Ironclad Skiff-Striders, and he
         show: { flag: 'jaxsonInside' },
         reply: 'The brass jaw grins. He has been waiting to spend this job.',
         effects: { goto: 'camp:jaxson', ticks: 1 },
+      },
+      {
+        tags: ['plan', 'what plan', 'ask about plan', 'his plan', 'your plan', 'the plan', 'way out', 'get out'],
+        show: PLAN_UNHEARD,
+        reply: 'He grins around the brass. "Glad you asked."',
+        effects: { ...HEAR_PLAN },
       },
       {
         tags: ['cache', 'kallik', 'maw', 'hunger', 'rumor', 'news'],
@@ -546,17 +572,31 @@ He is the one who can break you out. He hotwires Ironclad Skiff-Striders, and he
     kind: 'talk',
     title: 'Jaxson Vance',
     speaker: 'Jaxson Vance',
-    // Hearing this speech is how the player earns Kaelen's name (onEnter sets kaelenKnown).
-    onEnter: { flag: { kaelenKnown: true } },
-    body: `"Valerius is the first thing you have to get out from under," Jaxson says, smirking around the brass. "Tower. Baton. He hunts anyone skimming Sap. I have watched the guard station until I could draw it in grease.
+    // Beat 1: Valerius, and that he has a plan. Beat 2 (after "Ask about his plan"): the plan, and Kaelen.
+    body: `"Valerius is the first thing you have to get out from under," Jaxson says, smirking around the brass. "Tower. Baton. He hunts anyone skimming Sap. I have watched the guard station until I could draw it in grease."
 
-Great Bleed hits, you sabotage that station. I hotwire a Strider. We leave the pens. I do not sell headings — that is Kaelen the Sifter, at the Wire. Jittery merchant. Glints buy intel. Scrap buys Drops. He is not me."`,
+He leans in, brass ticking. "I have a plan to get out of here."`,
+    variants: [
+      {
+        if: PLAN_HEARD,
+        mode: 'replace',
+        body: `Jaxson drops his voice under the steam. "When the Great Bleed hits, you sabotage the guard station. I hotwire a Strider. We leave the pens."
+
+He taps the brass. "If you need supplies, see Kaelen the Sifter at the Wire. Jittery merchant. Glints buy intel. Scrap buys Drops."`,
+      },
+    ],
     choices: [
+      {
+        id: 'plan',
+        label: 'Ask about his plan',
+        show: PLAN_UNHEARD,
+        effects: { ...HEAR_PLAN },
+      },
       {
         id: 'inside',
         label: 'Take the inside job. Take the oversized wrench.',
         sub: 'Sabotage the guard station. He hotwires. A trader at the Wire sells the rest.',
-        show: { flagUnset: 'jaxsonInside' },
+        show: { all: [{ flagUnset: 'jaxsonInside' }, PLAN_HEARD] },
         effects: { ...TAKE_INSIDE_JOB, goto: 'camp:lean' },
       },
       {
@@ -623,14 +663,33 @@ Great Bleed hits, you sabotage that station. I hotwire a Strider. We leave the p
     ],
     intents: [
       {
+        tags: ['plan', 'what plan', 'ask about plan', 'his plan', 'your plan', 'the plan', 'way out', 'get out', 'escape'],
+        show: PLAN_UNHEARD,
+        reply: 'He grins around the brass. "Glad you asked."',
+        effects: { ...HEAR_PLAN },
+      },
+      {
+        tags: ['plan', 'what plan', 'his plan', 'your plan', 'the plan'],
+        show: PLAN_HEARD,
+        reply: '"Great Bleed hits. You sabotage the guard station. I hotwire a Strider. We leave the pens. Supplies are Kaelen\'s, at the Wire."',
+        effects: { ticks: 1 },
+      },
+      {
         tags: ['beat valerius', 'beat him', 'how to beat', 'overseer'],
+        show: PLAN_UNHEARD,
+        reply: '"You do not beat him in a conversation. You get out from under him. I have a plan for that. Ask."',
+        effects: { ticks: 1 },
+      },
+      {
+        tags: ['beat valerius', 'beat him', 'how to beat', 'overseer'],
+        show: PLAN_HEARD,
         reply:
           '"You do not beat him in a conversation. You sabotage his station, you steal his Strider, you put dunes between his shock baton and your back. First major victory. After that he is still a shadow. Shadows follow."',
         effects: { ticks: 1 },
       },
       {
         tags: ['hotwire', 'strider', 'inside', 'wrench', 'job'],
-        show: { flagUnset: 'jaxsonInside' },
+        show: { all: [{ flagUnset: 'jaxsonInside' }, PLAN_HEARD] },
         reply: TAKE_INSIDE_JOB.flash ?? '',
         effects: { ...TAKE_INSIDE_JOB, goto: 'camp:lean' },
       },
@@ -647,8 +706,9 @@ Great Bleed hits, you sabotage that station. I hotwire a Strider. We leave the p
       },
       {
         tags: ['kaelen', 'wire', 'sifter'],
-        reply: '"Wire. Jittery merchant. Pack of vials. He sells Drops and intel. He is not me."',
-        effects: { flag: { kaelenKnown: true }, goto: 'camp:wire' },
+        show: { flag: 'kaelenKnown' },
+        reply: '"Wire. Jittery merchant. Pack of vials. He sells Drops and intel."',
+        effects: { goto: 'camp:wire' },
       },
       {
         tags: ['valerius', 'overseer', 'tower'],
@@ -685,11 +745,24 @@ Great Bleed hits, you sabotage that station. I hotwire a Strider. We leave the p
     speaker: 'Jaxson Vance',
     title: 'A Drop',
     body: `"I skim Oasis Sap. Lifetime habit. I look like a charity?" The brass jaw ticks. "Sabotage the station first. I hotwire second. Then this Drop might change pockets. Kaelen will sell you one for scrap if you are impatient. That is a different job."`,
+    variants: [
+      {
+        if: PLAN_UNHEARD,
+        mode: 'replace',
+        body: `"I skim Oasis Sap. Lifetime habit. I look like a charity?" The brass jaw ticks. "Hear my plan first. Help me with it, and this Drop might change pockets."`,
+      },
+    ],
     choices: [
+      {
+        id: 'plan',
+        label: 'Ask about his plan',
+        show: PLAN_UNHEARD,
+        effects: { ...HEAR_PLAN },
+      },
       {
         id: 'agree',
         label: 'Take the inside job first',
-        show: { flagUnset: 'jaxsonInside' },
+        show: { all: [{ flagUnset: 'jaxsonInside' }, PLAN_HEARD] },
         effects: { ...TAKE_INSIDE_JOB, goto: 'camp:lean' },
       },
       {

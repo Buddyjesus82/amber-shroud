@@ -27,6 +27,8 @@ import {
   wantsFenceHoleBack,
   TAKE_INSIDE_JOB,
   bayLookout,
+  HEAR_PLAN,
+  planHeard,
   campHeard,
   ventPatrolInPlace,
   wantsCampSabotage,
@@ -859,6 +861,24 @@ function tryCampSabotageJob(state: GameState, text: string): GameState | null {
         updatedAt: Date.now(),
       }),
       'sabotage',
+    )
+  }
+  if (!state.flags.jaxsonInside && !planHeard(state)) {
+    // You cannot take (or run) a plan you have not heard. With Jaxson, he explains it; elsewhere, a nudge.
+    const withJaxson = ['camp:cages', 'camp:lean', 'camp:jaxson', 'camp:jaxson-drop'].includes(state.sceneId)
+    if (withJaxson) {
+      return withVerb(
+        applyEffect(state, { ...HEAR_PLAN, flash: '"Easy," Jaxson says. "You have not heard the plan yet. Here it is."' }),
+        'plan',
+      )
+    }
+    return withVerb(
+      persist({
+        ...state,
+        flash: 'You have no plan for the guard station yet. Jaxson, in the bunk next to yours in the pens, says he has one.',
+        updatedAt: Date.now(),
+      }),
+      'plan',
     )
   }
   if (!state.flags.jaxsonInside) {
