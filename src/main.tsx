@@ -28,7 +28,13 @@ if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker
       .register(`${import.meta.env.BASE_URL}sw.js`)
-      .then((reg) => reg.update())
+      .then((reg) => {
+        void reg.update()
+        // A Home Screen app resumed from the background keeps its old page; check for a new build.
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible') void reg.update().catch(() => {})
+        })
+      })
       .catch(() => {
         /* install still works without SW */
       })

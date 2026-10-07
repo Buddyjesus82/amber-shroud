@@ -59,13 +59,31 @@ export const INTRO_CARDS: IntroCard[] = [
   },
 ]
 
-/** Crossfade between scenes, ms. */
-export const INTRO_FADE_MS = 1400
+/** Crossfade between scenes, ms (slow). Starts only after the scene's hold. */
+export const INTRO_FADE_MS = 1500
+/** The text starts fading in this long after the scene appears… */
+export const INTRO_TEXT_DELAY_MS = 1200
+/** …and takes this long to fade in fully. */
+export const INTRO_TEXT_FADE_MS = 2200
+/** Text fully visible at this point in the scene. */
+export const INTRO_TEXT_IN_MS = INTRO_TEXT_DELAY_MS + INTRO_TEXT_FADE_MS
+/** After the reading time, the scene sits still and fully readable this long before the crossfade. */
+export const INTRO_HOLD_MS = 4000
+
+/** Reading time once the text is fully in: about 5.4-9.9 s, longer for longer text. */
+export function introReadMs(card: IntroCard): number {
+  return Math.round(Math.min(9900, Math.max(5400, 900 + card.text.length * 34)))
+}
+
+/** When the picture's slow pan/zoom finishes: the scene is still for the whole hold. */
+export function introMotionMs(card: IntroCard): number {
+  return INTRO_TEXT_IN_MS + introReadMs(card)
+}
 
 /**
- * How long a scene plays before it crossfades to the next, ms. About 8.5-13 s:
- * enough to read the card comfortably, longer for longer text.
+ * How long a scene plays before the crossfade to the next one begins, ms:
+ * text fades in, reading time, then a still 4 s hold.
  */
 export function introCardMs(card: IntroCard): number {
-  return Math.round(Math.min(13000, Math.max(8500, 4000 + card.text.length * 34)))
+  return introMotionMs(card) + INTRO_HOLD_MS
 }
