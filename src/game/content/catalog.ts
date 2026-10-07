@@ -242,7 +242,7 @@ export const DOORS: Record<string, DoorDef> = {
     place: 'Ironwood Camp-04',
     epithet: 'the Bleed-Cut',
     blurb:
-      'Holding pens. Cartel Scrip only. The Great Bleed is about to hit. You wake with blood on the back of your head and no faction\'s kit. Jaxson hotwires. Kaelen the Sifter, once, sells rumors at the Wire.',
+      'Holding pens. Cartel Scrip only. The Great Bleed is about to hit. You wake with blood on the back of your head and no faction\'s kit. Jaxson hotwires. A trader at the Wire sells rumors — once you hear the name.',
     sap: 4,
     heat: { cartel: 3, seekers: 0, strays: 1 },
     items: { scrip: 2 },

@@ -9,6 +9,14 @@ const TRADE = ['trade', 'buy', 'sell', 'shop', 'barter', 'deal', 'price']
 const oiltooth: IntentRule[] = [
   {
     tags: TALK,
+    show: { flagUnset: 'kaelenKnown' },
+    reply:
+      'Brass ticks. "Bleed-Cut. Sabotage the station. I hotwire. That is the talk. Want rumors? There is a trader at the Wire who deals goods. He is not me."',
+    effects: { ticks: 1 },
+  },
+  {
+    tags: TALK,
+    show: { flag: 'kaelenKnown' },
     reply:
       'Brass ticks. "Bleed-Cut. Sabotage the station. I hotwire. That is the talk. Kaelen sells rumors at the Wire if you wanted a different mouth."',
     effects: { ticks: 1 },
@@ -17,7 +25,7 @@ const oiltooth: IntentRule[] = [
     tags: HELP,
     show: { flagUnset: 'jaxsonInside' },
     reply:
-      '"Help is the job. You take the west steam-vent. I take a Strider. Kaelen can wait. He is inventory. I am the ride."',
+      '"Help is the job. You take the west steam-vent. I take a Strider. Traders can wait. I am the ride."',
     effects: { ticks: 1 },
   },
   {
@@ -33,7 +41,15 @@ const oiltooth: IntentRule[] = [
     effects: { ticks: 1 },
   },
   {
+    tags: [...TRADE, 'trader', 'merchant', 'fence', 'goods', 'rumor', 'heading'],
+    show: { flagUnset: 'kaelenKnown' },
+    reply:
+      '"I do not sell Drops. I do not sell headings. There is a trader at the Wire who does — Kaelen the Sifter. Scrap for a Drop. Glints for intel. I sell a Strider that is not theirs to sell."',
+    effects: { ticks: 1, flag: { kaelenKnown: true } },
+  },
+  {
     tags: TRADE,
+    show: { flag: 'kaelenKnown' },
     reply:
       '"I do not sell Drops. I do not sell headings. Kaelen the Sifter is the shop. Wire. Scrap for a Drop. Glints for intel. I sell a Strider that is not theirs to sell."',
     effects: { ticks: 1 },
@@ -46,6 +62,14 @@ const oiltooth: IntentRule[] = [
   },
   {
     tags: ['drop', 'sap', 'vial', 'thirst'],
+    show: { flagUnset: 'kaelenKnown' },
+    reply:
+      '"I skimmed Oasis Sap for a lifetime of bolts. I do not pour it into cups that have not taken the job. Ask nicer, or find the trader at the Wire."',
+    effects: { ticks: 1 },
+  },
+  {
+    tags: ['drop', 'sap', 'vial', 'thirst'],
+    show: { flag: 'kaelenKnown' },
     reply:
       '"I skimmed Oasis Sap for a lifetime of bolts. I do not pour it into cups that have not taken the job. Ask nicer, or ask Kaelen."',
     effects: { ticks: 1 },

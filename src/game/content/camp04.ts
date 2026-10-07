@@ -79,13 +79,13 @@ Overseer Valerius is the shadow over the Yard. Getting out from under him is the
       {
         id: 'wire',
         label: 'Walk the Wire',
-        sub: 'Kaelen the Sifter sells rumors at the Wire. He does not give you a ride.',
+        sub: 'Rumors and Drops change hands at the Wire. Nobody there gives you a ride.',
         effects: { goto: 'camp:wire', ticks: 1 },
       },
       {
         id: 'job',
         label: "Jaxson's inside job is still open",
-        sub: 'Go to his stall. The job is the wrench and the west steam-vent. You can still see Kaelen first.',
+        sub: 'Go to his stall. The job is the wrench and the west steam-vent.',
         show: { flagUnset: 'jaxsonInside' },
         effects: { goto: 'camp:lean', ticks: 1 },
       },
@@ -302,20 +302,18 @@ The bunk next to you is Jaxson Vance. He is burly and grease-stained, with a per
 
 People call him Oil-Tooth because of that brass jaw. He got it saving an apprentice.
 
-He is the one who can break you out. He hotwires Ironclad Skiff-Striders, and he has skimmed Oasis Sap for as long as he has repaired them. The jokes are a shield. He watches the guards more closely than he lets on.
-
-Kaelen the Sifter sells rumors at the Wire.`,
+He is the one who can break you out. He hotwires Ironclad Skiff-Striders, and he has skimmed Oasis Sap for as long as he has repaired them. The jokes are a shield. He watches the guards more closely than he lets on.`,
     choices: [
       {
         id: 'jaxson',
         label: 'Talk to Jaxson in the next bunk',
-        sub: 'He hotwires the Striders. Kaelen, at the Wire, is the one who sells rumors.',
+        sub: 'He hotwires the Striders. Ask him about Valerius — and who deals goods.',
         effects: { goto: 'camp:jaxson', ticks: 1 },
       },
       {
         id: 'inside',
         label: 'Take the inside job. Take the oversized wrench.',
-        sub: 'Sabotage the west steam-vent. He hotwires. Kaelen can still come first.',
+        sub: 'Sabotage the west steam-vent. He hotwires. Traders at the Wire sell the rest.',
         show: { flagUnset: 'jaxsonInside' },
         effects: { ...TAKE_INSIDE_JOB, goto: 'camp:cages' },
       },
@@ -456,7 +454,7 @@ Kaelen the Sifter sells rumors at the Wire.`,
       {
         id: 'inside',
         label: 'Take the inside job. Take the oversized wrench.',
-        sub: 'Sabotage the guard station. He hotwires. You can still see Kaelen first.',
+        sub: 'Sabotage the guard station. He hotwires. A trader at the Wire sells the rest.',
         show: { flagUnset: 'jaxsonInside' },
         effects: { ...TAKE_INSIDE_JOB, goto: 'camp:lean' },
       },
@@ -548,14 +546,16 @@ Kaelen the Sifter sells rumors at the Wire.`,
     kind: 'talk',
     title: 'Jaxson Vance',
     speaker: 'Jaxson Vance',
+    // Hearing this speech is how the player earns Kaelen's name (onEnter sets kaelenKnown).
+    onEnter: { flag: { kaelenKnown: true } },
     body: `"Valerius is the first thing you have to get out from under," Jaxson says, smirking around the brass. "Tower. Baton. He hunts anyone skimming Sap. I have watched the guard station until I could draw it in grease.
 
-Great Bleed hits, you sabotage that station. I hotwire a Strider. We leave the pens. Rumors are Kaelen, at the Wire."`,
+Great Bleed hits, you sabotage that station. I hotwire a Strider. We leave the pens. I do not sell headings — that is Kaelen the Sifter, at the Wire. Jittery merchant. Glints buy intel. Scrap buys Drops. He is not me."`,
     choices: [
       {
         id: 'inside',
         label: 'Take the inside job. Take the oversized wrench.',
-        sub: 'Sabotage the guard station. He hotwires. Kaelen can still come first.',
+        sub: 'Sabotage the guard station. He hotwires. A trader at the Wire sells the rest.',
         show: { flagUnset: 'jaxsonInside' },
         effects: { ...TAKE_INSIDE_JOB, goto: 'camp:lean' },
       },
@@ -615,18 +615,6 @@ Great Bleed hits, you sabotage that station. I hotwire a Strider. We leave the p
         effects: { goto: 'camp:jaxson-drop', ticks: 1 },
       },
       {
-        id: 'kaelen',
-        label: 'Ask where Kaelen sells rumors',
-        effects: {
-          flag: { kaelenKnown: true },
-          ticks: 1,
-          pressure: 1,
-          goto: 'camp:jaxson',
-          flash:
-            '"The Wire. Jittery little Sifter. Dust-caked canvas. Pack full of vials. Glints buy intel. Scrap buys Drops. He plays all sides. He is not me."',
-        },
-      },
-      {
         id: 'leave',
         label: 'Leave him to the brass',
         tone: 'quiet',
@@ -653,8 +641,8 @@ Great Bleed hits, you sabotage that station. I hotwire a Strider. We leave the p
         effects: { goto: 'camp:guard', ticks: 1 },
       },
       {
-        tags: ['cache', 'kallik', 'maw', 'hunger', 'red', 'rumor', 'news'],
-        reply: '"Kaelen the Sifter. The Wire. Rumors for Glints. I hotwire. Do not mix the jobs."',
+        tags: ['cache', 'kallik', 'maw', 'hunger', 'red', 'rumor', 'news', 'trader', 'trade', 'merchant', 'fence', 'goods'],
+        reply: '"That is Kaelen the Sifter. The Wire. Rumors for Glints. I hotwire. Do not mix the jobs."',
         effects: { flag: { kaelenKnown: true }, goto: 'camp:wire' },
       },
       {
