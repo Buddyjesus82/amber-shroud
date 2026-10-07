@@ -2662,7 +2662,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v63'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v64'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -2684,7 +2684,7 @@ assert(css.includes('--story-top: min(calc(56.25cqi * var(--band-bot, 0.5)), 50c
 assert(css.includes('rgba(12, 7, 4, 0.58)'), 'story scrim stays translucent so cover art shows through')
 assert(!css.includes('rgba(12, 7, 4, 0.88)'), 'story scrim is lighter than the v32 slab')
 const playSrc = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
-assert(playSrc.includes('?v=63'), 'scene cover URLs are cache-busted with the service worker')
+assert(playSrc.includes('?v=64'), 'scene cover URLs are cache-busted with the service worker')
 assert(!css.includes('object-position: center 68%'), 'scene art no longer crops toward the ground')
 assert(!css.includes('height: 56px'), 'short phones no longer squash covers into a head-cropping strip')
 assert(css.includes('place-items: center'), 'game screen is centered on the backdrop')
@@ -4646,6 +4646,13 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(/font-size: 1rem/.test(labelCss), 'map label names are 1rem (18px) — readable on a phone')
   assert(/\.map-node \.map-label \{[^}]*max-width: 118px[^}]*white-space: normal/.test(css), 'long map names wrap rather than shrink')
   assert(/\.map-exit-label \{[^}]*font-size: 0\.95rem/.test(css), 'exit labels get the same readable treatment')
+  const labelRule = css.slice(css.indexOf('.map-node .map-label {'), css.indexOf('.map-node .map-label b {'))
+  const exitRule = css.slice(css.indexOf('.map-exit-label {'), css.indexOf('}', css.indexOf('.map-exit-label {')))
+  for (const [name, rule] of [['map labels', labelRule], ['exit labels', exitRule]] as const) {
+    assert(/background: none/.test(rule) && !/border-radius|box-shadow/.test(rule), `${name} have no backing plate`)
+    assert(/text-shadow:[^;]*rgba\(240, 224, 190, 1\)[^;]*0 0 6px/.test(rule), `${name} keep a parchment halo for contrast`)
+  }
+  assert(!/\.map-node\.(here|next|far) \.map-label \{[^}]*(background:|box-shadow)/.test(css), 'no state brings the plate back')
   const sheetSrc = readFileSync(join(process.cwd(), 'src/components/MapSheet.tsx'), 'utf8')
   assert(sheetSrc.includes('layoutLabels(') && sheetSrc.includes('onClick={() => tap(n)}'), 'MapSheet lays labels out and nodes still tap to travel')
 }
