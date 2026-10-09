@@ -2226,3 +2226,14 @@ h2 {
     font-size: 0.72rem;
   }
 }
+
+/* Phone portrait: crop the wide world art so the sealed Spire sits in the middle of the screen. */
+@media (max-aspect-ratio: 3/4) {
+  .title-art {
+    aspect-ratio: 4 / 3;
+  }
+  .title-art img {
+    object-fit: cover;
+    object-position: 88% center;
+  }
+}

@@ -99,7 +99,7 @@ export function equippedShell(state: GameState): number {
 export function bagFree(id: ItemId): boolean {
   const def = ITEMS[id]
   if (!def) return true
-  return def.kind === 'key' || def.kind === 'currency' || id === 'vial_empty' || id === 'ossa_token' || def.bag != null
+  return def.kind === 'key' || def.kind === 'currency' || id === 'vial_empty' || id === 'ossa_token' || id === 'knotted_wrap' || def.bag != null
 }
 
 /**
@@ -364,3 +364,16 @@ export function effectPills(fx: Effect): CostPill[] {
   }
   return pills
 }
+
+// ── Ossa's Knot ──
+/** Worn on the head, alone or tied into the Head Wrap. */
+export function knotWorn(state: Pick<GameState, 'equipped'>): boolean {
+  const head = state.equipped?.head
+  return head === 'ossa_token' || head === 'knotted_wrap'
+}
+/** In hand or on the head. */
+export function knotCarried(state: Pick<GameState, 'items'>): boolean {
+  return (state.items.ossa_token ?? 0) > 0 || (state.items.knotted_wrap ?? 0) > 0
+}
+export const KNOT_TIE_LOCKED = "Needs Ossa's Knot and a Head Wrap"
+export const KNOT_STRAYS_NOTE = 'The Knot at your brow: Strays who know Ossa let some of that go.'

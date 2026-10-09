@@ -66,7 +66,7 @@ import {
 import { talkFallback, talkIntentsFor } from './talk'
 import { applyScavenge, canScavenge, canSkim, skimHeat, skimLocked } from './scavenge'
 import { writeSave } from './save'
-import { bagCap, bagCount, bagFree, bagLoad, bagStacks, bagUnits, disguiseActive, fitBag, gearLookLine, heldNames, heldOf, SCAV_PACK_LOCKED, SCAV_PACK_RECIPE, SLOT_LABEL, slotsFor, takeHeld, wornCount } from './kit'
+import { bagCap, bagCount, bagFree, bagLoad, bagStacks, bagUnits, disguiseActive, fitBag, gearLookLine, heldNames, heldOf, KNOT_STRAYS_NOTE, KNOT_TIE_LOCKED, knotWorn, SCAV_PACK_LOCKED, SCAV_PACK_RECIPE, SLOT_LABEL, slotsFor, takeHeld, wornCount } from './kit'
 import { DISGUISE_SOFTEN_NOTE, disguiseArrival, softenCartel } from './disguise'
 import { repairSceneId } from './repair'
 import { isRumorCounter, matchRumorText, rumorChoices } from './rumors'
@@ -79,7 +79,12 @@ import type { Choice, DoorId, Effect, EquipSlot, FlagMap, GameState, ItemId, Sce
  * quietScenes: quiet scenes since the last hunt before he may appear.
  * tickMod: he only stops when the scene clock divides cleanly by this.
  */
-export const KAELEN_APPEARANCE = { quietScenes: 8, tickMod: 11 } as const
+/**
+ * Kaelen walks every door's roads once you are out of the opening.
+ * He stops after `gap` unhurried actions (not mid-hunt, not mid-fight), counted, not tick-gated,
+ * so a walk that skips ticks cannot skip him.
+ */
+export const KAELEN_APPEARANCE = { quietScenes: 2, gap: 7 } as const
 
 /**
  * Opening cells and pens. His pack does not stop in these, on any door.
@@ -366,6 +371,14 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     const paid = applyEffect(state, rest)
     return travelTo(paid, fx.travel)
   }
+  // Ossa's Knot worn: Strays who know her go easier. Every Stray Heat rise is one lighter.
+  if (knotWorn(state) && (fx.heat?.strays ?? 0) > 0) {
+    fx = {
+      ...fx,
+      heat: { ...fx.heat, strays: (fx.heat?.strays ?? 0) - 1 },
+      flash: typeof fx.flash === 'string' ? `${fx.flash} ${KNOT_STRAYS_NOTE}` : fx.flash,
+    }
+  }
   if (fx.flag?.chipGamble && (state.items.overseer_chip ?? 0) > 0 && !state.flags.chipBluff) {
     const rare = (state.ticks * 17 + state.heat.cartel * 3 + 1) % 8 === 0
     const flag = { ...(fx.flag ?? {}) }
@@ -605,7 +618,8 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     }
   }
 
-  const place = getScene(next.sceneId).kind === 'place'
+  const kindHere = getScene(next.sceneId).kind
+  const place = kindHere === 'place' || kindHere === 'talk' || kindHere === 'story'
   if (next.sceneId === 'camp:kaelen' || next.sceneId === 'thresh:kaelen') {
     const hub = next.sceneId.startsWith('camp') ? 'camp04' : 'threshold'
     next.flags = { ...next.flags, kaelenHub: hub }
@@ -618,10 +632,15 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     !next.flags.hunterHere &&
     !next.flags.encounterHere &&
     !next.sceneId.includes('kaelen') &&
-    Number(next.flags.huntQuiet ?? 0) >= KAELEN_APPEARANCE.quietScenes &&
-    next.ticks % KAELEN_APPEARANCE.tickMod === 0
+    !next.flags.downed &&
+    (next.health ?? 1) > 0
   ) {
-    next.flags = { ...next.flags, kaelenPassing: true, kaelenHub: next.hubId ?? next.flags.kaelenHub }
+    const gap = Number(next.flags.kaelenGap ?? 0) + 1
+    if (gap >= KAELEN_APPEARANCE.gap && Number(next.flags.huntQuiet ?? 0) >= KAELEN_APPEARANCE.quietScenes) {
+      next.flags = { ...next.flags, kaelenPassing: true, kaelenGap: 0, kaelenHub: next.hubId ?? next.flags.kaelenHub }
+    } else {
+      next.flags = { ...next.flags, kaelenGap: gap }
+    }
   }
   if (next.flags.sybellaHunting && next.heat.cartel >= 6 && !next.flags.opposedHook) {
     next.flags = { ...next.flags, opposedHook: true, heardOpposed: true }
@@ -718,6 +737,30 @@ export function craftScavPack(state: GameState): GameState {
     ticks: 1,
     flash: 'You bend the scrap into a frame and stitch canvas over it with the cord. Scav Pack: your bag now has 14 slots.',
   })
+}
+
+/** Tie Ossa's Knot through a Head Wrap: one head piece with both. Worn stays worn. */
+export function canTieKnot(state: GameState): boolean {
+  return (state.items.ossa_token ?? 0) > 0 && (state.items.head_wrap ?? 0) > 0
+}
+
+export function tieKnot(state: GameState): GameState {
+  if (!canTieKnot(state)) return persist({ ...state, flash: `${KNOT_TIE_LOCKED}.` })
+  const head = state.equipped?.head
+  const wasWorn = head === 'ossa_token' || head === 'head_wrap'
+  const equipped = { ...state.equipped }
+  if (wasWorn) delete equipped.head
+  const next = applyEffect(
+    { ...state, equipped },
+    {
+      remove: { ossa_token: 1, head_wrap: 1 },
+      add: { knotted_wrap: 1 },
+      ticks: 1,
+      flash: `You tie Ossa's Knot through the Head Wrap. Knotted Head Wrap: Shell 1, and everything the Knot does.${wasWorn ? ' You keep it on.' : ' Wear it in Gear.'}`,
+    },
+  )
+  if (!wasWorn) return next
+  return persist({ ...next, equipped: { ...next.equipped, head: 'knotted_wrap' } })
 }
 
 export function canCraftScavPack(state: GameState): boolean {
@@ -1142,6 +1185,9 @@ export function interpret(state: GameState, text: string): GameState {
   if (aimed?.kind === 'target' && /^(?:my |your )?(?:gear|bag|pack|kit|self|myself|inventory|clothes|clothing)$/.test(aimed.target)) {
     return withVerb(persist({ ...state, flash: gearLookLine(state), updatedAt: Date.now() }), 'look')
   }
+  if (/^tie (?:the |ossa'?s? )?knot\b/.test(said)) {
+    return withVerb(tieKnot(state), 'craft')
+  }
   if (/^(?:craft|stitch|make)(?: a)?(?: scav)? (?:pack|bag)$|^craft$/.test(said)) {
     return withVerb(craftScavPack(state), 'craft')
   }
@@ -1339,6 +1385,8 @@ function bagChoices(state: GameState): Choice[] {
 
 function withKaelenPass(state: GameState, rows: Choice[]): Choice[] {
   if (!state.flags.kaelenPassing || state.sceneId === 'roam:kaelen' || kaelenHeld(state.sceneId)) return rows
+  const k = getScene(state.sceneId).kind
+  if (k === 'crisis' || k === 'ending') return rows
   return [
     ...rows,
     {

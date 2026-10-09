@@ -63,7 +63,7 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
     width: 100,
     height: 120,
     defaultNode: 'ridge',
-    blurb: 'Stray country. Red Maw sits a hard day south — nearer than Ironwood, not a doorstep.',
+    blurb: 'Stray country. Walk only the roads that connect.',
     maw: { x: 86, y: 112, label: 'Maw-haze' },
     nodes: [
       { id: 'ridge', name: 'Noon Spine', short: 'Ridge', sceneId: 'spine:ridge', x: 30, y: 26 },
@@ -102,7 +102,7 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
     width: 100,
     height: 120,
     defaultNode: 'court',
-    blurb: 'Seeker fringe. The sealed Spire stands past the paddock. What opens it is at Red Maw, a short road west.',
+    blurb: 'Seeker fringe. Walk only the roads that connect.',
     maw: { x: 18, y: 98, label: '← Red Maw, west' },
     nodes: [
       { id: 'court', name: 'Threshold Court', short: 'Court', sceneId: 'thresh:court', x: 50, y: 40 },
@@ -140,7 +140,7 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
     width: 100,
     height: 120,
     defaultNode: 'rim',
-    blurb: 'You are at the bite. All three roads end here. The sealed Spire waits east, past the Threshold. The Lip is the only road into the walking dark.',
+    blurb: 'You are at the bite. The Lip is the only road into the walking dark.',
     maw: { x: 86, y: 106, label: 'The Maw' },
     nodes: [
       { id: 'rim', name: 'Maw Rim', short: 'Rim', sceneId: 'maw:rim', x: 50, y: 48 },

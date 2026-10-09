@@ -67,6 +67,14 @@ export const ITEMS: Record<ItemId, ItemDef> = {
     slot: 'head',
     desc: 'Stilt-cord knotted twice. A headband. She is alive. She remembers.',
   },
+  knotted_wrap: {
+    id: 'knotted_wrap',
+    name: 'Knotted Head Wrap',
+    kind: 'armor',
+    slot: 'head',
+    shell: 1,
+    desc: "Your Head Wrap with Ossa's Knot tied through it. Head slot, Shell 1. Keeps grit out, and carries everything the Knot does.",
+  },
   kallik_mark: {
     id: 'kallik_mark',
     name: "Kallik's Mark",

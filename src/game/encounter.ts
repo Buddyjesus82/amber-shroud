@@ -6,7 +6,7 @@ import { CARAPACE_HUNTER, SPINE_HUNTER } from './content/spineHunter'
 import type { Choice, Effect, FlagMap, GameState, ItemId } from './types'
 import { hash, OPENERS, sandAnswers, PAIR_LINE, HUSK_CONTROLLER_LINE, sandGripLine, TERRAINS, terrainPool, type Terrain, type TerrainId } from './fightTricks'
 
-export type EncounterKind = 'jackal' | 'cutter' | 'tick' | 'pup' | 'scavenger' | 'patrol' | 'handler' | 'overseer' | 'collector' | 'carapace' | 'husk'
+export type EncounterKind = 'jackal' | 'cutter' | 'tick' | 'pup' | 'scavenger' | 'patrol' | 'handler' | 'hound' | 'overseer' | 'collector' | 'carapace' | 'husk'
 
 /** Fight hits. Sap stays thirst/travel. */
 export const HEALTH_MAX = 6
@@ -76,6 +76,14 @@ const SPECS: Spec[] = [
     shell: 2,
     hp: 2,
     line: 'The Hound-handler. Lean kit, shock-leash, an amber-eyed shard-hound at his heel with its eyes open. He is the fight. The hound stays on the leash.',
+  },
+  {
+    kind: 'hound',
+    name: 'Shard-Hound',
+    strike: 3,
+    shell: 2,
+    hp: 3,
+    line: 'A Shard-Hound off the lead. Cartel-bred, resin-jawed, amber eyes open. The handler lets it come.',
   },
   {
     kind: 'overseer',
@@ -531,7 +539,7 @@ function pocket(state: GameState): number {
  */
 /** People carry salve sometimes. Beasts never do. */
 export const HUMAN_KINDS: readonly EncounterKind[] = ['cutter', 'scavenger', 'patrol', 'handler', 'overseer', 'collector', 'carapace']
-export const BEAST_KINDS: readonly EncounterKind[] = ['jackal', 'tick', 'pup']
+export const BEAST_KINDS: readonly EncounterKind[] = ['jackal', 'tick', 'pup', 'hound']
 /** Percent chance a downed human also carries a Resin Salve. */
 export const HUMAN_SALVE_PCT = 18
 
@@ -572,6 +580,8 @@ function pocketLoot(state: GameState, kind: EncounterKind): Partial<Record<ItemI
   if (kind === 'jackal') return { scrap: 2 }
   if (kind === 'tick') return { vial_drop: 1 }
   if (kind === 'pup') return { glints: 1, scrap: 1 }
+  // Grown Shard-Hound: the pup's pocket, plus the resin off its jaw.
+  if (kind === 'hound') return { glints: 1, scrap: 2 }
   if (kind === 'husk') {
     const roll = pocket(state)
     // Resin scrap from the plates; sometimes a Drop from the core. Never salve, never gear.
@@ -987,6 +997,8 @@ export function resolveEncounter(
       health: stagger ? -c.yourHp : healthDelta,
       add,
       sap,
+      // Cartel property: killing the hound is on the ledger.
+      heat: spec.kind === 'hound' ? { cartel: 1 } : undefined,
       pressure: dmgIn > 0 ? 1 : undefined,
       flag: { encounterGrip: grip },
     })

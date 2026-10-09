@@ -104,6 +104,11 @@ export const OPENERS: Record<EncounterKind, string[]> = {
     "The Hound-handler lets the hound's lead out a hand's width and steps in with the shock-leash.",
     'Boots and a chain. The Hound-handler walks up with the hound on a short lead, the shock-leash in his free hand.',
   ],
+  hound: [
+    'A Shard-Hound off the lead. Cartel-bred, resin-jawed, amber eyes open. The handler lets it come.',
+    'The handler unclips the lead. The hound comes low and fast, resin on its jaw.',
+    'The hound circles once, then comes for your arm. The handler watches.',
+  ],
   overseer: [
     'Overseer Valerius. Bald, scarred, steam baton in the fist. He came himself.',
     'Overseer Valerius sets his feet and lets the steam baton hiss. "Useful or broken. Choose."',
