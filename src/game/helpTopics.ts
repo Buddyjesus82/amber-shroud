@@ -97,7 +97,7 @@ const FIGHT_SECTIONS: HelpSection[] = [
         text: "Prisoner, at Jaxson's stall, Skiff Bay, or his Maw bench, once you work with him: he pulls you up. 2 Health. Costs 1 scrap, or 1 Sap if you have no scrap.",
       },
       { bullet: true, text: 'Outcast, on the Noon Spine, once you have helped Corvin Pryce: he pulls you up. 2 Health. Costs 1 Sap.' },
-      { bullet: true, text: 'In Red Maw with Ossa as an ally: she pulls you up. 2 Health. Costs a Drop, or 1 Sap if you have no Drop.' },
+      { bullet: true, text: 'In Red Maw with Ossa as an ally: she pulls you up. 2 Health. Costs a Resin Salve, or 1 Sap if you have no salve.' },
       { text: 'If that Sap was your last, the dry-out crisis follows.' },
       {
         text: 'By door: Prisoner starts in Camp-04, so a Cartel fight there ends in the Yard. Outcast uses the most-ground rule on the Noon Spine until Corvin owes you, and Vessel uses it on the Threshold. In Red Maw, every door uses the Ossa rule once she is an ally, and the most-ground rule otherwise.',

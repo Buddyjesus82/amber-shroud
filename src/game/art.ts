@@ -145,7 +145,7 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   const id = scene.id
   if (state.flags.encounterHere) {
     const kind = state.flags.encounterKind
-    if (kind === 'handler' || kind === 'pup') return 'hound'
+    if (kind === 'handler' || kind === 'pup' || kind === 'hound') return 'hound'
     if (kind === 'overseer') return 'valerius'
     if (kind === 'patrol') return 'rell'
     if (kind === 'scavenger' || kind === 'cutter') return 'hunger'

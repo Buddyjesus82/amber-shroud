@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { bindSalve, canCraftScavPack, craftScavPack, drinkDrop, dropItem, dropStack, equipBlock, equipItem, sapLabel, unequipSlot } from '../game/engine'
+import { bindSalve, canCraftScavPack, canTieKnot, craftScavPack, tieKnot, drinkDrop, dropItem, dropStack, equipBlock, equipItem, sapLabel, unequipSlot } from '../game/engine'
 import { heatFactions } from '../game/heat'
 import {
   bagCap,
@@ -17,6 +17,7 @@ import {
   heldOf,
   listedKit,
   SCAV_PACK_LOCKED,
+  KNOT_TIE_LOCKED,
   SHELL_CAP,
   SLOT_EMPTY,
   SLOT_LABEL,
@@ -264,6 +265,16 @@ function CraftBox({ state, onChange }: { state: GameState; onChange: (s: GameSta
           <p className="kit-note">{can ? 'Uses 3 scrap and 1 Sinew Cord.' : SCAV_PACK_LOCKED}.</p>
         </>
       )}
+      {(state.items.ossa_token ?? 0) > 0 ? (
+        <>
+          <button type="button" className="btn btn-tiny btn-gold" disabled={!canTieKnot(state)} onClick={() => onChange(tieKnot(state))}>
+            Tie Ossa's Knot onto a Head Wrap
+          </button>
+          <p className="kit-note">
+            {canTieKnot(state) ? 'Makes one Knotted Head Wrap: Shell 1 and every Knot perk.' : KNOT_TIE_LOCKED}.
+          </p>
+        </>
+      ) : null}
     </div>
   )
 }

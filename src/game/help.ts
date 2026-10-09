@@ -193,6 +193,15 @@ export function sceneSearch(state: GameState, target: string): Effect | null {
       }
     }
   }
+  if (id === 'spine:jodi' && (t.includes('snake') || t.includes('python') || t.includes('grudge'))) {
+    return { flash: 'Grudge, her sand python. Thick as your arm, the colour of the dunes, draped over her shoulders with its head on her pile. Its tongue reads the air around your hands. She says it bites to make a point.' }
+  }
+  if (id === 'spine:jodi' && (t.includes('vulture') || t.includes('pastor') || t.includes('bird'))) {
+    return { flash: 'Two vultures on a frame of bone and pipe. The big one is Pastor. They watch the road for the dead and bring her what is in their pockets.' }
+  }
+  if (id === 'spine:jodi' && t.includes('rat')) {
+    return { flash: 'Sand rats in the canvas folds. More than she will count. They run the pile and are gone when you look straight at them.' }
+  }
   if (id === 'spine:jodi' && (t.includes('spider') || t.includes('jar'))) {
     return { flash: 'A stoppered jar of black sand-spiders by her boot, and two loose ones on the seams of her wraps. They watch your hands as closely as she does.' }
   }

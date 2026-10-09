@@ -60,7 +60,13 @@ export function scavengeSalve(state: GameState): boolean {
   h ^= h >>> 13
   h = Math.imul(h, 668265263) >>> 0
   h ^= h >>> 16
-  return (h >>> 0) % 100 < SCAVENGE_SALVE_PCT
+  return (h >>> 0) % 100 < scavengeSalvePct(state)
+}
+
+/** Past the Outcast outpost and at the bite, heat fights cost blood: more resin turns up in the grit. */
+export const SCAVENGE_SALVE_PCT_FAR = 15
+export function scavengeSalvePct(state: GameState): number {
+  return state.hubId === 'spine' || state.hubId === 'redmaw' ? SCAVENGE_SALVE_PCT_FAR : SCAVENGE_SALVE_PCT
 }
 
 const SALVE_FIND = ' Under it, a thumb of Resin Salve in a twist of cloth.'

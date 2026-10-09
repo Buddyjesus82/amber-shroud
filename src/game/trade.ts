@@ -40,6 +40,7 @@ const NEVER_SELL = new Set<ItemId>([
   'strider_bit',
   'overseer_chip',
   'ossa_token',
+  'knotted_wrap',
   'kallik_mark',
   'kohl_smear',
   'false_vessel',

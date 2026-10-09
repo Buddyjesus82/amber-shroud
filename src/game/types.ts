@@ -16,6 +16,7 @@ export type ItemId =
   | 'ceremonial_cloth'
   | 'overseer_chip'
   | 'ossa_token'
+  | 'knotted_wrap'
   | 'kallik_mark'
   | 'kohl_smear'
   | 'false_vessel'

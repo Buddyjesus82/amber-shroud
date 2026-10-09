@@ -55,6 +55,16 @@ type Props = {
   saveToast?: string | null
 }
 
+type HeldScreen = {
+  title: string
+  meta: string | null
+  face: string | null | undefined
+  body: string
+  art: string
+  band: CSSProperties
+  result: string
+}
+
 export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Props) {
   const scene = sceneOf(state)
   const hub = state.hubId ? HUBS[state.hubId] : null
@@ -68,6 +78,8 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
   const [journalOpen, setJournalOpen] = useState(false)
   const [heatInfo, setHeatInfo] = useState<Faction | null>(null)
   const [toast, setToast] = useState<string | null>(null)
+  // An action that moves you on shows its result here first, on the screen you acted on, with Continue.
+  const [held, setHeld] = useState<HeldScreen | null>(null)
   const prevHeat = useRef(state.heat)
   const talky = scene.kind === 'talk' || scene.kind === 'place' || scene.kind === 'story'
   const showNav = !!hub && scene.kind !== 'crisis' && state.chapterId !== 'cache-run'
@@ -77,11 +89,11 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
   const chips = listedKit(state.items)
   const sapThin = state.sap <= 2
   const hpHurt = state.health <= 2
-  const choices = visibleChoices(state)
+  const choices = held ? [] : visibleChoices(state)
   const roam = canScavenge(state)
   const skimOn = canSkim(state)
   const downed = !!state.flags.downed || state.health <= 0
-  const overlay = !!state.flags.encounterHere || isPressureOverlay(state) || downed
+  const overlay = !held && (!!state.flags.encounterHere || isPressureOverlay(state) || downed)
   const face = downed
     ? null
     : (state.flags.encounterHere ? encounterSpeaker(state) : null) ??
@@ -89,6 +101,39 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     (scene.id === 'camp:bay' && bayLookout(state) ? 'Jaxson Vance' : null) ??
     (scene.id === 'maw:tuner' && state.door === 'prisoner' ? 'Jaxson' : null) ??
     scene.speaker
+  function screenKey(s: GameState): string {
+    return `${s.sceneId}|${isPressureOverlay(s) ? 1 : 0}|${s.flags.encounterHere ? 1 : 0}|${s.flags.downed || s.health <= 0 ? 1 : 0}`
+  }
+  /** Choice and typed results: if the act moves you to another screen, hold its result on this one first. */
+  function act(next: GameState) {
+    const moved = screenKey(next) !== screenKey(state)
+    const fightResult = isEncounterResult(state) || !!next.flags.encounterHere
+    if (moved && next.flash && !fightResult) {
+      setHeld({
+        title: placeTitle,
+        meta: hub ? hub.name : scene.chapterId === 'cache-run' ? 'The Hunger' : null,
+        face,
+        body: bodyOf(state),
+        art: artSrc,
+        band: artBand,
+        result: next.flash,
+      })
+    }
+    onChange(next)
+  }
+  function continueOn() {
+    setHeld(null)
+    onChange({ ...state, flash: undefined })
+  }
+  const coverKey = playCoverKey(state, scene)
+  const artSrc = `${import.meta.env.BASE_URL}covers/${playCoverFile(coverKey)}?v=67`
+  const [bandTop, bandBot] = coverBand(coverKey)
+  const artBand = { '--band-top': bandTop, '--band-bot': bandBot } as CSSProperties
+  const placeTitle = downed
+    ? 'Down'
+    : state.flags.encounterHere
+      ? encounterSpeaker(state)
+      : (pressureFace(state) ?? scene.title ?? hub?.name ?? 'The dunes')
   const shopOpen = isShopOpen(state)
   const hookRow = !!(!overlay && !shopOpen && hub && hookOn && hook && showNav)
   const closeRow = !!(!overlay && !shopOpen && closing && showNav)
@@ -157,16 +202,26 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
       locked: !on,
       lockedNote: !on ? c.locked : undefined,
       pills: effectPills(c.effects),
-      onClick: () => on && onChange(applyEffect(state, c.effects)),
+      onClick: () => on && act(applyEffect(state, c.effects)),
     })
   }
+  if (held) {
+    optionRows.length = 0
+    optionRows.push({ key: 'continue', tone: 'default', label: 'Continue', onClick: continueOn })
+  }
   const split = optionRows.length >= 4
-  const showDo = talky || roam || overlay
+  const showDo = !held && (talky || roam || overlay)
 
   const scrolledScene = useRef(state.sceneId)
   useEffect(() => {
     const story = storyRef.current
     if (!story) return
+    const resultCard = held ? story.querySelector('.result-flash') : null
+    if (resultCard instanceof HTMLElement) {
+      scrolledScene.current = state.sceneId
+      story.scrollTo({ top: Math.max(0, resultCard.offsetTop - 12) })
+      return
+    }
     if (scrolledScene.current !== state.sceneId) {
       scrolledScene.current = state.sceneId
       story.scrollTo({ top: 0 })
@@ -174,7 +229,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     }
     const flash = story.querySelector('.flash')
     if (flash instanceof HTMLElement) story.scrollTo({ top: Math.max(0, flash.offsetTop - 12) })
-  }, [state.sceneId, state.flash])
+  }, [state.sceneId, state.flash, held])
 
   useEffect(() => {
     const prev = prevHeat.current
@@ -205,7 +260,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
       return
     }
     setDraft('')
-    onChange(interpret(state, t))
+    act(interpret(state, t))
   }
 
   const fightAuto = fightHelpAuto(state)
@@ -225,10 +280,6 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     requestAnimationFrame(() => sayRef.current?.focus())
   }
 
-  const coverKey = playCoverKey(state, scene)
-  const artSrc = `${import.meta.env.BASE_URL}covers/${playCoverFile(coverKey)}?v=66`
-  const [bandTop, bandBot] = coverBand(coverKey)
-  const artBand = { '--band-top': bandTop, '--band-bot': bandBot } as CSSProperties
 
   return (
     <div className={`screen play-screen${split ? ' play-split' : ''}`}>
@@ -284,15 +335,9 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
           ) : null}
         </div>
         <div className="place-line">
-          <strong>
-            {downed
-              ? 'Down'
-              : state.flags.encounterHere
-                ? encounterSpeaker(state)
-                : (pressureFace(state) ?? scene.title ?? hub?.name ?? 'The dunes')}
-          </strong>
+          <strong>{held ? held.title : placeTitle}</strong>
           <span className="place-meta">
-            {hub ? hub.name : scene.chapterId === 'cache-run' ? 'The Hunger' : null}
+            {held ? held.meta : hub ? hub.name : scene.chapterId === 'cache-run' ? 'The Hunger' : null}
             {savedCue ? <em className="saved-cue">Saved</em> : null}
           </span>
         </div>
@@ -301,21 +346,22 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
       {saveToast ? <p className="heat-toast">{saveToast}</p> : null}
       {toast ? <p className="heat-toast">{toast}</p> : null}
 
-      <div className="scene-stage" style={artBand}>
+      <div className="scene-stage" style={held ? held.band : artBand}>
         <div className="scene-art" aria-hidden="true">
-          <img className="scene-fill" src={artSrc} alt="" />
-          <img className="scene-img" src={artSrc} alt="" />
+          <img className="scene-fill" src={held ? held.art : artSrc} alt="" />
+          <img className="scene-img" src={held ? held.art : artSrc} alt="" />
         </div>
 
         <div className="story" ref={storyRef}>
-          {face ? <p className="speaker">{face}</p> : null}
-          {bodyOf(state)
+          {(held ? held.face : face) ? <p className="speaker">{held ? held.face : face}</p> : null}
+          {(held ? held.body : bodyOf(state))
             .split('\n\n')
             .map((p, i) => (
               <p key={i}>{p}</p>
             ))}
-          {state.flash && !overlay ? <p className="flash">{state.flash}</p> : null}
-          {sapThin && scene.kind !== 'crisis' && !overlay ? (
+          {held ? <p className="flash result-flash">{held.result}</p> : null}
+          {state.flash && !overlay && !held ? <p className="flash">{state.flash}</p> : null}
+          {sapThin && scene.kind !== 'crisis' && !overlay && !held ? (
             <p className="pressure-note">
               {state.sap <= 0
                 ? 'Sap is empty. The next act that costs sap will be a crisis, not a death.'
@@ -406,7 +452,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
           <p className="verb-hint">Heard: {state.recentVerbs?.join(' · ')}</p>
         ) : null}
 
-        {(state.items.vial_drop ?? 0) > 0 ? (
+        {(state.items.vial_drop ?? 0) > 0 && !held ? (
           <button type="button" className="text-link drink" onClick={() => onChange(drinkDrop(state))}>
             Drink a Drop · +3 Sap
           </button>

@@ -1,3 +1,4 @@
+import { isCampHunt } from './hunter'
 import { ITEMS } from './content/catalog'
 import { beginEncounter, roadPressureScene } from './encounter'
 import { sceneSearch } from './help'
@@ -17,6 +18,7 @@ const KEYS = new Set<ItemId>([
   'overseer_chip',
   'kallik_mark',
   'ossa_token',
+  'knotted_wrap',
   'ceremonial_cloth',
   'false_vessel',
   'kohl_smear',
@@ -77,7 +79,7 @@ function lookHit(state: GameState, scene: Scene, hay: string, labels: string[]):
   const who = npcHere(scene)
   if (who && who.aliases.some((a) => target.includes(a) || a.includes(target))) {
     return {
-      effects: { flash: clip(`${who.name}. ${who.card.split('\n').find(Boolean) ?? ''}`, 220) },
+      effects: { flash: clip(cardLead(who.name, who.card), 220) },
       verb: 'look',
     }
   }
@@ -105,6 +107,12 @@ function wantsHide(hay: string): boolean {
 }
 
 function combatHit(state: GameState, scene: Scene, hay: string): DoHit | null {
+  if (wantsFight(hay) && isCampHunt(state) && /\b(shard[- ]?hound|hound|dog)\b/.test(hay) && !/\bhandler\b/.test(hay)) {
+    return {
+      effects: beginEncounter(state, 'hound', 'You go for the hound. The handler grins and unclips the lead.'),
+      verb: 'fight',
+    }
+  }
   if (wantsFight(hay) && /\b(hound[- ]handler|handler)\b/.test(hay)) {
     return {
       effects: beginEncounter(state, 'handler', 'You go for the man with the leash. The hound stays on it.'),
@@ -352,4 +360,10 @@ export function offButton(state: GameState, text: string, scene: Scene, labels: 
   if (/^(?:give|hand|offer|pass)\b/.test(hay)) return giveHit(state, scene, hay)
   if (/^(?:take|grab|steal|snatch|pocket)\b/.test(hay)) return takeHit(scene, hay)
   return combatHit(state, scene, hay)
+}
+
+/** First card line, named once: cards that already open with the name are not prefixed again. */
+export function cardLead(name: string, card: string): string {
+  const first = card.split('\n').find(Boolean) ?? ''
+  return first.toLowerCase().startsWith(name.toLowerCase()) ? first : `${name}. ${first}`
 }

@@ -1,4 +1,10 @@
+import { knotWorn } from './kit'
 import type { Effect, GameState } from './types'
+
+/** Ossa's Knot worn: she finds you once, the way she said she would. */
+function knotRescue(state: GameState): boolean {
+  return knotWorn(state) && !state.flags.knotRescued
+}
 
 function nearOssa(state: GameState): boolean {
   const id = state.sceneId
@@ -17,8 +23,11 @@ export function nearCorvin(state: GameState): boolean {
 }
 
 export function downedNote(state: GameState): string {
+  if (knotRescue(state)) {
+    return `You collapse. Too hurt to fight. The Knot at your brow pulls tight, and then Ossa's stilts are beside your head. "I said I could find you." Once. She will not make it a habit.`
+  }
   if (nearOssa(state)) {
-    return `You collapse. Too hurt to fight. Ossa's stilts plant beside your head and she hauls you up. It costs — a Drop if you have one, sap if you don't. "Get somewhere that is not the ground."`
+    return `You collapse. Too hurt to fight. Ossa's stilts plant beside your head and she hauls you up. It costs — a Resin Salve if you have one, sap if you don't. "Get somewhere that is not the ground."`
   }
   if (nearCorvin(state)) {
     return `You collapse. Too hurt to fight. Boots in the grit, then Corvin's hands under your arms. He drags you behind rock and keeps watch until you can stand. It costs a minute of sap.`
@@ -29,7 +38,7 @@ export function downedNote(state: GameState): string {
   const kind = state.flags.encounterKind
   const camp =
     state.hubId === 'camp04' || state.sceneId.startsWith('camp:')
-  if (camp && (state.flags.hunterHere || kind === 'handler' || kind === 'patrol' || kind === 'pup' || kind === 'overseer')) {
+  if (camp && (state.flags.hunterHere || kind === 'handler' || kind === 'hound' || kind === 'patrol' || kind === 'pup' || kind === 'overseer')) {
     return `You collapse. Too hurt to fight. The handler's leash, or a clerk's baton, finds you. Cartel hands drag you. You will wake raw, and hotter on their ledger.`
   }
   if (kind === 'overseer' || state.sceneId.includes('valerius')) {
@@ -47,18 +56,26 @@ function downedBy(state: GameState): unknown {
 }
 
 export function wakeEffect(state: GameState): Effect {
+  if (knotRescue(state)) {
+    return {
+      health: 3,
+      unsetFlag: ['downed', 'downedNote', 'downedKind', 'hunterHere', 'hunterFrom'],
+      flag: { knotRescued: true, ossaPulled: true },
+      flash: "Ossa binds the cut with her own resin and hauls you into rib-shade. Health returns. \"That was the one. Wear the Knot anyway.\"",
+    }
+  }
   if (nearOssa(state)) {
-    const payDrop = (state.items.vial_drop ?? 0) > 0
+    // Drops are Sap. Health takes Resin: yours if you carry a salve, hers if you don't.
+    const paySalve = (state.items.salve ?? 0) > 0
     return {
       health: 2,
-      sap: payDrop ? undefined : -1,
-      remove: payDrop ? { vial_drop: 1 } : undefined,
-      add: payDrop ? { vial_empty: 1 } : undefined,
+      sap: paySalve ? undefined : -1,
+      remove: paySalve ? { salve: 1 } : undefined,
       unsetFlag: ['downed', 'downedNote', 'downedKind'],
       flag: { ossaPulled: true },
-      flash: payDrop
-        ? 'Ossa takes the Drop and pours a little back into you. Health returns. The vial is empty.'
-        : 'Ossa spends a minute and a finger of your sap. Health returns. She does not name the cost.',
+      flash: paySalve
+        ? 'Ossa takes your Resin Salve and binds the cut. Health returns. The tin is lighter.'
+        : 'Ossa smears a thumb of her own resin into the cut and makes you sit a minute. Health returns. The minute costs a finger of sap.',
     }
   }
   if (nearCorvin(state)) {
@@ -85,7 +102,7 @@ export function wakeEffect(state: GameState): Effect {
   }
   const kind = downedBy(state)
   const camp = state.hubId === 'camp04' || state.sceneId.startsWith('camp:')
-  if (camp && (kind === 'handler' || kind === 'patrol' || kind === 'pup' || kind === 'overseer' || state.flags.hunterHere)) {
+  if (camp && (kind === 'handler' || kind === 'hound' || kind === 'patrol' || kind === 'pup' || kind === 'overseer' || state.flags.hunterHere)) {
     return {
       health: 1,
       heat: { cartel: 2 },

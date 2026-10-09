@@ -190,6 +190,15 @@ function campHuntChoices(state: GameState): Choice[] {
       effects: beginEncounter(state, 'handler', 'You go for the man with the leash. The hound lunges and he hauls it short. This ground becomes a fight.'),
     },
     {
+      id: 'hunter-hound',
+      label: 'Fight the Shard-Hound',
+      sub: 'The hound off its lead. Cartel property: Cartel Heat if it drops. You stay.',
+      tone: 'danger',
+      enable: { healthMin: 1 },
+      locked: 'Too hurt to fight.',
+      effects: beginEncounter(state, 'hound', 'You go for the hound. The handler grins and unclips the lead.'),
+    },
+    {
       id: 'hunter-hold',
       label: 'Drop into the grit',
       sub: 'Stay. Costs Sap and Cartel Heat.',

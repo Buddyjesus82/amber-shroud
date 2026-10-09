@@ -37,7 +37,7 @@ import type { Cond, Scene } from '../src/game/types.ts'
 import { rollScavenge, SCAVENGE_SALVE_PCT, scavengeSalve } from '../src/game/scavenge.ts'
 import { buyFits, kaelenOffers } from '../src/game/trade.ts'
 import { FIGHT_HELP_LINES, fightHelpAuto, fightHelpText, fightTopicMidFight, HELP_TOPICS, helpRoute, topicLines, isFightHelpAsk, markFightHelpSeen, topicListText, topicText } from '../src/game/helpTopics.ts'
-import { BEAST_KINDS, carriesSalve, EXTRACTOR_DROP_IN, EXTRACTOR_DUPE_IN, extractorDrop, HUMAN_KINDS, HUMAN_SALVE_PCT, beginEncounter, DAMAGE_FLOOR, encounterCard, encounterChoices, exchangeDamage, fightStartFlags, huskGround, pickEncounterKind, resolveEncounter, runChance, STALL_ROUNDS, swingOf } from '../src/game/encounter.ts'
+import { encounterSpeaker as encounterSpeakerOf, BEAST_KINDS, carriesSalve, EXTRACTOR_DROP_IN, EXTRACTOR_DUPE_IN, extractorDrop, HUMAN_KINDS, HUMAN_SALVE_PCT, beginEncounter, DAMAGE_FLOOR, encounterCard, encounterChoices, exchangeDamage, fightStartFlags, huskGround, pickEncounterKind, resolveEncounter, runChance, STALL_ROUNDS, swingOf } from '../src/game/encounter.ts'
 import {
   IDLE_DOOR,
   tapDoor,
@@ -2261,14 +2261,14 @@ assert(pngSize('../public/icons/apple-touch.png').w === 180 && pngSize('../publi
 assert(pngSize('../public/favicon.png').w === 32 && pngSize('../public/favicon.png').h === 32, 'tab favicon is 32 PNG from the cover')
 assert(pngSize('../public/favicon-48.png').w === 48 && pngSize('../public/favicon-48.png').h === 48, 'tab favicon 48 is square PNG from the cover')
 const man = readFileSync(new URL('../public/manifest.webmanifest', import.meta.url), 'utf8')
-assert(man.includes('icon-192.png?v=13') && man.includes('icon-512.png?v=13'), 'manifest ships cache-busted cover-crop PNGs')
+assert(man.includes('icon-192.png?v=14') && man.includes('icon-512.png?v=14'), 'manifest ships cache-busted cover-crop PNGs')
 assert(!man.includes('favicon.svg'), 'manifest does not install the gold Drop SVG')
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8')
 assert(!html.includes('favicon.svg'), 'html does not link the gold Drop SVG')
 assert(!html.includes('image/svg+xml'), 'html has no SVG icon link')
-assert(html.includes('favicon.png?v=13'), 'tab favicon is the cover PNG')
-assert(html.includes('icon-192.png?v=13') && html.includes('icon-512.png?v=13'), 'html ships cache-busted cover PNGs')
-assert(html.includes('apple-touch.png?v=13'), 'apple-touch-icon is cache-busted cover crop')
+assert(html.includes('favicon.png?v=14'), 'tab favicon is the cover PNG')
+assert(html.includes('icon-192.png?v=14') && html.includes('icon-512.png?v=14'), 'html ships cache-busted cover PNGs')
+assert(html.includes('apple-touch.png?v=14'), 'apple-touch-icon is cache-busted cover crop')
 {
   const p = newGame('prisoner')
   assert(playCoverKey(p, sceneOf(p)) === 'camp04', 'Prisoner opening uses Camp-04 art')
@@ -2663,7 +2663,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v66'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v67'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -2685,7 +2685,7 @@ assert(css.includes('--story-top: min(calc(56.25cqi * var(--band-bot, 0.5)), 50c
 assert(css.includes('rgba(12, 7, 4, 0.58)'), 'story scrim stays translucent so cover art shows through')
 assert(!css.includes('rgba(12, 7, 4, 0.88)'), 'story scrim is lighter than the v32 slab')
 const playSrc = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
-assert(playSrc.includes('?v=66'), 'scene cover URLs are cache-busted with the service worker')
+assert(playSrc.includes('?v=67'), 'scene cover URLs are cache-busted with the service worker')
 assert(!css.includes('object-position: center 68%'), 'scene art no longer crops toward the ground')
 assert(!css.includes('height: 56px'), 'short phones no longer squash covers into a head-cropping strip')
 assert(css.includes('place-items: center'), 'game screen is centered on the backdrop')
@@ -2847,13 +2847,13 @@ function assertHelpResolves(s: GameState, where: string) {
   const roam = applyEffect(newGame('prisoner'), { goto: 'roam:kaelen', flag: { kaelenHub: 'redmaw' } })
   const roamOffers = kaelenOffers(roam).map((o) => o.id)
   assert(roamOffers.includes('drop') && roamOffers.includes('knife') && !roamOffers.includes('wrap'), 'Red Maw shelf is Drop, salve, knife')
-  assert(KAELEN_APPEARANCE.quietScenes === 8 && KAELEN_APPEARANCE.tickMod === 11, 'Kaelen appearance stays 8 scenes / every 11th tick')
+  assert(KAELEN_APPEARANCE.quietScenes === 2 && KAELEN_APPEARANCE.gap === 7, 'Kaelen stops after 7 quiet actions')
   let pass = applyEffect(newGame('prisoner'), { goto: 'camp:yard', flag: { encounterAt: 9999 } })
   pass = {
     ...pass,
     heat: { cartel: 0, seekers: 0, strays: 0 },
     ticks: 10,
-    flags: { ...pass.flags, huntQuiet: 7, encounterAt: 10 },
+    flags: { ...pass.flags, huntQuiet: 7, encounterAt: 10, kaelenGap: 6 },
   }
   delete pass.flags.encounterHere
   pass = applyEffect(pass, { ticks: 1 })
@@ -2883,7 +2883,7 @@ function assertHelpResolves(s: GameState, where: string) {
       ...held,
       heat: { cartel: 0, seekers: 0, strays: 0 },
       ticks: 10,
-      flags: { ...held.flags, huntQuiet: 7, encounterAt: 10 },
+      flags: { ...held.flags, huntQuiet: 7, encounterAt: 10, kaelenGap: 6 },
     }
     delete held.flags.encounterHere
     delete held.flags.kaelenPassing
@@ -3812,7 +3812,8 @@ function assertHelpResolves(s: GameState, where: string) {
     /Shard-Hound\s+(Valerius|Korvan|Corvin|Silas|[A-Z][a-z]+ius)\b/,
   ]
   for (const f of files) {
-    const text = readFileSync(f, 'utf8')
+    // The Camp-04 hunt button names the beast itself, which is the point of the rule.
+    const text = readFileSync(f, 'utf8').replace("'Fight the Shard-Hound'", "'Fight the hound'")
     for (const re of asTitle) assert(!re.test(text), `${f} uses Shard-Hound as a person's title (${re})`)
   }
   for (const sc of ALL_SCENES) {
@@ -4740,6 +4741,85 @@ function assertHelpResolves(s: GameState, where: string) {
     }
   }
   assert(!bad.length, `travel buttons with no road: ${bad.join('; ')}`)
+}
+
+
+// Bulk v67: hound fight, Knot perks, Resin rescue, Jodi's snake, Kaelen everywhere, map blurbs.
+{
+  const ids2 = (st: GameState) => GE.visibleChoices(st).map((c) => c.id)
+  let hunt = GE.applyEffect(GE.newGame('prisoner'), { goto: 'camp:yard', flag: { encounterAt: 9999 } })
+  hunt = { ...hunt, flags: { ...hunt.flags, hunterHere: true, hunterFrom: 'camp:yard' } }
+  delete hunt.flags.encounterHere
+  const hIds = ids2(hunt)
+  assert(hIds.includes('hunter-fight') && hIds.includes('hunter-hound'), `Hound-handler screen has both fights: ${hIds}`)
+  const houndRow = GE.visibleChoices(hunt).find((c) => c.id === 'hunter-hound')!
+  assert(houndRow.label === 'Fight the Shard-Hound', 'hound button label')
+  const inFight = GE.applyEffect(hunt, houndRow.effects)
+  assert(inFight.flags.encounterKind === 'hound' && encounterSpeakerOf(inFight) === 'Shard-Hound', 'hound button starts a Shard-Hound fight')
+  assert(BEAST_KINDS.includes('hound') && !HUMAN_KINDS.includes('hound'), 'the hound is a beast: no salve in its pockets')
+
+  // Ossa's rescue heals with Resin, never a Drop.
+  const maw = GE.applyEffect(GE.newGame('outcast'), { goto: 'maw:stilt', flag: { ossaAlly: true }, add: { vial_drop: 1, salve: 1 } })
+  const w1 = wakeEffect(maw)
+  assert(w1.remove?.salve === 1 && !w1.remove?.vial_drop && /Resin Salve/.test(String(w1.flash)), 'Ossa binds with your salve, not a Drop')
+  const w2 = wakeEffect({ ...maw, items: { ...maw.items, salve: 0 } })
+  assert(!w2.remove && /resin/.test(String(w2.flash)) && !/\bDrop\b/.test(String(w2.flash)), 'no salve: Ossa uses her own resin')
+
+  // Knot: one-time rescue while worn.
+  const worn = { ...maw, flags: { ...maw.flags, ossaAlly: false }, items: { ...maw.items, ossa_token: 1 }, equipped: { ...maw.equipped, head: 'ossa_token' as ItemId } }
+  const kw = wakeEffect(worn)
+  assert(kw.flag?.knotRescued === true && kw.health === 3, 'worn Knot: Ossa finds you once')
+  assert(!wakeEffect({ ...worn, flags: { ...worn.flags, knotRescued: true } }).flag?.knotRescued, 'Knot rescue is once')
+  // Knot: Stray Heat rises one lighter while worn.
+  const sh0 = worn.heat.strays
+  assert(GE.applyEffect(worn, { heat: { strays: 2 }, flash: 'x' }).heat.strays === sh0 + 1, 'Knot worn: Stray Heat +2 becomes +1')
+  assert(GE.applyEffect(maw, { heat: { strays: 2 } }).heat.strays === maw.heat.strays + 2, 'no Knot: full Stray Heat')
+  // Knot: Red Maw stilt route opens the cache rib.
+  const ribs = GE.applyEffect(worn, { goto: 'maw:ribs' })
+  const stilt = GE.visibleChoices(ribs).find((c) => c.id === 'stilt')
+  assert(stilt && GE.isChoiceOn(ribs, stilt.enable), 'Knot opens the stilt route at the ribs')
+  assert(GE.applyEffect(ribs, stilt!.effects).sceneId === 'maw:hold', 'stilt route reaches the cache')
+  const noKnot = GE.applyEffect({ ...maw, flags: { ...maw.flags, ossaAlly: true } }, { goto: 'maw:ribs' })
+  const lockedStilt = GE.visibleChoices(noKnot).find((c) => c.id === 'stilt')
+  assert(lockedStilt && !GE.isChoiceOn(noKnot, lockedStilt.enable) && lockedStilt.locked, 'stilt route stays visible, locked, with what it needs')
+  // Knot + Head Wrap = Knotted Head Wrap, worn stays worn, keeps the perks and the Shell.
+  const both = { ...worn, items: { ...worn.items, head_wrap: 1 } }
+  const tied = GE.tieKnot(both)
+  assert(tied.items.knotted_wrap === 1 && !tied.items.ossa_token && !tied.items.head_wrap, 'tying makes one Knotted Head Wrap')
+  assert(tied.equipped.head === 'knotted_wrap' && GK.knotWorn(tied) && equippedShell(tied) >= 1, 'Knotted Head Wrap is worn, Shell 1, and counts as the Knot')
+  assert(GE.applyEffect(tied, { heat: { strays: 1 } }).heat.strays === tied.heat.strays, 'Knotted Head Wrap keeps the Stray perk')
+
+  // Jodi: look at the snake describes Grudge; no doubled names on person looks.
+  const jodi = GE.applyEffect(GE.newGame('outcast'), { goto: 'spine:jodi' })
+  const snake = String(GE.interpret(jodi, 'look at the snake').flash)
+  assert(/Grudge/.test(snake) && !/Jodi Hollowmere\. Jodi Hollowmere/.test(snake), `look at the snake: ${snake}`)
+  const jl = String(GE.interpret(jodi, 'look at jodi').flash)
+  assert(!/Jodi Hollowmere\. Jodi Hollowmere/.test(jl), `no doubled name: ${jl}`)
+
+  // Map blurbs do not repeat the hub note.
+  for (const m of Object.values(HUB_MAPS)) {
+    const note = HUBS[m.hubId]?.mawNote ?? ''
+    const sents = (t: string) => t.split(/(?<=\.)\s+/).map((x) => x.trim().toLowerCase()).filter(Boolean)
+    const dup = sents(m.blurb).filter((x) => sents(note).includes(x))
+    assert(!dup.length && !/sealed spire stands/i.test(m.blurb) && !/all three roads end here/i.test(m.blurb), `${m.hubId} map text repeats: ${dup}`)
+  }
+
+  // Kaelen: walks every door after the opening and sells Resin; more resin in the grit past the outpost.
+  for (const [door, sceneId] of [['prisoner', 'camp:yard'], ['outcast', 'spine:ridge'], ['vessel', 'thresh:court'], ['outcast', 'maw:market']] as const) {
+    let st = GE.applyEffect(GE.newGame(door), { goto: sceneId, flag: { encounterAt: 99999 } })
+    st = { ...st, heat: { cartel: 0, seekers: 0, strays: 0 }, flags: { ...st.flags, huntQuiet: 3, encounterAt: 99999 } }
+    delete st.flags.encounterHere
+    delete st.flags.hunterHere
+    for (let i = 0; i < 12 && !st.flags.kaelenPassing; i++) {
+      st = GE.applyEffect({ ...st, flags: { ...st.flags, encounterAt: 99999, huntQuiet: 3 } }, { ticks: 1 })
+      delete st.flags.hunterHere
+      delete st.flags.encounterHere
+    }
+    assert(st.flags.kaelenPassing, `Kaelen stops on ${door} ${sceneId}`)
+    const roam = GE.applyEffect(st, GE.visibleChoices(st).find((c) => c.id === 'kaelen-pass')!.effects)
+    assert(roam.sceneId === 'roam:kaelen' && kaelenOffers(roam).some((o) => o.id === 'salve'), `Kaelen sells Resin on ${door}`)
+  }
+  assert(GS.scavengeSalvePct({ ...GE.newGame('outcast'), hubId: 'spine' }) > SCAVENGE_SALVE_PCT, 'more Resin in the grit past the outpost')
 }
 
 console.log('OK', {

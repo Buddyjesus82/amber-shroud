@@ -259,7 +259,7 @@ Zafir is at his stall. He has watched buyers fail and kept the tray anyway. On i
       {
         id: 'knot',
         label: 'Ask what the twice-tied knot means',
-        show: { item: 'ossa_token' },
+        show: { any: [{ item: 'ossa_token' }, { item: 'knotted_wrap' }] },
         effects: {
           ticks: 1,
           goto: 'maw:stilt',
@@ -577,6 +577,21 @@ A blind pick costs sap. Scratches on the wrong rib only look like that gear.`,
           ticks: 1,
           goto: 'maw:hold',
           flash: 'Scrap +3. Nine teeth, cut clean. The rib gives. A sealed way, and a little of what Kallik left in the mouth of it.',
+        },
+      },
+      {
+        id: 'stilt',
+        label: "Follow Ossa's stilt-holes to the cache rib",
+        sub: "Her stilts mark the way she walks. The Knot's cord matches the cord on the rib. The sealed way opens.",
+        show: { all: [{ flagUnset: 'ribOpen' }, { any: [{ flag: 'ossaAlly' }, { flag: 'ossaAlive' }, { item: 'ossa_token' }, { item: 'knotted_wrap' }] }] },
+        enable: { any: [{ item: 'ossa_token' }, { item: 'knotted_wrap' }] },
+        locked: "Needs Ossa's Knot.",
+        effects: {
+          flag: { ribOpen: true, heardGear: true, ossaStilt: true },
+          add: { scrap: 2 },
+          ticks: 1,
+          goto: 'maw:hold',
+          flash: "Scrap +2. Stilt-holes in the grit, a stride apart, to a rib tied low with cord knotted twice. Nine teeth under it. The sealed way opens.",
         },
       },
       {
