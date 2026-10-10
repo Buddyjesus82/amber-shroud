@@ -50,6 +50,8 @@ import { COVER_BAND, playCoverFile, playCoverKey } from '../src/game/art.ts'
 import { helpEntries, helpText } from '../src/game/help.ts'
 import { equippedShell } from '../src/game/kit.ts'
 import * as GK from '../src/game/kit.ts'
+import * as VO from '../src/game/voices.ts'
+import * as PA from '../src/game/politeAsk.ts'
 import * as GE from '../src/game/engine.ts'
 import * as GS from '../src/game/scavenge.ts'
 import * as DG from '../src/game/disguise.ts'
@@ -502,7 +504,7 @@ assert(s.sap === 2, 'outcast starts thin')
     assert(!/miss/i.test(viaDo.flash ?? ''), `Do "${typed}" is not a miss`)
   }
   const miss = interpret(s, 'xyzzy poetry please')
-  assert(/miss/i.test(miss.flash ?? ''), 'garbage Do on First Drop is still a miss')
+  assert(miss.sceneId === s.sceneId && /Try/.test(miss.flash ?? ''), 'garbage Do on First Drop stays put and points at what works')
 }
 {
   const open = newGame('prisoner')
@@ -728,7 +730,7 @@ assert(s.flash?.includes('cybernetic brass jaw'), 'who is Jaxson returns the ful
 assert(s.flags.metOilTooth, 'asking who marks the meet')
 assert(!bodyOf(s).includes('cybernetic brass jaw'), 'later pens show what he is doing now')
 s = interpret(s, 'xyzzy poetry please')
-assert(s.flash?.toLowerCase().includes('miss'), 'free-text miss is named a miss')
+assert(/Jaxson|brass|Oil-Tooth/.test(s.flash ?? '') && /Try/.test(s.flash ?? ''), 'free-text miss gets Jaxson in his voice and a pointer')
 
 s = newGame('prisoner')
 s = pick(s, 'pens')
@@ -2663,7 +2665,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v67'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v68'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -2685,7 +2687,7 @@ assert(css.includes('--story-top: min(calc(56.25cqi * var(--band-bot, 0.5)), 50c
 assert(css.includes('rgba(12, 7, 4, 0.58)'), 'story scrim stays translucent so cover art shows through')
 assert(!css.includes('rgba(12, 7, 4, 0.88)'), 'story scrim is lighter than the v32 slab')
 const playSrc = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
-assert(playSrc.includes('?v=67'), 'scene cover URLs are cache-busted with the service worker')
+assert(playSrc.includes('?v=68'), 'scene cover URLs are cache-busted with the service worker')
 assert(!css.includes('object-position: center 68%'), 'scene art no longer crops toward the ground')
 assert(!css.includes('height: 56px'), 'short phones no longer squash covers into a head-cropping strip')
 assert(css.includes('place-items: center'), 'game screen is centered on the backdrop')
@@ -4820,6 +4822,77 @@ function assertHelpResolves(s: GameState, where: string) {
     assert(roam.sceneId === 'roam:kaelen' && kaelenOffers(roam).some((o) => o.id === 'salve'), `Kaelen sells Resin on ${door}`)
   }
   assert(GS.scavengeSalvePct({ ...GE.newGame('outcast'), hubId: 'spine' }) > SCAVENGE_SALVE_PCT, 'more Resin in the grit past the outpost')
+}
+
+
+// v68: polite asks and in-character fallbacks on every door. The old system note never shows.
+{
+  const at2 = (door: DoorId, id: string, fl: Record<string, unknown> = {}) => {
+    const st = GE.applyEffect(GE.newGame(door), { goto: id, flag: { encounterAt: 99999, ...fl } as never })
+    delete st.flags.encounterHere
+    delete st.flags.hunterHere
+    return st
+  }
+  const OLD = /heard that\. Try ask, talk, threaten, trade, help/
+  // Every speaker and every person has a voice with real lines.
+  const speakers = new Set(ALL_SCENES.map((sc) => sc.speaker).filter(Boolean) as string[])
+  for (const sp of speakers) {
+    const v = VO.voiceForSpeaker(sp)
+    assert(v && v.lines.length >= 3 && v.want && v.who && v.doing && v.what && v.refuse && v.unknown && v.price, `${sp} has fallback lines in their voice`)
+  }
+  for (const p of Object.values(PEOPLE)) {
+    const v = VO.VOICES[VO.PERSON_VOICE[p.id] ?? p.id]
+    assert(v && v.lines.length >= 3, `${p.id} has a voice`)
+  }
+  // Nonsense at every talk or speaker scene: never the old note.
+  for (const sc of ALL_SCENES) {
+    if (!(sc.kind === 'talk' || sc.speaker)) continue
+    const door: DoorId = sc.id.startsWith('thresh:') || sc.id.startsWith('ch1:v') ? 'vessel' : sc.id.startsWith('spine:') || sc.id.startsWith('ch1:o') ? 'outcast' : 'prisoner'
+    const st = at2(door, sc.id)
+    for (const t of ['blorp flarn zib', 'can i have some scrap', 'who are you', 'what are you doing']) {
+      const f = String(GE.interpret(st, t).flash ?? '')
+      assert(!OLD.test(f), `${sc.id} "${t}" shows the old note`)
+      assert(!/^Miss\./.test(f), `${sc.id} "${t}" shows Miss`)
+    }
+  }
+  const talkSrc = readFileSync(new URL('../src/game/talk.ts', import.meta.url), 'utf8')
+  assert(!OLD.test(talkSrc), 'old generic fallback is gone from the source')
+
+  // Sarn: "Can i have some scrap" answers in character, points at the real buttons, steals nothing.
+  const sarn = at2('prisoner', 'camp:bay-sarn')
+  const asked = GE.interpret(sarn, 'Can i have some scrap')
+  assert(/Sarn/.test(String(asked.flash)) && /scrap/i.test(String(asked.flash)), `Sarn answers the scrap ask: ${asked.flash}`)
+  assert(!asked.flags.baySarnTook && (asked.items.scrap ?? 0) === (sarn.items.scrap ?? 0), 'a polite ask never runs the theft')
+  assert(/"Take a twist of scrap off his crate"/.test(String(asked.flash)), 'the ask points at the scrap button')
+  const withWrench = GE.interpret({ ...sarn, items: { ...sarn.items, wrench: 1 } }, 'could you give me scrap')
+  assert(/Trade the wrench to Sarn for scrap/.test(String(withWrench.flash)) && (withWrench.items.wrench ?? 0) === 1, 'with a wrench, the ask points at the trade, does not run it')
+  const theft = GE.interpret(sarn, 'can i steal some scrap')
+  assert(!theft.flags.baySarnTook && !/Take a twist/.test(String(theft.flash)), 'asking to steal is refused, no theft run')
+  // Polite asks never drink or buy by accident.
+  const thalia = at2('vessel', 'thresh:thalia', {})
+  const thirsty = { ...thalia, items: { ...thalia.items, vial_drop: 1 } }
+  assert((GE.interpret(thirsty, 'could you give me a drop').items.vial_drop ?? 0) === 1, 'asking for a Drop does not drink yours')
+  const silas = at2('outcast', 'spine:silas')
+  const rich = { ...silas, items: { ...silas.items, glints: 3 } }
+  const priced = GE.interpret(rich, 'how much for a drop')
+  assert(priced.items.glints === 3 && /Glint/.test(String(priced.flash)), `how much answers the price, buys nothing: ${priced.flash}`)
+  // Typed-only answers.
+  assert(/Sarn/.test(String(GE.interpret(sarn, 'who are you').flash)), 'Sarn says who he is')
+  assert(/Counting/.test(String(GE.interpret(sarn, 'what are you doing').flash)), 'Sarn says what he is doing')
+  assert(/Grudge/.test(String(GE.interpret(at2('outcast', 'spine:jodi'), "what's that").flash)), "Jodi's what's that is Grudge")
+  // Name gating: Kaelen unknown stays unknown; known gets a real hint.
+  const unknownK = String(GE.interpret(sarn, 'where is kaelen').flash)
+  assert(!/pack|Sifter|linger/i.test(unknownK), `Kaelen stays gated: ${unknownK}`)
+  const knownK = String(GE.interpret(at2('prisoner', 'camp:bay-sarn', { kaelenKnown: true }), 'where is kaelen').flash)
+  assert(/Linger/.test(knownK), `known Kaelen gets a real hint: ${knownK}`)
+  // Rewrites keep normal verbs working.
+  const plan = GE.interpret(at2('prisoner', 'camp:jaxson'), 'can i ask about his plan')
+  assert(plan.flags.jaxsonPlan, 'polite "can I ask about his plan" still opens the plan')
+  // Filler spots get a place line with a pointer, not Miss.
+  const yard = String(GE.interpret(at2('prisoner', 'camp:yard'), 'blorp flarn').flash)
+  assert(/Bleed Yard|Yard/.test(yard) && /Try/.test(yard), `filler spot answers with the place: ${yard}`)
+  // Heard line hints.
+  assert(PA.typedHints(sarn, getScene('camp:bay-sarn'), false).includes('who are you'), 'Heard line suggests real typed asks')
 }
 
 console.log('OK', {

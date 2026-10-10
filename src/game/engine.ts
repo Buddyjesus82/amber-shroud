@@ -64,6 +64,8 @@ import {
   wantsEncounterSkip,
 } from './encounter'
 import { talkFallback, talkIntentsFor } from './talk'
+import { answerAsk, answerLate, hintLine, readAsk, readLateAsk, sceneVoice, voiceOnScreen } from './politeAsk'
+import { pickLine } from './voices'
 import { applyScavenge, canScavenge, canSkim, skimHeat, skimLocked } from './scavenge'
 import { writeSave } from './save'
 import { bagCap, bagCount, bagFree, bagLoad, bagStacks, bagUnits, disguiseActive, fitBag, gearLookLine, heldNames, heldOf, KNOT_STRAYS_NOTE, KNOT_TIE_LOCKED, knotWorn, SCAV_PACK_LOCKED, SCAV_PACK_RECIPE, SLOT_LABEL, slotsFor, takeHeld, wornCount } from './kit'
@@ -1003,6 +1005,18 @@ export function interpret(state: GameState, text: string): GameState {
       'down',
     )
   }
+  // Polite asks and plain questions: read the meaning before any verb guess can drink, buy, or steal.
+  if (!state.flags.encounterHere && !isPressureOverlay(state)) {
+    const ask = readAsk(text)
+    if (ask?.kind === 'rewrite') return interpret(state, ask.text)
+    if (ask) {
+      const shown = visibleChoices(state)
+      const ans = answerAsk(state, scene, ask, shown, (c) => isChoiceOn(state, c.enable))
+      if (ans?.run) return withVerb(applyEffect(state, ans.run.effects), ans.verb)
+      if (ans) return withVerb(persist({ ...state, flash: ans.flash, updatedAt: Date.now() }), ans.verb)
+    }
+  }
+
   // Using something you carry is inventory, not a shelf or a scene guess. Same result as the
   // on-screen Drink a Drop row and the Gear sheet's Drink / Bind buttons, on every screen.
   const consume = consumeAsk(text)
@@ -1255,6 +1269,12 @@ export function interpret(state: GameState, text: string): GameState {
     return withVerb(applyEffect(state, off.effects), off.verb)
   }
 
+  {
+    const late = readLateAsk(text)
+    const ans = late ? answerLate(state, scene, late) : null
+    if (ans) return withVerb(persist({ ...state, flash: ans.flash, updatedAt: Date.now() }), ans.verb)
+  }
+
   const hay = text.toLowerCase()
   const wantsScavenge = /\b(scavenge|forage|rummage|scrounge)\b/.test(hay)
   const wantsSkim = /\b(skim|tap|siphon)\b/.test(hay)
@@ -1287,23 +1307,30 @@ export function interpret(state: GameState, text: string): GameState {
     const reply = escape ? aimlessRunReply(hungerCommandEffect(state, enabled) != null) : global.reply
     return withVerb(applyEffect(state, { ...global.effects, flash: reply }), verbLabel(global.tags[0]))
   }
-  const fallback = scene.intentFallback ?? (scene.kind === 'talk' || scene.speaker ? talkFallback(scene.id, scene.speaker) : null)
+  const voiced = !scene.intentFallback && (scene.kind === 'talk' || !!scene.speaker)
+  const fallback = scene.intentFallback ?? (voiced ? talkFallback(scene.id, scene.speaker, state.ticks) : null)
   if (fallback) {
     return withVerb(
       applyEffect(state, {
         ...(fallback.effects ?? {}),
-        flash: fallback.reply,
+        flash: voiced ? `${fallback.reply} ${hintLine(shown, (c) => isChoiceOn(state, c.enable))}` : fallback.reply,
         ticks: fallback.effects?.ticks ?? 1,
       }),
       'try',
     )
   }
-  return persist({
-    ...state,
-    ticks: state.ticks + 1,
-    flash: 'Miss. Try look, talk, fight, hide, bribe, give — or a button.',
-    updatedAt: Date.now(),
-  })
+  // No person, no match: the place answers, with a pointer at what works here.
+  const voice = voiceOnScreen(state, scene)
+  const ground = voice ? pickLine(voice.lines, state) : sceneVoice(scene, state)
+  return withVerb(
+    persist({
+      ...state,
+      ticks: state.ticks + 1,
+      flash: `${ground} ${hintLine(shown, (c) => isChoiceOn(state, c.enable))}`,
+      updatedAt: Date.now(),
+    }),
+    'try',
+  )
 }
 
 function scopeDecoy(state: GameState, choices: ReturnType<typeof sceneOf>['choices']) {

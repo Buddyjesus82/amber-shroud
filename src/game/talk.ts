@@ -1,3 +1,4 @@
+import { PERSON_VOICE, pickLine, VOICES, voiceForSpeaker } from './voices'
 import { HEAR_PLAN, PLAN_HEARD, PLAN_UNHEARD } from './campJob'
 import { personAtScene, type PersonId } from './people'
 import type { IntentRule } from './types'
@@ -618,11 +619,13 @@ export function talkIntentsFor(sceneId: string): IntentRule[] {
   return []
 }
 
-export function talkFallback(sceneId: string, speaker?: string): { reply: string; effects?: IntentRule['effects'] } | null {
-  const who = speaker || 'They'
-  if (!talkIntentsFor(sceneId).length && !speaker) return null
-  return {
-    reply: `${who} heard that. Try ask, talk, threaten, trade, help — or a name they know. Buttons still work.`,
-    effects: { ticks: 1 },
+/** Typed lines nobody caught: the person on screen answers in their own voice. */
+export function talkFallback(sceneId: string, speaker?: string, ticks = 0): { reply: string; effects?: IntentRule['effects'] } | null {
+  const person = personAtScene(sceneId)
+  const voice = voiceForSpeaker(speaker) ?? (person ? VOICES[PERSON_VOICE[person.id] ?? person.id] : null)
+  if (!voice) {
+    if (!talkIntentsFor(sceneId).length && !speaker) return null
+    return { reply: `${speaker ?? 'They'} lets that pass without an answer.`, effects: { ticks: 1 } }
   }
+  return { reply: pickLine(voice.lines, { ticks }), effects: { ticks: 1 } }
 }

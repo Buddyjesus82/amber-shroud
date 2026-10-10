@@ -1,3 +1,4 @@
+import { typedHints } from '../game/politeAsk'
 import { Fragment, useEffect, useRef, useState, type CSSProperties } from 'react'
 import { HUBS } from '../game/content/catalog'
 import {
@@ -126,7 +127,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     onChange({ ...state, flash: undefined })
   }
   const coverKey = playCoverKey(state, scene)
-  const artSrc = `${import.meta.env.BASE_URL}covers/${playCoverFile(coverKey)}?v=67`
+  const artSrc = `${import.meta.env.BASE_URL}covers/${playCoverFile(coverKey)}?v=68`
   const [bandTop, bandBot] = coverBand(coverKey)
   const artBand = { '--band-top': bandTop, '--band-bot': bandBot } as CSSProperties
   const placeTitle = downed
@@ -448,8 +449,11 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
             </button>
           </form>
         ) : null}
-        {showDo && (state.recentVerbs?.length ?? 0) > 0 ? (
-          <p className="verb-hint">Heard: {state.recentVerbs?.join(' · ')}</p>
+        {showDo ? (
+          <p className="verb-hint">
+            {(state.recentVerbs?.length ?? 0) > 0 ? `Heard: ${state.recentVerbs?.slice(0, 2).join(' · ')}. ` : ''}
+            Try typing: {typedHints(state, scene, roam).join(' · ')}
+          </p>
         ) : null}
 
         {(state.items.vial_drop ?? 0) > 0 && !held ? (

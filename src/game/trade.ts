@@ -313,7 +313,7 @@ export function kaelenBuyFlash(state: GameState): string {
   return 'He taps the pack. "Wire shelf. A Drop. A knife for bolts. Rag. A cloak if I still have one. Salve if the cut is talking. Pay on the line."'
 }
 
-function offersFor(state: GameState, vendor: Vendor): StockOffer[] {
+export function offersFor(state: GameState, vendor: Vendor): StockOffer[] {
   const all = vendor.id === 'kaelen' ? kaelenOffers(state) : vendor.stock
   return all.filter((o) => !o.doors || o.doors.includes(state.door))
 }
