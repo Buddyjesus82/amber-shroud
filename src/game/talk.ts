@@ -517,7 +517,7 @@ const jodi: IntentRule[] = [
   {
     tags: TRADE,
     show: { flagUnset: 'jodiTook' },
-    reply: '"Two scrap for the Drop. One Glint for the salve. The rats set the prices. The girls check the change."',
+    reply: '"Two scrap for the Drop. A Glint or two scrap for the salve. The rats set the prices. The girls check the change."',
     effects: { ticks: 1 },
   },
   {

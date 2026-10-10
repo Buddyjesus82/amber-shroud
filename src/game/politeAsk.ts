@@ -24,7 +24,8 @@ const norm = (t: string) =>
   t
     .toLowerCase()
     .replace(/[’‘]/g, "'")
-    .replace(/[?!.,]+/g, ' ')
+    .replace(/[“”"…]/g, ' ')
+    .replace(/[?!.,;:]+/g, ' ')
     .replace(/\bplease\b/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
