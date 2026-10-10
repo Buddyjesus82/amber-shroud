@@ -114,7 +114,7 @@ export function IntroCards({ onDone }: Props) {
       >
         {INTRO_CARDS.map((c, n) => {
           const state = n === i ? 'on' : n === prev ? 'was' : ''
-          const src = `${import.meta.env.BASE_URL}intro/${c.img}?v=68`
+          const src = `${import.meta.env.BASE_URL}intro/${c.img}?v=69`
           const style = {
             '--dur': `${introMotionMs(c)}ms`,
             '--fade': `${INTRO_FADE_MS}ms`,
