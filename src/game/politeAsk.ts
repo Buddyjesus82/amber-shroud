@@ -9,7 +9,7 @@ import { HUB_MAPS } from './content/maps'
 import { PEOPLE, personAtScene, personKnown } from './people'
 import { moneyLabel, offersFor, vendorFor } from './trade'
 import type { Choice, GameState, Scene } from './types'
-import { pickLine, PERSON_VOICE, VOICES, voiceKeyForSpeaker, type Voice } from './voices'
+import { NAMED_SPEAKERS, pickLine, PERSON_VOICE, VOICES, voiceKeyForSpeaker, type Voice } from './voices'
 
 export type Ask =
   | { kind: 'who' | 'doing' | 'what-that' }
@@ -82,7 +82,12 @@ export function readLateAsk(text: string): LateAsk | null {
 export function speakerOnScreen(state: GameState, scene: Scene): string | null {
   if (scene.id === 'maw:tuner' && state.door === 'prisoner') return 'Jaxson'
   if (scene.speaker) return scene.speaker
-  return personAtScene(scene.id)?.name ?? null
+  const p = personAtScene(scene.id)
+  if (p) return p.name
+  // Openings and story beats name who is standing over you in the prose (Silas at First Drop).
+  if (!scene.id.startsWith('open:')) return null
+  const body = scene.body.toLowerCase()
+  return NAMED_SPEAKERS.find((n) => body.includes(n)) ?? null
 }
 
 export function voiceOnScreen(state: GameState, scene: Scene): Voice | null {
@@ -180,33 +185,35 @@ function shelfMatches(state: GameState, words: string[]): string[] {
     .map((o) => `${ITEMS[o.item]?.name ?? o.label} for ${moneyLabel(o.cost)}`)
 }
 
-export type AskAnswer = { flash: string; run?: Choice; verb: string }
+export type AskAnswer = { flash: string; run?: Choice; verb: string; lookInstead?: boolean }
 
 /** Unnamed or filler spots: the ground answers, short, with a pointer. */
-export function sceneVoice(scene: Scene, state: GameState): string {
+export function sceneVoice(scene: Scene, state: GameState, said = ''): string {
   const place = scene.title ?? 'The dunes'
   const lines = [
     `Nobody in ${place} takes that up. The wind does, and drops it.`,
     `${place} does not answer. It has heard worse.`,
     `The words go out over ${place} and come back with nothing on them.`,
   ]
-  return pickLine(lines, state)
+  return pickLine(lines, state, said)
 }
 
-export function answerAsk(state: GameState, scene: Scene, ask: Ask, choices: Choice[], on: (c: Choice) => boolean): AskAnswer | null {
+export function answerAsk(state: GameState, scene: Scene, ask: Ask, choices: Choice[], on: (c: Choice) => boolean, said = ''): AskAnswer | null {
   const v = voiceOnScreen(state, scene)
   if (ask.kind === 'rewrite') return null
   if (ask.kind === 'refuse') {
-    return { flash: `${v ? v.refuse : sceneVoice(scene, state)} ${hintLine(choices, on)}`, verb: 'ask' }
+    return { flash: `${v ? v.refuse : sceneVoice(scene, state, said)} ${hintLine(choices, on)}`, verb: 'ask' }
   }
   if (ask.kind === 'who') {
     return { flash: v ? v.who : `Nobody here to give a name. ${scene.title ?? 'The dunes'} keeps its own.`, verb: 'who are you' }
   }
   if (ask.kind === 'doing') {
-    return { flash: v ? v.doing : sceneVoice(scene, state), verb: 'ask' }
+    if (!v) return { flash: '', verb: 'look', lookInstead: true }
+    return { flash: v.doing, verb: 'ask' }
   }
   if (ask.kind === 'what-that') {
-    return { flash: v ? v.what : sceneVoice(scene, state), verb: 'ask' }
+    if (!v) return { flash: '', verb: 'look', lookInstead: true }
+    return { flash: v.what, verb: 'ask' }
   }
   if (!('obj' in ask)) return null
   const obj = ask.obj
@@ -214,7 +221,7 @@ export function answerAsk(state: GameState, scene: Scene, ask: Ask, choices: Cho
   const words: string[] = item?.words ?? obj.split(' ').filter((w: string) => w.length > 3)
   const shelf = shelfMatches(state, words)
   if (ask.kind === 'price') {
-    const say = v ? (item && v.items?.[item.key]) || v.price : sceneVoice(scene, state)
+    const say = v ? (item && v.items?.[item.key]) || v.price : sceneVoice(scene, state, said)
     if (shelf.length) return { flash: `${say} Shelf: ${shelf.join('; ')}. Type "buy ${item?.key ?? obj}" or open Buy.`, verb: 'price' }
     return { flash: `${say} ${hintLine(choices, on, words)}`, verb: 'price' }
   }
@@ -225,7 +232,7 @@ export function answerAsk(state: GameState, scene: Scene, ask: Ask, choices: Cho
   if (safe.length === 1 && freeChoice(safe[0]) && /^(ask|hear|listen|get|accept|take the offered|let )/i.test(safe[0].label)) {
     return { flash: '', run: safe[0], verb: 'ask' }
   }
-  const say = v ? (item && v.items?.[item.key]) || v.want : sceneVoice(scene, state)
+  const say = v ? (item && v.items?.[item.key]) || v.want : sceneVoice(scene, state, said)
   if (shelf.length) return { flash: `${say} Shelf: ${shelf.join('; ')}. Type "buy ${item?.key ?? obj}" or open Buy.`, verb: 'ask' }
   return { flash: `${say} ${hintLine(choices, on, matching.length ? words : undefined)}`, verb: 'ask' }
 }
@@ -247,22 +254,22 @@ function whereHint(pid: string, state: GameState): string {
 }
 const HUB_NAME: Record<string, string> = { camp04: 'Camp-04', spine: 'the Bleached Spine', threshold: 'the Threshold', redmaw: 'Red Maw' }
 
-export function answerLate(state: GameState, scene: Scene, ask: LateAsk): AskAnswer | null {
+export function answerLate(state: GameState, scene: Scene, ask: LateAsk, said = ''): AskAnswer | null {
   const v = voiceOnScreen(state, scene)
   if (ask.kind === 'where') {
     const p = personByWords(ask.obj)
     if (p) {
       const known = personKnown(state, p) || (p.id === 'kaelen' && !!state.flags.kaelenKnown)
-      if (!known) return { flash: v ? v.unknown : `${sceneVoice(scene, state)} Nobody here knows that name.`, verb: 'where' }
-      const said = v?.knows?.[p.id] ?? (v ? pickLine(v.lines, state) : sceneVoice(scene, state))
+      if (!known) return { flash: v ? v.unknown : `${sceneVoice(scene, state, said)} Nobody here knows that name.`, verb: 'where' }
+      const line = v?.knows?.[p.id] ?? (v ? pickLine(v.lines, state, said) : sceneVoice(scene, state, said))
       const hint = whereHint(p.id, state)
-      return { flash: `${said}${hint ? ` ${hint}` : ''}`, verb: 'where' }
+      return { flash: `${line}${hint ? ` ${hint}` : ''}`, verb: 'where' }
     }
     const node = Object.values(HUB_MAPS)
       .flatMap((m) => m.nodes.map((n) => ({ m, n })))
       .find(({ n }) => ask.obj.length > 2 && n.name.toLowerCase().includes(ask.obj))
     if (node) {
-      const lead = v ? pickLine(v.lines, state) : sceneVoice(scene, state)
+      const lead = v ? pickLine(v.lines, state, said) : sceneVoice(scene, state, said)
       return { flash: `${lead} ${node.m.hubId === state.hubId ? `${node.n.name} is on your Map.` : `${node.n.name} is on another road: ${HUB_NAME[node.m.hubId] ?? 'not this one'}.`}`, verb: 'where' }
     }
     return null

@@ -620,12 +620,12 @@ export function talkIntentsFor(sceneId: string): IntentRule[] {
 }
 
 /** Typed lines nobody caught: the person on screen answers in their own voice. */
-export function talkFallback(sceneId: string, speaker?: string, ticks = 0): { reply: string; effects?: IntentRule['effects'] } | null {
+export function talkFallback(sceneId: string, speaker?: string, ticks = 0, said = ''): { reply: string; effects?: IntentRule['effects'] } | null {
   const person = personAtScene(sceneId)
   const voice = voiceForSpeaker(speaker) ?? (person ? VOICES[PERSON_VOICE[person.id] ?? person.id] : null)
   if (!voice) {
     if (!talkIntentsFor(sceneId).length && !speaker) return null
     return { reply: `${speaker ?? 'They'} lets that pass without an answer.`, effects: { ticks: 1 } }
   }
-  return { reply: pickLine(voice.lines, { ticks }), effects: { ticks: 1 } }
+  return { reply: pickLine(voice.lines, { ticks }, said), effects: { ticks: 1 } }
 }
