@@ -407,7 +407,14 @@ export function voiceKeyForSpeaker(name: string | null | undefined): string | nu
   return SPEAKER_VOICE[name.toLowerCase()] ?? SPEAKER_VOICE[name.toLowerCase().split(' ')[0]] ?? null
 }
 
-/** Rotate lines by the clock so repeats vary without randomness. */
-export function pickLine(lines: string[], state: Pick<GameState, 'ticks'>): string {
-  return lines[Math.abs(state.ticks) % lines.length]
+/** Rotate lines by the clock and by what was typed, so different commands never all get one line. */
+export function pickLine(lines: string[], state: Pick<GameState, 'ticks'>, said = ''): string {
+  let h = Math.abs(state.ticks)
+  for (const ch of said.toLowerCase()) h = (h * 31 + ch.charCodeAt(0)) >>> 0
+  return lines[h % lines.length]
 }
+
+/** Full speaker names, longest first, for finding who a scene's prose puts in front of you. */
+export const NAMED_SPEAKERS = Object.keys(SPEAKER_VOICE)
+  .filter((n) => n.includes(' ') || n.length > 5)
+  .sort((a, b) => b.length - a.length)

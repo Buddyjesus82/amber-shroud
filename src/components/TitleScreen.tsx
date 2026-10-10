@@ -1,3 +1,4 @@
+import { BUILD } from '../version'
 import { DOOR_SLOT_LABEL } from '../game/save'
 import type { DoorId } from '../game/types'
 
@@ -38,10 +39,10 @@ export function TitleScreen({
   return (
     <div className="screen title-screen">
       <div className="title-hero">
-        <img className="title-fill" src={`${import.meta.env.BASE_URL}covers/world.jpg?v=69`} alt="" aria-hidden="true" />
+        <img className="title-fill" src={`${import.meta.env.BASE_URL}covers/world.jpg?v=70`} alt="" aria-hidden="true" />
         <div className="title-veil" />
         <div className="title-art">
-          <img src={`${import.meta.env.BASE_URL}covers/world.jpg?v=69`} alt="The Amber Shroud — three factions, one desert" />
+          <img src={`${import.meta.env.BASE_URL}covers/world.jpg?v=70`} alt="The Amber Shroud — three factions, one desert" />
         </div>
         <div className="title-copy">
           <p className="kicker">A desert of Drops, Glints, and bad religion</p>
@@ -86,6 +87,7 @@ export function TitleScreen({
         <p className="credit">
           <strong>Jeramie Algieri</strong>
           <span className="credit-with">Gamer NERD&apos;s Human</span>
+          <span className="build-tag">Build {BUILD}</span>
         </p>
       </div>
     </div>

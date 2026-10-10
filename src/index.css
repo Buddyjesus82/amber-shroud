@@ -2237,3 +2237,11 @@ h2 {
     object-position: 88% center;
   }
 }
+
+.credit .build-tag {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.72rem;
+  opacity: 0.6;
+  letter-spacing: 0.04em;
+}

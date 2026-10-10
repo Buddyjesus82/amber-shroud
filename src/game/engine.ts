@@ -1011,7 +1011,8 @@ export function interpret(state: GameState, text: string): GameState {
     if (ask?.kind === 'rewrite') return interpret(state, ask.text)
     if (ask) {
       const shown = visibleChoices(state)
-      const ans = answerAsk(state, scene, ask, shown, (c) => isChoiceOn(state, c.enable))
+      const ans = answerAsk(state, scene, ask, shown, (c) => isChoiceOn(state, c.enable), text)
+      if (ans?.lookInstead) return interpret(state, 'look around')
       if (ans?.run) return withVerb(applyEffect(state, ans.run.effects), ans.verb)
       if (ans) return withVerb(persist({ ...state, flash: ans.flash, updatedAt: Date.now() }), ans.verb)
     }
@@ -1271,7 +1272,7 @@ export function interpret(state: GameState, text: string): GameState {
 
   {
     const late = readLateAsk(text)
-    const ans = late ? answerLate(state, scene, late) : null
+    const ans = late ? answerLate(state, scene, late, text) : null
     if (ans) return withVerb(persist({ ...state, flash: ans.flash, updatedAt: Date.now() }), ans.verb)
   }
 
@@ -1308,7 +1309,7 @@ export function interpret(state: GameState, text: string): GameState {
     return withVerb(applyEffect(state, { ...global.effects, flash: reply }), verbLabel(global.tags[0]))
   }
   const voiced = !scene.intentFallback && (scene.kind === 'talk' || !!scene.speaker)
-  const fallback = scene.intentFallback ?? (voiced ? talkFallback(scene.id, scene.speaker, state.ticks) : null)
+  const fallback = scene.intentFallback ?? (voiced ? talkFallback(scene.id, scene.speaker, state.ticks, text) : null)
   if (fallback) {
     return withVerb(
       applyEffect(state, {
@@ -1321,7 +1322,7 @@ export function interpret(state: GameState, text: string): GameState {
   }
   // No person, no match: the place answers, with a pointer at what works here.
   const voice = voiceOnScreen(state, scene)
-  const ground = voice ? pickLine(voice.lines, state) : sceneVoice(scene, state)
+  const ground = voice ? pickLine(voice.lines, state, text) : sceneVoice(scene, state, text)
   return withVerb(
     persist({
       ...state,

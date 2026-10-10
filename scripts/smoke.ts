@@ -2665,7 +2665,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v69'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v70'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -2687,7 +2687,7 @@ assert(css.includes('--story-top: min(calc(56.25cqi * var(--band-bot, 0.5)), 50c
 assert(css.includes('rgba(12, 7, 4, 0.58)'), 'story scrim stays translucent so cover art shows through')
 assert(!css.includes('rgba(12, 7, 4, 0.88)'), 'story scrim is lighter than the v32 slab')
 const playSrc = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
-assert(playSrc.includes('?v=69'), 'scene cover URLs are cache-busted with the service worker')
+assert(playSrc.includes('?v=70'), 'scene cover URLs are cache-busted with the service worker')
 assert(!css.includes('object-position: center 68%'), 'scene art no longer crops toward the ground')
 assert(!css.includes('height: 56px'), 'short phones no longer squash covers into a head-cropping strip')
 assert(css.includes('place-items: center'), 'game screen is centered on the backdrop')
@@ -4913,6 +4913,32 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(!GE.visibleChoices(paid).some((c) => c.id === 'salve' || c.id === 'salve-scrap'), 'one per visit')
   const back = GE.applyEffect(paid, GE.visibleChoices(paid).find((c) => c.id === 'back')!.effects)
   assert(!back.flags.jodiSalve, 'walking away restocks her salve for the next visit')
+}
+
+
+// v70: the build label matches the SW cache; no screen answers every command with one canned line.
+{
+  const swText = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
+  const ver = readFileSync(new URL('../src/version.ts', import.meta.url), 'utf8').match(/BUILD = '(v\d+)'/)?.[1]
+  assert(ver && swText.includes(`CACHE = 'amber-shroud-${ver}'`), `title build label ${ver} matches the SW cache`)
+  const junk = ['hello there', 'blorp', 'Talk to her.', 'What’s that?', 'Who are you? ', 'Can I have some salve.', 'zzz qqq', 'sing a song']
+  for (const sc of ALL_SCENES) {
+    if (sc.kind === 'ending' || sc.kind === 'crisis') continue
+    const door: DoorId = sc.id.startsWith('thresh:') || sc.id.startsWith('ch1:v') || sc.id === 'open:vessel' ? 'vessel' : sc.id.startsWith('spine:') || sc.id.startsWith('ch1:o') || sc.id === 'open:outcast' ? 'outcast' : 'prisoner'
+    const st = GE.applyEffect(GE.newGame(door), { goto: sc.id, flag: { encounterAt: 99999 } })
+    delete st.flags.encounterHere
+    delete st.flags.hunterHere
+    if (st.sceneId !== sc.id) continue
+    const seen = new Set(junk.map((t) => GE.interpret(st, t).flash ?? ''))
+    assert(seen.size >= 3, `${sc.id}: typed lines collapse to one canned reply (${[...seen][0]?.slice(0, 60)})`)
+  }
+  // Curly apostrophes and phone punctuation read the same as plain.
+  const jodi = GE.applyEffect(GE.newGame('outcast'), { goto: 'spine:jodi' })
+  for (const t of ['What’s that?', "what's that", 'WHAT’S THAT.', ' whats that ']) {
+    assert(/Grudge/.test(GE.interpret(jodi, t).flash ?? ''), `"${t}" at Jodi is Grudge`)
+  }
+  // First Drop: Silas is standing over you, so he answers.
+  assert(/Silas/.test(GE.interpret(GE.newGame('outcast'), 'Who are you?').flash ?? ''), 'First Drop: Silas answers who are you')
 }
 
 console.log('OK', {
