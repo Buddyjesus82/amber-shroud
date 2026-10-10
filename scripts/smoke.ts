@@ -2665,7 +2665,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v68'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v69'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -2687,7 +2687,7 @@ assert(css.includes('--story-top: min(calc(56.25cqi * var(--band-bot, 0.5)), 50c
 assert(css.includes('rgba(12, 7, 4, 0.58)'), 'story scrim stays translucent so cover art shows through')
 assert(!css.includes('rgba(12, 7, 4, 0.88)'), 'story scrim is lighter than the v32 slab')
 const playSrc = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
-assert(playSrc.includes('?v=68'), 'scene cover URLs are cache-busted with the service worker')
+assert(playSrc.includes('?v=69'), 'scene cover URLs are cache-busted with the service worker')
 assert(!css.includes('object-position: center 68%'), 'scene art no longer crops toward the ground')
 assert(!css.includes('height: 56px'), 'short phones no longer squash covers into a head-cropping strip')
 assert(css.includes('place-items: center'), 'game screen is centered on the backdrop')
@@ -4893,6 +4893,26 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(/Bleed Yard|Yard/.test(yard) && /Try/.test(yard), `filler spot answers with the place: ${yard}`)
   // Heard line hints.
   assert(PA.typedHints(sarn, getScene('camp:bay-sarn'), false).includes('who are you'), 'Heard line suggests real typed asks')
+}
+
+
+// v69: Jodi sells a Resin Salve for 1 Glint or 2 scrap, once per visit; locked rows say what they need.
+{
+  const jo = (items: Record<string, number>) => {
+    const st = GE.applyEffect(GE.newGame('outcast'), { goto: 'spine:jodi', flag: { encounterAt: 99999 } })
+    delete st.flags.encounterHere
+    return { ...st, items: { ...st.items, glints: 0, scrap: 0, ...items } }
+  }
+  const broke = jo({})
+  const rows = GE.visibleChoices(broke).filter((c) => c.id === 'salve' || c.id === 'salve-scrap')
+  assert(rows.length === 2 && rows.every((c) => !GE.isChoiceOn(broke, c.enable) && c.locked), 'both salve rows show, locked with the price')
+  const say = String(GE.interpret(broke, 'can I have some salve').flash)
+  assert(/Trade 2 scrap for the Resin Salve/.test(say) && /Need/.test(say) && (GE.interpret(broke, 'can I have some salve').items.salve ?? 0) === 0, `Jodi points at the salve button: ${say}`)
+  const paid = GE.applyEffect(jo({ scrap: 2 }), GE.visibleChoices(jo({ scrap: 2 })).find((c) => c.id === 'salve-scrap')!.effects)
+  assert(paid.items.salve === 1 && (paid.items.scrap ?? 0) === 0, '2 scrap buys one salve')
+  assert(!GE.visibleChoices(paid).some((c) => c.id === 'salve' || c.id === 'salve-scrap'), 'one per visit')
+  const back = GE.applyEffect(paid, GE.visibleChoices(paid).find((c) => c.id === 'back')!.effects)
+  assert(!back.flags.jodiSalve, 'walking away restocks her salve for the next visit')
 }
 
 console.log('OK', {

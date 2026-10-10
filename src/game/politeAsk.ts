@@ -150,6 +150,14 @@ const NOT_HINTS = /^(back|leave|step back|walk away|stay outside)\b/i
 /** A short real pointer: the buttons that do something here. */
 export function hintLine(choices: Choice[], on: (c: Choice) => boolean, words?: string[]): string {
   const live = choices.filter((c) => on(c) && !NOT_HINTS.test(c.label))
+  // Locked buttons that match still get pointed at, with what they need.
+  const anyHit = words?.length
+    ? choices.filter((c) => !NOT_HINTS.test(c.label) && !unsafeChoice(c) && words.some((w) => `${c.label} ${c.sub ?? ''}`.toLowerCase().includes(w)))
+    : []
+  if (anyHit.length) {
+    const rows = anyHit.slice(0, 2).map((c) => (on(c) ? `"${c.label}"` : `"${c.label}" (${(c.locked ?? 'locked').replace(/\.$/, '')})`))
+    return `Try: ${rows.length > 1 ? `${rows[0]} or ${rows[1]}` : rows[0]}.`
+  }
   const hit = words?.length ? live.filter((c) => words.some((w) => `${c.label} ${c.sub ?? ''}`.toLowerCase().includes(w))) : []
   const safeHit = hit.filter((c) => !unsafeChoice(c))
   const safe = live.filter((c) => !unsafeChoice(c))

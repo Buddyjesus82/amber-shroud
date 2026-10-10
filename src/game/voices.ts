@@ -227,7 +227,9 @@ export const VOICES: Record<string, Voice> = {
     what: '"That? That\'s Grudge. He bites to make a point."',
     refuse: 'Grudge lifts his head. "Ask nicely to steal from me," Jodi says. "Grudge loves manners."',
     unknown: '"The birds never mentioned them."',
-    items: { salve: '"Salve\'s for trade. Bring the birds something shiny."' },
+    items: {
+      salve: 'Jodi says to the rats, "Hear that? They want the salve." She grins. "Not free, love. A Glint or two scrap, and the girls check the seal."',
+    },
   },
   thalia: {
     lines: [
