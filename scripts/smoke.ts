@@ -2665,7 +2665,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v70'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v71'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -2687,7 +2687,7 @@ assert(css.includes('--story-top: min(calc(56.25cqi * var(--band-bot, 0.5)), 50c
 assert(css.includes('rgba(12, 7, 4, 0.58)'), 'story scrim stays translucent so cover art shows through')
 assert(!css.includes('rgba(12, 7, 4, 0.88)'), 'story scrim is lighter than the v32 slab')
 const playSrc = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
-assert(playSrc.includes('?v=70'), 'scene cover URLs are cache-busted with the service worker')
+assert(playSrc.includes('?v=71'), 'scene cover URLs are cache-busted with the service worker')
 assert(!css.includes('object-position: center 68%'), 'scene art no longer crops toward the ground')
 assert(!css.includes('height: 56px'), 'short phones no longer squash covers into a head-cropping strip')
 assert(css.includes('place-items: center'), 'game screen is centered on the backdrop')
@@ -4939,6 +4939,19 @@ function assertHelpResolves(s: GameState, where: string) {
   }
   // First Drop: Silas is standing over you, so he answers.
   assert(/Silas/.test(GE.interpret(GE.newGame('outcast'), 'Who are you?').flash ?? ''), 'First Drop: Silas answers who are you')
+}
+
+
+// v71: phone keyboards. Smart quotes, ellipsis, and wrapping quotes read like plain typing at Jodi.
+{
+  const jd = GE.applyEffect(GE.newGame('outcast'), { goto: 'spine:jodi' })
+  for (const t of ['“What’s that?”', 'What’s that…', '"what\'s that"', 'What’s that?\u00a0']) {
+    assert(/Grudge/.test(GE.interpret(jd, t).flash ?? ''), `phone "${t}" at Jodi is Grudge`)
+  }
+  assert(/salve/i.test(GE.interpret(jd, '“Can I have some salve?”').flash ?? ''), 'smart-quoted salve ask reads')
+  assert(/Jodi Hollowmere/.test(GE.interpret(jd, 'Who are you…').flash ?? ''), 'ellipsis who are you reads')
+  const seen = new Set(['what’s that?', 'Can I have some salve', 'who are you', 'Hello', 'blorp', 'Look at the snake'].map((t) => GE.interpret(jd, t).flash))
+  assert(seen.size === 6, 'six different Jodi commands get six different replies')
 }
 
 console.log('OK', {

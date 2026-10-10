@@ -969,7 +969,20 @@ function tryCampSabotageJob(state: GameState, text: string): GameState | null {
 
 const REST_SCENES = new Set(['camp:bay', 'camp:lean', 'camp:cages', 'maw:tuner', 'maw:stilt', 'spine:shade', 'thresh:cell'])
 
-export function interpret(state: GameState, text: string): GameState {
+/** Phone keyboards: smart quotes, ellipsis, wrapping quotes, stray spaces. Read them as plain text. */
+export function phoneText(text: string): string {
+  return text
+    .replace(/[’‘ʼ`´]/g, "'")
+    .replace(/[“”„«»]/g, '"')
+    .replace(/…/g, '...')
+    .replace(/\u00a0/g, ' ')
+    .replace(/^\s*["']+|["']+\s*$/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+export function interpret(state: GameState, raw: string): GameState {
+  const text = phoneText(raw)
   const scene = sceneOf(state)
   const bare = text.trim().toLowerCase()
   const said = bare === 'l' || /^l\s/.test(bare) ? bare.replace(/^l\b/, 'look') : bare
