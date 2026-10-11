@@ -68,7 +68,7 @@ const BOLT_FX: Effect = { add: { scrap: 1 }, heat: { cartel: 1 }, flag: { bayPik
 const PIKE_AGAIN = 'Pike\'s scraper finds your wrist. "Once is a bolt. Twice is a name." No second scrap.'
 const PIKE_AGAIN_FX: Effect = { pressure: 1, flag: { cartelNotice: true }, ticks: 1 }
 
-const CORD_REPLY = 'Cord. Pike does not look up. A stilt-lash will take it. Cartel Heat ticks if anyone counts his skiff.'
+const CORD_REPLY = 'Cord. Pike does not look up. Cartel Heat ticks if anyone counts his skiff.'
 const CORD_FX: Effect = { flag: { lashCord: true, bayPikeTook: true }, heat: { cartel: 1 }, ticks: 1 }
 
 const SARN_REPLY =
