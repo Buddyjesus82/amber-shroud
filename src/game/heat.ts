@@ -53,7 +53,7 @@ const BY_DOOR: Partial<Record<DoorId, Partial<Record<Faction, HeatCard>>>> = {
     strays: {
       name: 'Strays',
       watch: 'Ossa, Dune-Strays',
-      body: 'Dune-Strays collect favors and shade. Ossa keeps her stilts near Red Maw. Stray Heat is being known. Known is not safe.',
+      body: 'Dune-Strays collect favors and shade. Ossa keeps to Red Maw. Stray Heat is being known. Known is not safe.',
     },
   },
 }

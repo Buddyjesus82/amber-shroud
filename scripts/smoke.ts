@@ -2665,7 +2665,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v71'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v72'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -2687,7 +2687,7 @@ assert(css.includes('--story-top: min(calc(56.25cqi * var(--band-bot, 0.5)), 50c
 assert(css.includes('rgba(12, 7, 4, 0.58)'), 'story scrim stays translucent so cover art shows through')
 assert(!css.includes('rgba(12, 7, 4, 0.88)'), 'story scrim is lighter than the v32 slab')
 const playSrc = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
-assert(playSrc.includes('?v=71'), 'scene cover URLs are cache-busted with the service worker')
+assert(playSrc.includes('?v=72'), 'scene cover URLs are cache-busted with the service worker')
 assert(!css.includes('object-position: center 68%'), 'scene art no longer crops toward the ground')
 assert(!css.includes('height: 56px'), 'short phones no longer squash covers into a head-cropping strip')
 assert(css.includes('place-items: center'), 'game screen is centered on the backdrop')
@@ -4952,6 +4952,18 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(/Jodi Hollowmere/.test(GE.interpret(jd, 'Who are you…').flash ?? ''), 'ellipsis who are you reads')
   const seen = new Set(['what’s that?', 'Can I have some salve', 'who are you', 'Hello', 'blorp', 'Look at the snake'].map((t) => GE.interpret(jd, t).flash))
   assert(seen.size === 6, 'six different Jodi commands get six different replies')
+}
+
+
+// v72: no stilts before Ossa. Camp-04 and the opening Heat guide never mention stilts or a stilt-lash.
+{
+  for (const f of ['../src/game/content/bayHands.ts', '../src/game/content/camp04.ts', '../src/game/content/openings.ts', '../src/game/heat.ts', '../src/game/campJob.ts', '../src/game/firstDrop.ts']) {
+    const src = readFileSync(new URL(f, import.meta.url), 'utf8')
+    assert(!/\bstilt/i.test(src), `${f} mentions stilts before they are introduced`)
+  }
+  const bay = GE.applyEffect(GE.newGame('prisoner'), { goto: 'camp:bay', unsetFlag: ['encounterHere', 'encounterKind', 'encounterHp', 'encounterTerrain'] })
+  const cord = GE.interpret(bay, 'take the cord')
+  assert(/^Cord\. Pike does not look up\. Cartel Heat ticks/.test(cord.flash ?? '') && cord.flags.lashCord, `cord take still works, plain hint: ${cord.flash}`)
 }
 
 console.log('OK', {
