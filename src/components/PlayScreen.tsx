@@ -136,7 +136,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     onChange({ ...state, flash: undefined })
   }
   const coverKey = playCoverKey(state, scene)
-  const artSrc = `${import.meta.env.BASE_URL}covers/${playCoverFile(coverKey)}?v=77`
+  const artSrc = `${import.meta.env.BASE_URL}covers/${playCoverFile(coverKey)}?v=78`
   const [bandTop, bandBot] = coverBand(coverKey)
   const artBand = { '--band-top': bandTop, '--band-bot': bandBot } as CSSProperties
   const placeTitle = downed
