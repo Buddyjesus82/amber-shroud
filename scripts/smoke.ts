@@ -2665,7 +2665,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v76'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v77'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -2687,7 +2687,7 @@ assert(css.includes('--story-top: min(calc(56.25cqi * var(--band-bot, 0.5)), 50c
 assert(css.includes('rgba(12, 7, 4, 0.58)'), 'story scrim stays translucent so cover art shows through')
 assert(!css.includes('rgba(12, 7, 4, 0.88)'), 'story scrim is lighter than the v32 slab')
 const playSrc = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
-assert(playSrc.includes('?v=76'), 'scene cover URLs are cache-busted with the service worker')
+assert(playSrc.includes('?v=77'), 'scene cover URLs are cache-busted with the service worker')
 assert(!css.includes('object-position: center 68%'), 'scene art no longer crops toward the ground')
 assert(!css.includes('height: 56px'), 'short phones no longer squash covers into a head-cropping strip')
 assert(css.includes('place-items: center'), 'game screen is centered on the backdrop')
@@ -5014,6 +5014,25 @@ function assertHelpResolves(s: GameState, where: string) {
   }
   const src = readFileSync(new URL('../src/game/content/camp04.ts', import.meta.url), 'utf8')
   assert(!src.includes('Valerius eats dust if we are fast. Kaelen still charges'), 'repeat recap is gone')
+}
+
+
+// v77: after pressing scrip at the Hound-handler, walking Yard -> Watchtower never brings the handler back,
+// and the same-screen result hold cannot ride along on Map travel.
+{
+  let hs = GE.applyEffect(GE.newGame('prisoner'), { goto: 'camp:yard', unsetFlag: ['encounterHere', 'encounterKind', 'encounterHp', 'encounterTerrain'], flag: { jaxsonInside: true, jaxsonPlan: true, cartelNotice: true } })
+  hs = { ...hs, health: 6, items: { ...hs.items, scrip: 1 }, heat: { ...hs.heat, cartel: 3 }, flags: { ...hs.flags, huntQuiet: 9 } }
+  hs = GE.travelTo(hs, 'camp:vents')
+  assert(hs.flags.hunterHere, 'hunt fires on the walk')
+  hs = GE.applyEffect(hs, GE.visibleChoices(hs).find((c) => c.id === 'hunter-scrip')!.effects)
+  assert(!hs.flags.hunterHere && /Owned is a solved problem/.test(hs.flash ?? ''), 'scrip clears the hunt')
+  for (const d of ['camp:guard', 'camp:tower', 'camp:guard', 'camp:vents', 'camp:yard']) {
+    hs = GE.travelTo(hs, d)
+    assert(hs.sceneId === d || hs.sceneId.startsWith('crisis:') || hs.sceneId === 'camp:valerius', `walk reaches ${d} (${hs.sceneId})`)
+    assert(!hs.flags.hunterHere && !GE.visibleChoices(hs).some((c) => c.id.startsWith('hunter-')), `Hound-handler does not come back at ${d}`)
+  }
+  const ps = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
+  assert(/heldRaw\.stamp === heldStamp\(state\)/.test(ps), 'held result only shows for the state it was made for')
 }
 
 console.log('OK', {

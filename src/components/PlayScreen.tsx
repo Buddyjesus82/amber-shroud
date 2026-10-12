@@ -64,6 +64,12 @@ type HeldScreen = {
   art: string
   band: CSSProperties
   result: string
+  /** The state the result belongs to. Any other move (Map, Gear, typed) drops the hold. */
+  stamp: string
+}
+
+function heldStamp(s: GameState): string {
+  return `${s.sceneId}|${s.updatedAt ?? 0}|${s.ticks}`
 }
 
 export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Props) {
@@ -80,7 +86,9 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
   const [heatInfo, setHeatInfo] = useState<Faction | null>(null)
   const [toast, setToast] = useState<string | null>(null)
   // An action that moves you on shows its result here first, on the screen you acted on, with Continue.
-  const [held, setHeld] = useState<HeldScreen | null>(null)
+  const [heldRaw, setHeld] = useState<HeldScreen | null>(null)
+  // A held result only covers the exact state it was made for. Walking on by Map must not carry it along.
+  const held = heldRaw && heldRaw.stamp === heldStamp(state) ? heldRaw : null
   const prevHeat = useRef(state.heat)
   const talky = scene.kind === 'talk' || scene.kind === 'place' || scene.kind === 'story'
   const showNav = !!hub && scene.kind !== 'crisis' && state.chapterId !== 'cache-run'
@@ -118,6 +126,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
         art: artSrc,
         band: artBand,
         result: next.flash,
+        stamp: heldStamp(next),
       })
     }
     onChange(next)
@@ -127,7 +136,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     onChange({ ...state, flash: undefined })
   }
   const coverKey = playCoverKey(state, scene)
-  const artSrc = `${import.meta.env.BASE_URL}covers/${playCoverFile(coverKey)}?v=76`
+  const artSrc = `${import.meta.env.BASE_URL}covers/${playCoverFile(coverKey)}?v=77`
   const [bandTop, bandBot] = coverBand(coverKey)
   const artBand = { '--band-top': bandTop, '--band-bot': bandBot } as CSSProperties
   const placeTitle = downed
