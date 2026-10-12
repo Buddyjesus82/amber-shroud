@@ -426,6 +426,19 @@ He is the one who can break you out. He hotwires Ironclad Skiff-Striders, and he
       {
         id: 'scrap',
         label: 'Break it down for scrap',
+        show: { flagUnset: 'kaelenKnown' },
+        effects: {
+          add: { scrap: 2 },
+          flag: { shivTaken: true },
+          goto: 'camp:cages',
+          ticks: 1,
+          flash: 'Ugly metal for ugly trades. A trader at the Wire swaps Drops for scrap.',
+        },
+      },
+      {
+        id: 'scrap-known',
+        label: 'Break it down for scrap',
+        show: { flag: 'kaelenKnown' },
         effects: {
           add: { scrap: 2 },
           flag: { shivTaken: true },
