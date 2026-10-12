@@ -585,7 +585,7 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     next.flags = { ...next.flags, ventPatrol: ventPatrolInPlace(next) }
   }
 
-  const lingered = (fx.ticks ?? 0) > 0 || (fx.pressure ?? 0) > 0 || !!dest
+  const lingered = !fx.still && ((fx.ticks ?? 0) > 0 || (fx.pressure ?? 0) > 0 || !!dest)
   const clearingHunt = !!state.flags.hunterHere && (!next.flags.hunterHere || !!fx.unsetFlag?.includes('hunterHere'))
   if (clearingHunt) {
     const keepFrom = facingSybella(next.sceneId)
@@ -805,6 +805,7 @@ export function drinkDrop(state: GameState): GameState {
     remove: { vial_drop: 1 },
     add: { vial_empty: 1 },
     ticks: 1,
+    still: true,
     flash: 'The Drop hits like a nail of honey and heat. The vial is a dry throat again.',
   })
 }
@@ -814,6 +815,7 @@ export const BIND_SALVE: Effect = {
   remove: { salve: 1 },
   health: 3,
   ticks: 1,
+  still: true,
   flash: 'Resin salve on the cut. Health comes back a few pips. The tin is lighter.',
 }
 

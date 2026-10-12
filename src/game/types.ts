@@ -97,6 +97,8 @@ export type Cond = {
 }
 
 export type Effect = {
+  /** Self-care in place (drink, bind). Time passes, but no road fight or hunt rolls. */
+  still?: boolean
   sap?: number
   health?: number
   heat?: Partial<Heat>
