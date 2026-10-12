@@ -2665,7 +2665,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v78'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v79'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -2687,7 +2687,7 @@ assert(css.includes('--story-top: min(calc(56.25cqi * var(--band-bot, 0.5)), 50c
 assert(css.includes('rgba(12, 7, 4, 0.58)'), 'story scrim stays translucent so cover art shows through')
 assert(!css.includes('rgba(12, 7, 4, 0.88)'), 'story scrim is lighter than the v32 slab')
 const playSrc = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
-assert(playSrc.includes('?v=78'), 'scene cover URLs are cache-busted with the service worker')
+assert(playSrc.includes('?v=79'), 'scene cover URLs are cache-busted with the service worker')
 assert(!css.includes('object-position: center 68%'), 'scene art no longer crops toward the ground')
 assert(!css.includes('height: 56px'), 'short phones no longer squash covers into a head-cropping strip')
 assert(css.includes('place-items: center'), 'game screen is centered on the backdrop')
@@ -5037,6 +5037,27 @@ function assertHelpResolves(s: GameState, where: string) {
   }
   const ps = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
   assert(/heldRaw\.stamp === heldStamp\(state\)/.test(ps), 'held result only shows for the state it was made for')
+}
+
+
+// v79: drinking a Drop or binding a salve never starts a road fight or the hunt, anywhere.
+{
+  const GA = await import('../src/game/art.ts')
+  const places = ['camp:guard', 'camp:yard', 'camp:vents', 'camp:tower', 'camp:bay', 'spine:ridge', 'spine:well', 'thresh:paddock', 'maw:lip']
+  for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
+    for (const id of places) {
+      try { GE.sceneOf({ ...GE.newGame(door), sceneId: id }) } catch { continue }
+      for (let k = 0; k < 40; k++) {
+        let s = GE.applyEffect(GE.newGame(door), { goto: id, unsetFlag: ['encounterHere', 'encounterKind', 'encounterHp', 'encounterTerrain'] })
+        s = { ...s, ticks: s.ticks + k, sap: 2, health: 3, items: { ...s.items, vial_drop: 3, salve: 2 }, heat: { cartel: 8, seekers: 8, strays: 8 }, flags: { ...s.flags, huntQuiet: 20, cartelNotice: true, strayNotice: true, encounterAt: -99 } }
+        for (const after of [GE.drinkDrop(s), GE.bindSalve(s), GE.interpret(s, 'drink a drop')]) {
+          assert(!after.flags.encounterHere && !after.flags.hunterHere && after.sceneId === s.sceneId, `${door} ${id}: self-care started a fight (${after.flags.encounterKind ?? after.sceneId})`)
+        }
+      }
+    }
+  }
+  const pup = GE.applyEffect(GE.newGame('prisoner'), { goto: 'camp:guard', flag: { encounterHere: true, encounterKind: 'pup', encounterHp: 2 } })
+  assert(GA.playCoverKey(pup, GE.sceneOf(pup)) !== 'hound', 'Shard-pup fight does not use the handler portrait')
 }
 
 console.log('OK', {

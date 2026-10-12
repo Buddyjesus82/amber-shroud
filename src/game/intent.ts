@@ -91,6 +91,7 @@ export const GLOBAL_INTENTS: IntentRule[] = [
       remove: { vial_drop: 1 },
       add: { vial_empty: 1 },
       ticks: 1,
+      still: true,
     },
   },
   {

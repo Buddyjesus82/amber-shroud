@@ -165,7 +165,8 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   const id = scene.id
   if (state.flags.encounterHere) {
     const kind = state.flags.encounterKind
-    if (kind === 'handler' || kind === 'pup' || kind === 'hound') return 'hound'
+    // The pup has no handler, so it gets the ground you are on (like jackals and ticks), not the handler portrait.
+    if (kind === 'handler' || kind === 'hound') return 'hound'
     if (kind === 'overseer') return 'valerius'
     if (kind === 'patrol') return 'rell'
     if (kind === 'scavenger' || kind === 'cutter') return 'hunger'
