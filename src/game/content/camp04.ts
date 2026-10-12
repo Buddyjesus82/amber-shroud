@@ -457,7 +457,7 @@ He is the one who can break you out. He hotwires Ironclad Skiff-Striders, and he
     speaker: 'Jaxson Vance',
     body: `The stall is hot metal and skimmed sap. The oversized wrench sits in his fist.
 
-"Bleed-Cut," he says. "The Great Bleed is coming. You sabotage the Guard Station. I hotwire a Strider."`,
+"Bleed-Cut," he says. "The Great Bleed is coming. You sabotage the Guard Station. I hotwire a Strider in Skiff Bay."`,
     variants: [
       {
         if: PLAN_UNHEARD,
@@ -593,7 +593,7 @@ He leans in, brass ticking. "I have a plan to get out of here."`,
       {
         if: PLAN_HEARD,
         mode: 'replace',
-        body: `Jaxson drops his voice under the steam. "When the Great Bleed hits, you sabotage the guard station. I hotwire a Strider. We leave the pens."
+        body: `Jaxson drops his voice under the steam. "When the Great Bleed hits, you sabotage the guard station. I hotwire a Strider in Skiff Bay. We leave the pens."
 
 He taps the brass. "If you need supplies, see Kaelen the Sifter at the Wire. Jittery merchant. Glints buy intel. Scrap buys Drops."`,
       },
@@ -613,6 +613,36 @@ He taps the brass. "If you need supplies, see Kaelen the Sifter at the Wire. Jit
         effects: { ...TAKE_INSIDE_JOB, goto: 'camp:lean' },
       },
       {
+        id: 'ask-guard',
+        label: "Ask where the guard station is",
+        show: { all: [PLAN_HEARD, { flagUnset: 'jaxAskGuard' }] },
+        effects: {
+          flag: { jaxAskGuard: true },
+          ticks: 1,
+          flash: '"North, under the Overseer\'s tower." He draws it in the grease on his palm. "Out through the Bleed Yard, then the Steam Vents. The west vent is the one. Open the Map and walk it."',
+        },
+      },
+      {
+        id: 'ask-bay',
+        label: 'Ask where Skiff Bay is',
+        show: { all: [PLAN_HEARD, { flagUnset: 'jaxAskBay' }] },
+        effects: {
+          flag: { jaxAskBay: true },
+          ticks: 1,
+          flash: '"East. Past my stall, or one road over from the guard station. That is where the Striders sit. Pike works the hulls there. Do not let him count you."',
+        },
+      },
+      {
+        id: 'ask-trust',
+        label: 'Ask why he trusts you',
+        show: { all: [PLAN_HEARD, { flagUnset: 'jaxAskTrust' }] },
+        effects: {
+          flag: { jaxAskTrust: true },
+          ticks: 1,
+          flash: 'The smirk thins. "I don\'t, much. But I can\'t crack the station and start a Strider at the same time, and you have nothing to sell me out for." He taps the brass. "Got this pulling an apprentice out from under a press. I don\'t leave people in cages if I can help it."',
+        },
+      },
+      {
         id: 'have',
         label: 'Confirm the job',
         show: { flag: 'jaxsonInside' },
@@ -620,7 +650,7 @@ He taps the brass. "If you need supplies, see Kaelen the Sifter at the Wire. Jit
           ticks: 1,
           pressure: 1,
           goto: 'camp:lean',
-          flash: '"Guard station. Then the bay. Valerius eats dust if we are fast. Kaelen still charges for news."',
+          flash: '"Guard Station is north, under the Overseer\'s tower. Bleed Yard, then the Steam Vents, then the west vent. Skiff Bay is one road east of the station. I will be under the hull."',
         },
       },
       {
@@ -684,7 +714,7 @@ He taps the brass. "If you need supplies, see Kaelen the Sifter at the Wire. Jit
       {
         tags: ['plan', 'what plan', 'his plan', 'your plan', 'the plan'],
         show: PLAN_HEARD,
-        reply: '"Great Bleed hits. You sabotage the guard station. I hotwire a Strider. We leave the pens. Supplies are Kaelen\'s, at the Wire."',
+        reply: '"Great Bleed hits. You sabotage the guard station. I hotwire a Strider in Skiff Bay. We leave the pens. Supplies are Kaelen\'s, at the Wire."',
         effects: { ticks: 1 },
       },
       {
