@@ -26,6 +26,8 @@ export type CoverKey =
   | 'handler'
   | 'skiffbay'
   | 'bay_pike'
+  | 'corvin'
+  | 'bootprints'
   | 'camp_shiv'
   | 'bay_sarn'
   | 'bay_vetch'
@@ -55,6 +57,8 @@ const FILES: Record<CoverKey, string> = {
   handler: 'hound.jpg',
   skiffbay: 'skiffbay.jpg',
   bay_pike: 'bay_pike.jpg',
+  corvin: 'corvin.jpg',
+  bootprints: 'bootprints.jpg',
   camp_shiv: 'camp-shiv.jpg',
   bay_sarn: 'bay_sarn.jpg',
   bay_vetch: 'bay_vetch.jpg',
@@ -94,6 +98,10 @@ export const COVER_BAND: Record<CoverKey, [number, number]> = {
   skiffbay: [0.2, 0.84],
   // Pike's bolt glows in the rear knee joint; the skiff legs reach the cradle.
   bay_pike: [0.12, 0.82],
+  // Corvin's face sits high; keep his head and hands.
+  corvin: [0.0, 0.75],
+  // The prints run up the lower half toward the tent.
+  bootprints: [0.3, 1.0],
   // Both hands on the bar and the sparks sit in the middle band.
   camp_shiv: [0.25, 0.85],
   // Sarn's bolts and scrap pile are on the crate in front.
@@ -128,7 +136,7 @@ const PERSON_COVER: Record<PersonId, CoverKey> = {
   // No portraits yet for the Spine Strays. They use the Spine art.
   korvan: 'spine',
   mira: 'spine',
-  corvin: 'spine',
+  corvin: 'corvin',
   jodi: 'jodi',
   carapace: 'carapace',
 }
@@ -171,6 +179,7 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   // The hotwire art is the one-time lookout beat: station down, Jaxson under his skiff.
   if (id === 'camp:bay') return bayLookout(state) ? 'hotwire' : 'skiffbay'
   if (id === 'camp:bay-pike') return 'bay_pike'
+  if (id === 'spine:boots') return 'bootprints'
   if (id === 'camp:shiv') return 'camp_shiv'
   if (id === 'camp:bay-sarn') return 'bay_sarn'
   if (id === 'camp:bay-vetch') return 'bay_vetch'

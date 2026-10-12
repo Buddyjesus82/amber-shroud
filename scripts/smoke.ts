@@ -2665,7 +2665,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v73'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v74'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -2687,7 +2687,7 @@ assert(css.includes('--story-top: min(calc(56.25cqi * var(--band-bot, 0.5)), 50c
 assert(css.includes('rgba(12, 7, 4, 0.58)'), 'story scrim stays translucent so cover art shows through')
 assert(!css.includes('rgba(12, 7, 4, 0.88)'), 'story scrim is lighter than the v32 slab')
 const playSrc = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
-assert(playSrc.includes('?v=73'), 'scene cover URLs are cache-busted with the service worker')
+assert(playSrc.includes('?v=74'), 'scene cover URLs are cache-busted with the service worker')
 assert(!css.includes('object-position: center 68%'), 'scene art no longer crops toward the ground')
 assert(!css.includes('height: 56px'), 'short phones no longer squash covers into a head-cropping strip')
 assert(css.includes('place-items: center'), 'game screen is centered on the backdrop')
@@ -3530,7 +3530,7 @@ function assertHelpResolves(s: GameState, where: string) {
 
   // Corvin: help him and he walks you past the ford traps and pulls you up on the Spine.
   const hound = applyEffect(ridge, { goto: 'spine:hound' })
-  const corvin = pick(hound, 'boots')
+  const corvin = pick(pick(hound, 'boots'), 'follow')
   assert(corvin.sceneId === 'spine:corvin' && /I don't ask what that mark is for/.test(bodyOf(corvin)), 'Corvin behind the rock, no questions about the brand')
   const helped = pick(applyEffect(corvin, { add: { vial_drop: 1 } }), 'water')
   assert(helped.flags.corvinHelped, 'a Drop helps Corvin')
@@ -4979,6 +4979,23 @@ function assertHelpResolves(s: GameState, where: string) {
   const known = brk({ ...shiv, flags: { ...shiv.flags, kaelenKnown: true } })
   assert(/Kaelen/.test(known.flash ?? ''), 'bar scrap names Kaelen once known')
   assert(GE.visibleChoices(shiv).filter((c) => /scrap/.test(c.label)).length === 1, 'one scrap button at a time')
+}
+
+
+// v74: Corvin has his own portrait, and the boot-prints get a beat with their own art before him.
+{
+  const GA = await import('../src/game/art.ts')
+  const at = (id: string) => GE.applyEffect(GE.newGame('outcast'), { goto: id, unsetFlag: ['encounterHere', 'encounterKind', 'encounterHp', 'encounterTerrain'] })
+  const cov = (s: any) => GA.playCoverFile(GA.playCoverKey(s, GE.sceneOf(s)))
+  assert(cov(at('spine:corvin')) === 'corvin.jpg', 'Corvin uses corvin.jpg')
+  assert(cov(at('spine:boots')) === 'bootprints.jpg', 'boot-prints use bootprints.jpg')
+  for (const f of ['corvin.jpg', 'bootprints.jpg']) assert(existsSync(new URL(`../public/covers/${f}`, import.meta.url)) && readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8').includes(`covers/${f}`), `${f} ships and is precached`)
+  const hound = at('spine:hound')
+  const b = GE.visibleChoices(hound).find((c) => c.id === 'boots')
+  assert(b?.effects.goto === 'spine:boots', 'Follow the boot-prints shows the prints first')
+  const boots = GE.applyEffect(hound, b!.effects)
+  const next = GE.applyEffect(boots, GE.visibleChoices(boots).find((c) => c.id === 'follow')!.effects)
+  assert(next.sceneId === 'spine:corvin', 'prints lead to Corvin')
 }
 
 console.log('OK', {
