@@ -91,6 +91,7 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
       'spine:mira': 'shade',
       'spine:jodi': 'shade',
       'spine:corvin': 'hound',
+      'spine:boots': 'hound',
       'spine:hound': 'hound',
       'spine:valerius': 'hound',
       'spine:hunter': 'shade',
