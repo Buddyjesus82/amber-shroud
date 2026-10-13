@@ -242,7 +242,7 @@ const brin: IntentRule[] = [
   },
   {
     tags: TRADE,
-    reply: '"The Court does not sell on the hymn-road. Pour or walk. Zafir will not shop a furnace either."',
+    reply: '"The Court does not sell on the hymn-road. Pour or walk. Varro will not shop a furnace either."',
     effects: { ticks: 1 },
   },
   {
@@ -364,7 +364,7 @@ const ossa: IntentRule[] = [
   },
   {
     tags: TRADE,
-    reply: '"I do not keep a stall. Zafir does, at the cairn and the Bone Market. I keep stilts and a Drop I intend to keep."',
+    reply: '"I do not keep a stall. Varro does, at the cairn and the Bone Market. I keep stilts and a Drop I intend to keep."',
     effects: { ticks: 1 },
   },
   {
@@ -399,7 +399,7 @@ const sybella: IntentRule[] = [
   },
   {
     tags: TRADE,
-    reply: '"I do not sell. I collect. Zafir sells delays at the market. I sell the idea that you still have time."',
+    reply: '"I do not sell. I collect. Varro sells delays at the market. I sell the idea that you still have time."',
     effects: { ticks: 1 },
   },
   {

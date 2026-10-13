@@ -1044,8 +1044,12 @@ s = interpret(s, 'help')
 assert(s.flash && !s.flash.toLowerCase().includes('miss'), 'help Kaelen is authored')
 s = interpret(s, 'threaten')
 assert(s.flash && !s.flash.toLowerCase().includes('miss'), 'threaten Kaelen is authored')
-s = interpret(s, 'who is zafir')
-assert(s.flash?.toLowerCase().includes('have not met'), 'who is Zafir stays shut until you meet him')
+s = interpret(s, 'who is varro')
+assert(s.flash?.toLowerCase().includes('have not met'), 'who is Varro stays shut until you meet him')
+{
+  const z = interpret(s, 'who is zafir')
+  assert(!/varro|bonewright|zafir/i.test(z.flash ?? ''), 'typed zafir reveals nothing')
+}
 s = interpret(s, 'who is ossa')
 assert(s.flash?.toLowerCase().includes('have not met'), 'who is Ossa stays shut until you meet her')
 s = interpret(s, 'who is sybella')
@@ -2676,7 +2680,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v91'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v92'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -5194,4 +5198,14 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   const out = GE.applyEffect(v, pass.effects)
   assert(out.sceneId === 'camp:wire' && !out.flags.hunterHere && !out.flags.encounterHere, `bargain resolves at the Wire with no hunt mid-exchange (${out.sceneId})`)
   assert(/You take the wire/.test(out.flash ?? '') && !!out.flags.quietPass, 'the bargain outcome shows')
+}
+
+// v92: the Bone Market merchant is Varro the Bonewright. No player-visible Zafir anywhere in game text.
+{
+  const files = ['people.ts', 'voices.ts', 'talk.ts', 'look.ts', 'helpTopics.ts', 'trade.ts', 'intent.ts', 'content/cacheRun.ts', 'content/redMaw.ts']
+  for (const f of files) {
+    const txt = readFileSync(`src/game/${f}`, 'utf8')
+    assert(!/\bZafir\b/.test(txt), `no visible Zafir in ${f}`)
+  }
+  assert(PEOPLE.zafir.name === 'Varro' && PEOPLE.zafir.aliases.includes('bonewright') && !PEOPLE.zafir.aliases.includes('zafir'), 'Varro the Bonewright; zafir is not an alias')
 }

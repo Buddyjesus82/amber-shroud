@@ -4,7 +4,7 @@ import type { Scene } from '../types'
 //   leave → (Prisoner pipe / Outcast noon / Vessel hymn)
 //   Prisoner: Clerk Rell → Jaxson on the stolen Strider → Ossa as escaped property
 //   Outcast: Silas on the cut → Drennick Voss at the shade toll → Ossa as kin
-//   Vessel: Seeker runners → Zafir who will not shop a cup → Sybella
+//   Vessel: Seeker runners → Varro who will not shop a cup → Sybella
 //   All three still spend at Sybella → (hollow) → land → maw:rim
 //   Unconditional finale: sybella "maw" always lands. Vessel may bargain. Prisoner/Outcast get a hunt-mark, never her help.
 const done = {
@@ -1044,7 +1044,7 @@ The Seekers sent their Vessel to Red Maw for what opens the Spire, and they mean
       {
         id: 'pour',
         label: 'Pour a Drop so they count you a Vessel',
-        sub: 'Spend 1 Drop. Seeker Heat drops. They let you walk on to Zafir.',
+        sub: 'Spend 1 Drop. Seeker Heat drops. They let you walk on to Varro.',
         show: { item: 'vial_drop' },
         effects: {
           remove: { vial_drop: 1 },
@@ -1053,7 +1053,7 @@ The Seekers sent their Vessel to Red Maw for what opens the Spire, and they mean
           ticks: 1,
           heat: { seekers: -1 },
           flag: { brinMet: true, brinPour: true },
-          flash: 'They watch you pour the Drop. "Useful. Do not become a hymn yet." Seeker Heat drops. Zafir is ahead, and he will not sell a heading to a Vessel. Sybella will.',
+          flash: 'They watch you pour the Drop. "Useful. Do not become a hymn yet." Seeker Heat drops. Varro is ahead, and he will not sell a heading to a Vessel. Sybella will.',
         },
       },
       {
@@ -1066,7 +1066,7 @@ The Seekers sent their Vessel to Red Maw for what opens the Spire, and they mean
           ticks: 1,
           heat: { seekers: 1 },
           flag: { brinMet: true, brinCloth: true },
-          flash: 'You show the gold thread. Brin starts to bow and stops. "Sybella already knows. Walk. Zafir will not help a Vessel." Seeker Heat rises.',
+          flash: 'You show the gold thread. Brin starts to bow and stops. "Sybella already knows. Walk. Varro will not help a Vessel." Seeker Heat rises.',
         },
       },
       {
@@ -1079,7 +1079,7 @@ The Seekers sent their Vessel to Red Maw for what opens the Spire, and they mean
           ticks: 1,
           heat: { seekers: 1 },
           flag: { brinMet: true, brinMap: true },
-          flash: 'Kesh spits at the feed-dust on the map. Brin lets you keep walking. Seeker Heat rises. Zafir is ahead, and he will not sell to a Vessel.',
+          flash: 'Kesh spits at the feed-dust on the map. Brin lets you keep walking. Seeker Heat rises. Varro is ahead, and he will not sell to a Vessel.',
         },
       },
       {
@@ -1107,7 +1107,7 @@ The Seekers sent their Vessel to Red Maw for what opens the Spire, and they mean
           sap: -2,
           heat: { seekers: 2 },
           flag: { brinMet: true, brinBolt: true },
-          flash: 'You run. They do not chase. They sing your description ahead, so Zafir hears you coming. Seeker Heat rises harder.',
+          flash: 'You run. They do not chase. They sing your description ahead, so Varro hears you coming. Seeker Heat rises harder.',
         },
       },
     ],
@@ -1153,8 +1153,8 @@ The Seekers sent their Vessel to Red Maw for what opens the Spire, and they mean
     chapterId: 'cache-run',
     kind: 'talk',
     title: 'Bone Cairn',
-    speaker: 'Zafir',
-    body: `Zafir does not smile the shop smile. He looks at the gold thread like a fire in a dry stall.
+    speaker: 'Varro',
+    body: `Varro does not smile the shop smile. He looks at the gold thread like a fire in a dry stall.
 
 "I don't sell headings to walking batteries. I sell the news that she already knows. Pay if you want a curse with better spelling. Or walk. The skiff likes cups that arrive on time."`,
     variants: [
@@ -1184,7 +1184,7 @@ The Seekers sent their Vessel to Red Maw for what opens the Spire, and they mean
           flag: { zafirMet: true, zafirCup: true, oramShown: true },
           ticks: 1,
           goto: 'ch1:south-wind',
-          flash: 'Zafir checks the second rib on Oram\'s map and will not take a fee from a Vessel. You keep the map. Sybella\'s skiff is next.',
+          flash: 'Varro checks the second rib on Oram\'s map and will not take a fee from a Vessel. You keep the map. Sybella\'s skiff is next.',
         },
       },
       {
@@ -1199,7 +1199,7 @@ The Seekers sent their Vessel to Red Maw for what opens the Spire, and they mean
           flag: { zafirMet: true, zafirCup: true, zafirPaid: true },
           ticks: 1,
           goto: 'ch1:south-wind',
-          flash: 'Zafir takes the Glint. The map he draws has Sybella\'s name in the margin. That is what you paid for. No faction saw the sale.',
+          flash: 'Varro takes the Glint. The map he draws has Sybella\'s name in the margin. That is what you paid for. No faction saw the sale.',
         },
       },
       {
@@ -1214,7 +1214,7 @@ The Seekers sent their Vessel to Red Maw for what opens the Spire, and they mean
           flag: { zafirMet: true, zafirCup: true, zafirPaid: true },
           ticks: 1,
           goto: 'ch1:south-wind',
-          flash: 'Zafir takes the scrap. The map he draws has Sybella\'s name in the margin. That is what you paid for. No faction saw the sale.',
+          flash: 'Varro takes the scrap. The map he draws has Sybella\'s name in the margin. That is what you paid for. No faction saw the sale.',
         },
       },
       {
@@ -1229,7 +1229,7 @@ The Seekers sent their Vessel to Red Maw for what opens the Spire, and they mean
           heat: { strays: 1 },
           ticks: 1,
           goto: 'ch1:south-wind',
-          flash: 'You crowd Zafir with the dagger. He hands you a map anyway. Stray Heat rises. He will remember the threat.',
+          flash: 'You crowd Varro with the dagger. He hands you a map anyway. Stray Heat rises. He will remember the threat.',
         },
       },
       {
@@ -1915,7 +1915,7 @@ You are on the Approach. What you gave the sand is still on you.`,
       {
         if: { flag: 'zafirCup' },
         mode: 'append',
-        body: `Zafir would not shop a lantern. He sold the news instead. She already had it.`,
+        body: `Varro would not shop a lantern. He sold the news instead. She already had it.`,
       },
       {
         if: { flag: 'ossaAlly' },

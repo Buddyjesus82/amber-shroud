@@ -45,7 +45,7 @@ const WAY: Record<string, string> = {
   'thresh:paddock': 'the Striders',
   'thresh:guard': 'the court guard post',
   'maw:rim': 'the Approach and the ribs',
-  'maw:market': 'Zafir\'s stall',
+  'maw:market': 'Varro\'s stall',
   'maw:stilt': 'stilt shade',
   'maw:smoke': 'skiff smoke on the rim',
   'maw:lip': 'the Hollow Lip',
@@ -497,7 +497,7 @@ function authored(state: GameState, scene: Scene): string[] {
   }
 
   if (id === 'maw:market') {
-    push(lines, "Zafir's tray is a real shop. Buy and sell are on the counter.")
+    push(lines, "Varro's tray is a real shop. Buy and sell are on the counter.")
     if (!on(state, 'mawGlint')) push(lines, 'Another stall has a coil of wire nobody has claimed.')
     return lines
   }
