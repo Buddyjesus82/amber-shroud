@@ -652,7 +652,13 @@ function pocketLoot(state: GameState, kind: EncounterKind): Partial<Record<ItemI
   return { glints: 1, scrap: 1 }
 }
 
-function lootLine(add: Partial<Record<ItemId, number>>): string {
+/** "a Rusted Dagger", "an Ironwood Baton", or no article for plural or mass names ("Hide Gloves"). */
+export function dropNoun(name: string): string {
+  if (/s$/i.test(name.trim())) return name
+  return `${/^[aeiou]/i.test(name) ? 'an' : 'a'} ${name}`
+}
+
+function lootLine(add: Partial<Record<ItemId, number>>, dropped = false): string {
   const pockets: string[] = []
   const gear: string[] = []
   for (const id of Object.keys(add) as ItemId[]) {
@@ -666,8 +672,10 @@ function lootLine(add: Partial<Record<ItemId, number>>): string {
   }
   const held = pockets.join(', ')
   const worn = gear.join(', ')
-  if (held && worn) return `${held}. On the body: ${worn}`
-  if (worn) return `On the body: ${worn}`
+  // The Hound-handler walks away, so his gear is dropped, not taken off a body.
+  const gearText = dropped ? `He drops ${gear.map(dropNoun).join(' and ')}` : `On the body: ${worn}`
+  if (held && worn) return `${held}. ${gearText}`
+  if (worn) return gearText
   return held
 }
 
@@ -1035,7 +1043,7 @@ export function resolveEncounter(
   if (theirHp <= 0) {
     const add = lootFor(state, spec.kind)
     if (snatched) add[snatched] = (add[snatched] ?? 0) + 1
-    const loot = lootLine(add)
+    const loot = lootLine(add, spec.kind === 'handler')
     const back = snatched ? ` You take back your ${ITEMS[snatched]?.name ?? snatched}.` : ''
     const stagger = yourHp <= 0
     const huskWin = spec.kind === 'husk'
