@@ -42,3 +42,22 @@ export function roadWords(door: DoorId | undefined): RegExp {
   if (door === 'vessel') return /\b(?:hunger|gullet|pilgrim'?s scar|pilgrims scar|scar)\b/
   return /\b(?:hunger|gullet)\b/
 }
+
+/** Before the player hears Kaelen's name, every line calls him "the trader". */
+export function traderText(known: boolean, text: string): string
+export function traderText(known: boolean, text: string | undefined): string | undefined
+export function traderText(known: boolean, text: string | undefined) {
+  if (!text || known || !/Kaelen/.test(text)) return text
+  return text.replace(/Kaelen(?: the Sifter)?('s)?/g, (_m, poss: string | undefined, at: number, all: string) => {
+    const before = all.slice(0, at)
+    const start = before === '' || /(?:[.!?]["”]?\s+|\n\s*|^["“]|[.!?:]\s*["“]|\s["“])$/.test(before)
+    return `${start ? 'The' : 'the'} trader${poss ?? ''}`
+  })
+}
+
+/** Text as the player sees it: the door's road, and the trader's name only once heard. */
+export function shownText(state: { door?: DoorId; flags: Record<string, unknown> }, text: string): string
+export function shownText(state: { door?: DoorId; flags: Record<string, unknown> }, text: string | undefined): string | undefined
+export function shownText(state: { door?: DoorId; flags: Record<string, unknown> }, text: string | undefined) {
+  return traderText(!!state.flags.kaelenKnown, roadText(state.door, text))
+}

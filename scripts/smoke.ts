@@ -33,6 +33,11 @@ const atHunger = (s: { sceneId: string }) => s.sceneId === 'ch1:leave' || s.scen
 // Older walks predate the Camp-04 storm beat; they step straight through it. The storm checks use GE.applyEffect.
 function applyEffect(state: Parameters<typeof rawApplyEffect>[0], fx: Parameters<typeof rawApplyEffect>[1]) {
   const next = rawApplyEffect(state, fx)
+  // v95: older walks also step through the one-time End of Chapter One screen at the Rim.
+  if (next.sceneId === 'ch1:end' && state.sceneId !== 'ch1:end') {
+    const on = rawApplyEffect(next, getScene('ch1:end').choices[0].effects)
+    return { ...on, flash: on.flash ?? next.flash }
+  }
   if (next.sceneId !== 'ch1:storm' || state.sceneId === 'ch1:storm') return next
   return rawApplyEffect(next, getScene('ch1:storm').choices[0].effects)
 }
@@ -864,7 +869,7 @@ assert(!/\bKaelen\b/.test(bodyOf(s)) && !/sabotage/i.test(bodyOf(s)) && /I have 
 assert(!s.flags.kaelenKnown, 'beat 1 does not earn Kaelen')
 s = pick(s, 'plan')
 assert(s.sceneId === 'camp:jaxson' && ids(s).includes('inside') && !ids(s).includes('plan'), 'beat 2: plan heard, the job can be taken')
-assert(/sabotage the guard station/.test(bodyOf(s)) && /Kaelen the Sifter at the Wire/.test(bodyOf(s)) && s.flags.kaelenKnown, 'beat 2: the plan, then Kaelen, earned')
+assert(/sabotage the guard station/.test(bodyOf(s)) && /Kaelen the Sifter at the Wire/.test(bodyOf(s)) && !s.flags.kaelenKnown, 'beat 2: the plan points at the Wire; the name waits until you meet him (v95)')
 assert(!/not me/i.test(bodyOf(s)), 'no "not me" tag')
 for (const k of ['scavenge', 'drop', 'leave']) assert(ids(s).includes(k) || k === 'scavenge', `beat 2 keeps ${k}`)
 s = pick(s, 'leave')
@@ -1034,7 +1039,7 @@ s = pick(s, 'pens')
 s = interpret(s, 'hello')
 assert(s.flash && !s.flash.toLowerCase().includes('miss'), 'hello to Jaxson is authored')
 s = interpret(s, 'trade')
-assert(s.flash?.toLowerCase().includes('kaelen'), 'Jaxson points trade at Kaelen')
+assert(/a trader at the Wire/.test(s.flash ?? '') && !/Kaelen/.test(s.flash ?? '') && !s.flags.kaelenKnown, 'Jaxson points trade at the trader, unnamed (v95)')
 s = interpret(s, 'threaten')
 assert(s.flash && !s.flash.toLowerCase().includes('miss'), 'threaten Jaxson is authored')
 s = interpret(s, 'help')
@@ -1518,15 +1523,15 @@ s = {
 }
 assert(/You Strike 2 vs their Shell 2/.test(bodyOf(s)), 'Vessel dagger vs pup Shell is on the card')
 {
-  // Pup Strike 4 vs bare Shell 0 hits for 4+swing. Your 2 vs its Shell 2 still lands 1+.
+  // Pup Strike 3 vs bare Shell 0 hits for 3+swing. Your 2 vs its Shell 2 still lands 1+.
   const inSwing = swingOf(s, 'them')
   const outSwing = swingOf(s, 'you')
   const loss = pick(s, 'enc-fight')
   assert((loss.items.glints ?? 0) === beforeGlints, 'lose compare does not pay Glints')
-  assert(loss.health === Math.max(0, 6 - (4 + inSwing)), `Shard-pup Strike 4+${inSwing} vs Shell 0 takes ${4 + inSwing} Health; cloth is not armor`)
+  assert(loss.health === Math.max(0, 6 - (3 + inSwing)), `Shard-pup Strike 3+${inSwing} vs Shell 0 takes ${3 + inSwing} Health; cloth is not armor (v95: pup softened 4→3)`)
   if (!loss.flags.downed) {
     assert(new RegExp(`You hit [^\\n]+ for ${Math.max(1, outSwing)}[ .]`).test(bodyOf(loss)), `Fight body says what you hit for (out ${outSwing} in ${inSwing}): ${bodyOf(loss).slice(0, 200)}`)
-    assert(new RegExp(`hits you for ${4 + inSwing}[ .]`).test(bodyOf(loss)), 'Fight body says what they hit you for')
+    assert(new RegExp(`hits you for ${3 + inSwing}[ .]`).test(bodyOf(loss)), 'Fight body says what they hit you for')
   }
   let drop = loss
   for (let i = 0; i < 6 && drop.flags.encounterHere && !drop.flags.encounterDone && !drop.flags.downed; i++) drop = pick(drop, 'enc-fight')
@@ -2593,6 +2598,8 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
     })
     assert(rim.sceneId === 'maw:rim' && rim.hubId === 'redmaw', `${door} stands on Maw Rim`)
     rim = dismissFight(rim)
+    // v95: the Chapter One screen shifts the road dice by a step; keep these typed checks fight-free.
+    rim = { ...rim, flags: { ...rim.flags, encounterAt: rim.ticks + 50 } }
     assert(/Gullet is open\. Run, leave, or take the Gullet/.test(bodyOf(rim)), `${door} Rim walk-line is one beat`)
     for (const typed of [
       'run',
@@ -2619,6 +2626,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
     let shut = newGame(door)
     shut = applyEffect(shut, { sap: 4, enterHub: 'redmaw', goto: 'maw:rim' })
     shut = dismissFight(shut)
+    shut = { ...shut, flags: { ...shut.flags, encounterAt: shut.ticks + 50 } }
     assert(!shut.flags.chapter1Done, `${door} Rim can stand before Gullet opens`)
     for (const typed of ['run', 'go', 'leave', 'leave the rim']) {
       const held = interpret(shut, typed)
@@ -2640,7 +2648,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 
     let land = newGame(door)
     land = applyEffect(land, { sap: 4, startChapter: 'cache-run', goto: 'ch1:land' })
-    const landButton = pick(land, 'hub')
+    const landButton = rawApplyEffect(land, visibleChoices(land).find((c) => c.id === 'hub')!.effects)
     const landRun = interpret(land, 'leave')
     assert(landRun.sceneId === landButton.sceneId && landRun.hubId === landButton.hubId, `${door} Approach leave is the landing button`)
     assert(landRun.flash === landButton.flash, `${door} Approach leave uses the landing flash`)
@@ -2680,7 +2688,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v94'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v95'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -2922,7 +2930,7 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(!labels.some((l) => /Kaelen/.test(l)), 'no Kaelen button on first talk')
   for (const typed of ['ask about plan', 'what plan', 'plan', 'ask about his plan']) {
     const t = interpret(fresh, typed)
-    assert(t.sceneId === 'camp:jaxson' && t.flags.jaxsonPlan && t.flags.kaelenKnown && /Kaelen the Sifter at the Wire/.test(bodyOf(t)), `typed "${typed}" opens beat 2`)
+    assert(t.sceneId === 'camp:jaxson' && t.flags.jaxsonPlan && !t.flags.kaelenKnown && /Kaelen the Sifter at the Wire/.test(bodyOf(t)), `typed "${typed}" opens beat 2`)
     assert(visibleChoices(t).some((c) => c.label === 'Take the inside job. Take the oversized wrench.'), `typed "${typed}" then offers the job`)
   }
   const pens = bodyOf(applyEffect(newGame('prisoner'), { goto: 'camp:cages' }))
@@ -3181,7 +3189,7 @@ function assertHelpResolves(s: GameState, where: string) {
 {
   const NOISE = new Set(['encounterAt', 'huntQuiet'])
   // Rows that move you back to where you came from; the synthetic setup has no "from".
-  const RETURN_ROWS = new Set(['camp:gate back', 'roam:kaelen back'])
+  const RETURN_ROWS = new Set(['camp:gate back', 'roam:kaelen back', 'ch1:end title'])  // ch1:end title: PlayScreen sends you to the title screen
   const moved = (a: GameState, b: GameState) => {
     if (a.sceneId !== b.sceneId || a.hubId !== b.hubId || a.chapterId !== b.chapterId) return true
     if (JSON.stringify(a.items) !== JSON.stringify(b.items) || JSON.stringify(a.heat) !== JSON.stringify(b.heat)) return true
@@ -3240,7 +3248,7 @@ function assertHelpResolves(s: GameState, where: string) {
   for (let t = 0; t < 40; t++) {
     const base = primedFight('outcast', 10 + t, 'cutter', { hp: 2, arm: false })
     let f: GameState = { ...base, items: { ...base.items, dust_cloak: 1, head_wrap: 1 }, equipped: { ...base.equipped, weapon: undefined, cloak: 'dust_cloak', head: 'head_wrap' } }
-    assert(/You Strike 1 vs their Shell 2/.test(bodyOf(f)) && /Their Strike 3 vs your Shell 3/.test(bodyOf(f)), 'stalemate stats are on the card')
+    assert(/You Strike 1 vs their Shell 2/.test(bodyOf(f)) && /Their Strike 2 vs your Shell 3/.test(bodyOf(f)), 'stalemate stats are on the card')
     const swings = [swingOf(f, 'you'), swingOf(f, 'them')]
     assert(swings.every((n) => n >= 0 && n <= 2) && swingOf(f, 'you') === swings[0], 'swing is 0-2 and the same state gives the same swing')
     let rounds = 0
@@ -5260,4 +5268,62 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   assert(readFileSync('src/game/encounter.ts', 'utf8').includes("spec.kind === 'handler' ? { handlerDown: true }"), 'beating the handler is remembered')
   const save = readFileSync('src/game/save.ts', 'utf8')
   assert(/state\.door !== door\) return null/.test(save) && /slots\[id\]\?\.door === id/.test(save), 'a slot only loads its own door')
+}
+
+// v95: story and continuity fixes.
+{
+  const { shownText, traderText } = await import('../src/game/roads.ts')
+  const { effectPills } = await import('../src/game/kit.ts')
+  // 6) The trader is unnamed until you meet him.
+  const p = GE.newGame('prisoner')
+  const wire = { ...p, sceneId: 'camp:wire', hubId: 'camp04' }
+  const wireShown = shownText(wire, GE.bodyOf(wire))
+  assert(!/Kaelen/.test(wireShown) && /trader/.test(wireShown), 'v95: the Wire calls him the trader before you meet him')
+  assert(GE.visibleChoices(wire).every((c) => !/Kaelen/.test(shownText(wire, c.label) ?? '')), 'v95: Wire buttons do not name him early')
+  assert(traderText(false, 'Find Kaelen the Sifter') === 'Find the trader' && traderText(false, "Kaelen's rumors.") === "The trader's rumors.", 'v95: trader swap reads cleanly')
+  assert(traderText(true, 'Kaelen the Sifter') === 'Kaelen the Sifter', 'v95: the name shows once heard')
+  const met = GE.applyEffect(wire, { goto: 'camp:kaelen' })
+  assert(met.flags.kaelenKnown, 'v95: meeting him teaches his name')
+  const plan = GE.applyEffect(p, (await import('../src/game/campJob.ts')).HEAR_PLAN)
+  assert(!plan.flags.kaelenKnown, 'v95: Jaxson\'s plan does not teach the name')
+  // 1) Jaxson is in one place at a time.
+  const bay = { ...p, sceneId: 'camp:lean', hubId: 'camp04', flags: { ...p.flags, jaxsonInside: true, guardDown: true } }
+  assert(/Skiff Bay/.test(GE.bodyOf(bay)) && !/wrench sits in his fist/.test(GE.bodyOf(bay)), 'v95: the stall is empty while Jaxson is in the bay')
+  assert(!GE.visibleChoices(bay).some((c) => c.id === 'talk'), 'v95: no Talk to Jaxson at the stall while he is in the bay')
+  // 2) Ossa does not assume what you did.
+  const ossa = { ...p, sceneId: 'maw:ossa', hubId: 'redmaw', flags: { ...p.flags, ossaAlly: true, ossaMet: true } }
+  assert(!/lash|You took the Glint|steal from me twice/.test(GE.bodyOf(ossa)), 'v95: Ossa does not assume your choices')
+  // 4) Kallik's rumor shows once.
+  const roam = { ...p, sceneId: 'roam:kaelen', flags: { ...p.flags, kaelenKnown: true } }
+  assert(GE.visibleChoices(roam).some((c) => c.id === 'kallik'), 'v95: first ask gives the Kallik rumor')
+  const heard = { ...roam, flags: { ...roam.flags, heardKallik: true } }
+  assert(!GE.visibleChoices(heard).some((c) => c.id === 'kallik') && GE.visibleChoices(heard).some((c) => c.id === 'kallik-again'), 'v95: then a no-new-rumor line')
+  assert(GE.KAELEN_NO_NEW_RUMOR && !/nine-tooth/.test(GE.KAELEN_NO_NEW_RUMOR), 'v95: the repeat line is not the rumor again')
+  // 7) The Wreck has a bind option.
+  const wreck = { ...p, sceneId: 'maw:tuner', hubId: 'redmaw', health: 3, items: { ...p.items, salve: 1 } }
+  const bind = GE.visibleChoices(wreck).find((c) => c.id === 'bind')
+  assert(bind && GE.isChoiceOn(wreck, bind.enable), 'v95: the Wreck can bind your cuts')
+  const bound = GE.applyEffect(wreck, bind!.effects)
+  assert(bound.health === 6 && !(bound.items.salve ?? 0), 'v95: Wreck bind works like the Gear bind')
+  assert(!GE.isChoiceOn({ ...wreck, health: 6 }, bind!.enable), 'v95: no Wreck bind at full health')
+  // 8) Mira's Glint costs no Heat.
+  const mira = GE.visibleChoices({ ...GE.newGame('outcast'), sceneId: 'spine:mira', hubId: 'spine' }).find((c) => c.id === 'take')
+  assert(mira && !mira.effects.heat && !/Heat/.test(`${mira.sub} ${mira.effects.flash}`), 'v95: Mira\'s Glint costs no Heat')
+  // 9) Shop tags say what moves: costs are marked, money reads as money.
+  const pills = effectPills({ add: { vial_drop: 1 }, remove: { scrap: 1 } }).map((x) => x.text)
+  assert(pills.includes('Vial (Drop)') && pills.includes('− 1 scrap'), `v95: shop tags read as gain and cost (${pills.join(', ')})`)
+  assert(effectPills({ add: { glints: 1 }, remove: { scrap: 2 } }).map((x) => x.text).join('|') === '+ 1 Glint|− 2 scrap', 'v95: change tag is plain money')
+  // 11) End of Chapter One, once, in every door.
+  for (const door of ['prisoner', 'outcast', 'vessel'] as DoorId[]) {
+    const at = rawApplyEffect(GE.newGame(door), { enterHub: 'redmaw', goto: 'maw:rim', sap: 4 })
+    assert(at.sceneId === 'ch1:end' && at.flags.chapter1EndSeen, `v95: ${door} first Rim arrival ends Chapter One`)
+    const body = GE.bodyOf(at)
+    assert(/Chapter One ends here/.test(body) && !/leviathan|vault|Spire|key/i.test(body), `v95: ${door} chapter end is short and spoiler-free`)
+    assert(GE.visibleChoices(at).map((c) => c.id).join(',') === 'continue,title', `v95: ${door} chapter end offers Continue and the title`)
+    const on = rawApplyEffect(at, GE.visibleChoices(at)[0].effects)
+    assert(on.sceneId === 'maw:rim' && !on.flags.hunterHere && !on.flags.encounterHere, `v95: ${door} Continue lands quietly on the Rim`)
+    const again = rawApplyEffect(rawApplyEffect(on, { goto: 'maw:ribs' }), { goto: 'maw:rim' })
+    assert(again.sceneId !== 'ch1:end', `v95: ${door} chapter end shows once`)
+  }
+  console.log('v95 story checks OK')
 }

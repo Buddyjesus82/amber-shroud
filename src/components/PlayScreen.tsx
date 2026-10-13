@@ -17,6 +17,7 @@ import {
   sceneOf,
   skim,
   visibleChoices,
+  CHAPTER_ONE_END,
 } from '../game/engine'
 import { heatFactions, heatRiseLine } from '../game/heat'
 import { effectPills, listedKit } from '../game/kit'
@@ -26,7 +27,7 @@ import { coverBand, playCoverFile, playCoverKey } from '../game/art'
 import { bayLookout } from '../game/campJob'
 import { isPressureOverlay, pressureFace } from '../game/hunter'
 import { DISGUISE_SOFTEN_NOTE } from '../game/disguise'
-import { ROADS, roadText } from '../game/roads'
+import { ROADS, shownText } from '../game/roads'
 import { isShopOpen } from '../game/trade'
 import type { Choice, Faction, GameState } from '../game/types'
 import { helpEntries } from '../game/help'
@@ -114,6 +115,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     : (state.flags.encounterHere ? encounterSpeaker(state) : null) ??
     pressureFace(state) ??
     (scene.id === 'camp:bay' && bayLookout(state) ? 'Jaxson Vance' : null) ??
+    (scene.id === 'camp:lean' && bayLookout(state) ? '' : null) ??
     (scene.id === 'maw:tuner' && state.door === 'prisoner' ? 'Jaxson' : null) ??
     scene.speaker
   function screenKey(s: GameState): string {
@@ -130,10 +132,10 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
         title: placeTitle,
         meta: hub ? hub.name : scene.id === 'ch1:storm' ? 'Camp-04' : scene.chapterId === 'cache-run' ? cap(ROADS[state.door].name) : null,
         face,
-        body: roadText(state.door, bodyOf(state)),
+        body: shownText(state, bodyOf(state)),
         art: artSrc,
         band: artBand,
-        result: roadText(state.door, next.flash),
+        result: shownText(next, next.flash),
         stamp: heldStamp(next),
       })
     }
@@ -158,7 +160,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     ? 'Down'
     : state.flags.encounterHere
       ? encounterSpeaker(state)
-      : (pressureFace(state) ?? roadText(state.door, scene.title) ?? hub?.name ?? 'The dunes')
+      : (pressureFace(state) ?? shownText(state, scene.title) ?? hub?.name ?? 'The dunes')
   const shopOpen = isShopOpen(state)
   const hookRow = !!(!overlay && !shopOpen && hub && hookOn && hook && showNav)
   const closeRow = !!(!overlay && !shopOpen && closing && showNav)
@@ -187,8 +189,8 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     optionRows.push({
       key: 'hunger-hook',
       tone: state.flags.chapter1Done ? 'quiet' : 'hunger',
-      label: roadText(state.door, hook.label),
-      sub: roadText(state.door, hook.sub),
+      label: shownText(state, hook.label),
+      sub: shownText(state, hook.sub),
       onClick: () =>
         onChange(
           applyEffect(state, {
@@ -203,7 +205,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     optionRows.push({
       key: 'closing',
       tone: 'danger',
-      label: roadText(state.door, 'The desert is closing. Take the Gullet.'),
+      label: shownText(state, 'The desert is closing. Take the Gullet.'),
       sub: 'Pressure. The camp will not hold the hour.',
       onClick: () =>
         onChange(
@@ -221,13 +223,13 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     optionRows.push({
       key: c.id,
       tone: `${c.tone ?? 'default'}${on ? '' : ' locked'}`,
-      label: roadText(state.door, c.label),
-      sub: roadText(state.door, c.sub),
+      label: shownText(state, c.label),
+      sub: shownText(state, c.sub),
       group: c.group,
       locked: !on,
-      lockedNote: !on ? roadText(state.door, c.locked) : undefined,
+      lockedNote: !on ? shownText(state, c.locked) : undefined,
       pills: effectPills(c.effects),
-      onClick: () => on && act(applyEffect(state, c.effects)),
+      onClick: () => on && (scene.id === CHAPTER_ONE_END && c.id === 'title' ? onTitle() : act(applyEffect(state, c.effects))),
     })
   }
   if (held) {
@@ -379,13 +381,13 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
 
         <div className="story" ref={storyRef}>
           {(held ? held.face : face) ? <p className="speaker">{held ? held.face : face}</p> : null}
-          {(held ? held.body : roadText(state.door, bodyOf(state)))
+          {(held ? held.body : shownText(state, bodyOf(state)))
             .split('\n\n')
             .map((p, i) => (
               <p key={i}>{p}</p>
             ))}
           {held ? <p className="flash result-flash">{held.result}</p> : null}
-          {state.flash && !overlay && !held ? <p className="flash">{roadText(state.door, state.flash)}</p> : null}
+          {state.flash && !overlay && !held ? <p className="flash">{shownText(state, state.flash)}</p> : null}
           {sapThin && scene.kind !== 'crisis' && !overlay && !held ? (
             <p className="pressure-note">
               {state.sap <= 0

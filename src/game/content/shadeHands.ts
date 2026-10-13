@@ -282,15 +282,13 @@ She sees the brand. She does not turn away, and she does not speak. She goes bac
     {
       id: 'take',
       label: 'Take the Glint she sifted',
-      sub: 'A Glint. Stray Heat rises, and the Strays notice.',
-      tone: 'danger',
+      sub: 'A Glint. She lets you take it.',
       show: { flagUnset: 'miraTook' },
       effects: {
         add: { glints: 1 },
-        heat: { strays: 1 },
         flag: { miraTook: true },
         ticks: 1,
-        flash: 'She opens her hand and lets you take the Glint. She does not look at you again. Stray Heat rises.',
+        flash: 'She opens her hand and lets you take the Glint. She does not look at you again.',
       },
     },
     backToShade,

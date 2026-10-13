@@ -521,11 +521,22 @@ export const roamKaelenScenes: Scene[] = [
       {
         id: 'kallik',
         label: 'Ask what he heard about the Maw',
+        show: { flagUnset: 'heardKallik' },
         effects: {
           flag: { heardKallik: true, kaelenKnown: true },
           ticks: 1,
           flash:
             '"Kallik. Long dead. Buried a haul in the Red Maw and carved a nine-tooth gear on the second rib from the jaw. Blind picks waste you. The mark, the scratch, and this rumor narrow it."',
+        },
+      },
+      {
+        id: 'kallik-again',
+        label: 'Ask if there is anything new',
+        show: { flag: 'heardKallik' },
+        effects: {
+          flag: { kaelenKnown: true },
+          ticks: 1,
+          flash: '"Nothing new on the road. You already have Kallik. The rib is where I said."',
         },
       },
       {
