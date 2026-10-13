@@ -103,7 +103,7 @@ function hungerOuts(heat: Choice['effects']['heat']): Choice[] {
   return [
     {
       id: 'hunter-ride',
-      label: 'Run for the hotwired Strider',
+      label: 'Run for the hotwired runner',
       show: { flag: 'striderHot' },
       tone: 'hunger',
       effects: {

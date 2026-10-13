@@ -105,7 +105,7 @@ export const ITEMS: Record<ItemId, ItemDef> = {
     kind: 'weapon',
     slot: 'weapon',
     strike: 3,
-    desc: "Jaxson's steel. Strike 3. Hotwires Striders. Pries bolts, wire, and lies. Equip it if you mean to swing.",
+    desc: "Jaxson's steel. Strike 3. Hotwires Cartel runners. Pries bolts, wire, and lies. Equip it if you mean to swing.",
   },
   rusted_dagger: {
     id: 'rusted_dagger',

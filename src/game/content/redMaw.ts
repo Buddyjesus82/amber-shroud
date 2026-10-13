@@ -356,7 +356,7 @@ A breath. The cord in her hands gets a second knot. "That is the day. The rest I
     hubId: 'redmaw',
     kind: 'place',
     title: 'Skiff Smoke',
-    body: `Sybella's sand-skiff is parked like a threat that learned manners. Incense, or resin-smoke. A ceremonial blindfold hangs on the mast.
+    body: `Sybella's sand-skiff is parked like a threat that learned manners. It is sleek and angular, painted bone-white, with an enclosed cockpit cage and a gantry crane at the rear. Incense, or resin-smoke. A ceremonial blindfold hangs from the crane.
 
 She is here, and she is hunting. Walk up and she will talk. You can also slip past the smoke and go on into the Approach.`,
     choices: [

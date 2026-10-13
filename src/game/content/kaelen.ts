@@ -78,7 +78,7 @@ export const campKaelenScenes: Scene[] = [
       },
       {
         tags: ['cut', 'hole', 'wire', 'route', 'escape'],
-        reply: '"A hole is a trade route. I sell those too. Pay on the rumor shelf. Oil-Tooth still hotwires the Strider."',
+        reply: '"A hole is a trade route. I sell those too. Pay on the rumor shelf. Oil-Tooth still hotwires the runner."',
         effects: { goto: 'camp:kaelen-rumors' },
       },
       {
@@ -122,7 +122,7 @@ Three: cheaper leads. Side trouble. Relics Valerius hunts. When the storm hits t
           ticks: 1,
           goto: 'camp:wire',
           flash:
-            '"Kallik owed the Maw. Cache is real. Sybella is more real. Red Maw. Second rib. You want a Strider, that is Jaxson. You wanted the heading. You have it."',
+            '"Kallik owed the Maw. Cache is real. Sybella is more real. Red Maw. Second rib. You want a runner, that is Jaxson. You wanted the heading. You have it."',
         },
       },
       {
@@ -136,7 +136,7 @@ Three: cheaper leads. Side trouble. Relics Valerius hunts. When the storm hits t
           ticks: 1,
           goto: 'camp:wire',
           flash:
-            '"Kallik owed the Maw. Cache is real. Sybella is more real. Red Maw. Second rib. Heading is yours. Strider is still Jaxson."',
+            '"Kallik owed the Maw. Cache is real. Sybella is more real. Red Maw. Second rib. Heading is yours. The runner is still Jaxson."',
         },
       },
       {
@@ -348,7 +348,7 @@ Kaelen the Sifter is here when the road says he is here. He will pay for a way o
       },
       {
         id: 'ride',
-        label: 'Ask if he will steal a Strider',
+        label: 'Ask if he will steal a runner',
         effects: {
           ticks: 1,
           goto: 'thresh:kaelen',

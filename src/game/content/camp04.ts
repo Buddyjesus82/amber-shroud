@@ -319,7 +319,7 @@ He is the one who can break you out. He hotwires Ironclad Skiff-Striders, and he
       {
         id: 'jaxson',
         label: 'Talk to Jaxson in the next bunk',
-        sub: 'He hotwires the Striders. Ask him about Valerius — and who deals goods.',
+        sub: 'He hotwires Cartel runners. Ask him about Valerius — and who deals goods.',
         effects: { goto: 'camp:jaxson', ticks: 1 },
       },
       {
@@ -374,7 +374,7 @@ He is the one who can break you out. He hotwires Ironclad Skiff-Striders, and he
       {
         id: 'bay',
         label: 'Skiff Bay. He is under a hull.',
-        sub: 'The station is down. Jaxson is working a Strider at the bay.',
+        sub: 'The station is down. Jaxson is working a runner at the bay.',
         show: { flag: 'guardDown' },
         effects: { goto: 'camp:bay', ticks: 1 },
       },
@@ -462,7 +462,7 @@ He is the one who can break you out. He hotwires Ironclad Skiff-Striders, and he
     speaker: 'Jaxson Vance',
     body: `The stall is hot metal and skimmed sap. The oversized wrench sits in his fist.
 
-"Blood-Cut," he says. "A storm is coming. You sabotage the Guard Station. I hotwire a Strider in Skiff Bay."`,
+"Blood-Cut," he says. "A storm is coming. You sabotage the Guard Station. I hotwire a Cartel runner in Skiff Bay."`,
     variants: [
       {
         if: PLAN_UNHEARD,
@@ -474,7 +474,7 @@ He is the one who can break you out. He hotwires Ironclad Skiff-Striders, and he
       {
         if: { flag: 'striderHot' },
         mode: 'replace',
-        body: `The smirk holds. The Strider is live. "Valerius can eat the dust-cloaks. We ride, or you linger like a fool. Kaelen's rumors still cost if you have not paid for a heading."`,
+        body: `The smirk holds. The runner is live. "Valerius can eat the dust-cloaks. We ride, or you linger like a fool. Kaelen's rumors still cost if you have not paid for a heading."`,
       },
       {
         if: { flag: 'jaxsonInside' },
@@ -525,7 +525,7 @@ He is the one who can break you out. He hotwires Ironclad Skiff-Striders, and he
       },
       {
         id: 'ride',
-        label: 'Ride the hotwired Strider into the dunes',
+        label: 'Ride the hotwired runner into the dunes',
         tone: 'hunger',
         show: { all: [{ flag: 'striderHot' }, { flag: 'hungerKnown' }] },
         effects: {
@@ -545,13 +545,13 @@ He is the one who can break you out. He hotwires Ironclad Skiff-Striders, and he
           startChapter: 'cache-run',
           goto: 'ch1:leave',
           heat: { cartel: 1 },
-          flash: 'You have a Strider and no rumor. Kaelen would call that bad inventory. The dunes do not care.',
+          flash: 'You have a runner and no rumor. Kaelen would call that bad inventory. The dunes do not care.',
         },
       },
     ],
     intents: [
       {
-        tags: ['hotwire', 'strider', 'inside', 'wrench', 'job'],
+        tags: ['hotwire', 'strider', 'runner', 'inside', 'wrench', 'job'],
         show: { all: [{ flagUnset: 'jaxsonInside' }, PLAN_HEARD] },
         reply: TAKE_INSIDE_JOB.flash ?? '',
         effects: { ...TAKE_INSIDE_JOB, goto: 'camp:lean' },
@@ -563,7 +563,7 @@ He is the one who can break you out. He hotwires Ironclad Skiff-Striders, and he
         effects: { goto: 'camp:guard', ticks: 1 },
       },
       {
-        tags: ['hotwire', 'strider', 'talk'],
+        tags: ['hotwire', 'strider', 'runner', 'talk'],
         show: { flag: 'jaxsonInside' },
         reply: 'The brass jaw grins. He has been waiting to spend this job.',
         effects: { goto: 'camp:jaxson', ticks: 1 },
@@ -605,7 +605,7 @@ He leans in, brass ticking. "I have a plan to get out of here."`,
       {
         if: PLAN_HEARD,
         mode: 'replace',
-        body: `Jaxson drops his voice under the steam. "When the storm hits, you sabotage the guard station. I hotwire a Strider in Skiff Bay. We leave the pens."
+        body: `Jaxson drops his voice under the steam. "When the storm hits, you sabotage the guard station. I hotwire a Cartel runner in Skiff Bay. We leave the pens."
 
 He taps the brass. "If you need supplies, see Kaelen the Sifter at the Wire. Jittery merchant. Glints buy intel. Scrap buys Drops."`,
       },
@@ -641,7 +641,7 @@ He taps the brass. "If you need supplies, see Kaelen the Sifter at the Wire. Jit
         effects: {
           flag: { jaxAskBay: true },
           ticks: 1,
-          flash: '"East. Past my stall, or one road over from the guard station. That is where the Striders sit. Pike works the hulls there. Do not let him count you."',
+          flash: '"East. Past my stall, or one road over from the guard station. That is where the Cartel runners sit. Pike works the hulls there. Do not let him count you."',
         },
       },
       {
@@ -651,7 +651,7 @@ He taps the brass. "If you need supplies, see Kaelen the Sifter at the Wire. Jit
         effects: {
           flag: { jaxAskTrust: true },
           ticks: 1,
-          flash: 'The smirk thins. "I don\'t, much. But I can\'t crack the station and start a Strider at the same time, and you have nothing to sell me out for." He taps the brass. "Got this pulling an apprentice out from under a press. I don\'t leave people in cages if I can help it."',
+          flash: 'The smirk thins. "I don\'t, much. But I can\'t crack the station and start a runner at the same time, and you have nothing to sell me out for." He taps the brass. "Got this pulling an apprentice out from under a press. I don\'t leave people in cages if I can help it."',
         },
       },
       {
@@ -681,7 +681,7 @@ He taps the brass. "If you need supplies, see Kaelen the Sifter at the Wire. Jit
       },
       {
         id: 'ride',
-        label: 'Ride the Strider. Leave Valerius behind.',
+        label: 'Ride the runner. Leave Valerius behind.',
         tone: 'hunger',
         show: { all: [{ flag: 'striderHot' }, { flag: 'hungerKnown' }] },
         effects: {
@@ -701,7 +701,7 @@ He taps the brass. "If you need supplies, see Kaelen the Sifter at the Wire. Jit
           startChapter: 'cache-run',
           goto: 'ch1:leave',
           heat: { cartel: 1 },
-          flash: 'You have a Strider and no rumor. The dunes do not care.',
+          flash: 'You have a runner and no rumor. The dunes do not care.',
         },
       },
       {
@@ -726,7 +726,7 @@ He taps the brass. "If you need supplies, see Kaelen the Sifter at the Wire. Jit
       {
         tags: ['plan', 'what plan', 'his plan', 'your plan', 'the plan'],
         show: PLAN_HEARD,
-        reply: '"Storm hits. You sabotage the guard station. I hotwire a Strider in Skiff Bay. We leave the pens. Supplies are Kaelen\'s, at the Wire."',
+        reply: '"Storm hits. You sabotage the guard station. I hotwire a Cartel runner in Skiff Bay. We leave the pens. Supplies are Kaelen\'s, at the Wire."',
         effects: { ticks: 1 },
       },
       {
@@ -739,11 +739,11 @@ He taps the brass. "If you need supplies, see Kaelen the Sifter at the Wire. Jit
         tags: ['beat valerius', 'beat him', 'how to beat', 'overseer'],
         show: PLAN_HEARD,
         reply:
-          '"You do not beat him in a conversation. You sabotage his station, you steal his Strider, you put dunes between his shock baton and your back. First major victory. After that he is still a shadow. Shadows follow."',
+          '"You do not beat him in a conversation. You sabotage his station, you steal his runner, you put dunes between his shock baton and your back. First major victory. After that he is still a shadow. Shadows follow."',
         effects: { ticks: 1 },
       },
       {
-        tags: ['hotwire', 'strider', 'inside', 'wrench', 'job'],
+        tags: ['hotwire', 'strider', 'runner', 'inside', 'wrench', 'job'],
         show: { all: [{ flagUnset: 'jaxsonInside' }, PLAN_HEARD] },
         reply: TAKE_INSIDE_JOB.flash ?? '',
         effects: { ...TAKE_INSIDE_JOB, goto: 'camp:lean' },
@@ -767,7 +767,7 @@ He taps the brass. "If you need supplies, see Kaelen the Sifter at the Wire. Jit
       },
       {
         tags: ['valerius', 'overseer', 'tower'],
-        reply: '"Sabotage his station. Steal his Strider. First major victory. Shadows follow."',
+        reply: '"Sabotage his station. Steal his runner. First major victory. Shadows follow."',
         effects: { ticks: 1 },
       },
       {
@@ -783,7 +783,7 @@ He taps the brass. "If you need supplies, see Kaelen the Sifter at the Wire. Jit
     kind: 'talk',
     title: 'Wrong Counter',
     speaker: 'Jaxson Vance',
-    body: `"That heading is not my product," Jaxson says. "Kaelen the Sifter sells rumors. Wire. Glints for intel. Scrap for Drops. I hotwire. Guard station. Strider. Take the rumor to him."`,
+    body: `"That heading is not my product," Jaxson says. "Kaelen the Sifter sells rumors. Wire. Glints for intel. Scrap for Drops. I hotwire. Guard station. Runner. Take the rumor to him."`,
     choices: [
       {
         id: 'wire',
@@ -828,7 +828,7 @@ He taps the brass. "If you need supplies, see Kaelen the Sifter at the Wire. Jit
       },
       {
         id: 'paid',
-        label: 'The station is down. The Strider is live. Pay up.',
+        label: 'The station is down. The runner is live. Pay up.',
         show: { all: [{ flag: 'striderHot' }, { flagUnset: 'jaxsonDropGiven' }] },
         effects: {
           add: { vial_drop: 1 },
@@ -1050,7 +1050,7 @@ Ironclad Skiff-Striders patrol the far side of this line. Red Maw is past it. So
     title: 'Guard Station',
     body: `The Guard Station is Ironwood's fist. Racks of shock batons. Steam vents. A clerk who loves a ledger more than a throat. Ironclad Skiff-Striders pass on patrol and make the wire hum.
 
-The storm is a clock. You sabotage the west steam-vent here. Jaxson hotwires a Strider at Skiff Bay. Overseer Valerius will take it personally. That is the point.`,
+The storm is a clock. You sabotage the west steam-vent here. Jaxson hotwires a Cartel runner at Skiff Bay. Overseer Valerius will take it personally. That is the point.`,
     variants: [
       {
         if: { flag: 'guardDown' },
@@ -1067,7 +1067,7 @@ The storm is a clock. You sabotage the west steam-vent here. Jaxson hotwires a S
       {
         id: 'inside',
         label: 'Take Jaxson\'s inside job',
-        sub: 'Take the wrench. You crack the west steam-vent. He still hotwires the Strider.',
+        sub: 'Take the wrench. You crack the west steam-vent. He still hotwires the runner.',
         show: { flagUnset: 'jaxsonInside' },
         effects: { ...TAKE_INSIDE_JOB, goto: 'camp:guard' },
       },
@@ -1251,12 +1251,12 @@ Pike, Sarn, and Vetch keep their heads down in their own bays.`,
           ticks: 1,
           goto: 'camp:bay',
           flash:
-            'Welding leather. Oversized wrench. A Strider that believes it is still inventory. Jaxson laughs once, a shield. "Ride, or linger, or go pay Kaelen for a heading. I did my half."',
+            'Welding leather. Oversized wrench. A light Cartel runner that believes it is still inventory. Jaxson laughs once, a shield. "Ride, or linger, or go pay Kaelen for a heading. I did my half."',
         },
       },
       {
         id: 'ride',
-        label: 'Ride the Strider into the dunes',
+        label: 'Ride the runner into the dunes',
         tone: 'hunger',
         show: { all: [{ flag: 'striderHot' }, { flag: 'hungerKnown' }] },
         effects: {
@@ -1277,7 +1277,7 @@ Pike, Sarn, and Vetch keep their heads down in their own bays.`,
           goto: 'ch1:leave',
           heat: { cartel: 1 },
           flash:
-            'You have a Strider and no rumor. Kaelen would call that bad inventory. The dunes do not care.',
+            'You have a runner and no rumor. Kaelen would call that bad inventory. The dunes do not care.',
         },
       },
     ],
@@ -1374,7 +1374,7 @@ He hunts Sap thieves and unpermitted relic hoarders. You look like both. First m
     choices: [
       {
         id: 'ride',
-        label: 'Run for Jaxson\'s hotwired Strider',
+        label: 'Run for Jaxson\'s hotwired runner',
         show: { flag: 'striderHot' },
         tone: 'hunger',
         effects: {
@@ -1452,7 +1452,7 @@ He hunts Sap thieves and unpermitted relic hoarders. You look like both. First m
     title: 'The Camp Closes',
     body: `Pressure has a sound. It is the vats, the whistles, the way nobody meets your eye.
 
-You can stay and scrape until the Drop in you burns out. Or take Jaxson's Strider. Or follow Kaelen's heading. Pick one job and spend it.`,
+You can stay and scrape until the Drop in you burns out. Or take Jaxson's runner. Or follow Kaelen's heading. Pick one job and spend it.`,
     choices: [
       {
         id: 'go',

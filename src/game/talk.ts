@@ -45,7 +45,7 @@ const oiltooth: IntentRule[] = [
     tags: HELP,
     show: { all: [{ flagUnset: 'jaxsonInside' }, PLAN_HEARD] },
     reply:
-      '"Help is the job. You take the west steam-vent. I take a Strider. Traders can wait. I am the ride."',
+      '"Help is the job. You take the west steam-vent. I take a Cartel runner. Traders can wait. I am the ride."',
     effects: { ticks: 1 },
   },
   {
@@ -64,14 +64,14 @@ const oiltooth: IntentRule[] = [
     tags: [...TRADE, 'trader', 'merchant', 'fence', 'goods', 'rumor', 'heading'],
     show: { flagUnset: 'kaelenKnown' },
     reply:
-      '"I do not sell Drops. I do not sell headings. There is a trader at the Wire who does. Scrap for a Drop. Glints for intel. I sell a Strider that is not theirs to sell."',
+      '"I do not sell Drops. I do not sell headings. There is a trader at the Wire who does. Scrap for a Drop. Glints for intel. I sell a Cartel runner that is not theirs to sell."',
     effects: { ticks: 1 },
   },
   {
     tags: TRADE,
     show: { flag: 'kaelenKnown' },
     reply:
-      '"I do not sell Drops. I do not sell headings. Kaelen the Sifter is the shop. Wire. Scrap for a Drop. Glints for intel. I sell a Strider that is not theirs to sell."',
+      '"I do not sell Drops. I do not sell headings. Kaelen the Sifter is the shop. Wire. Scrap for a Drop. Glints for intel. I sell a Cartel runner that is not theirs to sell."',
     effects: { ticks: 1 },
   },
   {

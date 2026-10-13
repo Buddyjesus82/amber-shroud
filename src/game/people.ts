@@ -125,7 +125,7 @@ Prison-break technical inside man. Reckless. Charismatic. Anti-authority. Humor 
       'camp:cages': `Holding pens. Each cage a ribcage for a penniless laborer. Yours still smells like the last storm. Cartel Scrip in the hem.
 
 Jaxson is still in the next bunk, brass jaw working. He has a way out, if you ask.`,
-      'ch1:p-oil': `The stolen Strider coughs like a guilty throat. Jaxson is under the hull anyway — brass, leather, tags he still has not cut off. He hotwired. He will not tour. Red Maw is east of his cowardice.`,
+      'ch1:p-oil': `The stolen Cartel runner coughs like a guilty throat. Jaxson is under the hull anyway — brass, leather, tags he still has not cut off. He hotwired. He will not tour. Red Maw is east of his cowardice.`,
     },
   },
   kaelen: {

@@ -241,7 +241,7 @@ function authored(state: GameState, scene: Scene): string[] {
     if (!on(state, 'jaxsonInside')) push(lines, 'The oversized wrench is the inside job. He hotwires after you crack the station.')
     else if (!on(state, 'guardDown')) push(lines, 'The wrench is already yours. The west steam-vent is the next walk.')
     else if (!on(state, 'striderHot')) push(lines, 'The station is down. He is under a hull at the bay.')
-    else push(lines, 'The Strider is live. The dunes will take it, heading or not.')
+    else push(lines, 'The runner is live. The dunes will take it, heading or not.')
     return lines
   }
 
