@@ -2676,7 +2676,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v90'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v91'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -5181,4 +5181,17 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
     const n = GE.interpret(base, typed)
     assert(n.sceneId === 'roam:kaelen' && !n.flags.hunterHere && !n.flags.encounterHere && n.pressure === base.pressure, `${door} ${sceneId}: "${typed}" opens Kaelen roll-free (${n.sceneId})`)
   }
+}
+
+// v91: Jeramie's sequence. Hand Valerius the chip, Heat 6, then bargain a quiet pass: the bargain resolves first.
+{
+  let v = { ...GE.newGame('prisoner'), sceneId: 'camp:valerius', hubId: 'camp04', pressure: 9, ticks: 17, heat: { cartel: 5, seekers: 0, strays: 1 }, items: { overseer_chip: 1 }, flags: { huntQuiet: 9, kaelenGap: 9, metValerius: true, cartelNotice: true } } as unknown as GameState
+  const bluff = GE.visibleChoices(v).find((c) => c.id === 'bluff')
+  if (bluff) v = GE.applyEffect(v, bluff.effects)
+  v = { ...v, heat: { ...v.heat, cartel: 6 } }
+  assert(!v.flags.hunterHere && !v.flags.encounterHere, 'chip handoff at Valerius does not open a hunt')
+  const pass = GE.visibleChoices(v).find((c) => c.id === 'pass')!
+  const out = GE.applyEffect(v, pass.effects)
+  assert(out.sceneId === 'camp:wire' && !out.flags.hunterHere && !out.flags.encounterHere, `bargain resolves at the Wire with no hunt mid-exchange (${out.sceneId})`)
+  assert(/You take the wire/.test(out.flash ?? '') && !!out.flags.quietPass, 'the bargain outcome shows')
 }

@@ -628,7 +628,10 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     const carried = restart ? 0 : Number(next.flags.huntQuiet ?? 0)
     next.flags = { ...next.flags, huntQuiet: carried + 1 }
   }
-  const interrupt = lingered && !clearingHunt ? hunterScene(next) : null
+  // A word or a deal with the person in front of you resolves before anything hunts you: a talk beat never
+  // opens an interrupting hunt or road fight. The next beat on the new ground can.
+  const talkBeat = getScene(state.sceneId).kind === 'talk'
+  const interrupt = lingered && !clearingHunt && !talkBeat ? hunterScene(next) : null
   const fightBeat = !!fx.resolveEncounter || !!next.flags.encounterHere || !!fx.unsetFlag?.includes('encounterHere')
   const arrivedKind = getScene(next.sceneId).kind
   if (interrupt && !fightBeat && arrivedKind !== 'crisis' && arrivedKind !== 'talk' && arrivedKind !== 'ending') {
@@ -688,6 +691,7 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   const roamBeat = lingered && (next.sceneId === state.sceneId || traveled || !!fx.travel)
   if (
     roamBeat &&
+    !talkBeat &&
     !keepBayLine &&
     !fightBeat &&
     !next.flags.hunterHere &&
