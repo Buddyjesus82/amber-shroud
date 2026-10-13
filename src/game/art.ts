@@ -28,6 +28,7 @@ export type CoverKey =
   | 'bay_pike'
   | 'corvin'
   | 'guard'
+  | 'yard'
   | 'mira'
   | 'bootprints'
   | 'camp_shiv'
@@ -61,6 +62,7 @@ const FILES: Record<CoverKey, string> = {
   bay_pike: 'bay_pike.jpg',
   corvin: 'corvin.jpg',
   guard: 'guard.jpg',
+  yard: 'yard.jpg',
   mira: 'mira.jpg',
   bootprints: 'bootprints.jpg',
   camp_shiv: 'camp-shiv.jpg',
@@ -106,6 +108,8 @@ export const COVER_BAND: Record<CoverKey, [number, number]> = {
   corvin: [0.0, 0.75],
   // Guardhouse vents and the Strider walker both sit in the middle band.
   guard: [0.15, 0.85],
+  // Vat mouths and the bent prisoners fill the lower two-thirds.
+  yard: [0.25, 0.95],
   // Mira's face and the brass pendant sit in the upper band.
   mira: [0.0, 0.75],
   // The prints run up the lower half toward the tent.
@@ -189,6 +193,7 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   if (id === 'camp:bay') return bayLookout(state) ? 'hotwire' : 'skiffbay'
   if (id === 'camp:bay-pike') return 'bay_pike'
   if (id === 'camp:guard' || id === 'camp:sabotage') return 'guard'
+  if (id === 'camp:yard' || id === 'camp:vats') return 'yard'
   if (id === 'spine:boots') return 'bootprints'
   if (id === 'camp:shiv') return 'camp_shiv'
   if (id === 'camp:bay-sarn') return 'bay_sarn'
