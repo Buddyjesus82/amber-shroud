@@ -881,7 +881,7 @@ Iron plating over a dust-cloak. The baton hisses steam. He hunts people who stea
     speaker: 'Overseer Valerius',
     body: `Valerius does not bother to raise the shock baton. Steam hisses in the grip anyway.
 
-"Escape, I will spend a Hound. The price will be your feet. Stay useful; scrape the line, until your hands forget they were hands. That will buy your life."`,
+"Escape spends a Hound. Usefulness buys your life. You will scrape until your hands forget they were hands."`,
     choices: [
       {
         id: 'useful',
