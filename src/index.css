@@ -1363,12 +1363,18 @@ h2 {
 .place-line strong {
   color: var(--amber-2);
   font-weight: 600;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .place-meta {
   display: flex;
   align-items: center;
   gap: 0.45rem;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .saved-cue {

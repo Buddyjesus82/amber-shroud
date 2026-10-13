@@ -302,7 +302,7 @@ export const HUBS: Record<string, HubDef> = {
     id: 'camp04',
     name: 'Ironwood Camp-04',
     region: 'Cartel wire',
-    blurb: 'Loud polluted labor camp. Razor-wire. Steam-vents. The resin never dries.',
+    blurb: 'Loud polluted labor camp. Razor wire. Steam-vents. The resin never dries.',
     defaultScene: 'camp:cages',
     places: [
       { id: 'pens', name: 'Holding Pens', sceneId: 'camp:cages' },
@@ -316,7 +316,7 @@ export const HUBS: Record<string, HubDef> = {
     ],
     hungerHook: {
       label: 'Take the rumor into the dunes',
-      sub: 'Red Maw: days east. Four roads from the pens. Then the Gullet.',
+      sub: 'Red Maw: days east. Three roads from the pens. Then the Gullet.',
       sceneId: 'ch1:leave',
       show: { flag: 'hungerKnown' },
     },

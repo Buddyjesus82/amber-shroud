@@ -94,7 +94,7 @@ The Gullet is a red bruise to the south. You could fill the empty vial with this
       {
         id: 'fill',
         label: 'Fill the empty vial',
-        sub: 'A smear, not a honest Drop. It will still keep you standing.',
+        sub: 'A smear, not an honest Drop. It will still keep you standing.',
         show: { item: 'vial_empty' },
         effects: {
           remove: { vial_empty: 1 },

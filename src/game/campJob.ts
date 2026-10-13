@@ -93,7 +93,7 @@ export const FENCE_HOLE_BACK: Choice = {
     goto: 'camp:cages',
     ticks: 1,
     flash:
-      'You crawl the hole Kaelen sold you. Razor-wire takes a thread of sleeve. The Pens again. The Yard is one road on.',
+      'You crawl the hole Kaelen sold you. Razor wire takes a thread of sleeve. The Pens again. The Yard is one road on.',
   },
 }
 

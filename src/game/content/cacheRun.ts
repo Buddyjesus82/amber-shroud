@@ -1514,7 +1514,7 @@ The skiff is coming. What you have heard about the woman on it is all you get be
       {
         if: { all: [{ flag: 'kaelenKnown' }, { not: { door: 'outcast' } }] },
         mode: 'append',
-        body: `Kaelen called her a Seeker of old roads, old ruins, old magiks. He does not scare easy. He was careful with her name. That is the reliable telling.`,
+        body: `Kaelen called her a Seeker of old roads, old ruins, old magic. He does not scare easy. He was careful with her name. That is the reliable telling.`,
       },
       {
         if: { heatMin: ['cartel', 3] },

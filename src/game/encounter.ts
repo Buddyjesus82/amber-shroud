@@ -1000,7 +1000,7 @@ export function resolveEncounter(
       // Cartel property: killing the hound is on the ledger.
       heat: spec.kind === 'hound' ? { cartel: 1 } : undefined,
       pressure: dmgIn > 0 ? 1 : undefined,
-      flag: { encounterGrip: grip },
+      flag: { encounterGrip: grip, ...(spec.kind === 'handler' ? { handlerDown: true } : {}) },
     })
   }
 
