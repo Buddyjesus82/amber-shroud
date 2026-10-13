@@ -92,11 +92,11 @@ The ground out here takes more than the camp ever did. Sap goes faster. Hunters 
     title: 'Bone Market',
     body: `A few stalls pretending this is a town. Dried strider meat. Amber chips. Maps that have killed the people who bought them.
 
-Zafir is at his stall. He has watched buyers fail and kept the tray anyway. On it: Drops of Oasis Sap, Hound Hide, a pawned shock baton, and scrap he will trade for Glints.`,
+Varro is at his stall. He has watched buyers fail and kept the tray anyway. On it: Drops of Oasis Sap, Hound Hide, a pawned shock baton, and scrap he will trade for Glints.`,
     choices: [
       {
         id: 'zafir',
-        label: 'Talk to Zafir',
+        label: 'Talk to Varro',
         sub: 'His tray is a real shop. Buy and Sell. He does not sell a pardon.',
         effects: { goto: 'maw:zafir', ticks: 1, flag: { zafirMet: true, metZafir: true } },
       },
@@ -119,14 +119,14 @@ Zafir is at his stall. He has watched buyers fail and kept the tray anyway. On i
     id: 'maw:zafir',
     hubId: 'redmaw',
     kind: 'talk',
-    title: 'Zafir',
-    speaker: 'Zafir',
-    body: `"You lived." Zafir's smile is thin. "Another one crawls out of the Approach. You look like you'll need Drops. His stock is on the tray. Buy and Sell. When you go down a rib, leave my maps up here."`,
+    title: 'Varro the Bonewright',
+    speaker: 'Varro',
+    body: `"You lived." Varro's smile is thin. "Another one crawls out of the Approach. You look like you'll need Drops. His stock is on the tray. Buy and Sell. When you go down a rib, leave my maps up here."`,
     variants: [
       {
         if: { flagUnset: 'zafirCup' },
         mode: 'replace',
-        body: `"Another one crawls out of the Approach. You look like you'll need Drops." Zafir taps the tray. "His stock. Drops, Hound Hide, a baton somebody pawned. Buy and Sell. I sell what is on the tray. Nothing else."`,
+        body: `"Another one crawls out of the Approach. You look like you'll need Drops." Varro taps the tray. "His stock. Drops, Hound Hide, a baton somebody pawned. Buy and Sell. I sell what is on the tray. Nothing else."`,
       },
       {
         if: { flag: 'zafirSore' },

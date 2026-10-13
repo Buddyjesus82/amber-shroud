@@ -240,7 +240,7 @@ const KNIFE_TONE: Record<string, { sub: string; flash: string }> = {
   },
   redmaw: {
     sub: 'A thin Maw tooth. Weapon · Strike 3. Not Hound Hide. Equip it in Gear.',
-    flash: '"Not Zafir\'s hide. A needle. I will not sell anything that opens a survivor."',
+    flash: '"Not Varro\'s hide. A needle. I will not sell anything that opens a survivor."',
   },
 }
 

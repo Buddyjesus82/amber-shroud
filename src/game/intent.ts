@@ -130,21 +130,21 @@ export const GLOBAL_INTENTS: IntentRule[] = [
     tags: ['trade', 'buy', 'sell', 'shop', 'merchant', 'barter'],
     show: { door: 'prisoner' },
     reply:
-      'Kaelen the Sifter trades from Buy and Sell shelves — scrap for a Drop of Oasis Sap, Glints for intel. Zafir keeps a stall at the Bone Market — Hound Hide, Drops, a pawned baton. Jaxson is a different job. He hotwires. He does not sell.',
+      'Kaelen the Sifter trades from Buy and Sell shelves — scrap for a Drop of Oasis Sap, Glints for intel. Varro keeps a stall at the Bone Market — Hound Hide, Drops, a pawned baton. Jaxson is a different job. He hotwires. He does not sell.',
     effects: {},
   },
   {
     tags: ['trade', 'buy', 'sell', 'shop', 'merchant', 'barter'],
     show: { door: 'outcast' },
     reply:
-      'Silas Vane trades from Buy and Sell shelves in his shade — Drops, salve, a wrap, a cloak, a needle knife, for Glints or scrap. Korvan trades leads for water and scrap. Zafir keeps a stall at the Bone Market in Red Maw.',
+      'Silas Vane trades from Buy and Sell shelves in his shade — Drops, salve, a wrap, a cloak, a needle knife, for Glints or scrap. Korvan trades leads for water and scrap. Varro keeps a stall at the Bone Market in Red Maw.',
     effects: {},
   },
   {
     tags: ['trade', 'buy', 'sell', 'shop', 'merchant', 'barter'],
     show: { door: 'vessel' },
     reply:
-      'Kaelen the Sifter trades from Buy and Sell shelves off the paddock — scrap for a Drop of Oasis Sap, Glints for intel. Zafir keeps a stall at the Bone Market — Hound Hide, Drops, a pawned baton.',
+      'Kaelen the Sifter trades from Buy and Sell shelves off the paddock — scrap for a Drop of Oasis Sap, Glints for intel. Varro keeps a stall at the Bone Market — Hound Hide, Drops, a pawned baton.',
     effects: {},
   },
   {
