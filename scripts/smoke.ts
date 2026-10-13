@@ -715,7 +715,7 @@ assert(ids(s).includes('hotwire'), 'lookout offers the hotwire cover')
 }
 s = pick(s, 'hotwire')
 if (s.flags.hunterHere) s = applyEffect(s, { unsetFlag: ['hunterHere', 'hunterFrom'] })
-assert(playCoverKey(s, sceneOf(s)) === 'skiffbay', 'after the hotwire the bay is Skiff Bay art again')
+assert(playCoverKey(s, sceneOf(s)) === 'skiff_bay_docks', 'after the hotwire the bay is Skiff Bay art again')
 assert(!/you are the lookout/i.test(bodyOf(s)), 'finished hotwire is not still the lookout')
 assert(ids(s).includes('ride-blind') || ids(s).includes('ride'), 'bay ride after hotwire')
 s = ids(s).includes('ride-blind') ? pick(s, 'ride-blind') : pick(s, 'ride')
@@ -759,7 +759,7 @@ assert(playCoverKey(s, sceneOf(s)) === 'oiltooth', 'the stall still uses Jaxson 
 s = applyEffect(s, { sap: 6 })
 s = walkTo(s, 'camp:bay')
 assert(s.sceneId === 'camp:bay', 'Map reaches Skiff Bay after the first talk')
-assert(playCoverKey(s, sceneOf(s)) === 'skiffbay', 'Skiff Bay uses its own backdrop after the first talk')
+assert(playCoverKey(s, sceneOf(s)) === 'skiff_bay_docks', 'Skiff Bay uses its own backdrop after the first talk')
 assert(!/under a hull/i.test(bodyOf(s)), 'Skiff Bay does not stage Jaxson after the first talk')
 assert(/Pike/.test(bodyOf(s)) && /Sarn/.test(bodyOf(s)) && /Vetch/.test(bodyOf(s)), 'bay names the other prisoners')
 assert(!/None of them is Jaxson/i.test(bodyOf(s)), 'Skiff Bay does not say who the prisoners are not')
@@ -810,7 +810,7 @@ s = pick(s, 'inside')
 assert(s.flags.jaxsonInside && s.flags.cartelNotice && !s.flags.guardDown, 'the job is accepted before the station falls')
 s = applyEffect(s, { sap: 6 })
 s = walkTo(s, 'camp:bay')
-assert(playCoverKey(s, sceneOf(s)) === 'skiffbay', 'accepted job is not yet the Skiff Bay lookout')
+assert(playCoverKey(s, sceneOf(s)) === 'skiff_bay_docks', 'accepted job is not yet the Skiff Bay lookout')
 assert(!/you are the lookout/i.test(bodyOf(s)), 'he is not already working the bay before the sabotage')
 assert(!ids(s).includes('hotwire'), 'lookout button waits for the downed station')
 
@@ -2691,7 +2691,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v108'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v109'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -5700,4 +5700,35 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   assert(out.sceneId === 'ch1:v-zafir' && out.chapterId === 'cache-run' && out.flags.drainTunnel, "v108: the drain skips the runners and comes out near the Pilgrim's Scar")
   assert(out.heat.seekers === plate.heat.seekers, 'v108: the drain raises no Seeker Heat')
   console.log('v108 guard and drain checks OK')
+}
+
+// v109: Skiff Bay docks redo (Prisoner door).
+{
+  const sw = readFileSync('public/sw.js', 'utf8')
+  const NEW = 'Skiff Bay stinks of diesel and hot sand. Cartel barges sit low on their runners, harpoon turrets turned to face the dunes, their stacks coughing black smoke and blue sparks. A Stray Skiff-Strider idles under a patched tarp with its crew pretending not to watch you. At the far end of the dock, apart from everything else, sits a skiff painted bone-white. Something hangs from its crane, wrapped in amber.'
+  const bay = { ...GE.newGame('prisoner'), sceneId: 'camp:bay', hubId: 'camp04' }
+  assert(GE.bodyOf(bay).startsWith(NEW), 'v109: new bay text verbatim')
+  assert(/Pike/.test(GE.bodyOf(bay)) && /Sarn/.test(GE.bodyOf(bay)) && /Vetch/.test(GE.bodyOf(bay)) && /Jaxson's skiff/.test(GE.bodyOf(bay)), 'v109: the bay hands and Jaxson\'s skiff are still named')
+  assert(playCoverKey(bay, getScene('camp:bay')!) === 'skiff_bay_docks', 'v109: the main bay shows the docks')
+  assert(existsSync('public/covers/skiff-bay-docks.jpg') && sw.includes('covers/skiff-bay-docks.jpg') && COVER_BAND.skiff_bay_docks, 'v109: docks art on disk, precached, cropped')
+  for (const [id, k] of [['camp:bay-pike', 'bay_pike'], ['camp:bay-sarn', 'bay_sarn'], ['camp:bay-vetch', 'bay_vetch']] as const) {
+    assert(playCoverKey({ ...bay, sceneId: id }, getScene(id)!) === k, `v109: ${id} keeps its NPC art`)
+  }
+  const look = { ...bay, flags: { ...bay.flags, jaxsonInside: true, guardDown: true } }
+  assert(playCoverKey(look, getScene('camp:bay')!) === 'hotwire', 'v109: the lookout beat keeps the hotwire art')
+  for (const id of ['north-bay', 'east-bay', 'south-bay']) assert(GE.visibleChoices(bay).some((c) => c.id === id), `v109: ${id} exit kept`)
+  const ask = GE.visibleChoices(bay).find((c) => c.id === 'white-skiff')!
+  assert(ask && ask.label === 'Ask about the white skiff', 'v109: the white skiff action')
+  const once = GE.applyEffect(bay, ask.effects)
+  assert(/"Don't know whose that is\."/.test(once.flash ?? '') && /"Neither do you\."/.test(once.flash ?? '') && once.flags.whiteSkiffAsked, 'v109: the dockhand line')
+  assert(JSON.stringify(once.heat) === JSON.stringify(bay.heat), 'v109: no Heat')
+  const again = GE.applyEffect(once, GE.visibleChoices(once).find((c) => c.id === 'white-skiff')!.effects)
+  assert(again.flash === 'The dockhand keeps knotting. He does not look up.', 'v109: short repeat line')
+  const typed = GE.interpret(bay, 'ask about the white skiff')
+  assert(/Neither do you/.test(typed.flash ?? '') && typed.flags.whiteSkiffAsked, 'v109: typed alias works')
+  const typed2 = GE.interpret(typed, 'white skiff')
+  assert(/keeps knotting/.test(typed2.flash ?? ''), 'v109: typed repeat line')
+  const all = GE.bodyOf(bay) + (once.flash ?? '') + (again.flash ?? '')
+  assert(!/Valerius|Sybella|prisoner/i.test(all), 'v109: no Valerius, Sybella, or prisoner trade')
+  console.log('v109 skiff bay checks OK')
 }

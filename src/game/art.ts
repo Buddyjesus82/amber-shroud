@@ -25,6 +25,7 @@ export type CoverKey =
   | 'rell'
   | 'handler'
   | 'skiffbay'
+  | 'skiff_bay_docks'
   | 'bay_pike'
   | 'corvin'
   | 'guard'
@@ -70,6 +71,7 @@ const FILES: Record<CoverKey, string> = {
   rell: 'rell.jpg',
   handler: 'hound.jpg',
   skiffbay: 'skiffbay.jpg',
+  skiff_bay_docks: 'skiff-bay-docks.jpg',
   bay_pike: 'bay_pike.jpg',
   corvin: 'corvin.jpg',
   guard: 'guard.jpg',
@@ -124,6 +126,8 @@ export const COVER_BAND: Record<CoverKey, [number, number]> = {
   handler: [0.05, 0.8],
   // Skiff Bay: the four bays, the people, and Vetch's torch.
   skiffbay: [0.2, 0.84],
+  // The Cartel barge, the tarp Strider, and the white skiff's amber crane.
+  skiff_bay_docks: [0.15, 0.85],
   // Pike's bolt glows in the rear knee joint; the skiff legs reach the cradle.
   bay_pike: [0.12, 0.82],
   // Corvin's face sits high; keep his head and hands.
@@ -233,7 +237,7 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   if (who) return who
 
   // The hotwire art is the one-time lookout beat: station down, Jaxson under his skiff.
-  if (id === 'camp:bay') return bayLookout(state) ? 'hotwire' : 'skiffbay'
+  if (id === 'camp:bay') return bayLookout(state) ? 'hotwire' : 'skiff_bay_docks'
   if (id === 'camp:bay-pike') return 'bay_pike'
   if (id === 'camp:relic') return 'hoard'
   if (id === 'crisis:maw') return 'down'

@@ -10,6 +10,11 @@ import {
   vetchBayIntents,
 } from './bayHands'
 
+/** v109: the bone-white skiff at the end of the dock. No names, no trade. */
+export const WHITE_SKIFF_FIRST = 'A dockhand looks at it, then back at his rope. "Don\'t know whose that is." He knots the line twice. "Neither do you."'
+export const WHITE_SKIFF_AGAIN = 'The dockhand keeps knotting. He does not look up.'
+export const WHITE_SKIFF_TAGS = ['white skiff', 'white', 'bone-white', 'bone white', 'crane', 'amber skiff']
+
 export const campScenes: Scene[] = [
   {
     id: 'camp:yard',
@@ -1174,11 +1179,9 @@ A vent patrol is in place: one clerk, shock baton, eyes on the joint. Unwatched 
     hubId: 'camp04',
     kind: 'place',
     title: 'Skiff Bay',
-    body: `You come in through the west gate. Four Skiff-Striders stand on repair cradles, each in its own bay under a tin roof. Cartel tags are still bolted to the hulls.
+    body: `Skiff Bay stinks of diesel and hot sand. Cartel barges sit low on their runners, harpoon turrets turned to face the dunes, their stacks coughing black smoke and blue sparks. A Stray Skiff-Strider idles under a patched tarp with its crew pretending not to watch you. At the far end of the dock, apart from everything else, sits a skiff painted bone-white. Something hangs from its crane, wrapped in amber.
 
-Pike is in the north bay on your left, working a leg of his skiff. Sarn stands beside his skiff in the east bay, straight ahead, counting bolts out loud. Vetch is in the south bay on your right, kneeling with a torch and welding a cracked skid. Jaxson's skiff stands in the center bay with nobody at it.
-
-Ask nicely and you get a short answer. Reach for their stuff and you get a bolt thrown at you, or a shout.`,
+Pike works the north bay on your left, Sarn counts bolts in the east bay ahead, and Vetch welds in the south bay on your right. Jaxson's skiff sits in the center bay with nobody at it. Ask nicely and you get a short answer. Reach for their stuff and you get a bolt or a shout.`,
     variants: [
       {
         if: { flag: 'striderHot' },
@@ -1222,6 +1225,22 @@ Pike, Sarn, and Vetch keep their heads down in their own bays.`,
         effects: { goto: 'camp:bay-vetch', flag: { bayLooked: true } },
       },
       {
+        id: 'white-skiff',
+        label: 'Ask about the white skiff',
+        sub: 'A dockhand is coiling rope near it.',
+        tone: 'quiet',
+        show: { flagUnset: 'whiteSkiffAsked' },
+        effects: { flag: { whiteSkiffAsked: true }, flash: WHITE_SKIFF_FIRST },
+      },
+      {
+        id: 'white-skiff',
+        label: 'Ask about the white skiff',
+        sub: 'The dockhand already gave you his answer.',
+        tone: 'quiet',
+        show: { flag: 'whiteSkiffAsked' },
+        effects: { flash: WHITE_SKIFF_AGAIN },
+      },
+      {
         id: 'hotwire',
         label: 'Cover Jaxson while he hotwires',
         sub: 'He is the inside man. You are the extra pair of hands.',
@@ -1262,7 +1281,11 @@ Pike, Sarn, and Vetch keep their heads down in their own bays.`,
         },
       },
     ],
-    intents: bayHandIntents,
+    intents: [
+      { tags: WHITE_SKIFF_TAGS, show: { flagUnset: 'whiteSkiffAsked' }, reply: WHITE_SKIFF_FIRST, effects: { flag: { whiteSkiffAsked: true } } },
+      { tags: WHITE_SKIFF_TAGS, show: { flag: 'whiteSkiffAsked' }, reply: WHITE_SKIFF_AGAIN, effects: {} },
+      ...bayHandIntents,
+    ],
   },
   {
     id: 'camp:bay-pike',
