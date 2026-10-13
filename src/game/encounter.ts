@@ -257,6 +257,8 @@ export function oddsWord(percent: number): string {
   return 'Long odds'
 }
 
+export const HANDLER_BEATEN = 'He goes down hard, then limps off toward the yard. Valerius will hear about this.'
+
 export function enemyHealth(kind: EncounterKind): number {
   return SPECS.find((s) => s.kind === kind)?.hp ?? 1
 }
@@ -1037,7 +1039,11 @@ export function resolveEncounter(
     const back = snatched ? ` You take back your ${ITEMS[snatched]?.name ?? snatched}.` : ''
     const stagger = yourHp <= 0
     const huskWin = spec.kind === 'husk'
-    const outcome = stagger
+    // The Hound-handler is never killed: he is beaten and limps off.
+    const handlerWin = spec.kind === 'handler'
+    const outcome = handlerWin
+      ? `${stagger ? 'You drop with him. ' : ''}${HANDLER_BEATEN} ${loot}.${stagger ? ` Health 0/${max}.` : ''}${back}`
+      : stagger
       ? huskWin
         ? `The amber heart shatters. You drop with it. ${loot}. Health 0/${max}.${back}`
         : `They drop. You drop with them. ${loot}. Health 0/${max}.${back}`
@@ -1049,9 +1055,10 @@ export function resolveEncounter(
       add,
       sap,
       // Cartel property: killing the hound is on the ledger.
-      heat: spec.kind === 'hound' ? { cartel: 1 } : undefined,
+      // Beating the handler: Cartel +2.
+      heat: spec.kind === 'hound' ? { cartel: 1 } : handlerWin ? { cartel: 2 } : undefined,
       pressure: dmgIn > 0 ? 1 : undefined,
-      flag: { encounterGrip: grip, ...(spec.kind === 'handler' ? { handlerDown: true } : {}) },
+      flag: { encounterGrip: grip, ...(handlerWin ? { handlerInjured: true } : {}) },
     })
   }
 

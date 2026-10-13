@@ -98,6 +98,8 @@ function markOldFirstDrop(state: GameState): GameState {
 /** Old saves: the shade-road toll was Nim; it is Drennick Voss now. The name Nim belongs to the Carapace hunter. */
 const OLD_NIM_FLAGS: Record<string, string> = {
   metNim: 'metDrennick',
+  // The handler is injured, never dead. Old saves keep their win.
+  handlerDown: 'handlerInjured',
   nimMet: 'drennickMet',
   nimPaid: 'drennickPaid',
   nimSilas: 'drennickSilas',

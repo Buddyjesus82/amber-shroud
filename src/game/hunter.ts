@@ -77,6 +77,8 @@ function stay(state: GameState, extra: Choice['effects']): Choice['effects'] {
   }
 }
 
+/** He comes back with a grudge after you beat him. */
+export const HANDLER_GRUDGE = 'His arm is strapped. He looks at you like a bill that came due.'
 export const CAMP_HUNT_APPEND = `A muzzle knocks this ground. The Hound-handler, resin gloves, a Shard-Hound on a short chip-lead. The Overseer's name is on the tag.
 
 "Upright labor. He likes a diagram. I like a throat." You stay on this ground. Pay, fight, hide, or choose a road.`
@@ -525,7 +527,10 @@ export function sybellaShadowChoices(state: GameState): Choice[] {
 
 export function pressureAppend(state: GameState): string | null {
   if (isSybellaOverlay(state)) return SYBELLA_SHADOW_APPEND
-  if (isCampHunt(state)) return state.heat.cartel >= 7 ? VALERIUS_HUNT_APPEND : CAMP_HUNT_APPEND
+  if (isCampHunt(state)) {
+    if (state.heat.cartel >= 7) return VALERIUS_HUNT_APPEND
+    return state.flags.handlerInjured ? `${CAMP_HUNT_APPEND}\n\n${HANDLER_GRUDGE}` : CAMP_HUNT_APPEND
+  }
   if (isSpineHunt(state)) return spineHunterFor(state).append
   if (isThreshHunt(state)) return THRESH_HUNT_APPEND
   return null
