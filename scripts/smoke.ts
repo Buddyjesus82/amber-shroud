@@ -2688,7 +2688,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v101'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v102'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -5547,4 +5547,16 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   const all = readFileSync('src/game/voices.ts', 'utf8') + readFileSync('src/game/content/spine.ts', 'utf8') + readFileSync('src/game/content/shadeHands.ts', 'utf8')
   assert(!/gap at the corner of his mouth|amber sealed over his mouth|gap in the amber/.test(all), 'v101: no sealed-mouth Korvan lines left')
   console.log('v101 checks OK')
+}
+
+// v102: Corvin matches covers/corvin.jpg.
+{
+  const txt = ['content/spine.ts', 'content/shadeHands.ts', 'voices.ts', 'people.ts'].map((f) => readFileSync(`src/game/${f}`, 'utf8')).join('\n')
+  for (const old of ['a young man sits in a Cartel security coat', 'coat inside out', 'Ironwood patch has been cut', 'His hands shake', 'behind the same slab', 'a boy named Corvin', 'Follow them behind the slab', 'empty hands']) {
+    assert(!txt.includes(old), `v102: old Corvin line is gone: ${old}`)
+  }
+  const c = getScene('spine:corvin')
+  assert(/dry stone well/.test(c.body) && /weathered and stubbled/.test(c.body) && /barbed wire/.test(c.body) && /no rifle/.test(c.body), 'v102: Corvin reads like his art')
+  assert(/dry well/.test(c.variants?.[0]?.body ?? ''), 'v102: return visit matches')
+  console.log('v102 Corvin checks OK')
 }
