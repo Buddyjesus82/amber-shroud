@@ -2691,7 +2691,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v110'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v111'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -5749,5 +5749,12 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   const smoke = getScene('maw:smoke')!.body
   assert(!/\bmast\b/i.test(smoke) && /bone-white/.test(smoke) && /cockpit cage/.test(smoke) && /blindfold hangs from the crane/.test(smoke), 'v110: Sybella\'s skiff is Seeker style, no mast')
   assert(getScene('maw:smoke')!.choices.some((c) => c.id === 'on') && getScene('maw:smoke')!.choices.some((c) => c.id === 'talk'), 'v110: maw:smoke hooks kept')
+  // v111: no sail or mast on any Sybella skiff, anywhere.
+  for (const f of ['src/game/content/cacheRun.ts', 'src/game/content/redMaw.ts', 'src/game/look.ts', 'src/game/people.ts', 'src/game/talk.ts', 'src/game/voices.ts', 'src/game/content/spine.ts']) {
+    assert(!/\bsails?\b|\bmast\b/i.test(readFileSync(f, 'utf8')), `v111: no sail or mast in ${f}`)
+  }
+  const wind = getScene('ch1:south-wind')!
+  assert(/bone-white hull/.test(wind.body) && /cockpit cage/.test(wind.body) && /blindfold hangs from the crane/.test(wind.body), 'v111: Sybella arrives in the Seeker skiff')
+  assert(wind.onEnter?.flag?.heardSybellaRumor, 'v111: arrival hook kept')
   console.log('v110 runner and skiff checks OK')
 }
