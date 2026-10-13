@@ -977,18 +977,20 @@ export function resolveEncounter(
 
   // Plain result lines: who hit whom for how much. Named extras in brackets; a crit gets its own line.
   // Stat rows on top, then plain result lines. Every bonus gets its own short line; a crit gets its own line.
-  const critLine = (n: number) => `\n\nCritical Strike! ${n}`
+  // A crit is part of its own hit line, with the final damage. No separate base-hit line.
   const youLine = !attacking
     ? 'You do not attack this round.'
     : dmgOut <= 0
       ? `You miss ${who}.`
-      : `You hit ${who} for ${critOut ? dmgOut / 2 : dmgOut}.${critOut ? critLine(dmgOut) : ''}`
+      : critOut
+        ? `Critical Strike! You hit ${who} for ${dmgOut}.`
+        : `You hit ${who} for ${dmgOut}.`
   const themLine = f.encounterStun
     ? `${cap(who)} misses. Sand in the eyes.`
     : dmgIn <= 0
       ? `${cap(who)} misses you.`
       : critIn && dmgIn > dmgInPlain
-        ? `${cap(who)} hits back for ${dmgInPlain}.${critLine(dmgIn)}`
+        ? `Critical Strike! ${cap(who)} hits you for ${dmgIn}.`
         : `${cap(who)} hits back for ${dmgIn}.`
   const bonusLines = [...(attacking ? outTags : outTags.filter((t) => !/your hit/.test(t))), ...inTags]
   const top = statRows(yourHp, c.strike, c.shell, spec, theirHp)
