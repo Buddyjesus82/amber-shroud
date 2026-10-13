@@ -2251,3 +2251,15 @@ h2 {
   opacity: 0.6;
   letter-spacing: 0.04em;
 }
+
+/* v96: fight card stat rows (YOU / enemy). Clean on phones: one short line each, wraps if it must. */
+.story p.fight-stat {
+  margin: 0.15em 0;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.story p.fight-stat + p:not(.fight-stat) {
+  margin-top: 0.8em;
+}
