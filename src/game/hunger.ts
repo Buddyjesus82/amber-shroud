@@ -1,3 +1,5 @@
+import { roadWords } from './roads'
+import type { DoorId } from './types'
 import { HUBS, getScene } from './content'
 import { isPressureOverlay } from './hunter'
 import { check } from './logic'
@@ -13,11 +15,13 @@ function norm(text: string): string {
 }
 
 /** Typed Hunger, not Kaelen's lead. Buttons still own "take the Hunger lead". */
-export function isHungerCommand(text: string): boolean {
+export function isHungerCommand(text: string, door?: DoorId): boolean {
   const hay = norm(text)
-  if (!/\b(?:hunger|gullet)\b/.test(hay)) return false
+  const words = roadWords(door)
+  if (!words.test(hay)) return false
+  if (/\beast wash\b/.test(hay)) return false
   if (/\b(lead|intel|rumou?r|glint)\b/.test(hay)) return false
-  if (/^(?:the\s+)?(?:hunger|gullet)$/.test(hay)) return true
+  if (new RegExp(`^(?:the\\s+)?(?:${words.source})$`).test(hay)) return true
   return /^(?:take|grab|walk|enter|start|follow|ride|begin|run|flee|leave|go|break)\b/.test(hay)
 }
 

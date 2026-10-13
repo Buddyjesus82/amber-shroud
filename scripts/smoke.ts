@@ -2680,7 +2680,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v92'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v93'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -4653,7 +4653,7 @@ function assertHelpResolves(s: GameState, where: string) {
     + JSON.stringify(HUBS) + readFileSync('src/game/content/maps.ts', 'utf8') + readFileSync('src/game/talk.ts', 'utf8')
     + readFileSync('src/game/look.ts', 'utf8') + readFileSync('src/game/hunter.ts', 'utf8') + JSON.stringify(PEOPLE)
   assert(!/east-south|east and south|walk east, find me|ford when you walk east|walking east to the Maw|label: 'Gullet south'|Red Maw is (days )?south|Maw-country.{0,3}South|South is Maw-country|East is the Maw|Ossa is south\. I go west/.test(all), 'no old compass for the Maw roads')
-  assert(/label: '↖ Red Maw, northwest'/.test(readFileSync('src/game/content/maps.ts', 'utf8')), 'Threshold map exit points northwest to Red Maw')
+  assert(/label: "↖ Pilgrim's Scar · Red Maw, northwest"/.test(readFileSync('src/game/content/maps.ts', 'utf8')), 'Threshold map exit points northwest to Red Maw')
   assert(/days east/.test(HUBS.camp04.hungerHook!.sub ?? '') && /hard day south/.test(HUBS.spine.hungerHook!.sub ?? ''), 'Camp-04 road runs east, Spine road runs south')
 }
 
@@ -5208,4 +5208,31 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
     assert(!/\bZafir\b/.test(txt), `no visible Zafir in ${f}`)
   }
   assert(PEOPLE.zafir.name === 'Varro' && PEOPLE.zafir.aliases.includes('bonewright') && !PEOPLE.zafir.aliases.includes('zafir'), 'Varro the Bonewright; zafir is not an alias')
+}
+
+// v93: one road per door, all meeting at the Maw Rim.
+{
+  const R = await import('../src/game/roads.ts')
+  const { isHungerCommand } = await import('../src/game/hunger.ts')
+  assert(R.ROADS.prisoner.name === 'the Gullet' && R.ROADS.prisoner.from === 'west', 'Prisoner: the Gullet from the west')
+  assert(R.ROADS.outcast.name === 'the Bone Wash' && R.ROADS.outcast.from === 'north', 'Outcast: the Bone Wash from the north')
+  assert(R.ROADS.vessel.name === "the Pilgrim's Scar" && R.ROADS.vessel.from === 'southeast', "Vessel: the Pilgrim's Scar from the southeast")
+  assert(/east/.test(HUBS.camp04.mawNote) && /Gullet/.test(HUBS.camp04.mawNote), 'Camp-04: Red Maw east, down the Gullet')
+  assert(/south/.test(HUBS.spine.mawNote) && /Bone Wash/.test(HUBS.spine.mawNote), 'Spine: Red Maw south, down the Bone Wash')
+  assert(/northwest/.test(HUBS.threshold.mawNote) && /Pilgrim's Scar/.test(HUBS.threshold.mawNote), "Threshold: Red Maw northwest, up the Pilgrim's Scar")
+  for (const door of ['outcast', 'vessel'] as const) {
+    for (const sc of ALL_SCENES) {
+      const s = { ...GE.newGame(door), sceneId: sc.id, hubId: sc.hubId ?? null } as GameState
+      const shown = [R.roadText(door, GE.bodyOf(s)), ...GE.visibleChoices(s).map((c) => R.roadText(door, `${c.label} ${c.sub ?? ''}`))].join(' ')
+      assert(!/Gullet/.test(shown), `${door} ${sc.id}: no Gullet shown`)
+    }
+    const rim = { ...GE.newGame(door), sceneId: 'maw:rim', hubId: 'redmaw' } as GameState
+    assert(GE.bodyOf(rim).includes(R.ROADS[door].rim), `${door}: Rim arrival names the road`)
+  }
+  assert(isHungerCommand('take the bone wash', 'outcast') && isHungerCommand('wash', 'outcast') && isHungerCommand('take the gullet', 'outcast'), 'Outcast typed Bone Wash / wash / gullet')
+  assert(!isHungerCommand('walk the east wash', 'outcast'), 'the east wash is not the road')
+  assert(isHungerCommand("take the pilgrim's scar", 'vessel') && isHungerCommand('scar', 'vessel') && isHungerCommand('gullet', 'vessel'), "Vessel typed Pilgrim's Scar / scar / gullet")
+  assert(isHungerCommand('take the gullet', 'prisoner') && !isHungerCommand('take the scar', 'prisoner'), 'Prisoner keeps the Gullet')
+  const rimP = { ...GE.newGame('prisoner'), sceneId: 'maw:rim', hubId: 'redmaw' } as GameState
+  assert(GE.bodyOf(rimP).includes(R.ROADS.prisoner.rim), 'Prisoner: Rim arrival names the Gullet')
 }

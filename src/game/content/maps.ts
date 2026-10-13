@@ -8,7 +8,7 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
     height: 132,
     defaultNode: 'pens',
     blurb: 'Cartel wire. East is Maw-country — days away. The sealed Spire is farther still. Walk only the roads that connect.',
-    maw: { x: 78, y: 124, label: 'Maw / dunes' },
+    maw: { x: 78, y: 124, label: 'Gullet → Red Maw, east' },
     nodes: [
       { id: 'tower', name: 'Overseer', sceneId: 'camp:tower', x: 68, y: 8 },
       { id: 'guard', name: 'Guard Station', short: 'Guard', sceneId: 'camp:guard', x: 64, y: 28 },
@@ -64,7 +64,7 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
     height: 120,
     defaultNode: 'ridge',
     blurb: 'Stray country. Walk only the roads that connect.',
-    maw: { x: 86, y: 112, label: 'Maw-haze' },
+    maw: { x: 86, y: 112, label: 'Bone Wash ↓ Red Maw, south' },
     nodes: [
       { id: 'ridge', name: 'Noon Spine', short: 'Ridge', sceneId: 'spine:ridge', x: 30, y: 26 },
       { id: 'shade', name: "Silas's Shade", short: 'Shade', sceneId: 'spine:shade', x: 22, y: 58 },
@@ -104,7 +104,7 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
     height: 120,
     defaultNode: 'court',
     blurb: 'Seeker fringe. Walk only the roads that connect.',
-    maw: { x: 18, y: 12, label: '↖ Red Maw, northwest' },
+    maw: { x: 18, y: 12, label: "↖ Pilgrim's Scar · Red Maw, northwest" },
     nodes: [
       { id: 'court', name: 'Threshold Court', short: 'Court', sceneId: 'thresh:court', x: 50, y: 40 },
       { id: 'cell', name: 'False Vessel Cell', short: 'Cell', sceneId: 'thresh:cell', x: 20, y: 36 },

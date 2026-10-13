@@ -46,7 +46,7 @@ export function DoorSelect({ savedDoors, onResume, onStart, onBack }: Props) {
         </button>
         <h2>Choose a start door</h2>
         <p>
-          Same Maw. Different roads into the Gullet. What you carry decides most of it. Each door keeps its own save. Add to Home
+          Same Maw. Each door walks its own road to Red Maw. What you carry decides most of it. Each door keeps its own save. Add to Home
           Screen for stronger saves on iPhone.
         </p>
       </header>
