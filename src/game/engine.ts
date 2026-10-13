@@ -104,6 +104,7 @@ export const KAELEN_HELD_SCENES = [
   'open:vessel',
   'thresh:crucible-rig',
   'thresh:crucible-stairs',
+  'thresh:court-guard',
   'thresh:cell',
   'thresh:shrine',
   'crisis:camp',
@@ -648,7 +649,7 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   }
 
   // The Crucible wake and rig are one beat before the Court: they do not count toward the first hunt.
-  const crucibleBeat = (state.sceneId === 'open:vessel' && next.sceneId === 'thresh:crucible-rig') || (state.sceneId === 'thresh:crucible-rig' && next.sceneId === 'thresh:crucible-stairs')
+  const crucibleBeat = (state.sceneId === 'open:vessel' && next.sceneId === 'thresh:crucible-rig') || (state.sceneId === 'thresh:crucible-rig' && next.sceneId === 'thresh:crucible-stairs') || (state.sceneId === 'thresh:court-guard' && next.sceneId === 'thresh:court')
   const lingered = !fx.still && !vendorBeat && !crucibleBeat && ((fx.ticks ?? 0) > 0 || (fx.pressure ?? 0) > 0 || !!dest)
   const clearingHunt = !!state.flags.hunterHere && (!next.flags.hunterHere || !!fx.unsetFlag?.includes('hunterHere'))
   if (clearingHunt) {

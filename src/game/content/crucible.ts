@@ -1,7 +1,10 @@
 import type { Scene } from '../types'
 
 /** The Vessel's new opening: the Crucible Chambers under the Threshold Court. */
-export const CRUCIBLE_SCENES = ['open:vessel', 'thresh:crucible-rig', 'thresh:crucible-stairs'] as const
+export const CRUCIBLE_SCENES = ['open:vessel', 'thresh:crucible-rig', 'thresh:crucible-stairs', 'thresh:court-guard'] as const
+
+/** Only after the release-clamps alarm: the Court Guard waits at the dais steps. */
+export const COURT_GUARD = 'thresh:court-guard'
 
 const NEXT = 'thresh:crucible-stairs'
 
@@ -67,12 +70,76 @@ The Seekers camp in a fallen spire to the southeast. The sealed Spire lies beyon
         id: 'keep',
         label: 'Keep the cloth on. Walk the Court.',
         sub: 'Gear: Drop, dagger, Oram\'s map, cloth. Thalia is already watching.',
+        show: { flagUnset: 'crucibleAlarm' },
         effects: {
           enterHub: 'threshold',
           goto: 'thresh:court',
           ticks: 1,
           heat: { seekers: 1 },
           flash: 'Heads bow a half-inch. Belief is a muscle. You flex it.',
+        },
+      },
+      {
+        id: 'keep',
+        label: 'Keep the cloth on. Walk the Court.',
+        sub: 'Gear: Drop, dagger, Oram\'s map, cloth. Thalia is already watching.',
+        show: { flag: 'crucibleAlarm' },
+        effects: {
+          enterHub: 'threshold',
+          goto: COURT_GUARD,
+          ticks: 1,
+          heat: { seekers: 1 },
+        },
+      },
+    ],
+  },
+  {
+    id: COURT_GUARD,
+    hubId: 'threshold',
+    kind: 'story',
+    title: 'Dais Steps',
+    body: `The Court Guard blocks the dais steps, falchion drawn.
+
+"Vessels don't climb the stairs on their own."`,
+    choices: [
+      {
+        id: 'fight',
+        label: 'Fight him',
+        sub: 'A real fight. Health takes the hits.',
+        tone: 'danger',
+        enable: { healthMin: 1 },
+        locked: 'Too hurt to fight.',
+        effects: {
+          unsetFlag: ['encounterDone', 'encounterClash', 'encounterFlash', 'encounterRound', 'encounterStall', 'hunterHere', 'hunterFrom'],
+          flag: { encounterHere: true, encounterKind: 'courtguard', encounterHp: 2 },
+          ticks: 1,
+          flash: 'The falchion comes up. This ground is the fight.',
+        },
+      },
+      {
+        id: 'lie',
+        label: "Hand him the scavenger's lie",
+        sub: '"He broke loose. I was chasing him."',
+        enable: { item: 'crucible_map' },
+        locked: 'Needs: Ledger-Plate Map',
+        effects: {
+          goto: 'thresh:court',
+          ticks: 1,
+          flag: { crucibleGuardFooled: true },
+          flash: 'You show him the plate\'s map and point down the wrong corridor. He takes the stairs down at a run.',
+        },
+      },
+      {
+        id: 'thalia',
+        label: 'Let Thalia call him off',
+        sub: 'No fight. Seeker Heat +1. Thalia will remember.',
+        tone: 'quiet',
+        effects: {
+          goto: 'thresh:court',
+          ticks: 1,
+          heat: { seekers: 1 },
+          flag: { thaliaCalledOff: true },
+          flash: 'Thalia says one word from the dais. He steps aside. She does not stop looking at you.',
         },
       },
     ],
