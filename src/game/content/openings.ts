@@ -68,26 +68,14 @@ Your first goal: get a Drop of Oasis Sap into that vial before the midday heat d
     id: 'open:vessel',
     kind: 'story',
     art: 'world',
-    title: 'Vessel',
-    body: `They put the cloth on you because a Vessel is a walking cup and you have a spine that can still hold liquid.
-
-You wear their Vessel and nod like one. Outer Threshold is a church built out of dunes and bad memory. Thalia weeps gold. Oram counted Striders, then counted you, then tore a heading from his ledger because cups crack and thieves reach Red Maw. A rusted dagger sits against your ribs under the gold thread — kitchen steel, dishonest, yours.
-
-The Seekers camp in a fallen spire to the southeast. The sealed Spire lies beyond Red Maw, and they cannot open it. What opens it is at Red Maw, so they are sending their Vessel down the road to bring it back. That is you.
-
-The sacrament on your tongue is a real Drop. The rest is theater. Seeker Heat is already a hymn.`,
+    title: 'Crucible Chambers',
+    body: `You come to on cold sand-brick under the Threshold Court. The air smells of hot resin. Rows of amber figures stand along the walls, people mid-reach, mid-scream, eyes still open. A Seeker in clean robes is chalking a name under the newest one.`,
     choices: [
       {
-        id: 'keep',
-        label: 'Keep the cloth on. Walk the Court.',
-        sub: 'Gear: Drop, dagger, Oram\'s map, cloth. Thalia is already watching.',
-        effects: {
-          enterHub: 'threshold',
-          goto: 'thresh:court',
-          ticks: 1,
-          heat: { seekers: 1 },
-          flash: 'Heads bow a half-inch. Belief is a muscle. You flex it.',
-        },
+        id: 'rig',
+        label: 'Get up. Follow the humming.',
+        sub: 'Gear: Drop, dagger, Oram\'s map, cloth.',
+        effects: { goto: 'thresh:crucible-rig' },
       },
     ],
   },

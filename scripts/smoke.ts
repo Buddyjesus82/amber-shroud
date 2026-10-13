@@ -138,6 +138,8 @@ function pick(s: GameState, id: string) {
     s = applyEffect(s, { unsetFlag: ['hunterHere', 'hunterFrom'] })
   }
   // Older walks predate the storm beat; step through it when the next pick belongs to the Gullet.
+  // Older Vessel walks predate the Crucible wake; step through it (slip past) when they pick 'keep'.
+  if (s.sceneId === 'open:vessel' && id === 'keep') s = applyEffect(applyEffect(s, visibleChoices(s)[0].effects), visibleChoices(applyEffect(s, visibleChoices(s)[0].effects)).find((x) => x.id === 'slip')!.effects)
   if (s.sceneId === 'ch1:storm' && id !== 'continue') s = applyEffect(s, visibleChoices(s)[0].effects)
   const c = visibleChoices(s).find((x) => x.id === id)
   if (!c) {
@@ -528,7 +530,8 @@ assert(s.sap === 2, 'outcast starts thin')
   assert(viaDo.sceneId === button.sceneId && viaDo.hubId === button.hubId, 'Do sit up is the Prisoner button')
 }
 {
-  const open = newGame('vessel')
+  // v107: the Court button now sits at the top of the Crucible stairs.
+  const open = pick(pick(newGame('vessel'), 'rig'), 'slip')
   const button = pick(open, 'keep')
   const viaDo = interpret(open, 'walk the court')
   assert(viaDo.sceneId === button.sceneId && viaDo.heat.seekers === button.heat.seekers, 'Do walk the court is the Vessel button')
@@ -2307,7 +2310,7 @@ assert(html.includes('apple-touch.png?v=14'), 'apple-touch-icon is cache-busted 
   assert(!PEOPLE.kaelen.scenes.includes('spine:well'), 'Kaelen cover list excludes the dry well')
   assert(!PEOPLE.oiltooth.scenes.includes('camp:bay'), 'Jaxson cover list excludes Skiff Bay')
   const v = newGame('vessel')
-  assert(playCoverKey(v, sceneOf(v)) === 'threshold', 'Vessel opening uses Threshold art')
+  assert(playCoverKey(v, sceneOf(v)) === 'resin_vault', 'v107: Vessel opening uses the resin vault art')
   const hunt = applyEffect(p, { goto: 'camp:hunter' })
   assert(playCoverKey(hunt, sceneOf(hunt)) === 'valerius', 'Shiv confrontation with Valerius still uses his cover')
   const knock = {
@@ -2688,7 +2691,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v106'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v107'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -2893,6 +2896,8 @@ function assertHelpResolves(s: GameState, where: string) {
     'camp:jaxson-drop': 'prisoner',
     'open:outcast': 'outcast',
     'open:vessel': 'vessel',
+    'thresh:crucible-rig': 'vessel',
+    'thresh:crucible-stairs': 'vessel',
     'thresh:cell': 'vessel',
     'thresh:shrine': 'vessel',
     'crisis:camp': 'prisoner',
@@ -4647,7 +4652,7 @@ function assertHelpResolves(s: GameState, where: string) {
   const lore = ALL_SCENES.map((x) => x.body + JSON.stringify(x.variants ?? []) + JSON.stringify(x.choices)).join('\n')
     + JSON.stringify(HUBS) + JSON.stringify(PEOPLE) + JSON.stringify(RUMORS)
   assert(!/First Spires? (are|is) the teeth|Spires are the teeth/.test(lore), 'Red Maw is the hub, not the Spire')
-  const vessel = getScene('open:vessel')!.body
+  const vessel = getScene('thresh:crucible-stairs')!.body
   assert(/sealed/.test(vessel) && /What opens it is at Red Maw/.test(vessel), 'Vessel opening: the Seekers send you to Red Maw for what opens the Spire')
   assert(/What opens it is at Red Maw/.test(HUBS.threshold.hungerHook!.sub ?? ''), 'Threshold Gullet hook gives the Seeker reason to go to the Maw')
 }
@@ -5616,4 +5621,40 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   assert(guard.length > 50 && !/spear/i.test(guard), 'v106: guard voice has no spear')
   assert(readFileSync('src/game/hunter.ts', 'utf8').includes('A Court guard draws a curved falchion.'), 'v106: falchion intro line')
   console.log('v106 falchion checks OK')
+}
+
+// v107: the Vessel wakes in the Crucible Chambers under the Threshold Court.
+{
+  const sw = readFileSync('public/sw.js', 'utf8')
+  const pick = (s: GameState, id: string) => {
+    const c = GE.visibleChoices(s).find((x) => x.id === id)
+    assert(c, `v107: ${s.sceneId} offers ${id}`)
+    return GE.applyEffect(s, c!.effects)
+  }
+  const start = GE.newGame('vessel')
+  assert(start.sceneId === 'open:vessel', 'v107: Vessel starts at the wake')
+  assert(GE.bodyOf(start).startsWith('You come to on cold sand-brick under the Threshold Court.'), 'v107: wake text verbatim')
+  assert(playCoverKey(start, getScene('open:vessel')!) === 'resin_vault', 'v107: wake shows the resin vault')
+  const rig = pick(start, 'rig')
+  assert(rig.sceneId === 'thresh:crucible-rig' && playCoverKey(rig, getScene(rig.sceneId)!) === 'extraction_rig', 'v107: the rig shows the extraction rig')
+  assert(GE.bodyOf(rig).includes('clamped into a brass frame') && GE.bodyOf(rig).includes("What's my name? I had it a second ago."), 'v107: rig text')
+  assert(GE.visibleChoices(rig).map((c) => c.id).join(',') === 'release,plate,slip', 'v107: three rig buttons')
+  const h0 = rig.heat.seekers
+  const cut = pick(rig, 'release'), plate = pick(rig, 'plate'), slip = pick(rig, 'slip')
+  for (const s of [cut, plate, slip]) assert(s.sceneId === 'thresh:crucible-stairs' && !!s.flash, 'v107: each result shows, then the stairs')
+  assert(cut.heat.seekers === h0 + 1 && cut.flags.crucibleAlarm && /release lever/.test(cut.flash!) && !/\bcut/i.test(cut.flash! + GE.bodyOf(rig)), 'v107: releasing the clamps raises Seeker Heat; no cutting')
+  assert(plate.heat.seekers === h0 && (plate.items.crucible_map ?? 0) === 1 && plate.flags.crucibleMemory, 'v107: the plate gives the map scrap and memories')
+  assert(slip.heat.seekers === h0 && !slip.items.crucible_map && /statues/.test(slip.flash!), 'v107: slipping past costs no Heat; he joins the statues')
+  assert(GE.bodyOf(slip).includes("You think we're killing them. We're the only ones keeping them. The sand would take everything."), 'v107: Thalia line')
+  const court = pick(slip, 'keep')
+  assert(court.sceneId === 'thresh:court' && court.hubId === 'threshold', 'v107: then the existing Court')
+  assert(ITEMS.crucible_map, 'v107: the map scrap is an item')
+  assert(Number(court.flags.huntQuiet ?? 0) === 1, 'v107: the Crucible beats do not speed up the first hunt')
+  for (const f of ['resin-vault.jpg', 'extraction-rig.jpg']) assert(existsSync(`public/covers/${f}`) && sw.includes(`covers/${f}`), `v107: ${f} on disk and precached`)
+  assert(COVER_BAND.resin_vault && COVER_BAND.extraction_rig, 'v107: phone crops')
+  for (const id of ['open:vessel', 'thresh:crucible-rig', 'thresh:crucible-stairs']) {
+    const t = getScene(id)!.body + GE.visibleChoices({ ...start, sceneId: id }).map((c) => c.label + (c.sub ?? '') + (c.effects.flash ?? '')).join(' ')
+    assert(!/Kaelen|Zafir|\bvs\b/.test(t), `v107: ${id} names no one it should not`)
+  }
+  console.log('v107 crucible checks OK')
 }

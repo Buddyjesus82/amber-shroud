@@ -128,6 +128,12 @@ export const ITEMS: Record<ItemId, ItemDef> = {
     kind: 'key',
     desc: "Feed-pencil heading to Kallik's second rib. Oram will deny it.",
   },
+  crucible_map: {
+    id: 'crucible_map',
+    name: 'Ledger-Plate Map',
+    kind: 'key',
+    desc: 'Scratched on the back of a ledger plate. A way out of the Crucible Chambers.',
+  },
   ironwood_baton: {
     id: 'ironwood_baton',
     name: 'Shock Baton',

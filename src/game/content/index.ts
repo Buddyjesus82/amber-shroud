@@ -4,6 +4,7 @@ import { cacheRunScenes } from './cacheRun'
 import { crisisScenes } from './crises'
 import { campKaelenScenes, roamKaelenScenes, threshKaelenScenes } from './kaelen'
 import { openingScenes } from './openings'
+import { crucibleScenes } from './crucible'
 import { redMawScenes } from './redMaw'
 import { shadeHandScenes } from './shadeHands'
 import { spineScenes } from './spine'
@@ -13,6 +14,7 @@ export { DOORS, HUBS, ITEMS } from './catalog'
 
 const all: Scene[] = [
   ...openingScenes,
+  ...crucibleScenes,
   ...campScenes,
   ...campKaelenScenes,
   ...roamKaelenScenes,

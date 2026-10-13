@@ -14,6 +14,7 @@ const KEYS = new Set<ItemId>([
   'wrench',
   'silas_tip',
   'oram_map',
+  'crucible_map',
   'cache_map',
   'overseer_chip',
   'kallik_mark',
