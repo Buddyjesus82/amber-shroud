@@ -15,10 +15,10 @@ export const campScenes: Scene[] = [
     id: 'camp:yard',
     hubId: 'camp04',
     kind: 'place',
-    title: 'Bleed Yard',
+    title: 'Blood Yard',
     body: `Ironwood Camp-04 does not get quiet. Razor wire. Steam vents. Past the fence, harvesters strip petrified groves. Ironclad Skiff-Striders patrol like they own the heat.
 
-The Bleed Yard stinks of cooked resin and unwashed iron. The vats are ticking toward the Great Bleed. A line of prisoners scrapes amber skin into buckets. To the Cartel, that is only work.
+The Blood Yard stinks of cooked resin and unwashed iron. The vats are ticking toward the storm. A line of prisoners scrapes amber skin into buckets. To the Cartel, that is only work.
 
 Overseer Valerius is the shadow over the Yard. Getting out from under him is the first thing you have to win.`,
     variants: [
@@ -210,9 +210,9 @@ Take it and you are a thief twice. Leave it and noon will take it anyway.`,
     hubId: 'camp04',
     kind: 'place',
     title: 'Steam Vents',
-    body: `The west corridor. The pipes scream. The Great Bleed lives in this iron.
+    body: `The west corridor. The pipes scream. The whole camp lives in this iron.
 
-One door goes back toward the Bleed Yard. The other coughs toward Skiff Bay. You cannot see the pens from here, and you cannot see the dunes. Two roads. The Map is how you pick one.
+One door goes back toward the Blood Yard. The other coughs toward Skiff Bay. You cannot see the pens from here, and you cannot see the dunes. Two roads. The Map is how you pick one.
 
 Jaxson named a west bolt at the Guard Station. That is a different pipe. This corridor is only steam and rust.`,
     variants: [
@@ -303,7 +303,7 @@ Jaxson named a west bolt at the Guard Station. That is a different pipe. This co
     hubId: 'camp04',
     kind: 'place',
     title: 'Holding Pens',
-    body: `Holding pens. Each cage is a ribcage for a laborer with no money. Yours still smells like the last Bleed. Cartel scrip is hidden in your hem. Nothing else.
+    body: `Holding pens. Each cage is a ribcage for a laborer with no money. Yours still smells like the last storm. Cartel scrip is hidden in your hem. Nothing else.
 
 The bunk next to you is Jaxson Vance. He is burly and grease-stained, with a permanent smirk and a cybernetic brass jaw in the steam-light. Scorched welding leathers. Corporate tags he never cut off. An oversized wrench, when he is not hiding it.
 
@@ -354,7 +354,7 @@ He is the one who can break you out. He hotwires Ironclad Skiff-Striders, and he
       },
       {
         id: 'yard',
-        label: 'Walk the Bleed Yard',
+        label: 'Walk the Blood Yard',
         sub: 'The vats and the steam are out there. Costs sap. The camp is bigger than this cage.',
         effects: { goto: 'camp:yard', ticks: 1, sap: -1 },
       },
@@ -377,7 +377,7 @@ He is the one who can break you out. He hotwires Ironclad Skiff-Striders, and he
     intents: [
       {
         tags: ['jaxson', 'oil-tooth', 'oiltooth', 'vance', 'talk', 'hotwire'],
-        reply: 'The brass jaw turns. Humor as a shield. He has been waiting for the Bleed.',
+        reply: 'The brass jaw turns. Humor as a shield. He has been waiting for the storm.',
         effects: { goto: 'camp:jaxson', ticks: 1 },
       },
       {
@@ -457,14 +457,14 @@ He is the one who can break you out. He hotwires Ironclad Skiff-Striders, and he
     speaker: 'Jaxson Vance',
     body: `The stall is hot metal and skimmed sap. The oversized wrench sits in his fist.
 
-"Bleed-Cut," he says. "The Great Bleed is coming. You sabotage the Guard Station. I hotwire a Strider in Skiff Bay."`,
+"Blood-Cut," he says. "A storm is coming. You sabotage the Guard Station. I hotwire a Strider in Skiff Bay."`,
     variants: [
       {
         if: PLAN_UNHEARD,
         mode: 'replace',
         body: `The stall is hot metal and skimmed sap. The oversized wrench sits in his fist.
 
-"Bleed-Cut," he says. "The Great Bleed is coming. I have a plan to get out of here."`,
+"Blood-Cut," he says. "A storm is coming. I have a plan to get out of here."`,
       },
       {
         if: { flag: 'striderHot' },
@@ -593,7 +593,7 @@ He leans in, brass ticking. "I have a plan to get out of here."`,
       {
         if: PLAN_HEARD,
         mode: 'replace',
-        body: `Jaxson drops his voice under the steam. "When the Great Bleed hits, you sabotage the guard station. I hotwire a Strider in Skiff Bay. We leave the pens."
+        body: `Jaxson drops his voice under the steam. "When the storm hits, you sabotage the guard station. I hotwire a Strider in Skiff Bay. We leave the pens."
 
 He taps the brass. "If you need supplies, see Kaelen the Sifter at the Wire. Jittery merchant. Glints buy intel. Scrap buys Drops."`,
       },
@@ -619,7 +619,7 @@ He taps the brass. "If you need supplies, see Kaelen the Sifter at the Wire. Jit
         effects: {
           flag: { jaxAskGuard: true },
           ticks: 1,
-          flash: '"North, under the Overseer\'s tower." He draws it in the grease on his palm. "Out through the Bleed Yard, then the Steam Vents. The west vent is the one. Open the Map and walk it."',
+          flash: '"North, under the Overseer\'s tower." He draws it in the grease on his palm. "Out through the Blood Yard, then the Steam Vents. The west vent is the one. Open the Map and walk it."',
         },
       },
       {
@@ -650,7 +650,7 @@ He taps the brass. "If you need supplies, see Kaelen the Sifter at the Wire. Jit
           ticks: 1,
           pressure: 1,
           goto: 'camp:lean',
-          flash: '"Guard Station is north, under the Overseer\'s tower. Bleed Yard, then the Steam Vents, then the west vent. Skiff Bay is one road east of the station. I will be under the hull."',
+          flash: '"Guard Station is north, under the Overseer\'s tower. Blood Yard, then the Steam Vents, then the west vent. Skiff Bay is one road east of the station. I will be under the hull."',
         },
       },
       {
@@ -714,7 +714,7 @@ He taps the brass. "If you need supplies, see Kaelen the Sifter at the Wire. Jit
       {
         tags: ['plan', 'what plan', 'his plan', 'your plan', 'the plan'],
         show: PLAN_HEARD,
-        reply: '"Great Bleed hits. You sabotage the guard station. I hotwire a Strider in Skiff Bay. We leave the pens. Supplies are Kaelen\'s, at the Wire."',
+        reply: '"Storm hits. You sabotage the guard station. I hotwire a Strider in Skiff Bay. We leave the pens. Supplies are Kaelen\'s, at the Wire."',
         effects: { ticks: 1 },
       },
       {
@@ -1021,7 +1021,7 @@ Ironclad Skiff-Striders patrol the far side of this line. Red Maw is past it. So
     title: 'Guard Station',
     body: `The Guard Station is Ironwood's fist. Racks of shock batons. Steam vents. A clerk who loves a ledger more than a throat. Ironclad Skiff-Striders pass on patrol and make the wire hum.
 
-The Great Bleed is a clock. You sabotage the west steam-vent here. Jaxson hotwires a Strider at Skiff Bay. Overseer Valerius will take it personally. That is the point.`,
+The storm is a clock. You sabotage the west steam-vent here. Jaxson hotwires a Strider at Skiff Bay. Overseer Valerius will take it personally. That is the point.`,
     variants: [
       {
         if: { flag: 'guardDown' },
@@ -1031,7 +1031,7 @@ The Great Bleed is a clock. You sabotage the west steam-vent here. Jaxson hotwir
       {
         if: { flag: 'bleedIntel' },
         mode: 'append',
-        body: `Kaelen sold you a clock: west bolt, Bleed-hour.`,
+        body: `Kaelen sold you a clock: west bolt, storm-hour.`,
       },
     ],
     choices: [
@@ -1075,15 +1075,15 @@ The Great Bleed is a clock. You sabotage the west steam-vent here. Jaxson hotwir
     id: 'camp:sabotage',
     hubId: 'camp04',
     kind: 'story',
-    title: 'Great Bleed',
-    body: `The Great Bleed hits. Vats weep. The west steam-vent is empty for a breath — patrol is on the wire, not on this bolt.
+    title: 'Storm',
+    body: `The storm hits. Vats weep. The west steam-vent is empty for a breath — patrol is on the wire, not on this bolt.
 
 Quiet still risks a shout. Jaxson named this throat. The wrench knows the bolt.`,
     variants: [
       {
         if: { flag: 'ventPatrol' },
         mode: 'replace',
-        body: `The Great Bleed hits. Vats weep. This bolt is not empty.
+        body: `The storm hits. Vats weep. This bolt is not empty.
 
 A vent patrol is in place: one clerk, shock baton, eyes on the joint. Unwatched is a lie. Scrap them, or leave the bolt alone.`,
       },

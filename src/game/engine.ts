@@ -407,9 +407,23 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   }
   const softened = softenCartel(state, fx)
   if (softened !== fx) fx = { ...softened, flash: fx.flash ? `${fx.flash} ${DISGUISE_SOFTEN_NOTE}` : DISGUISE_SOFTEN_NOTE }
-  const dest = resolveDest(state, fx)
+  let dest = resolveDest(state, fx)
   let next = applyDelta(state, fx)
   next.flash = fx.flash
+  // Every escape out of Camp-04 plays the storm beat first; the route's own line waits for the Hunger.
+  const campEscape =
+    !!fx.startChapter && dest === 'ch1:leave' && (state.hubId === 'camp04' || state.sceneId.startsWith('camp:'))
+  if (campEscape) {
+    dest = 'ch1:storm'
+    next.flags = { ...next.flags, stormFlash: fx.flash ?? '' }
+    next.flash = undefined
+  } else if (state.sceneId === 'ch1:storm' && dest === 'ch1:leave') {
+    const held = state.flags.stormFlash
+    const flags = { ...next.flags }
+    delete flags.stormFlash
+    next.flags = flags
+    if (typeof held === 'string' && held) next.flash = [held, next.flash].filter(Boolean).join(' ')
+  }
   if (fx.bagRetry) next = takeHeld(next)
   if (fx.bagLeave) {
     const flags = { ...next.flags }
@@ -1427,7 +1441,7 @@ function bagChoices(state: GameState): Choice[] {
 }
 
 function withKaelenPass(state: GameState, rows: Choice[]): Choice[] {
-  if (!state.flags.kaelenPassing || state.sceneId === 'roam:kaelen' || kaelenHeld(state.sceneId)) return rows
+  if (!state.flags.kaelenPassing || state.sceneId === 'roam:kaelen' || state.sceneId === 'ch1:storm' || kaelenHeld(state.sceneId)) return rows
   const k = getScene(state.sceneId).kind
   if (k === 'crisis' || k === 'ending') return rows
   return [

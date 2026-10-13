@@ -15,6 +15,26 @@ const done = {
 
 export const cacheRunScenes: Scene[] = [
   {
+    // Every escape out of Camp-04 passes through this beat before the Hunger.
+    id: 'ch1:storm',
+    chapterId: 'cache-run',
+    kind: 'story',
+    title: 'The Storm',
+    body: `The sandstorm swallows Camp-04. Wire, towers, and vats go brown, then gone.
+
+The guards can't see their own hands. Nobody is watching the gaps.
+
+This is your window. Go.`,
+    choices: [
+      {
+        id: 'continue',
+        label: 'Continue',
+        tone: 'hunger',
+        effects: { goto: 'ch1:leave' },
+      },
+    ],
+  },
+  {
     id: 'ch1:leave',
     chapterId: 'cache-run',
     kind: 'story',
@@ -224,7 +244,7 @@ A payroll drone ticks behind the grate. Shard-Hound tracks are in the wash. If y
     speaker: 'Clerk Rell',
     body: `A payroll clerk with a steam-tablet and dust in the seams of a uniform that was never meant to leave Ironwood. Clerk Rell. He hunts numbers that stood up.
 
-"Laborer 04-Bleed. You're a line that walked off the page. Show work papers — or I log you as escaped and call a Hound. Either way I'm going home to a cooler ledger."`,
+"Laborer 04. You're a line that walked off the page. Show work papers — or I log you as escaped and call a Hound. Either way I'm going home to a cooler ledger."`,
     variants: [
       {
         if: { item: 'scrip' },
@@ -325,7 +345,7 @@ A payroll drone ticks behind the grate. Shard-Hound tracks are in the wash. If y
     speaker: 'Jaxson Vance',
     body: `The stolen Strider coughs. Jaxson is under the hull.
 
-"Bleed-Cut. The machine is hotwired. Shard-Hounds are on the wash behind you. I am going west until the brass cools. Red Maw is the other way, east.
+"Blood-Cut. The machine is hotwired. Shard-Hounds are on the wash behind you. I am going west until the brass cools. Red Maw is the other way, east.
 
 Ride the last mile and I drop you with Ossa. Walk, and the Cartel keeps your trail. Or I cut the Cartel tag out of your cuff, and you are harder to track."`,
     variants: [

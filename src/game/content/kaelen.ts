@@ -98,7 +98,7 @@ export const campKaelenScenes: Scene[] = [
 
 One: a Drop of Oasis Sap for scrap. That shelf is the shop.
 Two: Glints buy intel. Kallik's cache. The Hunger. A blonde on a skiff.
-Three: cheaper leads. Side trouble. Relics Valerius hunts. When the Great Bleed hits the guard station. A hole in the wire."`,
+Three: cheaper leads. Side trouble. Relics Valerius hunts. When the storm hits the guard station. A hole in the wire."`,
     variants: [
       {
         if: { flag: 'kaelenGlintOut' },
@@ -162,7 +162,7 @@ Three: cheaper leads. Side trouble. Relics Valerius hunts. When the Great Bleed 
       },
       {
         id: 'bleed',
-        label: 'Buy when the Great Bleed hits the guard station',
+        label: 'Buy when the storm hits the guard station',
         sub: '1 scrap. Timing Jaxson can use.',
         show: { flagUnset: 'bleedIntel' },
         enable: { item: 'scrap' },
@@ -173,7 +173,7 @@ Three: cheaper leads. Side trouble. Relics Valerius hunts. When the Great Bleed 
           ticks: 1,
           goto: 'camp:kaelen-rumors',
           flash:
-            '"Steam-vent on the west bolt. Bleed-hour. Guards look at the vats. Tell Oil-Tooth I sold a clock."',
+            '"Steam-vent on the west bolt. storm-hour. Guards look at the vats. Tell Oil-Tooth I sold a clock."',
         },
       },
       {
