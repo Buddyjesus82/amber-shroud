@@ -2688,7 +2688,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v103'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v104'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -5568,4 +5568,28 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   assert(existsSync('public/covers/hoard.jpg') && readFileSync('public/sw.js', 'utf8').includes('covers/hoard.jpg'), 'v103: hoard art is on disk and precached')
   assert(COVER_BAND.hoard[0] >= 0.35 && COVER_BAND.hoard[1] >= 0.95, 'v103: the phone crop keeps the crate')
   console.log('v103 hoard checks OK')
+}
+
+// v104: Maw arrival art per door, Court Guard portrait.
+{
+  const sw = readFileSync('public/sw.js', 'utf8')
+  const want: Record<string, string> = { prisoner: 'rim_gullet', outcast: 'rim_bonewash', vessel: 'rim_pilgrims_scar' }
+  for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
+    for (const id of ['maw:rim', 'ch1:land']) {
+      const s = { ...GE.newGame(door), sceneId: id }
+      s.flags = { ...s.flags, encounterHere: false }
+      const k = playCoverKey(s, { id, art: 'hunger', chapterId: 'ch1', hubId: undefined } as never)
+      assert(k === want[door], `v104: ${door} at ${id} shows ${want[door]} (got ${k})`)
+    }
+    const f = playCoverFile(want[door] as never)
+    assert(existsSync(`public/covers/${f}`) && sw.includes(`covers/${f}`), `v104: ${f} on disk and precached`)
+  }
+  const other = { ...GE.newGame('outcast'), sceneId: 'maw:gate' }
+  assert(playCoverKey(other, { id: 'maw:gate', art: 'hunger', chapterId: 'ch1', hubId: undefined } as never) === 'hunger', 'v104: other Maw scenes keep their art')
+  const cg = { ...GE.newGame('vessel') }
+  cg.flags = { ...cg.flags, encounterHere: true, encounterKind: 'courtguard' }
+  assert(playCoverKey(cg, { id: 'thresh:gate', art: 'world', chapterId: 'ch1', hubId: 'threshold' } as never) === 'courtguard', 'v104: Court Guard fight shows his portrait')
+  assert(existsSync('public/covers/courtguard.jpg') && sw.includes('covers/courtguard.jpg'), 'v104: courtguard.jpg on disk and precached')
+  for (const k of ['rim_gullet', 'rim_bonewash', 'rim_pilgrims_scar', 'courtguard'] as const) assert(COVER_BAND[k], `v104: ${k} has a phone crop`)
+  console.log('v104 rim art checks OK')
 }
