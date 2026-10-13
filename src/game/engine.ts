@@ -106,6 +106,16 @@ export const KAELEN_HELD_SCENES = [
   'crisis:camp',
 ] as const
 
+/** His road rumor (the same line as his Maw ask in his pack). */
+const KAELEN_ROAD_RUMOR =
+  '"Kallik. Long dead. Buried a haul in the Red Maw and carved a nine-tooth gear on the second rib from the jaw. Blind picks waste you. The mark, the scratch, and this rumor narrow it."'
+
+/** Trade screens: no rolls while you are in one (Kaelen, Jodi, Korvan, Jaxson's stall, every shop and rumor counter). */
+const TRADE_SCENES = new Set(['roam:kaelen', 'camp:kaelen', 'camp:kaelen-rumors', 'camp:relic', 'thresh:kaelen', 'thresh:kaelen-rumors', 'spine:jodi', 'spine:korvan', 'camp:lean'])
+export function isVendorScene(sceneId: string): boolean {
+  return TRADE_SCENES.has(sceneId) || !!vendorFor(sceneId) || isRumorCounter(sceneId)
+}
+
 export function kaelenHeld(sceneId: string): boolean {
   return (KAELEN_HELD_SCENES as readonly string[]).includes(sceneId)
 }
@@ -405,6 +415,13 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
       }
     }
   }
+  // Trading is roll-free: opening a vendor and every buy, sell, ask, or leave inside one adds no pressure,
+  // and starts no hunt, fight, or Kaelen tick (like self-care). Authored Heat (a theft) still lands.
+  const vendorBeat = isVendorScene(state.sceneId) || (!!fx.goto && isVendorScene(fx.goto))
+  if (vendorBeat && fx.pressure) {
+    fx = { ...fx }
+    delete fx.pressure
+  }
   const softened = softenCartel(state, fx)
   if (softened !== fx) fx = { ...softened, flash: fx.flash ? `${fx.flash} ${DISGUISE_SOFTEN_NOTE}` : DISGUISE_SOFTEN_NOTE }
   let dest = resolveDest(state, fx)
@@ -599,7 +616,7 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     next.flags = { ...next.flags, ventPatrol: ventPatrolInPlace(next) }
   }
 
-  const lingered = !fx.still && ((fx.ticks ?? 0) > 0 || (fx.pressure ?? 0) > 0 || !!dest)
+  const lingered = !fx.still && !vendorBeat && ((fx.ticks ?? 0) > 0 || (fx.pressure ?? 0) > 0 || !!dest)
   const clearingHunt = !!state.flags.hunterHere && (!next.flags.hunterHere || !!fx.unsetFlag?.includes('hunterHere'))
   if (clearingHunt) {
     const keepFrom = facingSybella(next.sceneId)
@@ -1002,6 +1019,11 @@ export function interpret(state: GameState, raw: string): GameState {
   const scene = sceneOf(state)
   const bare = text.trim().toLowerCase()
   const said = bare === 'l' || /^l\s/.test(bare) ? bare.replace(/^l\b/, 'look') : bare
+  // Kaelen passing: typed rumor or trade asks open his pack, roll-free, like the buttons.
+  if (/\b(rumou?rs?|news|kaelen|trader|sifter|merchant)\b/.test(said)) {
+    const row = visibleChoices(state).find((c) => c.id === (/\b(rumou?rs?|news|heard)\b/.test(said) ? 'kaelen-rumors' : 'kaelen-pass'))
+    if (row) return applyEffect(state, row.effects)
+  }
   if (bare === 'help' || bare === '?') {
     const labels = visibleChoices(state).map((c) => c.label)
     const face = isPressureOverlay(state)
@@ -1444,18 +1466,26 @@ function withKaelenPass(state: GameState, rows: Choice[]): Choice[] {
   if (!state.flags.kaelenPassing || state.sceneId === 'roam:kaelen' || state.sceneId === 'ch1:storm' || kaelenHeld(state.sceneId)) return rows
   const k = getScene(state.sceneId).kind
   if (k === 'crisis' || k === 'ending') return rows
+  const known = !!state.flags.kaelenKnown
+  const visit = {
+    goto: 'roam:kaelen',
+    unsetFlag: ['kaelenPassing'],
+    flag: { kaelenFrom: state.sceneId, kaelenKnown: true, metKaelen: true },
+    ticks: 1,
+  }
   return [
     ...rows,
     {
       id: 'kaelen-pass',
-      label: 'Kaelen the Sifter has stopped',
+      label: known ? 'Kaelen the Sifter has stopped' : 'A trader has stopped',
       sub: 'His pack. A rumor from the last road. He will not stay.',
-      effects: {
-        goto: 'roam:kaelen',
-        unsetFlag: ['kaelenPassing'],
-        flag: { kaelenFrom: state.sceneId, kaelenKnown: true, metKaelen: true },
-        ticks: 1,
-      },
+      effects: visit,
+    },
+    {
+      id: 'kaelen-rumors',
+      label: known ? 'Ask Kaelen about rumors' : 'Ask the trader about rumors',
+      sub: 'What he heard on the last road.',
+      effects: { ...visit, flag: { ...visit.flag, heardKallik: true }, flash: KAELEN_ROAD_RUMOR },
     },
   ]
 }

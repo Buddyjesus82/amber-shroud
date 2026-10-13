@@ -521,7 +521,6 @@ export const roamKaelenScenes: Scene[] = [
       {
         id: 'kallik',
         label: 'Ask what he heard about the Maw',
-        show: { flagUnset: 'heardKallik' },
         effects: {
           flag: { heardKallik: true, kaelenKnown: true },
           ticks: 1,

@@ -1080,20 +1080,20 @@ s = newGame('prisoner')
 s = applyEffect(s, {
   sap: 6,
   enterHub: 'redmaw',
-  goto: 'maw:market',
+  goto: 'maw:stilt',
   heat: { seekers: 2 },
   flag: { chapter1Done: true, huntQuiet: 8 },
   pressure: 8,
   ticks: 5,
 })
-assert(s.sceneId === 'maw:market', `Sybella interrupt stays on the market (got ${s.sceneId})`)
+assert(s.sceneId === 'maw:stilt', `Sybella interrupt stays where you are (got ${s.sceneId})`)
 assert(s.sceneId !== 'maw:sybella-shadow' && s.sceneId !== 'maw:rim', 'Sybella interrupt does not yank to Rim')
 assert(s.flags.hunterHere, 'Sybella interrupt is in-place like Valerius')
 assert(ids(s).includes('sybella-hold'), 'dismiss stays put')
 assert(ids(s).includes('sybella-smoke'), 'facing her is the travel choice')
 assert(bodyOf(s).includes('Tick') || bodyOf(s).includes('skiff-shadow') || bodyOf(s).includes('shadow'), 'her card plays on this ground')
 const syHeld = pick(s, 'sybella-hold')
-assert(syHeld.sceneId === 'maw:market', 'dismiss Sybella returns to the market')
+assert(syHeld.sceneId === 'maw:stilt', 'dismiss Sybella stays where you are')
 assert(!syHeld.flags.hunterHere, 'dismiss clears the overlay')
 s = newGame('prisoner')
 s = applyEffect(s, {
@@ -1203,7 +1203,7 @@ assert(s.flags.hunterFrom === 'maw:lip', 'facing her smoke keeps the ground unde
   under = applyEffect(under, {
     sap: 6,
     enterHub: 'redmaw',
-    goto: 'maw:market',
+    goto: 'maw:stilt',
     add: { scrap: 1 },
     heat: { seekers: 5 },
     flag: {
@@ -1216,12 +1216,12 @@ assert(s.flags.hunterFrom === 'maw:lip', 'facing her smoke keeps the ground unde
     ticks: 5,
   })
   under = { ...under, heat: { cartel: 7, seekers: 5, strays: 1 } }
-  assert(under.flags.hunterHere && under.sceneId === 'maw:market', 'Sybella interrupt still takes the market')
+  assert(under.flags.hunterHere && under.sceneId === 'maw:stilt', 'Sybella interrupt still takes the stilts')
   under = pick(under, 'sybella-smoke')
-  assert(under.flags.hunterFrom === 'maw:market', 'the market is the ground under her smoke')
+  assert(under.flags.hunterFrom === 'maw:stilt', 'the stilts is the ground under her smoke')
   const returned = pick(under, 'back')
-  assert(returned.sceneId === 'maw:market' && !returned.flags.hunterHere, 'leave the smoke returns to the market')
-  assert(ids(returned).includes('zafir'), 'the market still has its own way forward')
+  assert(returned.sceneId === 'maw:stilt' && !returned.flags.hunterHere, 'leave the smoke returns to the stilts')
+  assert(ids(returned).length > 0, 'the stilts still have their own way forward')
   const pushed = pick(under, 'push')
   assert(pushed.sceneId === 'maw:rim' && !pushed.flags.hunterHere, 'push past from an interrupt enters the Approach')
   assert(ids(pushed).includes('look'), 'push past can go on to the ribs')
@@ -1353,7 +1353,7 @@ assert(s.flags.hunterFrom === 'maw:lip', 'facing her smoke keeps the ground unde
     sk = applyEffect(sk, {
       sap: 6,
       enterHub: 'redmaw',
-      goto: 'maw:market',
+      goto: 'maw:stilt',
       flag: { chapter1Done: true, sybellaHunting: true, metSybella: true, huntQuiet: 0, encounterAt: 999 },
     })
     sk = armed(sk, { seekers: 0 })
@@ -1362,7 +1362,7 @@ assert(s.flags.hunterFrom === 'maw:lip', 'facing her smoke keeps the ground unde
     sk = armed(sk, { seekers: 2 })
     const early = passQuiet(sk, 7)
     assert(
-      !early.flags.hunterHere && early.sceneId === 'maw:market' && Number(early.flags.huntQuiet) === 7,
+      !early.flags.hunterHere && early.sceneId === 'maw:stilt' && Number(early.flags.huntQuiet) === 7,
       `${door} Seeker Heat 2: Sybella does not re-fire within 8 quiet scenes`,
     )
     const due = stepQuiet(early)
@@ -2542,7 +2542,7 @@ s = newGame('prisoner')
 s = applyEffect(s, {
   sap: 6,
   enterHub: 'redmaw',
-  goto: 'maw:market',
+  goto: 'maw:stilt',
   heat: { seekers: 2 },
   flag: { chapter1Done: true, huntQuiet: 8 },
   pressure: 8,
@@ -2553,7 +2553,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
   const sapBefore = s.sap
   const heatBefore = s.heat.seekers
   const held = pick(s, 'sybella-hold')
-  assert(held.sceneId === 'maw:market', 'Sybella stay does not yank')
+  assert(held.sceneId === 'maw:stilt', 'Sybella stay does not yank')
   assert(held.sap < sapBefore || held.heat.seekers > heatBefore, 'Sybella stay costs Sap or Heat')
 }
 
@@ -2676,7 +2676,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v88'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v89'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -4818,7 +4818,7 @@ function assertHelpResolves(s: GameState, where: string) {
   }
 
   // Kaelen: walks every door after the opening and sells Resin; more resin in the grit past the outpost.
-  for (const [door, sceneId] of [['prisoner', 'camp:yard'], ['outcast', 'spine:ridge'], ['vessel', 'thresh:court'], ['outcast', 'maw:market']] as const) {
+  for (const [door, sceneId] of [['prisoner', 'camp:yard'], ['outcast', 'spine:ridge'], ['vessel', 'thresh:court'], ['outcast', 'maw:stilt']] as const) {
     let st = GE.applyEffect(GE.newGame(door), { goto: sceneId, flag: { encounterAt: 99999 } })
     st = { ...st, heat: { cartel: 0, seekers: 0, strays: 0 }, flags: { ...st.flags, huntQuiet: 3, encounterAt: 99999 } }
     delete st.flags.encounterHere
@@ -5126,4 +5126,59 @@ console.log('OK', {
   assert(tw.sceneId === 'camp:valerius' && GE.visibleChoices(tw).length > 0, 'Approach Valerius in the cloth lands on Valerius with choices')
   const plain = GE.applyEffect({ ...GE.newGame('prisoner'), sceneId: 'camp:tower', hubId: 'camp04' } as GameState, getScene('camp:tower').choices.find((c) => c.id === 'talk')!.effects)
   assert(!(plain.flash ?? '').includes(DG.DISGUISE_SOFTEN_NOTE), 'no Vessel cloth line when the cloth is not worn')
+}
+
+// v89: trading is roll-free, and an interrupting fight does not lose Kaelen's visit.
+{
+  const tradeIds = ALL_SCENES.map((sc) => sc.id).filter((id) => GE.isVendorScene(id))
+  assert(['roam:kaelen', 'spine:jodi', 'spine:korvan', 'camp:lean', 'maw:market'].every((id) => !hasSceneOrVendor(id) || tradeIds.includes(id) || GE.isVendorScene(id)), 'vendor scenes are known')
+  const bad: string[] = []
+  for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
+    for (const id of tradeIds) {
+      const sc = getScene(id)
+      for (const ticks of [5, 13, 29, 41]) {
+        const base = {
+          ...GE.newGame(door),
+          sceneId: id,
+          hubId: sc.hubId ?? null,
+          ticks,
+          pressure: 9,
+          heat: { cartel: 6, seekers: 6, strays: 6 },
+          items: { glints: 5, scrap: 6, vial_drop: 3, vial_empty: 1, scrip: 2 },
+          flags: { huntQuiet: 9, kaelenGap: 9 },
+        } as unknown as GameState
+        for (const c of GE.visibleChoices(base)) {
+          if (!GE.isChoiceOn(base, c.enable)) continue
+          const n = GE.applyEffect(base, c.effects)
+          if (n.flags.hunterHere || n.flags.encounterHere || n.pressure > base.pressure || (n.flags.kaelenPassing && !base.flags.kaelenPassing)) bad.push(`${door}:${id}:${c.id}`)
+        }
+      }
+    }
+  }
+  assert(!bad.length, `trade actions rolled a hunt, fight, pressure, or Kaelen: ${bad.slice(0, 8).join(', ')}`)
+  // Kaelen arrives at Valerius, a hunt interrupts; once it is over, Kaelen is still there.
+  let k = { ...GE.newGame('prisoner'), sceneId: 'camp:tower', hubId: 'camp04', flags: { kaelenPassing: true, hunterHere: true, hunterFrom: 'camp:tower', hunterAt: 1 } } as unknown as GameState
+  for (let i = 0; i < 8 && (k.flags.hunterHere || k.flags.encounterHere || k.flags.downed); i++) {
+    const row = GE.visibleChoices(k).find((c) => GE.isChoiceOn(k, c.enable))
+    if (!row) break
+    k = GE.applyEffect(k, row.effects)
+  }
+  assert(!k.flags.hunterHere && !k.flags.encounterHere, 'hunt resolves')
+  assert(k.sceneId === 'camp:tower' && !!k.flags.kaelenPassing && GE.visibleChoices(k).some((c) => c.id === 'kaelen-pass'), `after the hunt you are back where you stood and Kaelen is still there (${k.sceneId})`)
+}
+function hasSceneOrVendor(id: string): boolean {
+  return ALL_SCENES.some((sc) => sc.id === id)
+}
+
+// v89: Kaelen passing always offers rumors (name-gated), and typed asks open them roll-free.
+for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['outcast', 'spine:ridge', 'spine'], ['vessel', 'thresh:court', 'threshold'], ['outcast', 'maw:rim', 'redmaw']] as const) {
+  const base = { ...GE.newGame(door), sceneId, hubId, pressure: 9, ticks: 13, heat: { cartel: 6, seekers: 6, strays: 6 }, flags: { kaelenPassing: true, huntQuiet: 9 } } as unknown as GameState
+  const rows = GE.visibleChoices(base)
+  assert(rows.some((c) => c.id === 'kaelen-rumors' && c.label === 'Ask the trader about rumors'), `${door} ${sceneId}: unnamed trader rumors button`)
+  const named = GE.visibleChoices({ ...base, flags: { ...base.flags, kaelenKnown: true } })
+  assert(named.some((c) => c.label === 'Ask Kaelen about rumors'), `${door} ${sceneId}: named Kaelen rumors button`)
+  for (const typed of ['ask about rumors', 'ask kaelen about rumors', 'trade with the trader']) {
+    const n = GE.interpret(base, typed)
+    assert(n.sceneId === 'roam:kaelen' && !n.flags.hunterHere && !n.flags.encounterHere && n.pressure === base.pressure, `${door} ${sceneId}: "${typed}" opens Kaelen roll-free (${n.sceneId})`)
+  }
 }
