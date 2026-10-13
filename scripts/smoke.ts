@@ -2691,7 +2691,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v111'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v112'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -5757,4 +5757,17 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   assert(/bone-white hull/.test(wind.body) && /cockpit cage/.test(wind.body) && /blindfold hangs from the crane/.test(wind.body), 'v111: Sybella arrives in the Seeker skiff')
   assert(wind.onEnter?.flag?.heardSybellaRumor, 'v111: arrival hook kept')
   console.log('v110 runner and skiff checks OK')
+}
+
+// v112: Silas's Shade shows three Strays, not two.
+{
+  const shade = { ...GE.newGame('outcast'), sceneId: 'spine:shade', hubId: 'spine' }
+  const body = GE.bodyOf(shade)
+  assert(body.includes('Three Strays share the shade.') && body.includes('A third woman sits on a scrap pile with a snake across her shoulders.') && !/Two Strays/.test(body), 'v112: the shade counts three Strays')
+  const look = readFileSync('src/game/look.ts', 'utf8')
+  assert(look.includes('A third woman sits on a scrap pile with a snake across her shoulders.'), 'v112: the shade look names all three')
+  for (const f of ['src/game/content/spine.ts', 'src/game/look.ts', 'src/game/help.ts', 'src/game/helpTopics.ts', 'src/game/people.ts']) {
+    assert(!/Two Strays share/i.test(readFileSync(f, 'utf8')), `v112: no stale count of two in ${f}`)
+  }
+  console.log('v112 shade checks OK')
 }
