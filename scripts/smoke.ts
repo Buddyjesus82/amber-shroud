@@ -2688,7 +2688,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v100'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v101'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -3930,13 +3930,14 @@ function assertHelpResolves(s: GameState, where: string) {
       assert(hp === Math.max(0, 20 - Number(m[1])), `the crit line shows the final damage and the row matches: ${card.slice(0, 160)}`)
       assert(!/^You hit /m.test(card), 'no separate base-hit line for a crit')
     }
-    if (CRIT_THEM.test(card)) critThem++
+    const houndCard = String(resolveEncounter(fv('prisoner', t, 'hound', {}, 20), 'fight').fx.flag?.encounterClash ?? '')
+    if (CRIT_THEM.test(houndCard)) critThem++ // v101: early enemies have capped crits, so the rate check uses the hound
     const pup = String(resolveEncounter(fv('prisoner', t, 'pup', {}, 20), 'fight').fx.flag?.encounterClash ?? '')
     if (CRIT_THEM.test(pup)) critPup++
   }
   assert(critYou > 15 && critYou < 70, `your crits near 1 in 10 (${critYou}/400)`)
   assert(critThem > 15 && critThem < 70, `their crits near 1 in 10 (${critThem}/400)`)
-  assert(critPup > critThem, `the Shard-pup crits more often (${critPup} vs ${critThem})`)
+  void critPup // v101: the Shard-pup is an early enemy; its crits are capped at 3, so it no longer out-crits the hound
   for (let t = 0; t < 200; t++) {
     const r = resolveEncounter(fv('prisoner', t, 'cutter', {}, 20), 'fight').fx
     if (CRIT_THEM.test(String(r.flag?.encounterClash ?? ''))) assert(6 + (r.health ?? 0) > 0, 'a crit never drops you from full Health in one exchange')
@@ -5518,4 +5519,32 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   assert(handlerGear && !/On the body/.test(handlerGear) && /He drops (an? )?[A-Z][^.]*\./.test(handlerGear), `v100: the handler drops his gear (${handlerGear.slice(-120)})`)
   assert(cutterGear && !/He drops/.test(cutterGear), 'v100: other enemies keep On the body')
   console.log('v100 handler loot checks OK')
+}
+
+// v101: softer early crits; Korvan matches his art.
+{
+  const E = await import('../src/game/encounter.ts')
+  let crits = 0
+  for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
+    for (const kind of E.EARLY_KINDS) {
+      for (let t = 0; t < 300; t++) {
+        for (const hp of [6, 4, 3]) {
+          const st = { ...primedFight(door, t, kind, { hp: 9 }), health: hp }
+          const fx = E.resolveEncounter(st, 'fight').fx
+          const card = String(fx.flag?.encounterClash ?? '')
+          const m = card.match(/^Critical Strike! .* hits you for (\d+)\./m)
+          if (!m) continue
+          crits++
+          assert(Number(m[1]) <= E.EARLY_CRIT_CAP, `v101 ${door} ${kind}: early crit takes at most 3 (${m[1]})`)
+          if (hp === 6) assert(!/^YOU ♥ 0 /m.test(card), `v101 ${door} ${kind}: no full-to-Down crit`)
+        }
+      }
+    }
+  }
+  assert(crits > 0, 'v101: early crits still happen')
+  const kv = [PEOPLE.korvan.card, getScene('spine:korvan').body].join('\n')
+  assert(/right side of his face/.test(kv) && /other eye is open/.test(kv) && !/both eyes|mouth and both|cannot see/.test(kv), 'v101: Korvan reads like his art')
+  const all = readFileSync('src/game/voices.ts', 'utf8') + readFileSync('src/game/content/spine.ts', 'utf8') + readFileSync('src/game/content/shadeHands.ts', 'utf8')
+  assert(!/gap at the corner of his mouth|amber sealed over his mouth|gap in the amber/.test(all), 'v101: no sealed-mouth Korvan lines left')
+  console.log('v101 checks OK')
 }
