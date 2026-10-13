@@ -2676,7 +2676,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v86'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v87'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -4649,7 +4649,7 @@ function assertHelpResolves(s: GameState, where: string) {
     + JSON.stringify(HUBS) + readFileSync('src/game/content/maps.ts', 'utf8') + readFileSync('src/game/talk.ts', 'utf8')
     + readFileSync('src/game/look.ts', 'utf8') + readFileSync('src/game/hunter.ts', 'utf8') + JSON.stringify(PEOPLE)
   assert(!/east-south|east and south|walk east, find me|ford when you walk east|walking east to the Maw|label: 'Gullet south'|Red Maw is (days )?south|Maw-country.{0,3}South|South is Maw-country|East is the Maw|Ossa is south\. I go west/.test(all), 'no old compass for the Maw roads')
-  assert(/label: '← Red Maw, west'/.test(readFileSync('src/game/content/maps.ts', 'utf8')), 'Threshold map exit points west to Red Maw')
+  assert(/label: '↖ Red Maw, northwest'/.test(readFileSync('src/game/content/maps.ts', 'utf8')), 'Threshold map exit points northwest to Red Maw')
   assert(/days east/.test(HUBS.camp04.hungerHook!.sub ?? '') && /hard day south/.test(HUBS.spine.hungerHook!.sub ?? ''), 'Camp-04 road runs east, Spine road runs south')
 }
 

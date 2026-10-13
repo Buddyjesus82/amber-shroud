@@ -104,7 +104,7 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
     height: 120,
     defaultNode: 'court',
     blurb: 'Seeker fringe. Walk only the roads that connect.',
-    maw: { x: 18, y: 98, label: '← Red Maw, west' },
+    maw: { x: 18, y: 12, label: '↖ Red Maw, northwest' },
     nodes: [
       { id: 'court', name: 'Threshold Court', short: 'Court', sceneId: 'thresh:court', x: 50, y: 40 },
       { id: 'cell', name: 'False Vessel Cell', short: 'Cell', sceneId: 'thresh:cell', x: 20, y: 36 },
