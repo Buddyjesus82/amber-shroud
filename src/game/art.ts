@@ -41,6 +41,10 @@ export type CoverKey =
   | 'carapace'
   | 'jodi'
   | 'hoard'
+  | 'rim_gullet'
+  | 'rim_bonewash'
+  | 'rim_pilgrims_scar'
+  | 'courtguard'
 
 const FILES: Record<CoverKey, string> = {
   world: 'world.jpg',
@@ -79,6 +83,10 @@ const FILES: Record<CoverKey, string> = {
   carapace: 'carapace.jpg',
   jodi: 'jodi.jpg',
   hoard: 'hoard.jpg',
+  rim_gullet: 'rim-gullet.jpg',
+  rim_bonewash: 'rim-bonewash.jpg',
+  rim_pilgrims_scar: 'rim-pilgrims-scar.jpg',
+  courtguard: 'courtguard.jpg',
 }
 
 /**
@@ -141,6 +149,12 @@ export const COVER_BAND: Record<CoverKey, [number, number]> = {
   jodi: [0.04, 0.5],
   // Kaelen's crate lead: the open crate with its tally marks sits lower left-center.
   hoard: [0.42, 1.0],
+  // Maw arrivals, one per door: the walker and the ribs / bone road / cairn ridge.
+  rim_gullet: [0.1, 0.85],
+  rim_bonewash: [0.2, 0.95],
+  rim_pilgrims_scar: [0.15, 0.9],
+  // Court Guard: face, coat, and the curved blade.
+  courtguard: [0.05, 0.85],
 }
 
 export function coverBand(key: CoverKey): [number, number] {
@@ -190,7 +204,8 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
     if (kind === 'overseer') return 'valerius'
     if (kind === 'patrol') return 'rell'
     if (kind === 'scavenger' || kind === 'cutter') return 'hunger'
-    if (kind === 'husk' || kind === 'courtguard') return 'threshold'
+    if (kind === 'courtguard') return 'courtguard'
+    if (kind === 'husk') return 'threshold'
     if (kind === 'collector') return SPINE_HUNTER.art
     if (kind === 'carapace') return CARAPACE_HUNTER.art
   }
@@ -209,6 +224,12 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   if (id === 'camp:bay') return bayLookout(state) ? 'hotwire' : 'skiffbay'
   if (id === 'camp:bay-pike') return 'bay_pike'
   if (id === 'camp:relic') return 'hoard'
+  // The Maw arrival shows the road each door came in by.
+  if (id === 'maw:rim' || id === 'ch1:land') {
+    if (state.door === 'outcast') return 'rim_bonewash'
+    if (state.door === 'vessel') return 'rim_pilgrims_scar'
+    return 'rim_gullet'
+  }
   if (id === 'camp:guard' || id === 'camp:sabotage') return 'guard'
   if (id === 'camp:yard' || id === 'camp:vats') return 'yard'
   if (id === 'camp:vents') return 'vents'
