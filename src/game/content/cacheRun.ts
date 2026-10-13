@@ -2,7 +2,7 @@ import type { Scene } from '../types'
 
 // Cache Run: shared destination, door-different roads.
 //   leave → (Prisoner pipe / Outcast noon / Vessel hymn)
-//   Prisoner: Clerk Rell → Jaxson on the stolen Strider → Ossa as escaped property
+//   Prisoner: Clerk Rell → Jaxson on the stolen Cartel runner → Ossa as escaped property
 //   Outcast: Silas on the cut → Drennick Voss at the shade toll → Ossa as kin
 //   Vessel: Seeker runners → Varro who will not shop a cup → Sybella
 //   All three still spend at Sybella → (hollow) → land → maw:rim
@@ -287,7 +287,7 @@ A payroll drone ticks behind the grate. Shard-Hound tracks are in the wash. If y
           ticks: 1,
           heat: { cartel: -1 },
           flag: { rellMet: true, rellChip: true },
-          flash: 'He salutes a chip Overseer Valerius does not know is missing. He lets you walk as property. Jaxson\'s stolen Strider is coughing farther west.',
+          flash: 'He salutes a chip Overseer Valerius does not know is missing. He lets you walk as property. Jaxson\'s stolen runner is coughing farther west.',
         },
       },
       {
@@ -300,7 +300,7 @@ A payroll drone ticks behind the grate. Shard-Hound tracks are in the wash. If y
           heat: { cartel: 1 },
           pressure: 1,
           flag: { rellMet: true, rellLied: true },
-          flash: 'Clerk Rell writes the fake name next to your real wash-line number. He lets you pass. Cartel Heat rises. Jaxson\'s stolen Strider is coughing on the far wash.',
+          flash: 'Clerk Rell writes the fake name next to your real wash-line number. He lets you pass. Cartel Heat rises. Jaxson\'s stolen runner is coughing on the far wash.',
         },
       },
       {
@@ -348,7 +348,7 @@ A payroll drone ticks behind the grate. Shard-Hound tracks are in the wash. If y
     kind: 'talk',
     title: 'Stolen Hull',
     speaker: 'Jaxson Vance',
-    body: `The stolen Strider coughs. Jaxson is under the hull.
+    body: `The stolen Cartel runner coughs. Jaxson is under the hull.
 
 "Blood-Cut. The machine is hotwired. Shard-Hounds are on the wash behind you. I am going west until the brass cools. Red Maw is the other way, east.
 
@@ -375,7 +375,7 @@ Ride the last mile and I drop you with Ossa. Walk, and the Cartel keeps your tra
           ticks: 1,
           heat: { cartel: 1 },
           flag: { oilRoad: true, oilRide: true },
-          flash: 'The stolen Strider screams. Jaxson drops you on the east road, where Ossa keeps her stilts. The Cartel will notice a stolen hull.',
+          flash: 'The stolen runner screams. Jaxson drops you on the east road, where Ossa keeps her stilts. The Cartel will notice a stolen hull.',
         },
       },
       {
@@ -420,7 +420,7 @@ Ride the last mile and I drop you with Ossa. Walk, and the Cartel keeps your tra
     ],
     intents: [
       {
-        tags: ['ride', 'strider', 'hull', 'hotwire'],
+        tags: ['ride', 'strider', 'runner', 'hull', 'hotwire'],
         reply: 'Jaxson drops you with Ossa. The stolen hull goes west without you. The Cartel will notice it.',
         effects: { goto: 'ch1:p-ossa', ticks: 1, heat: { cartel: 1 }, flag: { oilRoad: true, oilRide: true } },
       },

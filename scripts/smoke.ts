@@ -2691,7 +2691,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v109'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v110'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -5068,7 +5068,7 @@ function assertHelpResolves(s: GameState, where: string) {
 {
   let jx = GE.applyEffect(GE.newGame('prisoner'), { goto: 'camp:jaxson', unsetFlag: ['encounterHere', 'encounterKind', 'encounterHp', 'encounterTerrain'] })
   jx = GE.applyEffect(jx, GE.visibleChoices(jx).find((c) => c.id === 'plan')!.effects)
-  assert(/hotwire a Strider in Skiff Bay/.test(GE.bodyOf(jx)), 'plan names Skiff Bay')
+  assert(/hotwire a Cartel runner in Skiff Bay/.test(GE.bodyOf(jx)), 'plan names Skiff Bay')
   for (const [id, re] of [['ask-guard', /North, under the Overseer's tower/], ['ask-bay', /East\. Past my stall/], ['ask-trust', /apprentice/]] as const) {
     const c = GE.visibleChoices(jx).find((x) => x.id === id)
     assert(c, `plan follow-up ${id} shows`)
@@ -5731,4 +5731,23 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   const all = GE.bodyOf(bay) + (once.flash ?? '') + (again.flash ?? '')
   assert(!/Valerius|Sybella|prisoner/i.test(all), 'v109: no Valerius, Sybella, or prisoner trade')
   console.log('v109 skiff bay checks OK')
+}
+
+// v110: Jaxson's escape skiff is a stolen light Cartel runner; Sybella's skiff is Seeker style.
+{
+  const JAX_FILES = ['src/game/content/camp04.ts', 'src/game/content/cacheRun.ts', 'src/game/content/kaelen.ts', 'src/game/talk.ts', 'src/game/look.ts', 'src/game/hunter.ts', 'src/game/engine.ts', 'src/game/content/crises.ts', 'src/game/help.ts', 'src/game/people.ts']
+  for (const f of JAX_FILES) {
+    for (const line of readFileSync(f, 'utf8').split('\n')) {
+      if (/Jaxson|hotwire|Oil-Tooth|stolen (Strider|hull)/i.test(line) && /\bStriders?\b/.test(line) && !/Ironclad Skiff-Striders/.test(line)) {
+        assert(false, `v110: Jaxson's skiff is not a Strider (${f}: ${line.trim().slice(0, 80)})`)
+      }
+    }
+  }
+  assert(/light Cartel runner/.test(readFileSync('src/game/content/camp04.ts', 'utf8')), 'v110: hotwire flash names the light Cartel runner')
+  const help = readFileSync('src/game/help.ts', 'utf8')
+  assert(help.includes('A lash on the port runner') && help.includes('The Cartel tag is still sewn in your cuff'), 'v110: port runner and Cartel tag kept')
+  const smoke = getScene('maw:smoke')!.body
+  assert(!/\bmast\b/i.test(smoke) && /bone-white/.test(smoke) && /cockpit cage/.test(smoke) && /blindfold hangs from the crane/.test(smoke), 'v110: Sybella\'s skiff is Seeker style, no mast')
+  assert(getScene('maw:smoke')!.choices.some((c) => c.id === 'on') && getScene('maw:smoke')!.choices.some((c) => c.id === 'talk'), 'v110: maw:smoke hooks kept')
+  console.log('v110 runner and skiff checks OK')
 }

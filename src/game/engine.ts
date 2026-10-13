@@ -879,9 +879,9 @@ export function travelTo(state: GameState, sceneId: string): GameState {
   })
 }
 
-/** Sap the readied Strider saves on the first stretch of the Hunger. */
+/** Sap the readied runner saves on the first stretch of the Hunger. */
 export const STRIDER_READY_SAP = 2
-export const STRIDER_READY_FLASH = 'The readied Strider takes the first stretch. Two Sap you did not spend.'
+export const STRIDER_READY_FLASH = 'The readied runner takes the first stretch. Two Sap you did not spend.'
 
 export function drinkDrop(state: GameState): GameState {
   if (!(state.items.vial_drop ?? 0)) {

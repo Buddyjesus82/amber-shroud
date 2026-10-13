@@ -249,8 +249,8 @@ export function sceneSearch(state: GameState, target: string): Effect | null {
     const wrench = (state.items.wrench ?? 0) > 0
     return {
       flash: wrench
-        ? 'The stolen hull is loud. A lash on the port runner is coming loose. The wrench would seat it. The Cartel tag is still sewn in your cuff.'
-        : 'The stolen hull is loud. Jaxson is under it. The Cartel tag is still sewn in your cuff unless you let him cut it.',
+        ? 'The stolen Cartel runner is loud. A lash on the port runner is coming loose. The wrench would seat it. The Cartel tag is still sewn in your cuff.'
+        : 'The stolen Cartel runner is loud. Jaxson is under it. The Cartel tag is still sewn in your cuff unless you let him cut it.',
     }
   }
   return null

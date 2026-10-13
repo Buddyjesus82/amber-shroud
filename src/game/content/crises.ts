@@ -9,7 +9,7 @@ export const crisisScenes: Scene[] = [
     speaker: 'Jaxson Vance',
     body: `Sap hits zero in the pens like a light going out.
 
-You go to your knees in resin-slick dust. Jaxson is suddenly there — burly, grease-stained, brass jaw, a skimmed Drop of Oasis Sap forced against your lip. "I don't collect corpses. Corpses don't hotwire. Get up. Guard station. Strider. I am the inside man. If you want rumors, that is Kaelen — and he still charges."`,
+You go to your knees in resin-slick dust. Jaxson is suddenly there — burly, grease-stained, brass jaw, a skimmed Drop of Oasis Sap forced against your lip. "I don't collect corpses. Corpses don't hotwire. Get up. Guard station. Runner. I am the inside man. If you want rumors, that is Kaelen — and he still charges."`,
     choices: [
       {
         id: 'up',
