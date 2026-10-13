@@ -149,8 +149,9 @@ function mergeBanks(a: SaveBank | null, b: SaveBank | null): SaveBank {
   const right = b ?? emptyBank()
   const out = emptyBank()
   for (const id of DOOR_ORDER) {
-    const sa = left.slots[id]
-    const sb = right.slots[id]
+    // A slot only ever holds its own door. A mismatched save is dropped, never shown under another door.
+    const sa = left.slots[id]?.door === id ? left.slots[id] : undefined
+    const sb = right.slots[id]?.door === id ? right.slots[id] : undefined
     if (sa && sb) out.slots[id] = (sa.updatedAt ?? 0) >= (sb.updatedAt ?? 0) ? sa : sb
     else out.slots[id] = sa ?? sb
   }
@@ -382,7 +383,7 @@ export function lastSavedDoor(): DoorId | null {
 export function loadDoor(door: DoorId): GameState | null {
   const bank = readBank()
   const state = bank.slots[door]
-  if (!state) return null
+  if (!state || state.door !== door) return null
   const fixed = repairLoadedState(state)
   if (repairedSlotChanged(state, fixed) || bank.lastDoor !== door) {
     bank.slots[door] = fixed

@@ -226,7 +226,7 @@ function ListTab({
               <div>
                 <strong>
                   {c.name}
-                  {c.n > 1 ? ` ×${c.n}` : ''}
+                  {c.n > 1 || c.id === 'scrap' ? ` ×${c.n}` : ''}
                   {slotNote(state, c.id)}
                 </strong>
                 <span>{c.desc}</span>
@@ -309,11 +309,11 @@ function DropBtn({ state, id, onChange }: { state: GameState; id: ItemId; onChan
   return (
     <>
       <button type="button" className="btn btn-tiny btn-ghost" onClick={() => onChange(dropItem(state, id))}>
-        Drop 1
+        Discard
       </button>
       {stack > 1 ? (
         <button type="button" className="btn btn-tiny btn-ghost" onClick={() => onChange(dropStack(state, id))}>
-          Drop all
+          Discard all
         </button>
       ) : null}
     </>

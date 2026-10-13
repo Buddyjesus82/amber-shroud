@@ -2680,7 +2680,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v93'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v94'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -3131,7 +3131,7 @@ function assertHelpResolves(s: GameState, where: string) {
             assert((bought.items.glints ?? 0) + (bought.items.scrap ?? 0) < (dry.items.glints ?? 0) + (dry.items.scrap ?? 0), `${door} ${id} "${line}" costs something`)
           }
         }
-        const cut = applyEffect(held, { add: { salve: 1 } })
+        const cut = applyEffect(held, { add: { salve: 1 }, health: -2 })
         const salveCount = cut.items.salve ?? 0
         const bind = interpret(cut, 'use salve')
         assert((bind.items.salve ?? 0) === salveCount - 1 && bind.items.glints === cut.items.glints && bind.items.scrap === cut.items.scrap, `${door} ${id} typed "use salve" binds a carried salve, never buys one`)
@@ -5235,4 +5235,29 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   assert(isHungerCommand('take the gullet', 'prisoner') && !isHungerCommand('take the scar', 'prisoner'), 'Prisoner keeps the Gullet')
   const rimP = { ...GE.newGame('prisoner'), sceneId: 'maw:rim', hubId: 'redmaw' } as GameState
   assert(GE.bodyOf(rimP).includes(R.ROADS.prisoner.rim), 'Prisoner: Rim arrival names the Gullet')
+}
+
+// v94: tester bug pass.
+{
+  const yard = GE.applyEffect(GE.newGame('prisoner'), { goto: 'camp:yard', flag: { encounterAt: 99999 } })
+  assert(GE.interpret(yard, 'go to the pens').sceneId === 'camp:cages', 'typed "go to the pens" walks there')
+  assert(GE.interpret(yard, 'walk to the vents').sceneId === 'camp:vents', 'typed "walk to the vents" walks to the vents, not the Wire')
+  assert(!/Running without a heading/.test(GE.interpret(yard, 'go to skiff bay').flash ?? ''), '"go to X" is never read as an aimless run')
+  const full = { ...yard, items: { ...yard.items, salve: 1 } } as GameState
+  const bound = GE.bindSalve(full)
+  assert(bound.items.salve === 1 && bound.flash === GE.SALVE_FULL_HEALTH, 'salve is kept at full Health with a plain line')
+  assert(GE.interpret(full, 'bind salve').items.salve === 1, 'typed bind at full Health keeps the salve')
+  const hurt = GE.bindSalve({ ...full, health: 2 } as GameState)
+  assert(!hurt.items.salve && hurt.health > 2, 'salve still heals when hurt')
+  const heard = { ...yard, recentVerbs: ['look', 'talk'] } as GameState
+  assert(!(GE.applyEffect(heard, { goto: 'camp:cages' }).recentVerbs ?? []).length, 'Heard: footer clears on a new scene')
+  const inv = readFileSync('src/components/InventorySheet.tsx', 'utf8')
+  assert(/>\s*Discard\s*</.test(inv) && !/Drop 1/.test(inv) && /c\.id === 'scrap'/.test(inv), 'Discard button; Scrap shows its count')
+  const txt = ['content/spine.ts', 'content/cacheRun.ts', 'content/catalog.ts', 'people.ts', 'campJob.ts'].map((f) => readFileSync(`src/game/${f}`, 'utf8')).join('\n')
+  assert(!/a honest|magiks|Razor-wire|[Ff]our roads/.test(txt), 'typos and four roads fixed')
+  const crisis = { ...GE.newGame('prisoner'), sceneId: 'crisis:maw', hubId: 'redmaw', flags: { handlerDown: true } } as unknown as GameState
+  assert(!/Hound-handler is already there/.test(GE.bodyOf(crisis)), 'a killed Hound-handler is not already there')
+  assert(readFileSync('src/game/encounter.ts', 'utf8').includes("spec.kind === 'handler' ? { handlerDown: true }"), 'beating the handler is remembered')
+  const save = readFileSync('src/game/save.ts', 'utf8')
+  assert(/state\.door !== door\) return null/.test(save) && /slots\[id\]\?\.door === id/.test(save), 'a slot only loads its own door')
 }

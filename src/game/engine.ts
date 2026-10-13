@@ -1,3 +1,4 @@
+import { HUB_MAPS } from './content/maps'
 import { DOORS, HUBS, ITEMS, getScene, hasScene, resolveBody } from './content'
 import { applyDelta, check, clamp } from './logic'
 import {
@@ -734,6 +735,8 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   }
 
   next = disguiseArrival(state, next)
+  // The Heard: footer is about this ground only. A new scene starts it empty.
+  if (next.sceneId !== state.sceneId && next.recentVerbs?.length) next.recentVerbs = []
   // Walking off leaves anything the full bag could not take.
   if (next.sceneId !== state.sceneId && next.flags.bagHeld && !fx.bagRetry) {
     const flags = { ...next.flags }
@@ -846,6 +849,8 @@ export function drinkDrop(state: GameState): GameState {
   })
 }
 
+export const SALVE_FULL_HEALTH = 'You are not hurt. The salve stays in the tin.'
+
 /** Same effect as the Gear sheet's Bind button. */
 export const BIND_SALVE: Effect = {
   remove: { salve: 1 },
@@ -858,6 +863,9 @@ export const BIND_SALVE: Effect = {
 export function bindSalve(state: GameState): GameState {
   if (!(state.items.salve ?? 0)) {
     return persist({ ...state, flash: NONE_TO_USE.salve })
+  }
+  if ((state.health ?? HEALTH_MAX) >= (state.healthMax ?? HEALTH_MAX)) {
+    return persist({ ...state, flash: SALVE_FULL_HEALTH })
   }
   return applyEffect(state, BIND_SALVE)
 }
@@ -1024,6 +1032,19 @@ export function interpret(state: GameState, raw: string): GameState {
   const scene = sceneOf(state)
   const bare = text.trim().toLowerCase()
   const said = bare === 'l' || /^l\s/.test(bare) ? bare.replace(/^l\b/, 'look') : bare
+  // Typed "go to X" walks to a named place on this hub's map; never the aimless run.
+  const goTo = /^(?:go|walk|head|travel|move|run|return)\s+(?:back\s+)?(?:to|toward|towards|into)\s+(?:the\s+)?(.+)$/.exec(said)
+  if (goTo && state.hubId && !state.flags.encounterHere && !isPressureOverlay(state) && !(atTheWire(state) && wantsFenceHoleBack(text)) && !visibleChoices(state).some((c) => c.label.toLowerCase().replace(/[^a-z0-9 ]/g, '').trim() === said.replace(/[^a-z0-9 ]/g, '').trim())) {
+    const want = goTo[1].replace(/[^a-z0-9' ]/g, '').trim()
+    const nodes = HUB_MAPS[state.hubId]?.nodes ?? []
+    const node =
+      nodes.find((n) => [n.name, n.short, n.id].some((k) => k && k.toLowerCase() === want)) ??
+      nodes.find((n) => [n.name, n.short].some((k) => k && k.length >= 3 && (want.includes(k.toLowerCase()) || k.toLowerCase().includes(want)) && want.length >= 3))
+    if (node) {
+      if (node.sceneId === state.sceneId) return persist({ ...state, flash: `You are already at ${node.name}.`, updatedAt: Date.now() })
+      return travelTo(state, node.sceneId)
+    }
+  }
   // Kaelen passing: typed rumor or trade asks open his pack, roll-free, like the buttons.
   if (/\b(rumou?rs?|news|kaelen|trader|sifter|merchant)\b/.test(said)) {
     const row = visibleChoices(state).find((c) => c.id === (/\b(rumou?rs?|news|heard)\b/.test(said) ? 'kaelen-rumors' : 'kaelen-pass'))
@@ -1227,10 +1248,7 @@ export function interpret(state: GameState, raw: string): GameState {
 
   if (/\b(rest|sleep|bind|bandage|heal)\b/.test(bare) && (REST_SCENES.has(state.sceneId) || (state.items.salve ?? 0) > 0)) {
     if ((state.items.salve ?? 0) > 0 && /\b(bind|bandage|salve|heal)\b/.test(bare)) {
-      return withVerb(
-        applyEffect(state, BIND_SALVE),
-        'heal',
-      )
+      return withVerb(bindSalve(state), 'heal')
     }
     if (REST_SCENES.has(state.sceneId) && state.health < state.healthMax && state.sap > 0) {
       return withVerb(

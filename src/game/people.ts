@@ -146,7 +146,7 @@ He will not sell anything meant to harm a fellow survivor. He trades Drops for s
       'roam:kaelen',
     ],
     later: {
-      'camp:wire': `The perimeter. Razor-wire. Steam-vents coughing. Beyond it the dunes begin to have opinions.
+      'camp:wire': `The perimeter. Razor wire. Steam vents coughing. Beyond it the dunes begin to have opinions.
 
 Kaelen the Sifter is here when profit says here — pack, gloves, already counting. Rumors if you ask. Drops if you pay.
 

@@ -116,6 +116,13 @@ The desert does not send Sybella. She hunts what the faith wants kept. Cartel pr
 Valerius's Hound-handler is already there — not kind. A Drop forced against your lip like inventory maintenance. "Ironwood property stands. Sybella is Seekers. She does not feed Cartel mouths. Get up. You are still a heading I can sell."`,
       },
       {
+        if: { all: [{ door: 'prisoner' }, { flag: 'handlerDown' }] },
+        mode: 'replace',
+        body: `You go down on the Rim with nothing left in the glass.
+
+A Cartel clerk is already there — not kind. A Drop forced against your lip like inventory maintenance. "Ironwood property stands. Sybella is Seekers. She does not feed Cartel mouths. Get up. You are still a heading I can sell."`,
+      },
+      {
         if: { door: 'outcast' },
         mode: 'replace',
         body: `You go down on the Rim with nothing left in the glass.
