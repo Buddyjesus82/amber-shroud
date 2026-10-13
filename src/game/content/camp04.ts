@@ -1001,6 +1001,23 @@ Ironclad Skiff-Striders patrol the far side of this line. Red Maw is past it. So
       },
       FENCE_HOLE_BACK,
       {
+        // The way forward from the Wire: the job, or a lock that says what it needs.
+        id: 'station',
+        label: 'West steam-vent. Sabotage the station.',
+        sub: 'Jaxson named the bolt. The wrench knows it.',
+        tone: 'hunger',
+        show: { flagUnset: 'guardDown' },
+        enable: { flag: 'jaxsonInside' },
+        locked: 'Needs the inside job. Jaxson in the Blood Yard has the plan.',
+        effects: { goto: 'camp:guard', ticks: 1 },
+      },
+      {
+        id: 'bay',
+        label: 'The bay. He is under the hull.',
+        show: { all: [{ flag: 'guardDown' }, { flagUnset: 'striderHot' }] },
+        effects: { goto: 'camp:bay', ticks: 1 },
+      },
+      {
         id: 'look',
         label: 'Stare the dunes down',
         tone: 'quiet',
@@ -1082,15 +1099,15 @@ The storm is a clock. You sabotage the west steam-vent here. Jaxson hotwires a S
     id: 'camp:sabotage',
     hubId: 'camp04',
     kind: 'story',
-    title: 'Storm',
-    body: `The storm hits. Vats weep. The west steam-vent is empty for a breath — patrol is on the wire, not on this bolt.
+    title: 'West Steam-Vent',
+    body: `The storm's first wind reaches the vats. The full storm is still coming. The west steam-vent is empty for a breath — patrol is on the wire, not on this bolt.
 
 Quiet still risks a shout. Jaxson named this throat. The wrench knows the bolt.`,
     variants: [
       {
         if: { flag: 'ventPatrol' },
         mode: 'replace',
-        body: `The storm hits. Vats weep. This bolt is not empty.
+        body: `The storm's first wind reaches the vats. This bolt is not empty.
 
 A vent patrol is in place: one clerk, shock baton, eyes on the joint. Unwatched is a lie. Scrap them, or leave the bolt alone.`,
       },

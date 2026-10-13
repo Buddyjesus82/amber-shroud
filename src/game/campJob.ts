@@ -85,7 +85,7 @@ export const FENCE_HOLE_PAID: Cond = { any: [{ flag: 'relicRumor' }, { flag: 'wi
 /** The Wire back to the Pens through the fence-hole. Same row on the Wire and on Kaelen's rumor counter. */
 export const FENCE_HOLE_BACK: Choice = {
   id: 'pens',
-  label: 'Walk the Yard — back to the Pens through the fence-hole',
+  label: 'Crawl the fence-hole back to the Pens',
   sub: 'Crawl the hole Kaelen priced. No Sap. The Pens, then the Yard is one road on.',
   enable: FENCE_HOLE_PAID,
   locked: 'Pay Kaelen first: a side-trouble lead (1 scrap) or the hole in the wire (2 scrap or 1 Glint)',

@@ -8,14 +8,30 @@ export const spineScenes: Scene[] = [
     hubId: 'spine',
     kind: 'place',
     title: 'Noon Spine',
-    body: `The Bleached Spine is a ridge of bone-pale rock. Nothing casts a kind shadow. Your empty vial ticks against your ribs like a second, drier heart.
+    body: `The Bleached Spine is a ridge of bone-pale rock. Nothing casts a kind shadow.
 
 Down-slope: a tent the color of old teeth. Silas Vane sells shade by the minute. Farther, a well that has been an argument for thirty years. Hound tracks stitch the eastern wash — Cartel, or something wearing Cartel feet.`,
     variants: [
       {
-        if: { sapMax: 2 },
+        // The vial line checks the vial.
+        if: { not: { item: 'vial_drop' } },
+        mode: 'append',
+        body: `Your empty vial ticks against your ribs like a second, drier heart.`,
+      },
+      {
+        if: { item: 'vial_drop' },
+        mode: 'append',
+        body: `Your vial is full. It sits warm against your ribs.`,
+      },
+      {
+        if: { all: [{ sapMax: 2 }, { not: { item: 'vial_drop' } }] },
         mode: 'append',
         body: `Your vision frays at the edges. You need a Drop before noon.`,
+      },
+      {
+        if: { all: [{ sapMax: 2 }, { item: 'vial_drop' }] },
+        mode: 'append',
+        body: `Your vision frays at the edges. Drink the Drop in your vial before noon.`,
       },
       {
         if: { pressureMin: 8 },
@@ -28,10 +44,11 @@ Down-slope: a tent the color of old teeth. Silas Vane sells shade by the minute.
         id: 'scan',
         label: 'Read the wash for a heading',
         sub: 'Costs sap. You look south for the red haze of Red Maw.',
+        show: { flagUnset: 'washRead' },
         effects: {
           ticks: 1,
           sap: -1,
-          flag: { sawMawHaze: true },
+          flag: { sawMawHaze: true, washRead: true },
           flash:
             'South, a bruise of red in the heat. Maw-country. People bury fortunes there because they think the Maw is a lock. It is a mouth.',
         },

@@ -393,7 +393,7 @@ function threshHuntChoices(state: GameState): Choice[] {
       tone: 'danger',
       enable: { healthMin: 1 },
       locked: 'Too hurt to fight.',
-      effects: beginEncounter(state, 'cutter', 'The spear is a person with a knife-smile. This ground is the fight.'),
+      effects: beginEncounter(state, 'courtguard', 'The spear comes down level. This ground is the fight.'),
     },
     {
       id: 'thresh-hide',

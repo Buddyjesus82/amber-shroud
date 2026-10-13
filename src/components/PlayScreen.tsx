@@ -28,6 +28,7 @@ import { bayLookout } from '../game/campJob'
 import { isPressureOverlay, pressureFace } from '../game/hunter'
 import { DISGUISE_SOFTEN_NOTE } from '../game/disguise'
 import { ROADS, shownText } from '../game/roads'
+import { scavengeLock } from '../game/scavenge'
 import { isShopOpen } from '../game/trade'
 import type { Choice, Faction, GameState } from '../game/types'
 import { helpEntries } from '../game/help'
@@ -127,7 +128,8 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     const fightResult = isEncounterResult(state) || !!next.flags.encounterHere
     // A note that only rides along (the Vessel cloth line) shows on the next screen; it is not a result to hold.
     const noteOnly = next.flash === DISGUISE_SOFTEN_NOTE
-    if (moved && next.flash && !fightResult && !noteOnly) {
+    // Leaving a crisis (Empty, Approach Dry) shows its result on the new ground, so the dry title does not linger.
+    if (moved && next.flash && !fightResult && !noteOnly && scene.kind !== 'crisis') {
       setHeld({
         title: placeTitle,
         meta: hub ? hub.name : scene.id === 'ch1:storm' ? 'Camp-04' : scene.chapterId === 'cache-run' ? cap(ROADS[state.door].name) : null,
@@ -172,7 +174,9 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
       tone: 'quiet',
       label: 'Scavenge',
       sub: 'Scrap, trade goods. Sometimes a Drop.',
-      onClick: () => onChange(scavenge(state)),
+      locked: !!scavengeLock(state),
+      lockedNote: scavengeLock(state) ?? undefined,
+      onClick: () => !scavengeLock(state) && onChange(scavenge(state)),
     })
   }
   const hasSceneSkim = choices.some((c) => c.id === 'skim')

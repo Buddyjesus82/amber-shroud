@@ -43,6 +43,12 @@ export function scavengeCooldown(state: GameState): boolean {
   return last >= 0 && state.ticks - last < 2
 }
 
+/** The Scavenge row's lock: a patch you just worked is picked clean for a beat. */
+export const PICKED_CLEAN = 'Picked clean'
+export function scavengeLock(state: GameState): string | null {
+  return scavengeCooldown(state) ? PICKED_CLEAN : null
+}
+
 export type ScavengeResult = {
   add: Partial<Record<ItemId, number>>
   flash: string

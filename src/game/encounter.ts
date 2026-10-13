@@ -6,7 +6,7 @@ import { CARAPACE_HUNTER, SPINE_HUNTER } from './content/spineHunter'
 import type { Choice, Effect, FlagMap, GameState, ItemId } from './types'
 import { hash, OPENERS, sandAnswers, PAIR_LINE, HUSK_CONTROLLER_LINE, sandGripLine, TERRAINS, terrainPool, type Terrain, type TerrainId } from './fightTricks'
 
-export type EncounterKind = 'jackal' | 'cutter' | 'tick' | 'pup' | 'scavenger' | 'patrol' | 'handler' | 'hound' | 'overseer' | 'collector' | 'carapace' | 'husk'
+export type EncounterKind = 'jackal' | 'cutter' | 'courtguard' | 'tick' | 'pup' | 'scavenger' | 'patrol' | 'handler' | 'hound' | 'overseer' | 'collector' | 'carapace' | 'husk'
 
 /** Fight hits. Sap stays thirst/travel. */
 export const HEALTH_MAX = 6
@@ -36,6 +36,15 @@ const SPECS: Spec[] = [
     shell: 2,
     hp: 2,
     line: 'A rim-cutter stands up out of scrap-shade. Half a person, half a stolen knife. Knife-smile. Saleable pockets. Optional throat.',
+  },
+  {
+    // The Vessel's Court Guard hunt. Same weight as a rim cutter, his own name.
+    kind: 'courtguard',
+    name: 'Court Guard',
+    strike: 2,
+    shell: 2,
+    hp: 2,
+    line: 'The court guard levels his spear. Sunburn and belief. He was told to keep Vessels inside.',
   },
   {
     kind: 'tick',
@@ -238,6 +247,14 @@ export function huskGround(state: GameState): boolean {
     id.startsWith('maw:') ||
     state.hubId === 'redmaw'
   )
+}
+
+/** Odds in plain words for buttons and help. Never a number on screen. */
+export function oddsWord(percent: number): string {
+  if (percent >= 70) return 'Good odds'
+  if (percent >= 50) return 'Even odds'
+  if (percent >= 30) return 'Risky'
+  return 'Long odds'
 }
 
 export function enemyHealth(kind: EncounterKind): number {
@@ -444,7 +461,7 @@ export function encounterChoices(state: GameState): Choice[] {
       sub:
         spec.kind === 'husk'
           ? 'Once a fight. No attack. A husk has no eyes: sand almost never works.'
-          : 'Once a fight. No attack. 4 in 10: they miss this round and the next.',
+          : 'Once a fight. No attack. Risky: if it works, they miss this round and the next.',
       enable: { all: [{ healthMin: 1 }, { flagUnset: 'encounterTrickUsed' }] },
       locked: 'Already used this fight.',
       effects: { resolveEncounter: 'trick', ticks: 1 },
@@ -508,7 +525,7 @@ export function encounterChoices(state: GameState): Choice[] {
     {
       id: 'enc-run',
       label: 'Run',
-      sub: `${runChance(state)} in 100 you get away, no loot. If not, they hit you.`,
+      sub: `${oddsWord(runChance(state))} to get away, no loot. If not, they hit you.`,
       enable: runLock ? { flag: '__never__' } : { healthMin: 1 },
       locked: runLock || 'Too hurt to fight.',
       effects: { resolveEncounter: 'run', ticks: 1 },
@@ -531,7 +548,7 @@ export function encounterChoices(state: GameState): Choice[] {
     rows.push({
       id: 'enc-disguise',
       label: 'Walk past in the Vessel cloth',
-      sub: '3 in 4 they read a cup and let you by. No loot. If they look closely, the cloth is seen through and Cartel Heat rises by 2.',
+      sub: 'Good odds they read a cup and let you by. No loot. If they look closely, the cloth is seen through and Cartel Heat rises by 2.',
       effects: { resolveEncounter: 'disguise', ticks: 1 },
     })
   }
@@ -569,7 +586,7 @@ function pocket(state: GameState): number {
  * Fauna pay scrap or sap. People sometimes pay with a knife, a scav wrap, or a cloak.
  */
 /** People carry salve sometimes. Beasts never do. */
-export const HUMAN_KINDS: readonly EncounterKind[] = ['cutter', 'scavenger', 'patrol', 'handler', 'overseer', 'collector', 'carapace']
+export const HUMAN_KINDS: readonly EncounterKind[] = ['cutter', 'courtguard', 'scavenger', 'patrol', 'handler', 'overseer', 'collector', 'carapace']
 export const BEAST_KINDS: readonly EncounterKind[] = ['jackal', 'tick', 'pup', 'hound']
 /** Percent chance a downed human also carries a Resin Salve. */
 export const HUMAN_SALVE_PCT = 18
@@ -621,7 +638,7 @@ function pocketLoot(state: GameState, kind: EncounterKind): Partial<Record<ItemI
     return { scrap: 1 }
   }
   const roll = pocket(state)
-  if (kind === 'cutter') {
+  if (kind === 'cutter' || kind === 'courtguard') {
     if (roll === 0 || roll === 1) return { scrap: 1, shiv: 1 }
     if (roll === 2) return { glints: 1, scrap: 1, rusted_dagger: 1 }
     return { glints: 1, scrap: 1 }
@@ -689,11 +706,10 @@ export function isEncounterResult(state: Pick<GameState, 'flags'>): boolean {
 }
 
 export function dismissEncounter(state: GameState): Effect {
-  const short = typeof state.flags.encounterFlash === 'string' ? state.flags.encounterFlash : undefined
+  // The fight card already showed the outcome and loot. "On." clears it, so it does not sit under the next ground.
   return {
     unsetFlag: [...ENCOUNTER_FLAGS],
     flag: { encounterAt: state.ticks, fightTaught: true },
-    flash: short,
   }
 }
 

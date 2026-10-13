@@ -1497,7 +1497,7 @@ assert(!bodyOf(fought).includes('cooked resin'), 'outcome card does not bleed Ya
 assert(!(fought.flash ?? '').includes('Strike'), 'compares live on the card, not a stacked flash')
 const foughtOn = pick(fought, 'enc-continue')
 assert(!foughtOn.flags.encounterHere, 'On. returns to the place')
-assert(/They drop/.test(foughtOn.flash ?? ''), 'hub flash is the compact loot line')
+assert(!foughtOn.flash, 'v98: On. clears the loot line; the fight card already showed it')
 assert(!/Strike/.test(foughtOn.flash ?? ''), 'hub flash is not the full compare block')
 assert(bodyOf(foughtOn).includes('cooked resin'), 'Yard prose returns after On.')
 
@@ -1782,7 +1782,7 @@ assert(ids(rimFight).includes('enc-continue') && !ids(rimFight).includes('sybell
 const rimOn = pick(rimFight, 'enc-continue')
 assert(!rimOn.flags.encounterHere, 'On. returns to Maw Rim')
 assert(!rimOn.flags.hunterHere, 'Sybella still waits for the next linger')
-assert(/They drop/.test(rimOn.flash ?? ''), 'Rim hub flash is the compact loot line')
+assert(!rimOn.flash, 'v98: Rim On. clears the loot line')
 assert(!/Strike/.test(rimOn.flash ?? ''), 'Rim hub flash is not the compare block')
 assert(bodyOf(rimOn).includes('lip of rock'), 'Approach body returns after On.')
 assert(!bodyOf(rimOn).includes('You Strike'), 'Approach body does not keep the fight log')
@@ -2688,7 +2688,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v97'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v98'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -3359,7 +3359,7 @@ function assertHelpResolves(s: GameState, where: string) {
   // Card content: formula once, options, and the Down rules last.
   const text = fightHelpText()
   assert(text.startsWith('help fight'), 'fight card header')
-  assert(/DAMAGE: Strike \+ swing - Shell\. Never less than 1\./.test(text) && /add 0, 1, or 2 to Strike/.test(text), 'formula and swing on the card')
+  assert(/DAMAGE: Your Strike against their Shell decides how hard you hit\./.test(text) && /LUCK: Every exchange adds a little luck/.test(text) && !/Strike \+ swing|\d+ in \d+/.test(text), 'v98: plain damage and luck sentences on the card, no formula')
   assert(text.indexOf('AT 0 HEALTH') > text.indexOf('OPTIONS') && /Give the road/.test(text), 'options come before the Down rules')
   assert(/^By door: .*Outcast .*Corvin.*Vessel/.test(FIGHT_HELP_LINES[FIGHT_HELP_LINES.length - 1]), 'the card ends with the per-door Down note')
 
@@ -5399,4 +5399,79 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   }
   assert(youCrit && themCrit, 'v97: both crit lines show up')
   console.log('v97 crit checks OK')
+}
+
+// v98: tester bug pass.
+{
+  const P = () => GE.newGame('prisoner')
+  // 1) The vent scene does not claim the storm already hit; the Wire has a way forward or a lock.
+  const vent = getScene('camp:sabotage')
+  assert(vent.title !== 'Storm' && !/The storm hits/.test(vent.body) && (vent.variants ?? []).every((v) => !/The storm hits/.test(v.body)), 'v98: the vent scene waits for the real storm')
+  const wire = { ...P(), sceneId: 'camp:wire', hubId: 'camp04' }
+  const fwd = GE.visibleChoices(wire).find((c) => c.id === 'station')
+  assert(fwd && !GE.isChoiceOn(wire, fwd.enable) && /inside job/.test(String(fwd.locked)), 'v98: Wire shows a locked way forward before the job')
+  const wired = { ...wire, flags: { ...wire.flags, jaxsonInside: true } }
+  const go = GE.visibleChoices(wired).find((c) => c.id === 'station')!
+  assert(GE.isChoiceOn(wired, go.enable) && GE.applyEffect(wired, go.effects).sceneId === 'camp:guard', 'v98: with the job, the Wire leads to the station')
+  assert(GE.visibleChoices(wire).some((c) => c.label === 'Crawl the fence-hole back to the Pens'), 'v98: plain fence-hole label')
+  // 2) Approach rescue: Heat matches the rescuer, rises once, no free loop, no stale skim line.
+  const dry = (door: DoorId, flags = {}) => ({ ...GE.newGame(door), sceneId: 'crisis:maw', hubId: 'redmaw', sap: 0, heat: { cartel: 0, seekers: 0, strays: 0 }, flags: { ...GE.newGame(door).flags, ...flags } })
+  const upOf = (s: GameState) => GE.visibleChoices(s).find((c) => c.id.startsWith('up'))!
+  const p1 = GE.applyEffect(dry('prisoner'), upOf(dry('prisoner')).effects)
+  assert(p1.heat.cartel === 1 && p1.heat.seekers === 0, 'v98: the Cartel handler raises Cartel Heat')
+  const ph = dry('prisoner', { handlerDown: true })
+  assert(/Seeker/.test(GE.bodyOf(ph)) && !/Hound-handler/.test(GE.bodyOf(ph)), 'v98: with the handler dead, a Seeker rescues')
+  assert(GE.applyEffect(ph, upOf(ph).effects).heat.seekers === 1, 'v98: a Seeker rescue raises Seeker Heat')
+  assert(GE.applyEffect(dry('outcast'), upOf(dry('outcast')).effects).heat.strays === 1, 'v98: a Stray rescue raises Stray Heat')
+  const again = dry('prisoner', { mawRescued: true })
+  const p2 = GE.applyEffect(again, upOf(again).effects)
+  assert(p2.heat.cartel === 0 && p2.sap === 3, 'v98: a second rescue pours the Drop but adds no Heat')
+  const rim = { ...p2, sceneId: 'maw:rim', sap: 1 }
+  const walked = GE.travelTo(rim, 'maw:smoke')
+  assert(walked.sceneId === 'maw:rim' && walked.flash === GE.TOO_DRY_TO_WALK, 'v98: after a rescue, a walk will not drain you into another')
+  const lip = { ...GE.newGame('prisoner'), sceneId: 'maw:lip', hubId: 'redmaw', sap: 1 }
+  const skimmed = GE.skim(lip)
+  if (skimmed.sceneId.startsWith('crisis:')) assert(!/skim a Drop/.test(skimmed.flash ?? ''), 'v98: no skim line on the rescue screen')
+  // 3) Spent actions hide or lock.
+  const GSc = await import('../src/game/scavenge.ts')
+  const pens = { ...P(), sceneId: 'camp:cages', hubId: 'camp04' }
+  const picked = GSc.applyScavenge(pens)
+  assert(GSc.scavengeLock(picked) === 'Picked clean' && GSc.scavengeLock(pens) === null, 'v98: Scavenge locks as Picked clean')
+  const thalia = { ...GE.newGame('vessel'), sceneId: 'thresh:thalia', hubId: 'threshold', flags: { ...GE.newGame('vessel').flags, heardSybellaRumor: true } }
+  assert(!GE.visibleChoices(thalia).some((c) => c.id === 'sybella'), 'v98: Thalia\'s Sybella ask shows once')
+  const ridge = { ...GE.newGame('outcast'), sceneId: 'spine:ridge', hubId: 'spine', flags: { ...GE.newGame('outcast').flags, washRead: true } }
+  assert(!GE.visibleChoices(ridge).some((c) => c.id === 'scan'), 'v98: Read the wash hides after use')
+  // 4) Stale text.
+  const enc = (await import('../src/game/encounter.ts')).dismissEncounter({ ...P(), flags: { encounterFlash: 'They drop. Glints +1.' } } as GameState)
+  assert(!enc.flash, 'v98: On. does not carry the loot line onto the ground')
+  const full = { ...GE.newGame('outcast'), sceneId: 'spine:ridge', hubId: 'spine', sap: 2, items: { ...GE.newGame('outcast').items, vial_drop: 1, vial_empty: 0 } }
+  assert(!/empty vial|You need a Drop/.test(GE.bodyOf(full)) && /Your vial is full/.test(GE.bodyOf(full)), 'v98: Noon Spine checks the vial')
+  const emptyV = { ...full, items: { ...full.items, vial_drop: 0, vial_empty: 1 } }
+  assert(/empty vial/.test(GE.bodyOf(emptyV)), 'v98: an empty vial still reads empty')
+  const leaveO = { ...GE.newGame('outcast'), sceneId: 'ch1:leave', chapterId: 'cache-run', items: { ...GE.newGame('outcast').items, vial_drop: 1 } }
+  assert(!/dry throat/.test(GE.bodyOf(leaveO)), 'v98: Cache Run vial line checks the vial')
+  // 5) Lock slips.
+  const leaveV = { ...GE.newGame('vessel'), sceneId: 'ch1:leave', chapterId: 'cache-run' }
+  assert(/northwest/.test(GE.bodyOf(leaveV)) && !/road there, west/.test(GE.bodyOf(leaveV)), 'v98: the Vessel road runs northwest')
+  assert(Object.values(heatFactions('prisoner')).every((f) => !/Kaelen/.test(`${f.watch} ${f.body}`)), 'v98: Heat lesson does not name the trader early')
+  assert(/he still charges/.test(getScene('crisis:camp').body) && !/they still charge/.test(getScene('crisis:camp').body), 'v98: "he still charges"')
+  const metK = GE.applyEffect({ ...GE.newGame('vessel'), sceneId: 'thresh:sift', hubId: 'threshold' }, { goto: 'thresh:kaelen' })
+  assert(metK.flags.kaelenKnown && GE.bodyOf(metK).includes(GE.KAELEN_INTRO), 'v98: he says his name the first time you meet')
+  assert(!GE.bodyOf(GE.applyEffect(metK, { ticks: 1 })).includes(GE.KAELEN_INTRO), 'v98: the intro shows once')
+  const guardFight = beginEncounter({ ...GE.newGame('vessel'), sceneId: 'thresh:court', hubId: 'threshold' } as GameState, 'courtguard', 'x')
+  const gs = GE.applyEffect({ ...GE.newGame('vessel'), sceneId: 'thresh:court', hubId: 'threshold' }, guardFight)
+  assert(/^COURT GUARD|^GUARD ♥/m.test(GE.bodyOf(gs)) || /^GUARD ♥ /m.test(GE.bodyOf(gs)), `v98: the Court Guard fights under his own name (${GE.bodyOf(gs).slice(0, 80)})`)
+  assert(!/CUTTER/.test(GE.bodyOf(gs)), 'v98: not a rim cutter')
+  // 6) Odds in words, never numbers.
+  for (const door of ['prisoner', 'outcast', 'vessel'] as DoorId[]) {
+    for (const kind of ['cutter', 'handler', 'husk', 'patrol', 'courtguard']) {
+      const st = primedFight(door, 5, kind, { hp: 2 })
+      for (const c of encounterChoices(st)) {
+        const t = `${c.label} ${c.sub ?? ''} ${c.locked ?? ''}`
+        assert(!/\d+ in \d+|\d+%|\bvs\b/.test(t), `v98 ${door} ${kind}: plain odds on "${c.label}": ${t}`)
+      }
+    }
+  }
+  assert(!/\d+ in \d+|Strike \+ swing/.test(fightHelpText()), 'v98: help fight has no odds numbers or formula')
+  console.log('v98 bug pass checks OK')
 }
