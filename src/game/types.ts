@@ -11,6 +11,7 @@ export type ItemId =
   | 'rusted_dagger'
   | 'silas_tip'
   | 'oram_map'
+  | 'crucible_map'
   | 'shiv'
   | 'strider_bit'
   | 'ceremonial_cloth'

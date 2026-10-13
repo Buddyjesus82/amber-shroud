@@ -566,7 +566,7 @@ function authored(state: GameState, scene: Scene): string[] {
   }
 
   if (id === 'open:vessel') {
-    push(lines, 'The dagger under the gold thread is yours. Thalia is already watching the cloth, not the steel.')
+    push(lines, 'The dagger under the gold thread is still yours. The cloth is still on you.')
     return lines
   }
 

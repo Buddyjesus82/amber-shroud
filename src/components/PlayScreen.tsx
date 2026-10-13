@@ -1,3 +1,4 @@
+import { CRUCIBLE_SCENES } from '../game/content/crucible'
 import { typedHints } from '../game/politeAsk'
 import { Fragment, useEffect, useRef, useState, type CSSProperties } from 'react'
 import { HUBS } from '../game/content/catalog'
@@ -99,7 +100,8 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
   const held = heldRaw && heldRaw.stamp === heldStamp(state) ? heldRaw : null
   const prevHeat = useRef(state.heat)
   const talky = scene.kind === 'talk' || scene.kind === 'place' || scene.kind === 'story'
-  const showNav = !!hub && scene.kind !== 'crisis' && state.chapterId !== 'cache-run'
+  // No Map in the Crucible Chambers: the only way up is the stairs.
+  const showNav = !!hub && scene.kind !== 'crisis' && state.chapterId !== 'cache-run' && !(CRUCIBLE_SCENES as readonly string[]).includes(scene.id)
   const hook = hub?.hungerHook
   const hookOn = hook && isChoiceOn(state, hook.show) && isMawExit(state)
   const closing = !state.flags.chapter1Done && state.pressure >= 10 && !state.chapterId

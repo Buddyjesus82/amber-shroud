@@ -55,7 +55,7 @@ export const INTRO_CARDS: IntroCard[] = [
     title: 'Three doors',
     img: 'doors.jpg',
     alt: 'Three doors: a Cartel wire camp, a Seeker cloth threshold, and a branded Stray outpost',
-    text: 'Pick where you wake. Prisoner: Camp-04, the longest road. Outcast: the Bleached Spine, north. Vessel: the Outer Threshold, where the Seekers send you to Red Maw to bring back what opens the Spire. All three roads meet at Red Maw before the Spire.',
+    text: 'Pick where you wake. Prisoner: Camp-04, the longest road. Outcast: the Bleached Spine, north. Vessel: the Crucible Chambers under the Threshold Court, where the Seekers send you to Red Maw to bring back what opens the Spire. All three roads meet at Red Maw before the Spire.',
   },
 ]
 
