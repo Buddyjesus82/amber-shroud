@@ -55,6 +55,22 @@ Thalia stands at the dais. The gold on her cheeks might be kohl and might be sap
         },
       },
       {
+        id: 'drain',
+        label: 'Take the drain tunnel',
+        sub: "Under the Court and past the runners. You come out near the Pilgrim's Scar.",
+        tone: 'hunger',
+        enable: { item: 'crucible_map' },
+        locked: 'Needs: a way through the drains.',
+        effects: {
+          startChapter: 'cache-run',
+          goto: 'ch1:v-zafir',
+          ticks: 1,
+          sap: -1,
+          flag: { drainTunnel: true },
+          flash: "The ledger plate's map shows the drain under the Court. You crawl it out past the cairns and come up near the Pilgrim's Scar. The runners never see you.",
+        },
+      },
+      {
         id: 'bless',
         label: 'Offer a false blessing',
         sub: 'You pretend. Seeker Heat rises. Thalia notices.',

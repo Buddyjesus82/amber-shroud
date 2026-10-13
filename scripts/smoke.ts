@@ -2691,7 +2691,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v107'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v108'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -2898,6 +2898,7 @@ function assertHelpResolves(s: GameState, where: string) {
     'open:vessel': 'vessel',
     'thresh:crucible-rig': 'vessel',
     'thresh:crucible-stairs': 'vessel',
+    'thresh:court-guard': 'vessel',
     'thresh:cell': 'vessel',
     'thresh:shrine': 'vessel',
     'crisis:camp': 'prisoner',
@@ -5657,4 +5658,46 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
     assert(!/Kaelen|Zafir|\bvs\b/.test(t), `v107: ${id} names no one it should not`)
   }
   console.log('v107 crucible checks OK')
+}
+
+// v108: the Court Guard at the dais steps after the alarm, and the drain tunnel.
+{
+  const step = (s: GameState, id: string) => {
+    const c = GE.visibleChoices(s).find((x) => x.id === id)
+    assert(c, `v108: ${s.sceneId} offers ${id} (have ${GE.visibleChoices(s).map((x) => x.id).join(',')})`)
+    return GE.applyEffect(s, c!.effects)
+  }
+  const rig = step(GE.newGame('vessel'), 'rig')
+  const quiet = step(step(rig, 'slip'), 'keep')
+  assert(quiet.sceneId === 'thresh:court', 'v108: no alarm, straight to the Court')
+  const guard = step(step(rig, 'release'), 'keep')
+  assert(guard.sceneId === 'thresh:court-guard', 'v108: the alarm puts the Court Guard on the dais steps')
+  assert(GE.bodyOf(guard).includes('falchion drawn') && GE.bodyOf(guard).includes("\"Vessels don't climb the stairs on their own.\""), 'v108: guard text')
+  assert(playCoverKey(guard, getScene(guard.sceneId)!) === 'courtguard', 'v108: Court Guard portrait')
+  assert(GE.visibleChoices(guard).map((c) => c.id).join(',') === 'fight,lie,thalia', 'v108: three guard choices')
+  const lie = GE.visibleChoices(guard).find((c) => c.id === 'lie')!
+  assert(!GE.isChoiceOn(guard, lie.enable) && lie.locked === 'Needs: Ledger-Plate Map', 'v108: the lie is visible but locked without the map')
+  const withMap = GE.applyEffect(guard, { add: { crucible_map: 1 } })
+  assert(GE.isChoiceOn(withMap, lie.enable), 'v108: the map unlocks the lie')
+  const lied = step(withMap, 'lie')
+  assert(lied.sceneId === 'thresh:court' && lied.flags.crucibleGuardFooled && lied.heat.seekers === withMap.heat.seekers && !!lied.flash, 'v108: the lie sends him the wrong way, no Heat')
+  const called = step(guard, 'thalia')
+  assert(called.sceneId === 'thresh:court' && called.heat.seekers === guard.heat.seekers + 1 && called.flags.thaliaCalledOff && !called.flags.encounterHere, 'v108: Thalia calls him off: Seeker +1, she remembers, no fight')
+  let f = step(guard, 'fight')
+  assert(f.flags.encounterHere && f.flags.encounterKind === 'courtguard', 'v108: a real Court Guard fight')
+  assert(/^YOU ♥ \d/m.test(GE.bodyOf(f)) && !/\bvs\b/.test(GE.bodyOf(f)), 'v108: the fight uses the standard card')
+  f = GE.applyEffect(f, { flag: { encounterHp: 1 } })
+  for (let i = 0; i < 30 && !f.flags.crucibleGuardBeaten; i++) f = step(f, 'enc-fight')
+  assert(f.flags.crucibleGuardBeaten, 'v108: the guard can be beaten')
+  const won = step(f, 'enc-continue')
+  assert(won.sceneId === 'thresh:court' && !won.flags.encounterHere, 'v108: winning continues into the Court')
+  // Drain tunnel.
+  const drain = getScene('thresh:court')!.choices.find((c) => c.id === 'drain')!
+  assert(GE.visibleChoices(quiet).some((c) => c.id === 'drain') && !GE.isChoiceOn(quiet, drain.enable) && drain.locked === 'Needs: a way through the drains.', 'v108: drain tunnel visible but locked without the map')
+  const plate = step(step(step(GE.newGame('vessel'), 'rig'), 'plate'), 'keep')
+  assert(GE.isChoiceOn(plate, drain.enable), 'v108: the Ledger-Plate Map opens the drains')
+  const out = step(plate, 'drain')
+  assert(out.sceneId === 'ch1:v-zafir' && out.chapterId === 'cache-run' && out.flags.drainTunnel, "v108: the drain skips the runners and comes out near the Pilgrim's Scar")
+  assert(out.heat.seekers === plate.heat.seekers, 'v108: the drain raises no Seeker Heat')
+  console.log('v108 guard and drain checks OK')
 }

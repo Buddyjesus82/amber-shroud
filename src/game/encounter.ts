@@ -405,6 +405,10 @@ export function encounterAppend(state: GameState): string {
 export function encounterChoices(state: GameState): Choice[] {
   if (isEncounterResult(state)) {
     const ventWon = state.sceneId === 'camp:sabotage' && state.flags.encounterKind === 'patrol' && !!state.flags.guardDown
+    // Beating the Court Guard at the dais steps opens the Court.
+    if (state.sceneId === 'thresh:court-guard' && state.flags.crucibleGuardBeaten) {
+      return [{ id: 'enc-continue', label: 'Into the Court.', tone: 'quiet', effects: { ...dismissEncounter(state), goto: 'thresh:court' } }]
+    }
     const base = dismissEncounter(state)
     return [
       {
@@ -1074,7 +1078,7 @@ export function resolveEncounter(
       // Beating the handler: Cartel +2.
       heat: spec.kind === 'hound' ? { cartel: 1 } : handlerWin ? { cartel: 2 } : undefined,
       pressure: dmgIn > 0 ? 1 : undefined,
-      flag: { encounterGrip: grip, ...(handlerWin ? { handlerInjured: true } : {}) },
+      flag: { encounterGrip: grip, ...(handlerWin ? { handlerInjured: true } : {}), ...(state.sceneId === 'thresh:court-guard' && spec.kind === 'courtguard' ? { crucibleGuardBeaten: true } : {}) },
     })
   }
 
