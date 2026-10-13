@@ -531,7 +531,9 @@ She is here, and she is hunting. Walk up and she will talk. You can also slip pa
         id: 'bury',
         label: 'Bury a Glint',
         sub: 'Spend 1 Glint. Seeker Heat drops. Costs sap. The Lip swallows it.',
-        show: { all: [{ item: 'glints' }, { flagUnset: 'mawBuried' }] },
+        show: { flagUnset: 'mawBuried' },
+        enable: { item: 'glints' },
+        locked: 'Needs a Glint.',
         effects: {
           remove: { glints: 1 },
           flag: { hollowMarked: true, mawBuried: true },
@@ -541,6 +543,7 @@ She is here, and she is hunting. Walk up and she will talk. You can also slip pa
           flash: 'The Lip swallows. Far off, skiff-runners hesitate. You taste metal that is not yours.',
         },
       },
+      { id: 'back', label: 'Walk back to the Rim', tone: 'quiet', effects: { goto: 'maw:rim' } },
     ],
     intents: [
       {

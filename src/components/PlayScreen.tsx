@@ -25,6 +25,7 @@ import { encounterSpeaker, isEncounterResult } from '../game/encounter'
 import { coverBand, playCoverFile, playCoverKey } from '../game/art'
 import { bayLookout } from '../game/campJob'
 import { isPressureOverlay, pressureFace } from '../game/hunter'
+import { DISGUISE_SOFTEN_NOTE } from '../game/disguise'
 import { isShopOpen } from '../game/trade'
 import type { Choice, Faction, GameState } from '../game/types'
 import { helpEntries } from '../game/help'
@@ -117,7 +118,9 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
   function act(next: GameState) {
     const moved = screenKey(next) !== screenKey(state)
     const fightResult = isEncounterResult(state) || !!next.flags.encounterHere
-    if (moved && next.flash && !fightResult) {
+    // A note that only rides along (the Vessel cloth line) shows on the next screen; it is not a result to hold.
+    const noteOnly = next.flash === DISGUISE_SOFTEN_NOTE
+    if (moved && next.flash && !fightResult && !noteOnly) {
       setHeld({
         title: placeTitle,
         meta: hub ? hub.name : scene.id === 'ch1:storm' ? 'Camp-04' : scene.chapterId === 'cache-run' ? 'The Gullet' : null,
@@ -131,6 +134,13 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     }
     onChange(next)
   }
+  // iOS can leave the page scrolled after the keyboard closes, which pushes the buttons off the bottom.
+  function resetPageScroll() {
+    if (typeof window !== 'undefined' && (window.scrollY || document.documentElement.scrollTop)) window.scrollTo(0, 0)
+  }
+  useEffect(() => {
+    resetPageScroll()
+  }, [state.sceneId, state.flash, heldRaw])
   function continueOn() {
     setHeld(null)
     onChange({ ...state, flash: undefined })
@@ -440,6 +450,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
           >
             <input
               ref={sayRef}
+              onBlur={resetPageScroll}
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               placeholder={

@@ -2676,7 +2676,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v87'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v88'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -5105,3 +5105,25 @@ console.log('OK', {
   vessel: Object.keys(DOORS.vessel.items),
 })
 
+
+// v88: no scene is a dead end. Every scene, in every door, from a fresh state, shows at least one choice.
+{
+  const zero: string[] = []
+  for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
+    for (const sc of ALL_SCENES) {
+      const s = { ...GE.newGame(door), sceneId: sc.id, hubId: sc.hubId ?? null } as GameState
+      if (!GE.visibleChoices(s).length) zero.push(`${door}:${sc.id}`)
+    }
+  }
+  assert(!zero.length, `scenes with zero visible choices: ${zero.join(', ')}`)
+  const lip = { ...GE.newGame('outcast'), sceneId: 'maw:lip', hubId: 'redmaw' } as GameState
+  const lipRows = GE.visibleChoices(lip)
+  assert(lipRows.some((c) => c.id === 'bury' && c.locked === 'Needs a Glint.') && lipRows.some((c) => c.id === 'back'), 'Hollow Lip: Bury stays visible and locked without a Glint; a way back')
+  const play = readFileSync('src/components/PlayScreen.tsx', 'utf8')
+  assert(/noteOnly = next\.flash === DISGUISE_SOFTEN_NOTE/.test(play) && /onBlur=\{resetPageScroll\}/.test(play), 'Vessel cloth note alone does not hold a result screen; page scroll resets after the keyboard')
+  let tw = { ...GE.newGame('prisoner'), sceneId: 'camp:tower', hubId: 'camp04', items: { ceremonial_cloth: 1 }, equipped: { garment: 'ceremonial_cloth' } } as unknown as GameState
+  tw = GE.applyEffect(tw, GE.visibleChoices(tw).find((c) => c.id === 'talk')!.effects)
+  assert(tw.sceneId === 'camp:valerius' && GE.visibleChoices(tw).length > 0, 'Approach Valerius in the cloth lands on Valerius with choices')
+  const plain = GE.applyEffect({ ...GE.newGame('prisoner'), sceneId: 'camp:tower', hubId: 'camp04' } as GameState, getScene('camp:tower').choices.find((c) => c.id === 'talk')!.effects)
+  assert(!(plain.flash ?? '').includes(DG.DISGUISE_SOFTEN_NOTE), 'no Vessel cloth line when the cloth is not worn')
+}
