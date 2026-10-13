@@ -2688,7 +2688,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v102'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v103'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -5559,4 +5559,13 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   assert(/dry stone well/.test(c.body) && /weathered and stubbled/.test(c.body) && /barbed wire/.test(c.body) && /no rifle/.test(c.body), 'v102: Corvin reads like his art')
   assert(/dry well/.test(c.variants?.[0]?.body ?? ''), 'v102: return visit matches')
   console.log('v102 Corvin checks OK')
+}
+
+// v103: Unpermitted Hoard art.
+{
+  const s = { ...GE.newGame('prisoner'), sceneId: 'camp:relic', hubId: 'camp04' }
+  assert(playCoverKey(s, getScene('camp:relic')) === 'hoard' && playCoverFile('hoard') === 'hoard.jpg', 'v103: the hoard scene shows hoard.jpg')
+  assert(existsSync('public/covers/hoard.jpg') && readFileSync('public/sw.js', 'utf8').includes('covers/hoard.jpg'), 'v103: hoard art is on disk and precached')
+  assert(COVER_BAND.hoard[0] >= 0.35 && COVER_BAND.hoard[1] >= 0.95, 'v103: the phone crop keeps the crate')
+  console.log('v103 hoard checks OK')
 }

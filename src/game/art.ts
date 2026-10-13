@@ -40,6 +40,7 @@ export type CoverKey =
   | 'hotwire'
   | 'carapace'
   | 'jodi'
+  | 'hoard'
 
 const FILES: Record<CoverKey, string> = {
   world: 'world.jpg',
@@ -77,6 +78,7 @@ const FILES: Record<CoverKey, string> = {
   hotwire: 'hotwire.jpg',
   carapace: 'carapace.jpg',
   jodi: 'jodi.jpg',
+  hoard: 'hoard.jpg',
 }
 
 /**
@@ -137,6 +139,8 @@ export const COVER_BAND: Record<CoverKey, [number, number]> = {
   carapace: [0.0, 0.75],
   // Jodi's face, the snake on her arm, and the vulture behind her are in the top half.
   jodi: [0.04, 0.5],
+  // Kaelen's crate lead: the open crate with its tally marks sits lower left-center.
+  hoard: [0.42, 1.0],
 }
 
 export function coverBand(key: CoverKey): [number, number] {
@@ -204,6 +208,7 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   // The hotwire art is the one-time lookout beat: station down, Jaxson under his skiff.
   if (id === 'camp:bay') return bayLookout(state) ? 'hotwire' : 'skiffbay'
   if (id === 'camp:bay-pike') return 'bay_pike'
+  if (id === 'camp:relic') return 'hoard'
   if (id === 'camp:guard' || id === 'camp:sabotage') return 'guard'
   if (id === 'camp:yard' || id === 'camp:vats') return 'yard'
   if (id === 'camp:vents') return 'vents'
