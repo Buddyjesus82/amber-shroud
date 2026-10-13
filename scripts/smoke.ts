@@ -2688,7 +2688,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v105'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v106'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -5604,4 +5604,16 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   const camp = { ...GE.newGame('prisoner'), sceneId: 'crisis:camp', hubId: 'camp04' }
   assert(playCoverKey(camp, { id: 'crisis:camp', art: 'world', chapterId: 'ch1', hubId: 'camp04' } as never) !== 'down', 'v105: other crises keep hub art')
   console.log('v105 down checks OK')
+}
+
+// v106: the Court Guard carries a falchion, never a spear.
+{
+  for (const f of ['src/game/hunter.ts', 'src/game/encounter.ts', 'src/game/content/threshold.ts']) {
+    assert(!/spear/i.test(readFileSync(f, 'utf8')), `v106: no spear in ${f}`)
+  }
+  const voices = readFileSync('src/game/voices.ts', 'utf8')
+  const guard = voices.slice(voices.indexOf('  guard: {'), voices.indexOf('  },', voices.indexOf('  guard: {')))
+  assert(guard.length > 50 && !/spear/i.test(guard), 'v106: guard voice has no spear')
+  assert(readFileSync('src/game/hunter.ts', 'utf8').includes('A Court guard draws a curved falchion.'), 'v106: falchion intro line')
+  console.log('v106 falchion checks OK')
 }

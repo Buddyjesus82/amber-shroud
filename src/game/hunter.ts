@@ -89,7 +89,7 @@ export const VALERIUS_HUNT_APPEND = `He came himself. Cartel Heat dragged Overse
 
 "Escape already spent a Hound. This one is my feet." You are still on this ground.`
 
-export const THRESH_HUNT_APPEND = `The chant stutters on this ground. A Court guard lowers a spear. Thalia's gold is a crack in the hymn, not a hand on your collar.
+export const THRESH_HUNT_APPEND = `The chant stutters on this ground. A Court guard draws a curved falchion. Thalia's gold is a crack in the hymn, not a hand on your collar.
 
 "Fraud." You stay on this ground. Pay, hide, fight, or run to the paddock yourself.`
 
@@ -368,13 +368,13 @@ function threshHuntChoices(state: GameState): Choice[] {
   const rows: Choice[] = [
     {
       id: 'thresh-scrip',
-      label: 'Press scrip into the spear-hand',
+      label: 'Press scrip into his sword-hand',
       sub: 'Paper. You stay.',
       show: { item: 'scrip' },
       effects: stay(state, {
         remove: { scrip: 1 },
         heat: { seekers: -1 },
-        flash: 'The spear lifts. Paper beats a hymn if the hymn is underpaid. You are still here.',
+        flash: 'The falchion drops an inch. Paper beats a hymn if the hymn is underpaid. You are still here.',
       }),
     },
     {
@@ -385,17 +385,17 @@ function threshHuntChoices(state: GameState): Choice[] {
       effects: stay(state, {
         remove: { glints: 1 },
         heat: { seekers: 1 },
-        flash: 'He palms the Glint and does not thank you. The spear turns. Seekers Heat ticks. You did not move.',
+        flash: 'He palms the Glint and does not thank you. The falchion turns away. Seekers Heat ticks. You did not move.',
       }),
     },
     {
       id: 'thresh-fight',
-      label: 'Meet the spear',
+      label: 'Meet the falchion',
       sub: 'Fight it out. Health takes the hits. You stay.',
       tone: 'danger',
       enable: { healthMin: 1 },
       locked: 'Too hurt to fight.',
-      effects: beginEncounter(state, 'courtguard', 'The spear comes down level. This ground is the fight.'),
+      effects: beginEncounter(state, 'courtguard', 'The falchion comes up. This ground is the fight.'),
     },
     {
       id: 'thresh-hide',
@@ -416,7 +416,7 @@ function threshHuntChoices(state: GameState): Choice[] {
       show: { any: [{ slot: 'armor' }, { slot: 'cloak' }] },
       effects: stay(state, {
         pressure: 1,
-        flash: 'The cloth does the lying. The spear hesitates. You never left this ground.',
+        flash: 'The cloth does the lying. The falchion hesitates. You never left this ground.',
       }),
     },
     {
@@ -443,7 +443,7 @@ function threshHuntChoices(state: GameState): Choice[] {
         pressure: 1,
         heat: { seekers: 1 },
         unsetFlag: CLEAR,
-        flash: 'You spend the run. Oram puts a Strider between you and the spear. That was your feet, not a yank.',
+        flash: 'You spend the run. Oram puts a Strider between you and the falchion. That was your feet, not a yank.',
       },
     })
   }

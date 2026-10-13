@@ -261,7 +261,7 @@ export const VOICES: Record<string, Voice> = {
   },
   guard: {
     lines: [
-      'The guard\'s spear does not move. "Hymn or nothing."',
+      'The guard\'s falchion does not move. "Hymn or nothing."',
       '"State your business. Holy business."',
       'The guard looks past you, at the court.',
     ],
@@ -269,8 +269,8 @@ export const VOICES: Record<string, Voice> = {
     price: '"No trade here. This is a door."',
     who: '"A guard. That is all a guard needs to be."',
     doing: '"Guarding. You are what I guard against."',
-    what: '"A spear. Blessed. Still sharp."',
-    refuse: 'The spear dips an inch toward you.',
+    what: '"A Seeker blade. Blessed. Still sharp."',
+    refuse: 'The falchion tips an inch toward you.',
     unknown: '"Ask the court."',
   },
   ossa: {

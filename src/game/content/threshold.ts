@@ -317,7 +317,7 @@ Oram is here more often than he is in the Court. He prefers the animals to the h
     hubId: 'threshold',
     kind: 'place',
     title: 'Guard Post',
-    body: `The guard is sunburn and belief. His spear has never met the person who made it. Past him are the dunes, and the idea of leaving.`,
+    body: `The guard is sunburn and belief. His falchion has never met the person who made it. Past him are the dunes, and the idea of leaving.`,
     choices: [
       {
         id: 'talk',
@@ -400,7 +400,7 @@ Oram is here more often than he is in the Court. He prefers the animals to the h
     title: 'The Cloth Fails',
     body: `The Court\'s chant stutters. Someone has used the word fraud like a knife.
 
-Thalia\'s gold is ruined. The guard remembers he has a spear. Oram, traitor-kind, flicks his eyes at the paddock.
+Thalia\'s gold is ruined. The guard remembers he has a blade. Oram, traitor-kind, flicks his eyes at the paddock.
 
 This is the hour a fake Vessel takes the Gullet or becomes a lesson.`,
     choices: [
@@ -429,7 +429,7 @@ This is the hour a fake Vessel takes the Gullet or becomes a lesson.`,
           goto: 'thresh:paddock',
           ticks: 1,
           pressure: 2,
-          flash: 'He puts a Strider between you and the spear. "Hour," he says. "Not two."',
+          flash: 'He puts a Strider between you and the falchion. "Hour," he says. "Not two."',
         },
       },
     ],
