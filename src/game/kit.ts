@@ -337,6 +337,10 @@ export function effectPills(fx: Effect): CostPill[] {
     for (const id of Object.keys(fx.add) as ItemId[]) {
       const n = fx.add[id] ?? 0
       if (n <= 0 || !ITEMS[id]) continue
+      if (id === 'glints' || id === 'scrap') {
+        pills.push({ kind: 'item', text: `+ ${moneyLabel({ [id]: n })}` })
+        continue
+      }
       const stat = gearStat(ITEMS[id])
       const name = n > 1 ? `${ITEMS[id].name} ×${n}` : ITEMS[id].name
       pills.push({ kind: 'item', text: stat ? `${name} · ${stat}` : name })
@@ -344,13 +348,13 @@ export function effectPills(fx: Effect): CostPill[] {
   }
   if (fx.pay) {
     const label = moneyLabel(fx.pay)
-    if (label) pills.push({ kind: 'item', text: label })
+    if (label) pills.push({ kind: 'item', text: `− ${label}` })
   }
   if (fx.remove) {
     for (const id of Object.keys(fx.remove) as ItemId[]) {
       const n = fx.remove[id] ?? 0
       if (n <= 0 || !ITEMS[id]) continue
-      pills.push({ kind: 'item', text: n > 1 ? `${ITEMS[id].name} ×${n}` : ITEMS[id].name })
+      pills.push({ kind: 'item', text: id === 'glints' || id === 'scrap' ? `− ${moneyLabel({ [id]: n })}` : `− ${n > 1 ? `${ITEMS[id].name} ×${n}` : ITEMS[id].name}` })
     }
   }
   if (fx.heat) {

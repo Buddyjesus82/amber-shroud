@@ -1053,7 +1053,7 @@ The Seekers sent their Vessel to Red Maw for what opens the Spire, and they mean
           ticks: 1,
           heat: { seekers: -1 },
           flag: { brinMet: true, brinPour: true },
-          flash: 'They watch you pour the Drop. "Useful. Do not become a hymn yet." Seeker Heat drops. Varro is ahead, and he will not sell a heading to a Vessel. Sybella will.',
+          flash: 'They watch you pour the Drop. "Useful. Do not become a hymn yet." Seeker Heat drops. Varro is ahead, and he will not sell a heading to a Vessel. Sybella already knows you are coming.',
         },
       },
       {

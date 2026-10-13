@@ -476,6 +476,12 @@ He is the one who can break you out. He hotwires Ironclad Skiff-Striders, and he
         mode: 'append',
         body: `The wrench is yours now. Guard station. Then the bay. He will be under the hull.`,
       },
+      {
+        // He is under the hull in Skiff Bay now. One place at a time.
+        if: { all: [{ flag: 'jaxsonInside' }, { flag: 'guardDown' }, { flagUnset: 'striderHot' }] },
+        mode: 'replace',
+        body: `The stall is cold metal now. The wrench is gone, and so is Jaxson. He is in Skiff Bay, under the hull.`,
+      },
     ],
     choices: [
       {
@@ -495,6 +501,7 @@ He is the one who can break you out. He hotwires Ironclad Skiff-Striders, and he
         id: 'talk',
         label: 'Talk to Jaxson',
         sub: 'Valerius. The way out.',
+        show: { not: { all: [{ flag: 'jaxsonInside' }, { flag: 'guardDown' }, { flagUnset: 'striderHot' }] } },
         effects: { goto: 'camp:jaxson', ticks: 1, pressure: 1 },
       },
       {

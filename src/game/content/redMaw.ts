@@ -45,7 +45,7 @@ The ground out here takes more than the camp ever did. Sap goes faster. Hunters 
       {
         if: { flag: 'ossaStillness' },
         mode: 'append',
-        body: `Ossa's knot sits at your brow. She nodded, back at the bay, the way you'd nod at a grave marker. The test is still in her pocket.`,
+        body: `Ossa's knot sits at your brow. She nodded when she gave it, the way you'd nod at a grave marker. The test is still in her pocket.`,
       },
       {
         if: { flag: 'hollowMarked' },
@@ -188,7 +188,7 @@ Varro is at his stall. He has watched buyers fail and kept the tray anyway. On i
       {
         if: { flag: 'ossaAlly' },
         mode: 'replace',
-        body: `Ossa is here. The stilts are already standing. She does not repair them again. She nods the way you would nod at a grave marker, then looks at your hands to see what you kept.`,
+        body: `Ossa is here. The stilts are already standing. She nods the way you would nod at a grave marker, then looks at your hands to see what you kept.`,
       },
       {
         if: { flag: 'ossaRobbed' },
@@ -224,7 +224,7 @@ Varro is at his stall. He has watched buyers fail and kept the tray anyway. On i
     kind: 'talk',
     title: 'Ossa',
     speaker: 'Ossa',
-    body: `"I'm alive," Ossa says, which is both greeting and warning. "The Maw wants the cache. Sybella wants whoever the sand keeps. The stilts are done. Don't steal from me twice."`,
+    body: `"I'm alive," Ossa says, which is both greeting and warning. "The Maw wants the cache. Sybella wants whoever walks out of the sand."`,
     variants: [
       {
         if: { flag: 'ossaToldDay' },
@@ -241,7 +241,7 @@ Varro is at his stall. He has watched buyers fail and kept the tray anyway. On i
       {
         if: { all: [{ flag: 'ossaAlly' }, { flagUnset: 'ossaStillness' }] },
         mode: 'replace',
-        body: `"I'm alive," she says. "You took the Glint, or the Drop, or you fixed the lash and kept walking. The stilts are standing. Today we drink slow and watch the skiff."`,
+        body: `"I'm alive," she says. "The stilts are standing. Today we drink slow and watch the skiff."`,
       },
       {
         if: { flag: 'ossaRobbed' },
@@ -728,14 +728,14 @@ The gear-marked rib opened a handspan and gave you what was in the mouth of it. 
     title: 'The Wreck',
     body: `A wrecked Skiff-Strider lies half sunk in a rib's shadow. Someone has made a bench of it. A big man with a brass jaw works on hoarded parts at the far end and does not look up. He waves a hand at the bench: sit if you want.
 
-You can rest here or haul parts for him. None of it opens Kallik's cache.`,
+You can bind your cuts, rest here, or haul parts for him. None of it opens Kallik's cache.`,
     variants: [
       {
         if: { door: 'prisoner' },
         mode: 'replace',
         body: `A wrecked Skiff-Strider, half sunk in a rib's shadow. Jaxson Vance has made a bench of it. Hoarded parts. A way-out rig that is not a way out yet. The brass jaw ticks when he works.
 
-"Repairs. A side job hauling parts. Salve if you are cut. I build exits for people the Hollows keep. You are early." You can bind his cut, rest, or haul. None of it opens Kallik's cache.`,
+"Repairs. A side job hauling parts. Salve if you are cut. I build exits for people the Hollows keep. You are early." You can bind your cuts, rest, or haul. None of it opens Kallik's cache.`,
       },
       {
         if: { all: [{ door: 'prisoner' }, { flag: 'oilResentful' }] },
@@ -782,6 +782,21 @@ You can rest here or haul parts for him. None of it opens Kallik's cache.`,
         },
       },
       {
+        id: 'bind',
+        label: 'Bind your cuts with salve',
+        sub: 'Uses one Resin Salve. Health comes back a few pips.',
+        show: { item: 'salve' },
+        enable: { not: { healthMin: 6 } },
+        locked: 'You are not hurt. The salve stays in the tin.',
+        effects: {
+          remove: { salve: 1 },
+          health: 3,
+          ticks: 1,
+          still: true,
+          flash: 'Resin salve on the cut. Health comes back a few pips. The tin is lighter.',
+        },
+      },
+      {
         id: 'rest',
         label: 'Rest on the bench',
         sub: 'Costs a little sap. Your health comes back a little.',
@@ -819,6 +834,33 @@ You can rest here or haul parts for him. None of it opens Kallik's cache.`,
         show: { flag: 'oilResentful' },
         reply: 'He lets you near the jaw. The grudge is a cut. Close it or leave it.',
         effects: { ticks: 1 },
+      },
+    ],
+  },
+  {
+    id: 'ch1:end',
+    hubId: 'redmaw',
+    kind: 'ending',
+    art: 'hunger',
+    title: 'End of Chapter One',
+    body: `You made it to the Maw Rim.
+
+Chapter One ends here. More of the story is coming.
+
+You can keep playing from the Rim, or go back to the title.`,
+    choices: [
+      {
+        id: 'continue',
+        label: 'Continue',
+        sub: 'Keep playing from the Maw Rim.',
+        effects: { goto: 'maw:rim' },
+      },
+      {
+        id: 'title',
+        label: 'Back to the title',
+        sub: 'Your game is saved. Continue from the title to come back here.',
+        tone: 'quiet',
+        effects: {},
       },
     ],
   },

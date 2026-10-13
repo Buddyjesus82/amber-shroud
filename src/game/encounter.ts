@@ -32,7 +32,7 @@ const SPECS: Spec[] = [
   {
     kind: 'cutter',
     name: 'Rim cutter',
-    strike: 3,
+    strike: 2,
     shell: 2,
     hp: 2,
     line: 'A rim-cutter stands up out of scrap-shade. Half a person, half a stolen knife. Knife-smile. Saleable pockets. Optional throat.',
@@ -48,7 +48,7 @@ const SPECS: Spec[] = [
   {
     kind: 'pup',
     name: 'Shard-pup',
-    strike: 4,
+    strike: 3,
     shell: 2,
     hp: 2,
     line: 'A Shard-pup, already a jaw. Cartel leftovers. Fight or give the road.',

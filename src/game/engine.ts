@@ -110,6 +110,11 @@ export const KAELEN_HELD_SCENES = [
 /** His road rumor (the same line as his Maw ask in his pack). */
 const KAELEN_ROAD_RUMOR =
   '"Kallik. Long dead. Buried a haul in the Red Maw and carved a nine-tooth gear on the second rib from the jaw. Blind picks waste you. The mark, the scratch, and this rumor narrow it."'
+/** The short end-of-chapter screen on the first arrival at the Maw Rim. */
+export const CHAPTER_ONE_END = 'ch1:end'
+
+/** Once you have heard Kallik's rumor, he does not repeat it. */
+export const KAELEN_NO_NEW_RUMOR = '"Nothing new on the road. You already have Kallik. The rib is where I said."'
 
 /** Trade screens: no rolls while you are in one (Kaelen, Jodi, Korvan, Jaxson's stall, every shop and rumor counter). */
 const TRADE_SCENES = new Set(['roam:kaelen', 'camp:kaelen', 'camp:kaelen-rumors', 'camp:relic', 'thresh:kaelen', 'thresh:kaelen-rumors', 'spine:jodi', 'spine:korvan', 'camp:lean'])
@@ -592,6 +597,18 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     next.flags = flags
   }
 
+  // First time at the Maw Rim, in any door: Chapter One ends here. Saves already past the Rim skip it.
+  if (
+    next.sceneId === 'maw:rim' &&
+    state.sceneId !== 'maw:rim' &&
+    !next.flags.chapter1EndSeen &&
+    !next.flags.rimRoadSeen &&
+    !sapCollapsed
+  ) {
+    next.sceneId = CHAPTER_ONE_END
+    next.flags = { ...next.flags, chapter1EndSeen: true }
+  }
+
   const arrived = getScene(next.sceneId)
   if (arrived.hubId) next.hubId = arrived.hubId
   if (arrived.chapterId) next.chapterId = arrived.chapterId
@@ -632,7 +649,8 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   }
   // A word or a deal with the person in front of you resolves before anything hunts you: a talk beat never
   // opens an interrupting hunt or road fight. The next beat on the new ground can.
-  const talkBeat = getScene(state.sceneId).kind === 'talk'
+  // Stepping off the End of Chapter One screen counts the same: nothing jumps you on the way back to the Rim.
+  const talkBeat = getScene(state.sceneId).kind === 'talk' || state.sceneId === CHAPTER_ONE_END
   const interrupt = lingered && !clearingHunt && !talkBeat ? hunterScene(next) : null
   const fightBeat = !!fx.resolveEncounter || !!next.flags.encounterHere || !!fx.unsetFlag?.includes('encounterHere')
   const arrivedKind = getScene(next.sceneId).kind
@@ -661,6 +679,10 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   if (next.sceneId === 'camp:kaelen' || next.sceneId === 'thresh:kaelen') {
     const hub = next.sceneId.startsWith('camp') ? 'camp04' : 'threshold'
     next.flags = { ...next.flags, kaelenHub: hub }
+  }
+  // You hear his name when you meet him. Before that he is "the trader".
+  if ((next.sceneId === 'camp:kaelen' || next.sceneId === 'thresh:kaelen' || next.sceneId === 'roam:kaelen') && !next.flags.kaelenKnown) {
+    next.flags = { ...next.flags, kaelenKnown: true }
   }
   if (
     lingered &&
@@ -1508,7 +1530,7 @@ function withKaelenPass(state: GameState, rows: Choice[]): Choice[] {
       id: 'kaelen-rumors',
       label: known ? 'Ask Kaelen about rumors' : 'Ask the trader about rumors',
       sub: 'What he heard on the last road.',
-      effects: { ...visit, flag: { ...visit.flag, heardKallik: true }, flash: KAELEN_ROAD_RUMOR },
+      effects: { ...visit, flag: { ...visit.flag, heardKallik: true }, flash: state.flags.heardKallik ? KAELEN_NO_NEW_RUMOR : KAELEN_ROAD_RUMOR },
     },
   ]
 }

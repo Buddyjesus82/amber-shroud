@@ -64,8 +64,8 @@ const oiltooth: IntentRule[] = [
     tags: [...TRADE, 'trader', 'merchant', 'fence', 'goods', 'rumor', 'heading'],
     show: { flagUnset: 'kaelenKnown' },
     reply:
-      '"I do not sell Drops. I do not sell headings. There is a trader at the Wire who does — Kaelen the Sifter. Scrap for a Drop. Glints for intel. I sell a Strider that is not theirs to sell."',
-    effects: { ticks: 1, flag: { kaelenKnown: true } },
+      '"I do not sell Drops. I do not sell headings. There is a trader at the Wire who does. Scrap for a Drop. Glints for intel. I sell a Strider that is not theirs to sell."',
+    effects: { ticks: 1 },
   },
   {
     tags: TRADE,

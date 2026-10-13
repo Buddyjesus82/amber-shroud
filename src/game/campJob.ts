@@ -2,7 +2,7 @@ import type { Choice, Cond, Effect, GameState } from './types'
 
 export const TAKE_INSIDE_JOB: Effect = {
   add: { wrench: 1 },
-  flag: { jaxsonInside: true, jaxsonPlan: true, kaelenKnown: true, wrenchPath: true, jaxsonFavor: true, cartelNotice: true },
+  flag: { jaxsonInside: true, jaxsonPlan: true, wrenchPath: true, jaxsonFavor: true, cartelNotice: true },
   ticks: 1,
   flash:
     'The oversized wrench is heavier than pride. "West steam-vent. Guard station. storm-hour. I hotwire. You can still pay Kaelen for a heading first. Do not mix the jobs."',
@@ -14,7 +14,7 @@ export const PLAN_UNHEARD: Cond = { all: [{ flagUnset: 'jaxsonPlan' }, { flagUns
 
 /** "Ask about his plan": beat 2 of Jaxson's first talk. Kaelen's name is earned here. */
 export const HEAR_PLAN: Effect = {
-  flag: { jaxsonPlan: true, kaelenKnown: true },
+  flag: { jaxsonPlan: true },
   goto: 'camp:jaxson',
   ticks: 1,
 }
