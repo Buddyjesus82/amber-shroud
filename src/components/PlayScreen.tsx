@@ -26,6 +26,7 @@ import { coverBand, playCoverFile, playCoverKey } from '../game/art'
 import { bayLookout } from '../game/campJob'
 import { isPressureOverlay, pressureFace } from '../game/hunter'
 import { DISGUISE_SOFTEN_NOTE } from '../game/disguise'
+import { ROADS, roadText } from '../game/roads'
 import { isShopOpen } from '../game/trade'
 import type { Choice, Faction, GameState } from '../game/types'
 import { helpEntries } from '../game/help'
@@ -71,6 +72,10 @@ type HeldScreen = {
 
 function heldStamp(s: GameState): string {
   return `${s.sceneId}|${s.updatedAt ?? 0}|${s.ticks}`
+}
+
+function cap(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
 export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Props) {
@@ -123,12 +128,12 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     if (moved && next.flash && !fightResult && !noteOnly) {
       setHeld({
         title: placeTitle,
-        meta: hub ? hub.name : scene.id === 'ch1:storm' ? 'Camp-04' : scene.chapterId === 'cache-run' ? 'The Gullet' : null,
+        meta: hub ? hub.name : scene.id === 'ch1:storm' ? 'Camp-04' : scene.chapterId === 'cache-run' ? cap(ROADS[state.door].name) : null,
         face,
-        body: bodyOf(state),
+        body: roadText(state.door, bodyOf(state)),
         art: artSrc,
         band: artBand,
-        result: next.flash,
+        result: roadText(state.door, next.flash),
         stamp: heldStamp(next),
       })
     }
@@ -153,7 +158,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     ? 'Down'
     : state.flags.encounterHere
       ? encounterSpeaker(state)
-      : (pressureFace(state) ?? scene.title ?? hub?.name ?? 'The dunes')
+      : (pressureFace(state) ?? roadText(state.door, scene.title) ?? hub?.name ?? 'The dunes')
   const shopOpen = isShopOpen(state)
   const hookRow = !!(!overlay && !shopOpen && hub && hookOn && hook && showNav)
   const closeRow = !!(!overlay && !shopOpen && closing && showNav)
@@ -182,8 +187,8 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     optionRows.push({
       key: 'hunger-hook',
       tone: state.flags.chapter1Done ? 'quiet' : 'hunger',
-      label: hook.label,
-      sub: hook.sub,
+      label: roadText(state.door, hook.label),
+      sub: roadText(state.door, hook.sub),
       onClick: () =>
         onChange(
           applyEffect(state, {
@@ -198,7 +203,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     optionRows.push({
       key: 'closing',
       tone: 'danger',
-      label: 'The desert is closing. Take the Gullet.',
+      label: roadText(state.door, 'The desert is closing. Take the Gullet.'),
       sub: 'Pressure. The camp will not hold the hour.',
       onClick: () =>
         onChange(
@@ -216,11 +221,11 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     optionRows.push({
       key: c.id,
       tone: `${c.tone ?? 'default'}${on ? '' : ' locked'}`,
-      label: c.label,
-      sub: c.sub,
+      label: roadText(state.door, c.label),
+      sub: roadText(state.door, c.sub),
       group: c.group,
       locked: !on,
-      lockedNote: !on ? c.locked : undefined,
+      lockedNote: !on ? roadText(state.door, c.locked) : undefined,
       pills: effectPills(c.effects),
       onClick: () => on && act(applyEffect(state, c.effects)),
     })
@@ -357,7 +362,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
         <div className="place-line">
           <strong>{held ? held.title : placeTitle}</strong>
           <span className="place-meta">
-            {held ? held.meta : hub ? hub.name : scene.id === 'ch1:storm' ? 'Camp-04' : scene.chapterId === 'cache-run' ? 'The Gullet' : null}
+            {held ? held.meta : hub ? hub.name : scene.id === 'ch1:storm' ? 'Camp-04' : scene.chapterId === 'cache-run' ? cap(ROADS[state.door].name) : null}
             {savedCue ? <em className="saved-cue">Saved</em> : null}
           </span>
         </div>
@@ -374,13 +379,13 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
 
         <div className="story" ref={storyRef}>
           {(held ? held.face : face) ? <p className="speaker">{held ? held.face : face}</p> : null}
-          {(held ? held.body : bodyOf(state))
+          {(held ? held.body : roadText(state.door, bodyOf(state)))
             .split('\n\n')
             .map((p, i) => (
               <p key={i}>{p}</p>
             ))}
           {held ? <p className="flash result-flash">{held.result}</p> : null}
-          {state.flash && !overlay && !held ? <p className="flash">{state.flash}</p> : null}
+          {state.flash && !overlay && !held ? <p className="flash">{roadText(state.door, state.flash)}</p> : null}
           {sapThin && scene.kind !== 'crisis' && !overlay && !held ? (
             <p className="pressure-note">
               {state.sap <= 0

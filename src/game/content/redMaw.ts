@@ -1,3 +1,4 @@
+import { ROADS } from '../roads'
 import type { Choice, Scene } from '../types'
 
 /** Resolve Sybella and leave her smoke. Underlying ground if she interrupted it, otherwise the Approach. */
@@ -23,6 +24,9 @@ export const redMawScenes: Scene[] = [
 
 The ground out here takes more than the camp ever did. Sap goes faster. Hunters know the roads.`,
     variants: [
+      { if: { all: [{ door: 'prisoner' }, { flagUnset: 'rimRoadSeen' }] }, mode: 'append', body: ROADS.prisoner.rim },
+      { if: { all: [{ door: 'outcast' }, { flagUnset: 'rimRoadSeen' }] }, mode: 'append', body: ROADS.outcast.rim },
+      { if: { all: [{ door: 'vessel' }, { flagUnset: 'rimRoadSeen' }] }, mode: 'append', body: ROADS.vessel.rim },
       {
         if: { flag: 'chapter1Done' },
         mode: 'append',

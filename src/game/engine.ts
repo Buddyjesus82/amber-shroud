@@ -512,6 +512,7 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
 
   if (dest) {
     next.flags = markMetOnLeave(state.sceneId, dest, next.flags)
+    if (state.sceneId === 'maw:rim' && dest !== 'maw:rim') next.flags = { ...next.flags, rimRoadSeen: true }
     next.sceneId = dest
     if (dest !== state.sceneId && (next.flags.shopShelf || next.flags.rumorShelf)) {
       const flags = { ...next.flags }
@@ -1283,7 +1284,7 @@ export function interpret(state: GameState, raw: string): GameState {
   const shown = visibleChoices(state)
   const enabled = shown.filter((c) => isChoiceOn(state, c.enable))
 
-  if (isHungerCommand(text)) {
+  if (isHungerCommand(text, state.door)) {
     const fx = hungerCommandEffect(state, enabled)
     if (fx) return withVerb(applyEffect(state, fx), 'hunger')
     const named = enabled.filter((c) => /\b(?:hunger|gullet)\b/i.test(`${c.label} ${c.sub ?? ''}`))

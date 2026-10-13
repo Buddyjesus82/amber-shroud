@@ -321,7 +321,7 @@ export const HUBS: Record<string, HubDef> = {
       show: { flag: 'hungerKnown' },
     },
     mawLegs: 4,
-    mawNote: 'Red Maw is days beyond the Wire. Cartel hinterland: the farthest door from the Maw.',
+    mawNote: 'Red Maw is days east, beyond the Wire, at the end of the Gullet. Cartel hinterland: the farthest door from the Maw.',
   },
   spine: {
     id: 'spine',
@@ -342,7 +342,7 @@ export const HUBS: Record<string, HubDef> = {
       show: { flag: 'hungerKnown' },
     },
     mawLegs: 2,
-    mawNote: 'Red Maw is a hard day south. Stray country sits nearer the bite than Camp-04.',
+    mawNote: 'Red Maw is a hard day south, down the Bone Wash. Stray country sits nearer the bite than Camp-04.',
   },
   threshold: {
     id: 'threshold',
@@ -364,7 +364,7 @@ export const HUBS: Record<string, HubDef> = {
       show: { any: [{ flag: 'hungerKnown' }, { item: 'oram_map' }] },
     },
     mawLegs: 1,
-    mawNote: 'The sealed Spire lies beyond Red Maw. What opens it is at Red Maw, one short road northwest.',
+    mawNote: 'The sealed Spire lies beyond Red Maw. What opens it is at Red Maw, up the Pilgrim\'s Scar to the northwest.',
   },
   redmaw: {
     id: 'redmaw',
