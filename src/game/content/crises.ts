@@ -9,7 +9,7 @@ export const crisisScenes: Scene[] = [
     speaker: 'Jaxson Vance',
     body: `Sap hits zero in the pens like a light going out.
 
-You go to your knees in resin-slick dust. Jaxson is suddenly there — burly, grease-stained, brass jaw, a skimmed Drop of Oasis Sap forced against your lip. "I don't collect corpses. Corpses don't hotwire. Get up. Guard station. Strider. I am the inside man. If you want rumors, that is Kaelen — and they still charge."`,
+You go to your knees in resin-slick dust. Jaxson is suddenly there — burly, grease-stained, brass jaw, a skimmed Drop of Oasis Sap forced against your lip. "I don't collect corpses. Corpses don't hotwire. Get up. Guard station. Strider. I am the inside man. If you want rumors, that is Kaelen — and he still charges."`,
     choices: [
       {
         id: 'up',
@@ -120,7 +120,7 @@ Valerius's Hound-handler is already there — not kind. A Drop forced against yo
         mode: 'replace',
         body: `You go down on the Rim with nothing left in the glass.
 
-A Cartel clerk is already there — not kind. A Drop forced against your lip like inventory maintenance. "Ironwood property stands. Sybella is Seekers. She does not feed Cartel mouths. Get up. You are still a heading I can sell."`,
+A Seeker runner is already there — not kind. A Drop forced against your lip, quick, like a chore. "The handler is dead, so the Cartel is not coming for you. Get up. Sybella will want to know where you walk."`,
       },
       {
         if: { door: 'outcast' },
@@ -140,16 +140,41 @@ Sybella's shadow is cooler than the rock. She kneels — ceremonial, not tender 
       },
     ],
     choices: [
+      // Heat goes to whoever pulled you up. It rises only on the first rescue (mawRescued), so it cannot be farmed.
       {
         id: 'up',
         label: 'Get up. Stay hunted.',
-        show: { not: { door: 'vessel' } },
+        show: { all: [{ door: 'prisoner' }, { flagUnset: 'handlerDown' }] },
         effects: {
           sap: 3,
-          flag: { sybellaHunting: true },
+          flag: { sybellaHunting: true, mawRescued: true },
+          heat: { cartel: 1 },
+          goto: 'maw:rim',
+          flash: 'You live. The Cartel wrote it down. Cartel Heat rises.',
+        },
+      },
+      {
+        id: 'up',
+        label: 'Get up. Stay hunted.',
+        show: { all: [{ door: 'prisoner' }, { flag: 'handlerDown' }] },
+        effects: {
+          sap: 3,
+          flag: { sybellaHunting: true, mawRescued: true },
           heat: { seekers: 1 },
           goto: 'maw:rim',
-          flash: 'You live. Not by her hand. The skiff is still a warrant.',
+          flash: 'You live. A Seeker saw you fall. Seeker Heat rises.',
+        },
+      },
+      {
+        id: 'up',
+        label: 'Get up. Stay hunted.',
+        show: { door: 'outcast' },
+        effects: {
+          sap: 3,
+          flag: { sybellaHunting: true, mawRescued: true },
+          heat: { strays: 1 },
+          goto: 'maw:rim',
+          flash: 'You live. Not by her hand. A Stray poured it, and the Strays will remember. Stray Heat rises.',
         },
       },
       {
@@ -158,7 +183,7 @@ Sybella's shadow is cooler than the rock. She kneels — ceremonial, not tender 
         show: { door: 'vessel' },
         effects: {
           sap: 3,
-          flag: { sybellaBargain: true, sybellaHunting: true },
+          flag: { sybellaBargain: true, sybellaHunting: true, mawRescued: true },
           add: { kohl_smear: 1 },
           heat: { seekers: 1 },
           goto: 'maw:rim',

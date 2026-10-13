@@ -23,8 +23,8 @@ export const HEAT_FACTIONS: Record<
   },
   strays: {
     name: 'Strays',
-    watch: 'Jaxson, Silas, Kaelen the Sifter',
-    body: 'Dune-Strays collect favors and shade. Jaxson hotwires. Silas sells minutes. Kaelen sells rumors and funds a way out. Stray Heat is being known. Known is not safe.',
+    watch: 'Jaxson, Silas, the trader',
+    body: 'Dune-Strays collect favors and shade. Jaxson hotwires. Silas sells minutes. The trader sells rumors and funds a way out. Stray Heat is being known. Known is not safe.',
   },
 }
 

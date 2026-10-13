@@ -179,8 +179,12 @@ export function bodyOf(state: GameState): string {
   }
   const knock = pressureAppend(state)
   if (knock) return knock
+  if (state.flags.kaelenIntroNow && state.sceneId.includes('kaelen')) return `${sceneProse(state)}\n\n${KAELEN_INTRO}`
   return sceneProse(state)
 }
+
+/** The first time you meet him, he says his name. Until then every line calls him "the trader". */
+export const KAELEN_INTRO = '"Kaelen," he says, and taps his chest with a gloved thumb. "The Sifter. Now you know who to pay."'
 
 function pickCrisis(state: GameState): string {
   if (state.chapterId === 'cache-run') return 'crisis:dunes'
@@ -428,6 +432,10 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     fx = { ...fx }
     delete fx.pressure
   }
+  // A second Approach rescue still pours the Drop, but the Heat only rose the first time.
+  if (state.sceneId === 'crisis:maw' && state.flags.mawRescued && fx.heat) {
+    fx = { ...fx, heat: undefined, flash: fx.flash?.replace(/ (Cartel|Seeker|Stray) Heat rises\./, '') }
+  }
   const softened = softenCartel(state, fx)
   if (softened !== fx) fx = { ...softened, flash: fx.flash ? `${fx.flash} ${DISGUISE_SOFTEN_NOTE}` : DISGUISE_SOFTEN_NOTE }
   let dest = resolveDest(state, fx)
@@ -616,6 +624,8 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   if (sapCollapsed && !skipCrisis && arrived.kind !== 'crisis') {
     next.sap = 0
     next.flags = { ...next.flags, crisisFrom: state.sceneId }
+    // The rescue tells it now. A result line from the act that emptied you (a skim, a walk) does not ride along.
+    next.flash = undefined
     next.sceneId = pickCrisis(next)
     const c = getScene(next.sceneId)
     if (c.hubId) next.hubId = c.hubId
@@ -681,8 +691,13 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     next.flags = { ...next.flags, kaelenHub: hub }
   }
   // You hear his name when you meet him. Before that he is "the trader".
+  if (next.flags.kaelenIntroNow && state.flags.kaelenIntroNow) {
+    const flags = { ...next.flags }
+    delete flags.kaelenIntroNow
+    next.flags = flags
+  }
   if ((next.sceneId === 'camp:kaelen' || next.sceneId === 'thresh:kaelen' || next.sceneId === 'roam:kaelen') && !next.flags.kaelenKnown) {
-    next.flags = { ...next.flags, kaelenKnown: true }
+    next.flags = { ...next.flags, kaelenKnown: true, kaelenIntroNow: true }
   }
   if (
     lingered &&
@@ -830,6 +845,8 @@ export function canCraftScavPack(state: GameState): boolean {
   return !(state.items.scav_pack ?? 0) && (state.items.scrap ?? 0) >= SCAV_PACK_RECIPE.scrap && (state.items.sinew_cord ?? 0) >= SCAV_PACK_RECIPE.sinew_cord
 }
 
+export const TOO_DRY_TO_WALK = 'You are too dry to walk that far. Drink a Drop, rest, or scavenge first.'
+
 export function travelTo(state: GameState, sceneId: string): GameState {
   if (state.sceneId === sceneId) return state
   const gate = travelGate(state, sceneId)
@@ -838,6 +855,10 @@ export function travelTo(state: GameState, sceneId: string): GameState {
   }
   if (gate.sap <= 0) {
     return applyEffect(state, { goto: sceneId })
+  }
+  // After one rescue on the Approach, a walk will not drain you into another.
+  if (state.hubId === 'redmaw' && state.flags.mawRescued && state.sap <= gate.sap) {
+    return persist({ ...state, flash: TOO_DRY_TO_WALK })
   }
   return applyEffect(state, {
     goto: sceneId,

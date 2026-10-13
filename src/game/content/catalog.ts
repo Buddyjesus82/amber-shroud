@@ -191,7 +191,7 @@ export const ITEMS: Record<ItemId, ItemDef> = {
     kind: 'armor',
     slot: 'legs',
     shell: 1,
-    perk: 'Run gets away 10 in 100 more often.',
+    perk: 'Run gets away more often.',
     desc: 'Hide strips bound from ankle to knee. Legs slot, Shell 1.',
   },
   hide_gloves: {

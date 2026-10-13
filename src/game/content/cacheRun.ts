@@ -72,14 +72,19 @@ The road is not shared. The destination is. What it costs you depends on the lif
         body: `Camp-04's sirens are thinning behind you. Red Maw is days east of the wire, through Cartel country. Scrip will not buy the dunes. If the Cartel sees you leave, their Heat will.`,
       },
       {
-        if: { door: 'outcast' },
+        if: { all: [{ door: 'outcast' }, { not: { item: 'vial_drop' } }] },
         mode: 'append',
-        body: `Noon follows. Red Maw is a hard day south — closer than Ironwood, not a doorstep. The vial is still a dry throat unless you filled it.`,
+        body: `Noon follows. Red Maw is a hard day south — closer than Ironwood, not a doorstep. The vial is still a dry throat.`,
+      },
+      {
+        if: { all: [{ door: 'outcast' }, { item: 'vial_drop' }] },
+        mode: 'append',
+        body: `Noon follows. Red Maw is a hard day south — closer than Ironwood, not a doorstep. The vial is full. Make it last.`,
       },
       {
         if: { door: 'vessel' },
         mode: 'append',
-        body: `Oram's map is already a crime. The sealed Spire is at your back. The Seekers sent you for what opens it, and it is at Red Maw. This is the shortest road there, west. They expect a holy walk, not a thief on a Strider. If the Seekers see you, their Heat follows.`,
+        body: `Oram's map is already a crime. The sealed Spire is at your back. The Seekers sent you for what opens it, and it is at Red Maw. This is the shortest road there, northwest, up the Pilgrim's Scar. They expect a holy walk, not a thief on a Strider. If the Seekers see you, their Heat follows.`,
       },
       {
         if: { flag: 'cacheBlind' },

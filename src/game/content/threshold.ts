@@ -185,6 +185,7 @@ A niche in the wall holds a sacrament Drop behind a lattice. Taking it from a ch
       {
         id: 'sybella',
         label: 'Ask why Sybella hunts',
+        show: { flagUnset: 'heardSybellaRumor' },
         effects: {
           flag: { sybellaNamed: true, heardSybellaRumor: true },
           ticks: 1,

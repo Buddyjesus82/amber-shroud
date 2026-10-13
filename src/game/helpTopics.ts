@@ -23,10 +23,10 @@ const FIGHT_SECTIONS: HelpSection[] = [
     rows: [
       { key: 'STRIKE', text: 'How hard you hit. Your Main hand weapon sets it, plus 1 for a blade or club in the Off hand. Bare hands are 1.' },
       { key: 'SHELL', text: 'How much a hit is blunted. Your worn armor pieces and a shield add up to it, up to 5. No armor is 0.' },
-      { key: 'SWING', text: 'Each exchange, both sides add 0, 1, or 2 to Strike.' },
-      { key: 'DAMAGE', text: 'Strike + swing - Shell. Never less than 1. You and the enemy hit each other in the same exchange.' },
+      { key: 'LUCK', text: 'Every exchange adds a little luck to both sides.' },
+      { key: 'DAMAGE', text: 'Your Strike against their Shell decides how hard you hit. Their Strike against your Shell decides how hard they hit back. A landed hit always does some damage. You both hit in the same exchange.' },
       { key: 'HEALTH', text: 'Hits take Health. You start at 6. Sap is for thirst and walking.' },
-      { key: 'LOG', text: 'After each exchange the log says it plainly: "You hit the jackal for 3." and "The jackal hits you for 1." Anything that changed a hit is named in brackets, like (feint +2) or (high ground +1).' },
+      { key: 'LOG', text: 'After each exchange the log says it plainly: "You hit the jackal for 3." and "The jackal hits you for 1." Anything that changed a hit gets its own short line, like "Feint: +2 to your hit." or "High ground: +1 to your hit."' },
       { key: 'GEAR', text: 'Main hand sets Strike; a short blade or club in the Off hand adds 1. Body, Cloak, Head, Legs, Hands, and a shield add to Shell, up to 5. A garment adds nothing in a fight.' },
       { key: 'ENEMY', text: 'The fight card lists their Strike, Shell, and Health.' },
     ],
@@ -36,17 +36,17 @@ const FIGHT_SECTIONS: HelpSection[] = [
     rows: [
       { key: 'Fight', text: 'One exchange per tap. Plain Strike against Strike.' },
       { key: 'Guard', text: 'You do not hit this exchange. Their hit on you is 2 less.' },
-      { key: 'Feint', text: 'You do not hit this exchange. Their hit on you is 1 less, and your next Fight gets swing +2. You cannot feint again until you Fight.' },
-      { key: 'Throw sand', text: 'Once per fight. You do not hit. About 4 in 10 they miss this exchange and the next. If it fails, they hit as normal. Against an Amber Husk (no eyes), sand almost never works.' },
+      { key: 'Feint', text: 'You do not hit this exchange. Their hit on you is 1 less, and your next Fight hits harder. You cannot feint again until you Fight.' },
+      { key: 'Throw sand', text: 'Once per fight. You do not hit. Risky. If it works, they miss this exchange and the next. If it fails, they hit as normal. Against an Amber Husk (no eyes), sand almost never works.' },
       { key: 'Aim for the core', text: 'Amber Husk only, once per fight. About half the time you crack the amber heart for a heavy blow. Otherwise you miss that exchange and they hit you.' },
       { key: 'Cut the Seeker down', text: 'When a Seeker walks an Amber Husk. No hit on the husk. Often you drop the Seeker so the husk cannot be re-charged. The husk still hits you that exchange.' },
       { key: 'Draw resin', text: 'Seeker Extractor only, once per Amber Husk fight. Draw scrap and a little Sap under the plates without shattering the core, or cut the Seeker siphon if one is walking the husk. The husk still hits you.' },
-      { key: 'Run', text: 'About 6 in 10 to get away. Ground, a hound, or a pin changes the odds. A failed run gives them a free hit. No loot.' },
+      { key: 'Run', text: 'Even odds or better to get away. Ground, a hound, or a pin changes the odds. A failed run gives them a free hit. No loot.' },
       { key: 'Pull the tick', text: 'Only while an amber-tick is latched on. Stops the Sap drain. With Hide Gloves on, you also strike that exchange.' },
       { key: 'Deal', text: 'Only when a hurt enemy offers one. Ends the fight on their terms.' },
       { key: 'Give the road', text: 'Before the first exchange only. Ends the fight. No loot. No cost.' },
       { key: 'Cloak skip', text: 'With body armor or a cloak on, before the first exchange. Same as giving the road.' },
-      { key: 'Walk past', text: 'Prisoner and Outcast doors, wearing Vessel Cloth that has not been seen through, against Cartel people only. Before the first exchange. 3 in 4 they let you pass. Otherwise the cloth is seen through, Cartel Heat +2, and the fight goes on.' },
+      { key: 'Walk past', text: 'Prisoner and Outcast doors, wearing Vessel Cloth that has not been seen through, against Cartel people only. Before the first exchange. Good odds they let you pass. Otherwise the cloth is seen through, Cartel Heat +2, and the fight goes on.' },
       { text: 'A move that cannot be used right now stays on the list, greyed, with the reason.' },
       { text: 'Bribes and talk do nothing once a fight starts.' },
     ],
@@ -54,8 +54,8 @@ const FIGHT_SECTIONS: HelpSection[] = [
   {
     title: 'LUCK AND GROUND',
     rows: [
-      { key: 'CRIT', crit: true, text: 'About 1 in 10 exchanges, a side lands clean for double damage. It can happen to either of you. The log says so.' },
-      { key: 'GROUND', text: 'Every fight has ground, named on the card: a slope, loose sand, blowing sand, a steam vent, rock shade, or open flat. It moves a swing, a Strike, or the Run odds.' },
+      { key: 'CRIT', crit: true, text: 'Now and then a side lands clean for double damage. It can happen to either of you. The log says so.' },
+      { key: 'GROUND', text: 'Every fight has ground, named on the card: a slope, loose sand, blowing sand, a steam vent, rock shade, or open flat. It changes how hard a hit lands, or the Run odds.' },
     ],
   },
   {
@@ -66,7 +66,7 @@ const FIGHT_SECTIONS: HelpSection[] = [
       { key: 'Scavenger', text: 'Grabs a carried item and tries to run. Kill it to get it back. Hurt, it offers a scrap to be let go.' },
       { key: 'Rim cutter', text: 'Hurt, it runs for the shade. Hit it that exchange or it gets away.' },
       { key: 'Shard-pup', crit: true, text: 'Crits twice as often.' },
-      { key: 'Vent patrol', text: 'The shock baton can numb your arm. Your next swing is 0.' },
+      { key: 'Vent patrol', text: 'The shock baton can numb your arm. Your next hit has no extra force.' },
       { key: 'Hound-handler', text: 'Running is harder. A failed run lets the hound bite too.' },
       { key: 'Valerius', text: 'Guard only takes 1 off his baton.' },
       { key: 'Stray collector', text: 'Hurt, he offers to call it square: Stray Heat -1, no loot.' },
@@ -211,7 +211,7 @@ const GEAR_SECTIONS: HelpSection[] = [
       { key: 'HANDS', text: 'Main hand takes any weapon, never a shield. Off hand takes a short blade, a club, or a shield.' },
       { key: 'STRIKE', text: 'Your Main hand weapon sets Strike. Bare hand is 1. A short blade or club in the Off hand adds 1.' },
       { key: 'SHELL', text: 'Body, Cloak, Head, Legs, Hands, and a shield add up to Shell, up to 5. A garment adds none.' },
-      { key: 'PERKS', text: 'Dust Cloak: skip a road fight before the first exchange. Shin Wraps: Run 10 in 100 better. Hide Gloves: pull a tick and strike in the same exchange. Seeker Extractor: once in an Amber Husk fight, Draw resin — scrap and Sap without shattering the core, or cut a Seeker siphon.' },
+      { key: 'PERKS', text: 'Dust Cloak: skip a road fight before the first exchange. Shin Wraps: Run gets away more often. Hide Gloves: pull a tick and strike in the same exchange. Seeker Extractor: once in an Amber Husk fight, Draw resin — scrap and Sap without shattering the core, or cut a Seeker siphon.' },
       { key: 'BAG', text: 'Your bag has 10 slots. A Scav Pack has 14, a Hauler Pack 20. A stack of small goods (Drops, salves, scrap, cord) takes one slot however many are in it; each spare weapon or wearable takes its own. Key items, coin (Glints, Scrip), and worn gear ride free.' },
       { key: 'FULL', text: 'With a full bag, a new find stays on the ground. Drop something to take it, or leave it. Walking away leaves it.' },
       { key: 'CRAFT', text: 'Stitch a Scav Pack from 3 scrap and 1 Sinew Cord, on the Key items tab or by typing craft pack. Sinew Cord turns up when you scavenge.' },
@@ -222,7 +222,7 @@ const GEAR_SECTIONS: HelpSection[] = [
 ]
 
 export const HELP_TOPICS: readonly HelpTopic[] = [
-  { id: 'fight', aliases: ['fights', 'fighting', 'combat', 'strike', 'shell', 'health'], blurb: 'Strike, Shell, swing, Health, and what happens at 0', sections: FIGHT_SECTIONS },
+  { id: 'fight', aliases: ['fights', 'fighting', 'combat', 'strike', 'shell', 'health'], blurb: 'Strike, Shell, luck, Health, and what happens at 0', sections: FIGHT_SECTIONS },
   { id: 'scavenge', aliases: ['scav', 'search', 'loot'], blurb: 'picking a patch for scrap and finds', sections: SCAVENGE_SECTIONS },
   { id: 'skim', aliases: ['skimming'], blurb: 'taking a Drop from a sap source, and the Heat it costs', sections: SKIM_SECTIONS },
   { id: 'look', aliases: ['l', 'examine'], blurb: 'seeing what a place offers', sections: LOOK_SECTIONS },
