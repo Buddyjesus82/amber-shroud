@@ -188,16 +188,16 @@ export const VOICES: Record<string, Voice> = {
   },
   korvan: {
     lines: [
-      'Korvan breathes through the gap at the corner of his mouth. "Say it again. Slower."',
+      'Korvan leans in, his one open eye on you. "Say it again. Slower."',
       '"I kept records. That one I would not file."',
-      'The amber over his eyes catches the light. He waits.',
+      'The amber over his eye catches the light. He waits.',
     ],
     want: '"A heading costs a scrap. My water costs nothing, and you will not take it."',
     price: '"A scrap for a heading. Cheap, because it is true."',
     who: '"Korvan Drell. I kept the Seekers\' records until I read the wrong one."',
     doing: '"Breathing. It takes longer than it used to."',
     what: '"Amber. The Cartel calls it a seal. I call it a correction."',
-    refuse: '"You would rob a man with his face sealed? Ask the brand on your hand how that ends."',
+    refuse: '"You would rob a man with half his face sealed? Ask the brand on your hand how that ends."',
     unknown: '"Not in any record I kept."',
   },
   mira: {

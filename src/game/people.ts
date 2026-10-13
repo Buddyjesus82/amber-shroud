@@ -50,12 +50,12 @@ He was a high-ranking Cartel mercenary until a failed expedition got him cast ou
     name: 'Korvan Drell',
     aliases: ['korvan', 'drell', 'korvan drell', 'amber man', 'archivist'],
     metFlag: 'metKorvan',
-    card: `Korvan Drell. Hardened amber seals his mouth and both eyes; he breathes and speaks through a gap at one corner. He kept records for the Seekers until he found a memory-fragment in the sand outside the Spire that contradicted their doctrine. They branded him a heretic. The Cartel sealed his face with molten sap, which they call amber-waxing. A Dune-Stray smuggled him out.
+    card: `Korvan Drell. Hardened amber crusts the right side of his face, brow to cheek, over one eye. The other eye is open, pale and wary. His scalp is shaved at the sides, traced with dark marks. He kept records for the Seekers until he found a memory-fragment in the sand outside the Spire that contradicted their doctrine. They branded him a heretic. The Cartel sealed half his face with molten sap, which they call amber-waxing. A Dune-Stray smuggled him out.
 
 Wary. Ostracized. He lives at the edge of Silas's shade and trades fragments of forbidden history for water and shelter. The amber on his face is full of voices. He is the one person on the Spine who will talk to you. He will not say what your brand is for.`,
     scenes: ['spine:korvan'],
     later: {
-      'spine:korvan': `Korvan sits where the canvas runs out, amber over his mouth and eyes. He moves over to make room. "Ask me anything else," he says.`,
+      'spine:korvan': `Korvan sits where the canvas runs out, amber over half his face. He moves over to make room. "Ask me anything else," he says.`,
     },
   },
   mira: {

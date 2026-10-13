@@ -747,6 +747,10 @@ export type FightMove = 'fight' | 'guard' | 'feint' | 'trick' | 'run' | 'pull' |
 /** 1 in 10 landed hits, both sides. The Shard-pup lands them twice as often. */
 export const CRIT_IN_10 = 1
 
+/** First-hub enemies. Their crits are softened. */
+export const EARLY_KINDS: readonly EncounterKind[] = ['cutter', 'pup', 'patrol', 'courtguard', 'jackal', 'tick', 'scavenger', 'handler']
+export const EARLY_CRIT_CAP = 3
+
 /** Seeded 0..n-1 roll for this round, so a save replays the same fight. */
 function roll(state: GameState, salt: string, n: number): number {
   return hash(state, `${salt}:${state.flags.encounterKind ?? ''}`, Number(state.flags.encounterRound ?? 0) + 1) % n
@@ -876,7 +880,11 @@ export function resolveEncounter(
     dmgIn *= 2
     // A crit never takes you from full Health to Down in one exchange.
     if (c.yourHp >= max) dmgIn = Math.min(dmgIn, max - 1)
-    critIn = true
+    // Early fights: an enemy crit takes at most EARLY_CRIT_CAP Health.
+    // If the plain hit is already at the cap, it is just a hit, not a crit.
+    if (EARLY_KINDS.includes(spec.kind)) dmgIn = Math.min(dmgIn, EARLY_CRIT_CAP)
+    critIn = dmgIn > dmgInPlain
+    if (!critIn) dmgIn = dmgInPlain
   }
   const hitIn = (fn: (d: number) => number) => {
     dmgIn = fn(dmgIn)

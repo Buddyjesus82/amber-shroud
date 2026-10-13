@@ -90,9 +90,9 @@ export const KORVAN_SCENE: Scene = {
   kind: 'talk',
   title: 'Korvan Drell',
   speaker: 'Korvan Drell',
-  body: `At the back of Silas's shade, where the canvas runs out, a man sits with his knees drawn up. Hardened amber covers his mouth and runs up over both eyes in a smooth, wax-yellow seal. He breathes through a gap at one corner of it. His words come out of the gap slowly.
+  body: `At the back of Silas's shade, where the canvas runs out, a man sits in a rough tunic with a leather strap across his chest. Hardened amber crusts the right side of his face, brow to cheek, over one eye. The other eye is open, pale and wary. His scalp is shaved at the sides and traced with dark marks. His words come slowly.
 
-He cannot see through the amber. He heard the shade go quiet when you walked in, and he knows what that quiet means. He moves over to make room.
+He watched the shade go quiet when you walked in, and he knows what that quiet means. He moves over to make room.
 
 "They turn away from you," he says. "They turned away from me too. I am Korvan. I trade what I know for water and scrap. I will not tell you what that mark is for. Ask me anything else."`,
   variants: [
@@ -120,7 +120,7 @@ He cannot see through the amber. He heard the shade go quiet when you walked in,
         ...leadFx,
         remove: { vial_drop: 1 },
         add: { ...leadFx.add, vial_empty: 1 },
-        flash: `He drinks half the Drop through the gap in the amber and caps the rest. ${KORVAN_LEAD}`,
+        flash: `He drinks half the Drop and caps the rest. ${KORVAN_LEAD}`,
       },
     },
     {
@@ -197,7 +197,7 @@ He cannot see through the amber. He heard the shade go quiet when you walked in,
       },
     },
     backToShade,
-    hungerFromShade('Korvan turns his sealed face toward the road you take.'),
+    hungerFromShade('Korvan turns his one open eye toward the road you take.'),
   ],
   intents: [
     {
