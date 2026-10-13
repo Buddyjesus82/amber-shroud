@@ -2675,7 +2675,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v83'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v84'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -5027,6 +5027,10 @@ function assertHelpResolves(s: GameState, where: string) {
     }
     const spine = GE.applyEffect(GE.newGame('outcast'), { goto: 'spine:shade', unsetFlag: clr })
     assert(atHunger(GE.applyEffect(spine, { startChapter: 'cache-run', goto: 'ch1:leave' })), 'non-camp Hunger skips the storm beat')
+  }
+  {
+    const ps = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
+    assert((ps.match(/scene.id === 'ch1:storm' \? 'Camp-04'/g) ?? []).length === 2, 'storm beat is labeled Camp-04, the Hunger label waits for Continue')
   }
   for (const f of ['corvin.jpg', 'bootprints.jpg', 'mira.jpg', 'guard.jpg', 'yard.jpg', 'korvan.jpg', 'steam-vents.jpg', 'camp-storm.jpg']) assert(existsSync(new URL(`../public/covers/${f}`, import.meta.url)) && readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8').includes(`covers/${f}`), `${f} ships and is precached`)
   const hound = at('spine:hound')
