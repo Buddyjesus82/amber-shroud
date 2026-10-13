@@ -1492,7 +1492,7 @@ A knot of stilt-cord is already in her fingers. She will give it either way.`,
     kind: 'story',
     title: 'Skiff on the South Wind',
     onEnter: { flag: { heardSybellaRumor: true } },
-    body: `A sail cuts the south wind before the hull does. Resin-smoke. A blindfold pushed up on the mast, not yet a face you can bargain with.
+    body: `A bone-white hull cuts the south wind, sleek and angular, with an enclosed cockpit cage and a gantry crane at the rear. Resin-smoke. A blindfold hangs from the crane, not yet a face you can bargain with.
 
 The skiff is coming. What you have heard about the woman on it is all you get before she steps down.`,
     variants: [
@@ -1504,7 +1504,7 @@ The skiff is coming. What you have heard about the woman on it is all you get be
       {
         if: { any: [{ flag: 'oilRide' }, { flag: 'oilRoad' }, { flag: 'oilTag' }, { flag: 'jaxsonInside' }] },
         mode: 'append',
-        body: `Jaxson Vance sees the sail and does not smirk. "Seeker, run."`,
+        body: `Jaxson Vance sees the white hull and does not smirk. "Seeker, run."`,
       },
       {
         if: { all: [{ flag: 'oilRefused' }, { flagUnset: 'oilRide' }, { flagUnset: 'oilRoad' }] },
@@ -1524,7 +1524,7 @@ The skiff is coming. What you have heard about the woman on it is all you get be
       {
         if: { heatMin: ['cartel', 3] },
         mode: 'append',
-        body: `Cartel mouths would call her a stain on their books. That is enemy spin. The sail does not care what a clerk would write.`,
+        body: `Cartel mouths would call her a stain on their books. That is enemy spin. The white hull does not care what a clerk would write.`,
       },
       {
         if: { flag: 'heardWalkingAmber' },

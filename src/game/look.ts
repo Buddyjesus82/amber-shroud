@@ -519,7 +519,7 @@ function authored(state: GameState, scene: Scene): string[] {
   }
 
   if (id === 'maw:smoke' || id === 'maw:sybella' || id === 'maw:sybella-shadow') {
-    push(lines, 'The smoke is her skiff. Face it, or keep the rim between you and the sail.')
+    push(lines, 'The smoke is her skiff. Face it, or keep the rim between you and the white hull.')
     return lines
   }
 
@@ -655,7 +655,7 @@ function authored(state: GameState, scene: Scene): string[] {
   }
 
   if (id === 'ch1:south-wind') {
-    push(lines, 'The sail is close enough to face. What you heard on the road is the only brief you carry.')
+    push(lines, 'The white hull is close enough to face. What you heard on the road is the only brief you carry.')
     return lines
   }
 
