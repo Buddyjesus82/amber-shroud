@@ -353,7 +353,7 @@ function authored(state: GameState, scene: Scene): string[] {
 
   if (id === 'spine:shade') {
     push(lines, 'Sitting down is how you pay for the minute. A Drop is a separate price.')
-    push(lines, 'Korvan sits where the canvas runs out. Mira sifts sand by the tent pole.')
+    push(lines, 'Korvan sits where the canvas runs out. Mira sifts sand by the tent pole. A third woman sits on a scrap pile with a snake across her shoulders.')
     return lines
   }
 

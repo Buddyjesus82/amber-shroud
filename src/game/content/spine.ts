@@ -166,7 +166,7 @@ The Gullet is a red bruise to the south. You could fill the empty vial with this
 
 "Noon-Empty," he says. That is what the Spine already calls you. He looks at the brand on your face and does not ask about it. "I trade with anyone who pays. That mark does not change the price. Shade is not free. Talk is not free. Drops, salve, and a little steel are on the shelf."
 
-Two Strays share the shade. A man with amber over half his face sits where the canvas runs out. A woman with one hand sifts sand by the tent pole. Everyone else in the shade has turned their back to you.`,
+Three Strays share the shade. A man with amber over half his face sits where the canvas runs out. A woman with one hand sifts sand by the tent pole. A third woman sits on a scrap pile with a snake across her shoulders. Everyone else in the shade has turned their back to you.`,
     choices: [
       {
         id: 'talk',
