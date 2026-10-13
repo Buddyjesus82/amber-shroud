@@ -1,7 +1,7 @@
 /**
  * The six skippable lore cards shown at New Game, before the door choice. Also replayable from the title.
  *
- * Lore lock: the Spire is sealed. The Seekers are camped at the Outer Threshold outside it and cannot open it.
+ * Lore lock: the Spire is sealed. The Seekers camp at the Outer Threshold, a fallen spire in the southeast, and cannot open it.
  * What opens it is at Red Maw, so the Seekers send the Vessel out to fetch it. All three doors funnel into
  * Red Maw before the Spire. Do not name what opens the Spire here.
  */
@@ -19,8 +19,8 @@ export const INTRO_CARDS: IntroCard[] = [
     id: 'world',
     title: 'The Amber Shroud',
     img: 'world.jpg',
-    alt: 'Parchment map: Camp-04 far west, Bleached Spine north, Outer Threshold beside the sealed Spire in the east, roads meeting at Red Maw',
-    text: 'The sand is ground amber, holding the stagnant memories of a dead civilization. The Great Bleed uncovered the ruins of the First Spires. The greatest of them, in the east, is sealed. Camp-04 sits far west, the Bleached Spine north, the Outer Threshold against the Spire. All three roads run to Red Maw.',
+    alt: 'Parchment map: Camp-04 far west, Bleached Spine north, sealed Spire in the east, Outer Threshold in a fallen spire to the southeast, roads meeting at Red Maw',
+    text: 'The sand is ground amber, holding the stagnant memories of a dead civilization. The Great Bleed uncovered the ruins of the First Spires. The greatest of them, in the east, is sealed. Camp-04 sits far west, the Bleached Spine north, the Outer Threshold southeast. All three roads run to Red Maw, the only way to the Spire.',
   },
   {
     id: 'sap',
@@ -41,7 +41,7 @@ export const INTRO_CARDS: IntroCard[] = [
     title: 'The Seekers',
     img: 'seekers.jpg',
     alt: 'Wrapped Seekers with Damascus falchions ring a burning amber shard on an altar while an Amber Husk stands behind them',
-    text: 'The Seekers of the Shroud worship the shards and walk Amber Husks to guard what they claim. They are camped at the Outer Threshold, outside the Spire, and they cannot open its door. The way in lies at Red Maw.',
+    text: 'The Seekers of the Shroud worship the shards and walk Amber Husks to guard what they claim. They camp at the Outer Threshold, a fallen spire to the southeast. They cannot open the sealed Spire. The key lies at Red Maw.',
   },
   {
     id: 'strays',

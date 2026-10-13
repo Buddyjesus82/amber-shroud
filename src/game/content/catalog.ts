@@ -364,7 +364,7 @@ export const HUBS: Record<string, HubDef> = {
       show: { any: [{ flag: 'hungerKnown' }, { item: 'oram_map' }] },
     },
     mawLegs: 1,
-    mawNote: 'The sealed Spire stands off the paddock. What opens it is at Red Maw, one short road west.',
+    mawNote: 'The sealed Spire lies beyond Red Maw. What opens it is at Red Maw, one short road northwest.',
   },
   redmaw: {
     id: 'redmaw',
@@ -387,6 +387,6 @@ export const HUBS: Record<string, HubDef> = {
       show: { flag: 'chapter1Done' },
     },
     mawLegs: 0,
-    mawNote: 'Red Maw Approach. All three roads end here. The sealed Spire waits east, past the Threshold.',
+    mawNote: 'Red Maw Approach. All three roads end here. The sealed Spire waits beyond, and the only way to it runs through here.',
   },
 }
