@@ -568,11 +568,11 @@ You can run south, or get back under Silas's canvas.`,
     hubId: 'spine',
     kind: 'story',
     title: 'Boot-Prints',
-    body: `One set of boots, walking away from the Hound sign. Cartel heels, worn down on the inside. The stride is short, like the man was trying not to run. They bend toward a slab of bone-pale rock.`,
+    body: `One set of boots, walking away from the Hound sign. Cartel heels, worn down on the inside. The stride is short, like the man was trying not to run. They bend toward a lone tent and a low, dry stone well.`,
     choices: [
       {
         id: 'follow',
-        label: 'Follow them behind the slab',
+        label: 'Follow them to the tent by the well',
         sub: 'Whoever made them is still there.',
         effects: { goto: 'spine:corvin', ticks: 1 },
       },
@@ -584,7 +584,7 @@ You can run south, or get back under Silas's canvas.`,
     kind: 'talk',
     title: 'Corvin Pryce',
     speaker: 'Corvin Pryce',
-    body: `Behind a slab of bone-pale rock, out of sight of the Hound prints, a young man sits in a Cartel security coat turned inside out. The Ironwood patch has been cut off the shoulder. He carries no rifle. His hands shake when he hears you, then go still when he sees your face.
+    body: `Beside a lone tent and a low, dry stone well, out of sight of the Hound prints, a man crouches on the cracked ground. Blowing sand. He is weathered and stubbled, somewhere between thirty and forty, in a dark buttoned coat with no Cartel markings left on it. He carries no rifle. A coil of barbed wire sits under his hands for the traps on the dry ford. His hands stay steady when he hears you. His eyes stay wary.
 
 He looks at the brand. He does not turn away.
 
@@ -595,7 +595,7 @@ He looks at the brand. He does not turn away.
       {
         if: { flag: 'corvinHelped' },
         mode: 'replace',
-        body: `Corvin is behind the same slab, coat inside out, watching the wash.
+        body: `Corvin is crouched by the same dry well, the wire coil at his knee, watching the wash.
 
 "When you walk south, find me at the dry ford," he says. "I'll take you past the traps. If you go down on this ridge, I'll come get you."`,
       },

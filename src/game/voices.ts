@@ -174,7 +174,7 @@ export const VOICES: Record<string, Voice> = {
   },
   corvin: {
     lines: [
-      'Corvin keeps his empty hands where you can see them. "I know traps. Not much else."',
+      'Corvin keeps his steady hands on the wire coil, where you can see them. "I know traps. Not much else."',
       '"Keep your voice down. The wash carries."',
       'He looks at the ridge, not at you. "Ask me about the ford."',
     ],
@@ -182,8 +182,8 @@ export const VOICES: Record<string, Voice> = {
     price: '"I sell nothing. I know where the traps are."',
     who: '"Corvin. I guarded harvesters once. I put the rifle down."',
     doing: '"Hiding. Watching for Hounds. Both are the same job."',
-    what: '"Nothing. I carry nothing now."',
-    refuse: 'He holds his empty hands up. "I am not picking anything up for you."',
+    what: '"Wire for the ford. Nothing else now."',
+    refuse: 'He keeps his hands on the wire. "I am not picking anything up for you."',
     unknown: '"Never met them. Good for them."',
   },
   korvan: {
