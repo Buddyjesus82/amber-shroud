@@ -90,7 +90,7 @@ const FIGHT_SECTIONS: HelpSection[] = [
       { bullet: true, text: 'Most ground: you get up with 1 Health and lose 1 Sap.' },
       {
         bullet: true,
-        text: 'Ironwood Camp-04, against a Hound-handler, Shard-pup, vent patrol, or Valerius: you wake in the Bleed Yard with 1 Health and +2 Cartel Heat.',
+        text: 'Ironwood Camp-04, against a Hound-handler, Shard-pup, vent patrol, or Valerius: you wake in the Blood Yard with 1 Health and +2 Cartel Heat.',
       },
       {
         bullet: true,
@@ -130,7 +130,7 @@ const SKIM_SECTIONS: HelpSection[] = [
   {
     rows: [
       { key: 'WHAT', text: 'Skim takes one Drop from a sap source. It costs 1 Sap and adds 2 Pressure.' },
-      { key: 'WHERE', text: 'Steam Vents, cooling vats, Bleed Yard, Dry Well, Strider Paddock, Hollow Lip.' },
+      { key: 'WHERE', text: 'Steam Vents, cooling vats, Blood Yard, Dry Well, Strider Paddock, Hollow Lip.' },
       { key: 'ONCE', text: 'Each place gives one skim per run.' },
       { key: 'HEAT', text: "+1 Heat for whoever owns the ground: Cartel in Camp-04, Strays on the Spine and in Red Maw, Seekers at the Threshold. The Hollow Lip has no one watching." },
       { key: 'GEAR', text: 'The Dry Well needs a weapon equipped.' },

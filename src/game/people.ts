@@ -122,7 +122,7 @@ Prison-break technical inside man. Reckless. Charismatic. Anti-authority. Humor 
       'ch1:p-oil',
     ],
     later: {
-      'camp:cages': `Holding pens. Each cage a ribcage for a penniless laborer. Yours still smells like the last Bleed. Cartel Scrip in the hem.
+      'camp:cages': `Holding pens. Each cage a ribcage for a penniless laborer. Yours still smells like the last storm. Cartel Scrip in the hem.
 
 Jaxson is still in the next bunk, brass jaw working. He has a way out, if you ask.`,
       'ch1:p-oil': `The stolen Strider coughs like a guilty throat. Jaxson is under the hull anyway — brass, leather, tags he still has not cut off. He hotwired. He will not tour. Red Maw is east of his cowardice.`,
@@ -133,7 +133,7 @@ Jaxson is still in the next bunk, brass jaw working. He has a way out, if you as
     name: 'Kaelen',
     aliases: ['kaelen', 'sifter', 'merchant'],
     metFlag: 'metKaelen',
-    card: `Kaelen the Sifter jitters — a diminutive merchant in dust-caked canvas, an overstuffed pack of vials, gears, and amber jars, thick gloves on both hands. Born near the Ironwood roots in the first Great Bleed. Lost his family to a Gilded Hollow raid. He sifts memory-essence from amber sand, sells to the Seekers, and quietly funds storm-escape routes.
+    card: `Kaelen the Sifter jitters — a diminutive merchant in dust-caked canvas, an overstuffed pack of vials, gears, and amber jars, thick gloves on both hands. Born near the Ironwood roots in the Great Bleed. Lost his family to a Gilded Hollow raid. He sifts memory-essence from amber sand, sells to the Seekers, and quietly funds storm-escape routes.
 
 He will not sell anything meant to harm a fellow survivor. He trades Drops for scrap and rumors for Glints.`,
     scenes: [

@@ -32,6 +32,7 @@ export type CoverKey =
   | 'vents'
   | 'mira'
   | 'korvan'
+  | 'storm'
   | 'bootprints'
   | 'camp_shiv'
   | 'bay_sarn'
@@ -68,6 +69,7 @@ const FILES: Record<CoverKey, string> = {
   vents: 'steam-vents.jpg',
   mira: 'mira.jpg',
   korvan: 'korvan.jpg',
+  storm: 'camp-storm.jpg',
   bootprints: 'bootprints.jpg',
   camp_shiv: 'camp-shiv.jpg',
   bay_sarn: 'bay_sarn.jpg',
@@ -120,6 +122,8 @@ export const COVER_BAND: Record<CoverKey, [number, number]> = {
   mira: [0.0, 0.75],
   // Korvan's amber-scarred face is center-left in the upper half.
   korvan: [0.0, 0.7],
+  // The storm wall over the camp sits across the middle.
+  storm: [0.15, 0.85],
   // The prints run up the lower half toward the tent.
   bootprints: [0.3, 1.0],
   // Both hands on the bar and the sparks sit in the middle band.
@@ -204,6 +208,7 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   if (id === 'camp:yard' || id === 'camp:vats') return 'yard'
   if (id === 'camp:vents') return 'vents'
   if (id === 'spine:korvan') return 'korvan'
+  if (id === 'ch1:storm') return 'storm'
   if (id === 'spine:boots') return 'bootprints'
   if (id === 'camp:shiv') return 'camp_shiv'
   if (id === 'camp:bay-sarn') return 'bay_sarn'

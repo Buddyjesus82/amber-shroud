@@ -8,7 +8,7 @@ export const openingScenes: Scene[] = [
     kind: 'story',
     art: 'world',
     title: 'Ironwood Break',
-    body: `You wake face-down in the holding pens muck. The back of your head is wet and you do not know the name of the wet. Cold, resin-slick, already in your mouth. Ironwood Camp-04 is loud: razor-wire, screaming steam-vents, harvesters on the petrified groves. You are a Bleed-Cut. Captive labor. Amnesiac. Your kit matches no faction.
+    body: `You wake face-down in the holding pens muck. The back of your head is wet and you do not know the name of the wet. Cold, resin-slick, already in your mouth. Ironwood Camp-04 is loud: razor-wire, screaming steam-vents, harvesters on the petrified groves. You are a Blood-Cut. Captive labor. Amnesiac. Your kit matches no faction.
 
 Jaxson Vance is hollering from the next bunk — burly, grease-stained, a fused brass jaw. He sees the blood before he sees you. "Back of the head. Don't lie down again."
 

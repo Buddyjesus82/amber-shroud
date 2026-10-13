@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import {
-  applyEffect,
+  applyEffect as rawApplyEffect,
   bodyOf,
   drinkDrop,
   STRIDER_READY_SAP,
@@ -28,6 +28,14 @@ import { PIKE_TALK, SARN_TALK, VETCH_TALK } from '../src/game/content/bayHands.t
 import { heatFactions } from '../src/game/heat.ts'
 import { RUMORS } from '../src/game/journal.ts'
 import { INTRO_CARDS, INTRO_FADE_MS, INTRO_HOLD_MS, INTRO_TEXT_IN_MS, introCardMs, introMotionMs, introReadMs } from '../src/game/intro.ts'
+
+const atHunger = (s: { sceneId: string }) => s.sceneId === 'ch1:leave' || s.sceneId === 'ch1:storm'
+// Older walks predate the Camp-04 storm beat; they step straight through it. The storm checks use GE.applyEffect.
+function applyEffect(state: Parameters<typeof rawApplyEffect>[0], fx: Parameters<typeof rawApplyEffect>[1]) {
+  const next = rawApplyEffect(state, fx)
+  if (next.sceneId !== 'ch1:storm' || state.sceneId === 'ch1:storm') return next
+  return rawApplyEffect(next, getScene('ch1:storm').choices[0].effects)
+}
 import { GLOBAL_INTENTS } from '../src/game/intent.ts'
 import { wakeEffect } from '../src/game/downed.ts'
 import { BRAND_LOOK } from '../src/game/brand.ts'
@@ -124,6 +132,8 @@ function pick(s: GameState, id: string) {
   ) {
     s = applyEffect(s, { unsetFlag: ['hunterHere', 'hunterFrom'] })
   }
+  // Older walks predate the storm beat; step through it when the next pick belongs to the Hunger.
+  if (s.sceneId === 'ch1:storm' && id !== 'continue') s = applyEffect(s, visibleChoices(s)[0].effects)
   const c = visibleChoices(s).find((x) => x.id === id)
   if (!c) {
     throw new Error(
@@ -558,7 +568,7 @@ s = newGame('outcast')
 s = pick(s, 'stand')
 s = applyEffect(s, { flag: { hungerKnown: true } })
 s = pick(s, 'hunger')
-assert(s.chapterId === 'cache-run' && s.sceneId === 'ch1:leave', 'ridge Hunger button starts Cache Run once the heading is known')
+assert(s.chapterId === 'cache-run' && atHunger(s), 'ridge Hunger button starts Cache Run once the heading is known')
 s = outcastToSybella(s)
 assert(s.sceneId === 'ch1:sybella', 'outcast reaches Sybella poker')
 assert(ids(s).includes('maw'), 'Approach is a first-class Sybella exit')
@@ -591,7 +601,7 @@ assert(!isChoiceOn(s, visibleChoices(s).find((c) => c.id === 'pay')?.enable), 'p
   assert(s.sceneId === 'spine:shade' && ids(s).includes('hunger'), 'shade offers the Hunger after the tab heading')
 }
 s = pick(s, 'hunger')
-assert(s.chapterId === 'cache-run' && s.sceneId === 'ch1:leave', 'Kallik heading walks from the shade')
+assert(s.chapterId === 'cache-run' && atHunger(s), 'Kallik heading walks from the shade')
 s = outcastToSybella(s)
 assert(s.sceneId === 'ch1:sybella', 'outcast spoke still lands at Sybella')
 s = interpret(s, 'take the maw approach')
@@ -701,7 +711,7 @@ assert(playCoverKey(s, sceneOf(s)) === 'skiffbay', 'after the hotwire the bay is
 assert(!/you are the lookout/i.test(bodyOf(s)), 'finished hotwire is not still the lookout')
 assert(ids(s).includes('ride-blind') || ids(s).includes('ride'), 'bay ride after hotwire')
 s = ids(s).includes('ride-blind') ? pick(s, 'ride-blind') : pick(s, 'ride')
-assert(s.chapterId === 'cache-run' && s.sceneId === 'ch1:leave', 'button-only prisoner starts Cache Run')
+assert(s.chapterId === 'cache-run' && atHunger(s), 'button-only prisoner starts Cache Run')
 s = prisonerToSybella(s)
 if (s.sceneId === 'ch1:sybella') {
   assert(!ids(s).includes('bargain'), 'prisoner has no Sybella bargain')
@@ -2565,7 +2575,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
   const offered = interpret(known, 'walk')
   assert(/take the Hunger/.test(offered.flash ?? ''), 'a known Hunger is offered on an aimless walk')
   const started = interpret(known, 'take the hunger')
-  assert(started.chapterId === 'cache-run' && started.sceneId === 'ch1:leave', 'take the hunger from the Yard starts Cache Run')
+  assert(started.chapterId === 'cache-run' && atHunger(started), 'take the hunger from the Yard starts Cache Run')
   assert(!bad.test(started.flash ?? ''), 'Yard Hunger start is not an error')
 
   for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
@@ -2665,7 +2675,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v82'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v83'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -2940,7 +2950,7 @@ function assertHelpResolves(s: GameState, where: string) {
   const told3 = [full.body, ...(full.variants ?? []).map((v) => v.body)].join('\n')
   assert(/burned everything, and took you/.test(full.body) && /You were thirteen\./.test(full.body), 'the day: raiders burned the homestead and took him at thirteen')
   assert(/I don't know who took you\./.test(full.body), 'she does not know who took him')
-  assert(!/Bleed-Cut|Great Bleed|Cartel|Seeker|Stray/.test(told3), 'the reveal names no taker and no faction')
+  assert(!/Blood-Cut|Great Bleed|Cartel|Seeker|Stray/.test(told3), 'the reveal names no taker and no faction')
   assert(!/brand/.test(full.body), 'the shared reveal does not explain the brand')
   told = pick(told, 'back')
   assert(told.flags.ossaToldDay, 'she has told the day')
@@ -3049,7 +3059,7 @@ function assertHelpResolves(s: GameState, where: string) {
   run = pick(run, 'tab')
   assert(run.flags.hungerKnown && run.sceneId === 'spine:shade', 'a broke Outcast can still earn the heading on the tab')
   run = pick(run, 'hunger')
-  assert(run.chapterId === 'cache-run' && run.sceneId === 'ch1:leave', 'heading opens the Cache Run')
+  assert(run.chapterId === 'cache-run' && atHunger(run), 'heading opens the Cache Run')
   run = { ...run, sap: Math.max(run.sap, 4) }
   run = outcastToSybella(run)
   run = pick(run, 'maw')
@@ -3152,7 +3162,7 @@ function assertHelpResolves(s: GameState, where: string) {
         for (const c of visibleChoices(x)) {
           if (!isChoiceOn(x, c.enable)) continue
           rows++
-          if (bsig(interpret(x, c.label)) !== bsig(applyEffect(x, c.effects))) off.push(`${door} ${sc.id} "${c.label}"`)
+          if (bsig(interpret(x, c.label)) !== bsig(rawApplyEffect(x, c.effects))) off.push(`${door} ${sc.id} "${c.label}"`)
         }
         if (bsig(interpret(x, 'drink a drop')) !== bsig(drinkDrop(x))) off.push(`${door} ${sc.id} "drink a drop"`)
       }
@@ -3608,7 +3618,7 @@ function assertHelpResolves(s: GameState, where: string) {
     const sc = getScene(id)
     const all = [sc.body, ...(sc.variants ?? []).map((v) => v.body), ...(sc.intents ?? []).map((r) => r.reply)].join('\n')
     assert(!/You know what you did/.test(all), `Ossa never says the brand line in ${id}`)
-    assert(!/Bleed-Cut/.test(all), `no Bleed-Cut in ${id}`)
+    assert(!/Blood-Cut/.test(all), `no Blood-Cut in ${id}`)
   }
   for (const id of ['ch1:p-ossa', 'ch1:o-ossa', 'crisis:dunes']) {
     assert(/a beat too long|a beat longer/.test(getScene(id).body), `first-sight tell in ${id}`)
@@ -4890,7 +4900,7 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(plan.flags.jaxsonPlan, 'polite "can I ask about his plan" still opens the plan')
   // Filler spots get a place line with a pointer, not Miss.
   const yard = String(GE.interpret(at2('prisoner', 'camp:yard'), 'blorp flarn').flash)
-  assert(/Bleed Yard|Yard/.test(yard) && /Try/.test(yard), `filler spot answers with the place: ${yard}`)
+  assert(/Blood Yard|Yard/.test(yard) && /Try/.test(yard), `filler spot answers with the place: ${yard}`)
   // Heard line hints.
   assert(PA.typedHints(sarn, getScene('camp:bay-sarn'), false).includes('who are you'), 'Heard line suggests real typed asks')
 }
@@ -5003,7 +5013,22 @@ function assertHelpResolves(s: GameState, where: string) {
     const gs = GE.applyEffect(GE.newGame('prisoner'), { goto: g, unsetFlag: ['encounterHere', 'encounterKind', 'encounterHp', 'encounterTerrain'] })
     assert(cov(gs) === 'guard.jpg', `${g} uses guard.jpg`)
   }
-  for (const f of ['corvin.jpg', 'bootprints.jpg', 'mira.jpg', 'guard.jpg', 'yard.jpg', 'korvan.jpg', 'steam-vents.jpg']) assert(existsSync(new URL(`../public/covers/${f}`, import.meta.url)) && readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8').includes(`covers/${f}`), `${f} ships and is precached`)
+  {
+    const clr = ['encounterHere', 'encounterKind', 'encounterHp', 'encounterTerrain']
+    for (const from of ['camp:lean', 'camp:jaxson', 'camp:bay', 'camp:hunter', 'camp:forced', 'camp:vents']) {
+      const at0 = GE.applyEffect(GE.newGame('prisoner'), { goto: from, unsetFlag: clr })
+      const st = GE.applyEffect(at0, { startChapter: 'cache-run', goto: 'ch1:leave', flash: 'ROUTE LINE' })
+      assert(st.sceneId === 'ch1:storm' && st.chapterId === 'cache-run' && st.flags.leftCamp, `escape from ${from} plays the storm beat`)
+      assert(cov(st) === 'camp-storm.jpg', `storm beat from ${from} uses camp-storm.jpg`)
+      const go = GE.visibleChoices(st)
+      assert(go.length === 1 && go[0].label === 'Continue', 'storm beat has one Continue')
+      const out = GE.applyEffect(st, go[0].effects)
+      assert(atHunger(out) && /ROUTE LINE/.test(out.flash ?? '') && !out.flags.stormFlash, `storm Continue from ${from} lands the route outcome`)
+    }
+    const spine = GE.applyEffect(GE.newGame('outcast'), { goto: 'spine:shade', unsetFlag: clr })
+    assert(atHunger(GE.applyEffect(spine, { startChapter: 'cache-run', goto: 'ch1:leave' })), 'non-camp Hunger skips the storm beat')
+  }
+  for (const f of ['corvin.jpg', 'bootprints.jpg', 'mira.jpg', 'guard.jpg', 'yard.jpg', 'korvan.jpg', 'steam-vents.jpg', 'camp-storm.jpg']) assert(existsSync(new URL(`../public/covers/${f}`, import.meta.url)) && readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8').includes(`covers/${f}`), `${f} ships and is precached`)
   const hound = at('spine:hound')
   const b = GE.visibleChoices(hound).find((c) => c.id === 'boots')
   assert(b?.effects.goto === 'spine:boots', 'Follow the boot-prints shows the prints first')

@@ -18,21 +18,21 @@ const oiltooth: IntentRule[] = [
   {
     tags: TALK,
     show: PLAN_UNHEARD,
-    reply: 'Brass ticks. "Bleed-Cut. Valerius is the problem. I have a plan to get out of here. Ask about it."',
+    reply: 'Brass ticks. "Blood-Cut. Valerius is the problem. I have a plan to get out of here. Ask about it."',
     effects: { ticks: 1 },
   },
   {
     tags: TALK,
     show: { all: [PLAN_HEARD, { flagUnset: 'kaelenKnown' }] },
     reply:
-      'Brass ticks. "Bleed-Cut. Sabotage the station. I hotwire. That is the talk. Want rumors? There is a trader at the Wire who deals goods."',
+      'Brass ticks. "Blood-Cut. Sabotage the station. I hotwire. That is the talk. Want rumors? There is a trader at the Wire who deals goods."',
     effects: { ticks: 1 },
   },
   {
     tags: TALK,
     show: { all: [PLAN_HEARD, { flag: 'kaelenKnown' }] },
     reply:
-      'Brass ticks. "Bleed-Cut. Sabotage the station. I hotwire. That is the talk. Kaelen sells rumors at the Wire if you wanted a different mouth."',
+      'Brass ticks. "Blood-Cut. Sabotage the station. I hotwire. That is the talk. Kaelen sells rumors at the Wire if you wanted a different mouth."',
     effects: { ticks: 1 },
   },
   {
