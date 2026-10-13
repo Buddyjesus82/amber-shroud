@@ -30,6 +30,7 @@ export type CoverKey =
   | 'guard'
   | 'yard'
   | 'mira'
+  | 'korvan'
   | 'bootprints'
   | 'camp_shiv'
   | 'bay_sarn'
@@ -64,6 +65,7 @@ const FILES: Record<CoverKey, string> = {
   guard: 'guard.jpg',
   yard: 'yard.jpg',
   mira: 'mira.jpg',
+  korvan: 'korvan.jpg',
   bootprints: 'bootprints.jpg',
   camp_shiv: 'camp-shiv.jpg',
   bay_sarn: 'bay_sarn.jpg',
@@ -112,6 +114,8 @@ export const COVER_BAND: Record<CoverKey, [number, number]> = {
   yard: [0.25, 0.95],
   // Mira's face and the brass pendant sit in the upper band.
   mira: [0.0, 0.75],
+  // Korvan's amber-scarred face is center-left in the upper half.
+  korvan: [0.0, 0.7],
   // The prints run up the lower half toward the tent.
   bootprints: [0.3, 1.0],
   // Both hands on the bar and the sparks sit in the middle band.
@@ -146,7 +150,7 @@ const PERSON_COVER: Record<PersonId, CoverKey> = {
   sybella: 'sybella',
   handler: 'handler',
   // No portraits yet for the Spine Strays. They use the Spine art.
-  korvan: 'spine',
+  korvan: 'korvan',
   mira: 'mira',
   corvin: 'corvin',
   jodi: 'jodi',
@@ -194,6 +198,7 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   if (id === 'camp:bay-pike') return 'bay_pike'
   if (id === 'camp:guard' || id === 'camp:sabotage') return 'guard'
   if (id === 'camp:yard' || id === 'camp:vats') return 'yard'
+  if (id === 'spine:korvan') return 'korvan'
   if (id === 'spine:boots') return 'bootprints'
   if (id === 'camp:shiv') return 'camp_shiv'
   if (id === 'camp:bay-sarn') return 'bay_sarn'
