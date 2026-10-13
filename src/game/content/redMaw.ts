@@ -26,7 +26,7 @@ The ground out here takes more than the camp ever did. Sap goes faster. Hunters 
       {
         if: { flag: 'chapter1Done' },
         mode: 'append',
-        body: `Hunger is open. Run, leave, or take the Hunger.`,
+        body: `The Gullet is open. Run, leave, or take the Gullet.`,
       },
       {
         if: { flagEq: ['climax', 'bargain'] },
@@ -74,7 +74,7 @@ The ground out here takes more than the camp ever did. Sap goes faster. Hunters 
       {
         tags: ['cache', 'kallik', 'climb', 'down', 'rib'],
         show: { flag: 'chapter1Done' },
-        reply: 'The cache stays under the lip. Hunger is open. Run, leave, or take the Hunger.',
+        reply: 'The cache stays under the lip. The Gullet is open. Run, leave, or take the Gullet.',
         effects: { ticks: 1, sap: -1 },
       },
       {
@@ -242,7 +242,7 @@ Zafir is at his stall. He has watched buyers fail and kept the tray anyway. On i
       {
         if: { flag: 'ossaRobbed' },
         mode: 'replace',
-        body: `She is alive. She makes sure you see it. "You took a Drop off a woman on sticks. The Maw has a sense of humor. I have a memory. Next Hunger, do not stand in my shade unless you like falling."`,
+        body: `She is alive. She makes sure you see it. "You took a Drop off a woman on sticks. The Maw has a sense of humor. I have a memory. Next Gullet, do not stand in my shade unless you like falling."`,
       },
     ],
     choices: [

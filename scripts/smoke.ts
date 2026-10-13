@@ -132,7 +132,7 @@ function pick(s: GameState, id: string) {
   ) {
     s = applyEffect(s, { unsetFlag: ['hunterHere', 'hunterFrom'] })
   }
-  // Older walks predate the storm beat; step through it when the next pick belongs to the Hunger.
+  // Older walks predate the storm beat; step through it when the next pick belongs to the Gullet.
   if (s.sceneId === 'ch1:storm' && id !== 'continue') s = applyEffect(s, visibleChoices(s)[0].effects)
   const c = visibleChoices(s).find((x) => x.id === id)
   if (!c) {
@@ -159,7 +159,7 @@ function openShop(s: GameState, shelf: 'buy' | 'sell') {
 
 function prisonerToSybella(s: GameState): GameState {
   s = dismissFight(pick(s, 'go'))
-  assert(s.sceneId === 'ch1:p-pipe', `prisoner Hunger is the Cartel fence (got ${s.sceneId})`)
+  assert(s.sceneId === 'ch1:p-pipe', `prisoner Gullet is the Cartel fence (got ${s.sceneId})`)
   s = pick(s, ids(s).includes('wrench') ? 'wrench' : 'crawl')
   assert(s.sceneId === 'ch1:p-clerk', `prisoner meets Clerk Rell (got ${s.sceneId})`)
   s = pick(s, ids(s).includes('scrip') ? 'scrip' : 'bolt')
@@ -177,7 +177,7 @@ function prisonerToSybella(s: GameState): GameState {
 
 function outcastToSybella(s: GameState): GameState {
   s = dismissFight(pick(s, 'go'))
-  assert(s.sceneId === 'ch1:o-noon', `outcast Hunger is noon country (got ${s.sceneId})`)
+  assert(s.sceneId === 'ch1:o-noon', `outcast Gullet is noon country (got ${s.sceneId})`)
   s = pick(s, ids(s).includes('silas') ? 'silas' : 'noon')
   if (s.sceneId === 'ch1:o-silas') s = pick(s, 'on')
   assert(s.sceneId === 'ch1:o-tax', `outcast meets Nim the Cut-Fee (got ${s.sceneId})`)
@@ -194,7 +194,7 @@ function outcastToSybella(s: GameState): GameState {
 
 function vesselToSybella(s: GameState): GameState {
   s = dismissFight(pick(s, 'go'))
-  assert(s.sceneId === 'ch1:v-hymn', `vessel Hunger is the hymn-road (got ${s.sceneId})`)
+  assert(s.sceneId === 'ch1:v-hymn', `vessel Gullet is the hymn-road (got ${s.sceneId})`)
   s = pick(s, ids(s).includes('oram') ? 'oram' : 'hymn')
   assert(s.sceneId === 'ch1:v-runners', `vessel meets Seeker runners (got ${s.sceneId})`)
   s = pick(s, ids(s).includes('cloth') ? 'cloth' : ids(s).includes('bolt') ? 'bolt' : 'map')
@@ -363,7 +363,7 @@ s = pick(s, 'pens')
 s = travelTo(s, 'camp:lean')
 s = interpret(s, 'ask about kallik cache red maw')
 assert(s.sceneId === 'camp:wire' || s.sceneId === 'camp:jaxson-cache', 'cache rumor is Kaelen, not Jaxson')
-assert(!s.flags.hungerKnown, 'Jaxson does not sell the Hunger heading')
+assert(!s.flags.hungerKnown, 'Jaxson does not sell the Gullet heading')
 
 s = newGame('prisoner')
 s = pick(s, 'pens')
@@ -531,7 +531,7 @@ assert(s.sap === 2, 'outcast starts thin')
 s = pick(s, 'stand')
 assert(s.hubId === 'spine')
 assert(ids(s).includes('tip'), 'silas tip on ridge')
-assert(!ids(s).includes('hunger'), "Silas's Tip alone does not open the Hunger on the ridge")
+assert(!ids(s).includes('hunger'), "Silas's Tip alone does not open the Gullet on the ridge")
 s = pick(s, 'tip')
 assert(s.sceneId === 'spine:tip')
 s = pick(s, 'fill')
@@ -568,7 +568,7 @@ s = newGame('outcast')
 s = pick(s, 'stand')
 s = applyEffect(s, { flag: { hungerKnown: true } })
 s = pick(s, 'hunger')
-assert(s.chapterId === 'cache-run' && atHunger(s), 'ridge Hunger button starts Cache Run once the heading is known')
+assert(s.chapterId === 'cache-run' && atHunger(s), 'ridge Gullet button starts Cache Run once the heading is known')
 s = outcastToSybella(s)
 assert(s.sceneId === 'ch1:sybella', 'outcast reaches Sybella poker')
 assert(ids(s).includes('maw'), 'Approach is a first-class Sybella exit')
@@ -598,7 +598,7 @@ assert(!isChoiceOn(s, visibleChoices(s).find((c) => c.id === 'pay')?.enable), 'p
   s = pick(s, 'tab')
   assert(s.flags.hungerKnown && s.flags.silasOwed && s.flags.silasOwedHeading, 'tab heading: heading known, debt on Silas')
   assert(s.heat.strays === strays + 1 && s.flags.strayNotice, 'tab heading raises Stray Heat and the Strays notice')
-  assert(s.sceneId === 'spine:shade' && ids(s).includes('hunger'), 'shade offers the Hunger after the tab heading')
+  assert(s.sceneId === 'spine:shade' && ids(s).includes('hunger'), 'shade offers the Gullet after the tab heading')
 }
 s = pick(s, 'hunger')
 assert(s.chapterId === 'cache-run' && atHunger(s), 'Kallik heading walks from the shade')
@@ -1728,7 +1728,7 @@ s = {
   ...s,
   flags: { ...s.flags, encounterHere: true, encounterKind: 'tick', encounterAt: s.ticks },
 }
-assert(ids(s).includes('enc-skip'), 'Hunger-road encounters can be declined')
+assert(ids(s).includes('enc-skip'), 'Gullet-road encounters can be declined')
 s = pick(s, 'enc-skip')
 assert(s.sceneId === 'ch1:p-pipe', 'skipping a fence encounter keeps the fence')
 s = pick(s, 'enc-continue')
@@ -1761,7 +1761,7 @@ s = applyEffect(s, {
 }
 const rimRan = interpret(s, 'run')
 assert(rimRan.sceneId === 'maw:rim' && rimRan.flags.encounterDone, 'Rim run during a fight skips onto the outcome card')
-assert(rimRan.chapterId !== 'walking-amber', 'Rim run during a fight does not take the Hunger')
+assert(rimRan.chapterId !== 'walking-amber', 'Rim run during a fight does not take the Gullet')
 const rimFight = pick(s, 'enc-fight')
 assert(rimFight.sceneId === 'maw:rim', 'Maw Rim fight stays on the rim')
 assert(rimFight.flags.encounterDone, 'Rim win is an outcome card')
@@ -1996,7 +1996,7 @@ s = interpret(s, 'talk')
 assert(/animals|hymn|joints|cup/i.test(s.flash ?? ''), 'Do talk at the paddock still hits Oram')
 
 s = applyEffect(s, { goto: 'ch1:v-zafir', startChapter: 'cache-run' })
-assert(!ids(s).includes('shop-buy') && !ids(s).includes('shop-sell'), 'Hunger cairn Zafir is not a shop')
+assert(!ids(s).includes('shop-buy') && !ids(s).includes('shop-sell'), 'Gullet cairn Zafir is not a shop')
 assert(ids(s).includes('heading-glint') && ids(s).includes('heading-scrap'), 'cairn heading is Glint or scrap, two rows')
 {
   const g = visibleChoices(s).find((c) => c.id === 'heading-glint')
@@ -2143,7 +2143,7 @@ assert((s.items.dust_cloak ?? 0) === 0, 'sold cloak leaves the pack')
 assert((s.items.glints ?? 0) === glintsBefore, 'cloak sale pays scrap not extra Glints')
 
 const lostVessel = getScene('ch1:trail', 'vessel')
-assert(lostVessel.id === 'missing', 'unknown Hunger id still has a fallback card')
+assert(lostVessel.id === 'missing', 'unknown Gullet id still has a fallback card')
 assert(!lostVessel.choices.some((c) => c.effects.goto === 'camp:yard' || c.effects.goto === 'spine:shade' || c.effects.goto === 'spine:ridge'), 'lost heading does not dump Vessel into Prisoner yard or Outcast shade')
 assert(lostVessel.choices[0]?.effects.goto === 'thresh:court', 'Vessel lost heading sends them to the Court')
 assert(!/find shade/i.test(lostVessel.choices[0]?.label ?? ''), 'Find shade is gone')
@@ -2165,9 +2165,9 @@ s = reloadSlot(s)
 assert(s.door === 'vessel' && s.sceneId === 'thresh:court', 'Vessel Continue mid-hub stays Vessel at Court')
 
 s = applyEffect(s, { startChapter: 'cache-run', goto: 'ch1:v-hymn', sap: 4 })
-assert(s.sceneId === 'ch1:v-hymn', 'Vessel mid-Hunger is the hymn-road')
+assert(s.sceneId === 'ch1:v-hymn', 'Vessel mid-Gullet is the hymn-road')
 s = reloadSlot(s)
-assert(s.door === 'vessel' && s.sceneId === 'ch1:v-hymn', 'Vessel Continue mid-Hunger stays on the hymn-road')
+assert(s.door === 'vessel' && s.sceneId === 'ch1:v-hymn', 'Vessel Continue mid-Gullet stays on the hymn-road')
 
 s = newGame('vessel')
 writeSave({
@@ -2181,7 +2181,7 @@ clearSessionCache()
 s = loadDoor('vessel')!
 assert(s.door === 'vessel', 'old trail save keeps Vessel door')
 assert(s.sceneId === 'ch1:v-hymn', 'old ch1:trail migrates Vessel onto the hymn-road, not Spine shade')
-assert(s.chapterId === 'cache-run', 'migrated Vessel Hunger stays in Cache Run')
+assert(s.chapterId === 'cache-run', 'migrated Vessel Gullet stays in Cache Run')
 
 s = newGame('vessel')
 writeSave({
@@ -2213,7 +2213,7 @@ s = reloadSlot(s)
 assert(s.door === 'prisoner' && s.sceneId === 'camp:cages', 'Prisoner Continue mid-hub stays in the pens')
 s = applyEffect(s, { startChapter: 'cache-run', goto: 'ch1:p-pipe', sap: 4 })
 s = reloadSlot(s)
-assert(s.door === 'prisoner' && s.sceneId === 'ch1:p-pipe', 'Prisoner Continue mid-Hunger stays on the fence')
+assert(s.door === 'prisoner' && s.sceneId === 'ch1:p-pipe', 'Prisoner Continue mid-Gullet stays on the fence')
 writeSave({ ...s, sceneId: 'ch1:trail' })
 clearSessionCache()
 s = loadDoor('prisoner')!
@@ -2225,7 +2225,7 @@ s = reloadSlot(s)
 assert(s.door === 'outcast' && s.sceneId === 'spine:ridge', 'Outcast Continue mid-hub stays on the ridge')
 s = applyEffect(s, { startChapter: 'cache-run', goto: 'ch1:o-noon', sap: 4 })
 s = reloadSlot(s)
-assert(s.door === 'outcast' && s.sceneId === 'ch1:o-noon', 'Outcast Continue mid-Hunger stays in noon country')
+assert(s.door === 'outcast' && s.sceneId === 'ch1:o-noon', 'Outcast Continue mid-Gullet stays in noon country')
 writeSave({ ...s, sceneId: 'ch1:zafir' })
 clearSessionCache()
 s = loadDoor('outcast')!
@@ -2324,8 +2324,8 @@ assert(html.includes('apple-touch.png?v=14'), 'apple-touch-icon is cache-busted 
   assert(rumorLabels.includes('Side trouble'), 'Kaelen rumor counter opens with Side trouble')
   const intel = applyEffect(rumors, { flag: { rumorShelf: 'intel' } })
   const intelRow = visibleChoices(intel).find((c) => c.id === 'hunger-glint')
-  assert(intelRow, 'Hunger lead stays on the Intel shelf without a Glint')
-  assert(intelRow && !isChoiceOn(intel, intelRow.enable), 'Hunger lead locks until you have a Glint')
+  assert(intelRow, 'Gullet lead stays on the Intel shelf without a Glint')
+  assert(intelRow && !isChoiceOn(intel, intelRow.enable), 'Gullet lead locks until you have a Glint')
 }
 
 s = newGame('prisoner')
@@ -2562,21 +2562,22 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
   let pens = newGame('prisoner')
   pens = pick(pens, 'pens')
   const ran = interpret(pens, 'run')
-  assert(!/take the Hunger/.test(ran.flash ?? ''), 'pens do not offer Hunger before a heading exists')
+  assert(!/take the Gullet/.test(ran.flash ?? ''), 'pens do not offer Gullet before a heading exists')
   assert(/Pick a place/.test(ran.flash ?? ''), 'aimless run still asks for a place')
   const denied = interpret(pens, 'take the hunger')
-  assert(denied.sceneId === 'camp:cages', 'blocked Hunger stays in the pens')
-  assert(!bad.test(denied.flash ?? ''), 'blocked Hunger is not the old take-error')
-  assert(/not a road/i.test(denied.flash ?? ''), 'blocked Hunger says the road is closed')
+  assert(denied.sceneId === 'camp:cages', 'blocked Gullet stays in the pens')
+  assert(!bad.test(denied.flash ?? ''), 'blocked Gullet is not the old take-error')
+  assert(/not a road/i.test(denied.flash ?? ''), 'blocked Gullet says the road is closed')
 
   let known = newGame('prisoner')
   known = pick(known, 'pens')
   known = applyEffect(known, { sap: 4, goto: 'camp:yard', flag: { hungerKnown: true } })
   const offered = interpret(known, 'walk')
-  assert(/take the Hunger/.test(offered.flash ?? ''), 'a known Hunger is offered on an aimless walk')
+  assert(/take the Gullet/.test(offered.flash ?? ''), 'a known Gullet is offered on an aimless walk')
   const started = interpret(known, 'take the hunger')
+  assert(interpret(known, 'take the gullet').chapterId === 'cache-run', 'typed take the gullet starts the road too')
   assert(started.chapterId === 'cache-run' && atHunger(started), 'take the hunger from the Yard starts Cache Run')
-  assert(!bad.test(started.flash ?? ''), 'Yard Hunger start is not an error')
+  assert(!bad.test(started.flash ?? ''), 'Yard Gullet start is not an error')
 
   for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
     let rim = newGame(door)
@@ -2588,7 +2589,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
     })
     assert(rim.sceneId === 'maw:rim' && rim.hubId === 'redmaw', `${door} stands on Maw Rim`)
     rim = dismissFight(rim)
-    assert(/Hunger is open\. Run, leave, or take the Hunger/.test(bodyOf(rim)), `${door} Rim walk-line is one beat`)
+    assert(/Gullet is open\. Run, leave, or take the Gullet/.test(bodyOf(rim)), `${door} Rim walk-line is one beat`)
     for (const typed of [
       'run',
       'go',
@@ -2598,39 +2599,39 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
       'go to the hunger',
       'take the hunger',
       'take hunger',
-      'take the Hunger',
+      'take the Gullet',
       'walk the hunger',
     ]) {
       const via = interpret(rim, typed)
       assert(via.sceneId === 'ch2:stub', `${door} Do "${typed}" enters the Walking Amber`)
-      assert(via.chapterId === 'walking-amber', `${door} Do "${typed}" is the next Hunger`)
+      assert(via.chapterId === 'walking-amber', `${door} Do "${typed}" is the next Gullet`)
       assert(!bad.test(via.flash ?? ''), `${door} Do "${typed}" has no error flash`)
     }
     const wandered = interpret(rim, 'walk')
     assert(wandered.sceneId === 'maw:rim', `${door} bare walk on the Rim does not leave`)
-    assert(/Hunger is open\. Run, leave, or take the Hunger/.test(wandered.flash ?? ''), `${door} Rim walk flash is one beat`)
-    assert(!/Pick a place, or take the Hunger/.test(wandered.flash ?? ''), `${door} Rim walk does not teach a second command`)
+    assert(/Gullet is open\. Run, leave, or take the Gullet/.test(wandered.flash ?? ''), `${door} Rim walk flash is one beat`)
+    assert(!/Pick a place, or take the Gullet/.test(wandered.flash ?? ''), `${door} Rim walk does not teach a second command`)
 
     let shut = newGame(door)
     shut = applyEffect(shut, { sap: 4, enterHub: 'redmaw', goto: 'maw:rim' })
     shut = dismissFight(shut)
-    assert(!shut.flags.chapter1Done, `${door} Rim can stand before Hunger opens`)
+    assert(!shut.flags.chapter1Done, `${door} Rim can stand before Gullet opens`)
     for (const typed of ['run', 'go', 'leave', 'leave the rim']) {
       const held = interpret(shut, typed)
       assert(held.sceneId === 'maw:rim', `${door} Do "${typed}" stays on a closed Rim`)
-      assert(held.chapterId !== 'walking-amber' && held.chapterId !== 'cache-run', `${door} closed Rim does not start Hunger`)
+      assert(held.chapterId !== 'walking-amber' && held.chapterId !== 'cache-run', `${door} closed Rim does not start Gullet`)
       assert(/Nowhere to run yet/.test(held.flash ?? ''), `${door} closed Rim says nowhere to run`)
-      assert(!/hunger/i.test(held.flash ?? ''), `${door} closed Rim does not offer Hunger`)
+      assert(!/hunger/i.test(held.flash ?? ''), `${door} closed Rim does not offer Gullet`)
     }
     const shutNamed = interpret(shut, 'take the hunger')
-    assert(shutNamed.sceneId === 'maw:rim', `${door} named Hunger on a closed Rim stays`)
-    assert(/not a road/i.test(shutNamed.flash ?? ''), `${door} closed Rim Hunger is not a road`)
+    assert(shutNamed.sceneId === 'maw:rim', `${door} named Gullet on a closed Rim stays`)
+    assert(/not a road/i.test(shutNamed.flash ?? ''), `${door} closed Rim Gullet is not a road`)
 
     let lip = { ...rim, sceneId: 'maw:lip' }
     const fromLip = interpret(lip, 'take the hunger')
     assert(fromLip.sceneId === 'ch2:stub', `${door} Hollow Lip take the hunger matches the hook`)
     const lipRun = interpret(lip, 'run')
-    assert(lipRun.sceneId === 'ch2:stub' && lipRun.chapterId === 'walking-amber', `${door} Hollow Lip run is the Hunger button`)
+    assert(lipRun.sceneId === 'ch2:stub' && lipRun.chapterId === 'walking-amber', `${door} Hollow Lip run is the Gullet button`)
     assert(!bad.test(lipRun.flash ?? ''), `${door} Hollow Lip run has no error flash`)
 
     let land = newGame(door)
@@ -2642,8 +2643,8 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 
     let market = applyEffect(rim, { goto: 'maw:market' })
     const marketRun = interpret(market, 'run')
-    assert(marketRun.sceneId === 'maw:market', `${door} Bone Market run does not start Hunger`)
-    assert(/take the Hunger/.test(marketRun.flash ?? ''), `${door} Market walk still names the Hunger as a second step`)
+    assert(marketRun.sceneId === 'maw:market', `${door} Bone Market run does not start Gullet`)
+    assert(/take the Gullet/.test(marketRun.flash ?? ''), `${door} Market walk still names the Gullet as a second step`)
   }
 
   for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
@@ -2652,7 +2653,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
     const button = pick(road, 'go')
     const via = interpret(road, 'take the hunger')
     assert(via.sceneId === button.sceneId, `${door} take the hunger follows that door's Cache Run road`)
-    assert(via.chapterId === 'cache-run', `${door} Hunger stay in Cache Run`)
+    assert(via.chapterId === 'cache-run', `${door} Gullet stay in Cache Run`)
   }
 
   let ridge = newGame('outcast')
@@ -2675,7 +2676,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v84'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v85'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -2980,7 +2981,7 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(ridgeHook && !isChoiceOn(fresh, ridgeHook.show), "Spine hub hook stays shut on Silas's Tip alone")
   for (const scene of ['spine:ridge', 'spine:shade', 'spine:silas', 'spine:well', 'spine:korvan', 'spine:mira', 'spine:jodi', 'spine:corvin', 'spine:hound', 'spine:tip']) {
     const at = applyEffect(fresh, { goto: scene, flag: quiet })
-    assert(!visibleChoices(at).some((c) => c.effects.startChapter === 'cache-run' && c.tone !== 'danger'), `${scene}: no Hunger exit before a heading`)
+    assert(!visibleChoices(at).some((c) => c.effects.startChapter === 'cache-run' && c.tone !== 'danger'), `${scene}: no Gullet exit before a heading`)
   }
 
   // Well skim: a visible lock that names the requirement.
@@ -3213,7 +3214,7 @@ function assertHelpResolves(s: GameState, where: string) {
   }
   assert(flat.length === 0, `action buttons that only print text: ${[...new Set(flat)].slice(0, 6).join(' | ')}`)
 
-  // Ready the stolen Strider is real: the Hunger ride starts with the Sap it saved.
+  // Ready the stolen Strider is real: the Gullet ride starts with the Sap it saved.
   let v = walkTo(pick(newGame('vessel'), 'keep'), 'thresh:paddock')
   v = applyEffect(v, { add: { strider_bit: v.items.strider_bit ? 0 : 1 }, flag: { hungerKnown: true } })
   if (v.flags.hunterHere) v = applyEffect(v, { unsetFlag: ['hunterHere', 'hunterFrom'] })
@@ -3223,7 +3224,7 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(readied.flags.striderReady && !ids(readied).includes('ready'), 'readying the Strider sticks and the row goes away')
   const rode = pick(walkTo(readied, 'thresh:court'), 'hunger')
   const base = pick(walkTo(v, 'thresh:court'), 'hunger')
-  assert(rode.chapterId === 'cache-run' && rode.sap === base.sap + STRIDER_READY_SAP, `the readied Strider saves ${STRIDER_READY_SAP} Sap on the Hunger (${base.sap} → ${rode.sap})`)
+  assert(rode.chapterId === 'cache-run' && rode.sap === base.sap + STRIDER_READY_SAP, `the readied Strider saves ${STRIDER_READY_SAP} Sap on the Gullet (${base.sap} → ${rode.sap})`)
   assert(rode.flags.striderSpent && !base.flags.striderSpent, 'only a readied Strider spends itself')
 }
 
@@ -3525,7 +3526,7 @@ function assertHelpResolves(s: GameState, where: string) {
   const kor = pick(shade, 'walk-korvan')
   assert(kor.sceneId === 'spine:korvan' && /I will not tell you what that mark is for/.test(bodyOf(kor)), 'Korvan speaks to the branded player and keeps the secret')
   const kDrop = pick(applyEffect(kor, { add: { vial_drop: 1 } }), 'hunger-drop')
-  assert(kDrop.flags.hungerKnown && kDrop.flags.sybellaNamed && (kDrop.items.kallik_mark ?? 0) === 1, 'Korvan trades a Drop for the Hunger lead')
+  assert(kDrop.flags.hungerKnown && kDrop.flags.sybellaNamed && (kDrop.items.kallik_mark ?? 0) === 1, 'Korvan trades a Drop for the Gullet lead')
   const kHound = pick(applyEffect(kor, { add: { scrap: 1 } }), 'hound')
   assert(kHound.flags.korvanHoundRumor && /Corvin/.test(kHound.flash ?? '') && ids(kHound).includes('hound-walk'), 'Korvan sells the east wash lead and names Corvin')
   const kFresh = { ...kHound, sap: 6, flags: { ...kHound.flags, encounterAt: 99999 } }
@@ -4633,7 +4634,7 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(!/First Spires? (are|is) the teeth|Spires are the teeth/.test(lore), 'Red Maw is the hub, not the Spire')
   const vessel = getScene('open:vessel')!.body
   assert(/sealed/.test(vessel) && /What opens it is at Red Maw/.test(vessel), 'Vessel opening: the Seekers send you to Red Maw for what opens the Spire')
-  assert(/What opens it is at Red Maw/.test(HUBS.threshold.hungerHook!.sub ?? ''), 'Threshold Hunger hook gives the Seeker reason to go to the Maw')
+  assert(/What opens it is at Red Maw/.test(HUBS.threshold.hungerHook!.sub ?? ''), 'Threshold Gullet hook gives the Seeker reason to go to the Maw')
 }
 
 // First SW install must not reload the page (it would bounce a new player out of the intro).
@@ -4647,7 +4648,7 @@ function assertHelpResolves(s: GameState, where: string) {
   const all = ALL_SCENES.map((x) => x.body + JSON.stringify(x.variants ?? []) + JSON.stringify(x.choices) + JSON.stringify(x.intents ?? [])).join('\n')
     + JSON.stringify(HUBS) + readFileSync('src/game/content/maps.ts', 'utf8') + readFileSync('src/game/talk.ts', 'utf8')
     + readFileSync('src/game/look.ts', 'utf8') + readFileSync('src/game/hunter.ts', 'utf8') + JSON.stringify(PEOPLE)
-  assert(!/east-south|east and south|walk east, find me|ford when you walk east|walking east to the Maw|label: 'Hunger south'|Red Maw is (days )?south|Maw-country.{0,3}South|South is Maw-country|East is the Maw|Ossa is south\. I go west/.test(all), 'no old compass for the Maw roads')
+  assert(!/east-south|east and south|walk east, find me|ford when you walk east|walking east to the Maw|label: 'Gullet south'|Red Maw is (days )?south|Maw-country.{0,3}South|South is Maw-country|East is the Maw|Ossa is south\. I go west/.test(all), 'no old compass for the Maw roads')
   assert(/label: '← Red Maw, west'/.test(readFileSync('src/game/content/maps.ts', 'utf8')), 'Threshold map exit points west to Red Maw')
   assert(/days east/.test(HUBS.camp04.hungerHook!.sub ?? '') && /hard day south/.test(HUBS.spine.hungerHook!.sub ?? ''), 'Camp-04 road runs east, Spine road runs south')
 }
@@ -5026,11 +5027,11 @@ function assertHelpResolves(s: GameState, where: string) {
       assert(atHunger(out) && /ROUTE LINE/.test(out.flash ?? '') && !out.flags.stormFlash, `storm Continue from ${from} lands the route outcome`)
     }
     const spine = GE.applyEffect(GE.newGame('outcast'), { goto: 'spine:shade', unsetFlag: clr })
-    assert(atHunger(GE.applyEffect(spine, { startChapter: 'cache-run', goto: 'ch1:leave' })), 'non-camp Hunger skips the storm beat')
+    assert(atHunger(GE.applyEffect(spine, { startChapter: 'cache-run', goto: 'ch1:leave' })), 'non-camp Gullet skips the storm beat')
   }
   {
     const ps = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
-    assert((ps.match(/scene.id === 'ch1:storm' \? 'Camp-04'/g) ?? []).length === 2, 'storm beat is labeled Camp-04, the Hunger label waits for Continue')
+    assert((ps.match(/scene.id === 'ch1:storm' \? 'Camp-04'/g) ?? []).length === 2, 'storm beat is labeled Camp-04, the Gullet label waits for Continue')
   }
   for (const f of ['corvin.jpg', 'bootprints.jpg', 'mira.jpg', 'guard.jpg', 'yard.jpg', 'korvan.jpg', 'steam-vents.jpg', 'camp-storm.jpg']) assert(existsSync(new URL(`../public/covers/${f}`, import.meta.url)) && readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8').includes(`covers/${f}`), `${f} ships and is precached`)
   const hound = at('spine:hound')

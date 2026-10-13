@@ -59,7 +59,7 @@ You wake with sand in your teeth and a Drop in your vial you did not earn. Whoev
     title: 'The Cup Cracks',
     body: `The sacrament in you burns out. The cloth feels like a rag. You hit the Court stones.
 
-Oram sloshes a real Drop against your mouth while Thalia screams a hymn that has nothing to do with you. "Ride," he says. "Be Hunger. Stay and they will pour what's left of you into a prettier liar."`,
+Oram sloshes a real Drop against your mouth while Thalia screams a hymn that has nothing to do with you. "Ride," he says. "Take the Gullet. Stay and they will pour what's left of you into a prettier liar."`,
     choices: [
       {
         id: 'up',

@@ -120,7 +120,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     if (moved && next.flash && !fightResult) {
       setHeld({
         title: placeTitle,
-        meta: hub ? hub.name : scene.id === 'ch1:storm' ? 'Camp-04' : scene.chapterId === 'cache-run' ? 'The Hunger' : null,
+        meta: hub ? hub.name : scene.id === 'ch1:storm' ? 'Camp-04' : scene.chapterId === 'cache-run' ? 'The Gullet' : null,
         face,
         body: bodyOf(state),
         art: artSrc,
@@ -188,7 +188,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     optionRows.push({
       key: 'closing',
       tone: 'danger',
-      label: 'The desert is closing. Take the Hunger.',
+      label: 'The desert is closing. Take the Gullet.',
       sub: 'Pressure. The camp will not hold the hour.',
       onClick: () =>
         onChange(
@@ -347,7 +347,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
         <div className="place-line">
           <strong>{held ? held.title : placeTitle}</strong>
           <span className="place-meta">
-            {held ? held.meta : hub ? hub.name : scene.id === 'ch1:storm' ? 'Camp-04' : scene.chapterId === 'cache-run' ? 'The Hunger' : null}
+            {held ? held.meta : hub ? hub.name : scene.id === 'ch1:storm' ? 'Camp-04' : scene.chapterId === 'cache-run' ? 'The Gullet' : null}
             {savedCue ? <em className="saved-cue">Saved</em> : null}
           </span>
         </div>

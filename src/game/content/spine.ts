@@ -57,7 +57,7 @@ Down-slope: a tent the color of old teeth. Silas Vane sells shade by the minute.
       },
       {
         id: 'hunger',
-        label: 'Walk the Hunger toward Red Maw',
+        label: 'Walk the Gullet toward Red Maw',
         sub: 'You have a heading. Noon will not get kinder.',
         tone: 'hunger',
         show: { flag: 'hungerKnown' },
@@ -89,7 +89,7 @@ Down-slope: a tent the color of old teeth. Silas Vane sells shade by the minute.
     title: "Silas's Cut",
     body: `The scratch leads under a rib of rock the noon pretends not to own. Shade. A smear of sap in a crack — not a Drop, a lie that still wets the tongue.
 
-The Hunger is a red bruise to the south. You could fill the empty vial with this smear and call it a first Drop, or you could save the tip for a later spend.`,
+The Gullet is a red bruise to the south. You could fill the empty vial with this smear and call it a first Drop, or you could save the tip for a later spend.`,
     choices: [
       {
         id: 'fill',
@@ -159,7 +159,7 @@ Two Strays share the shade. A man with amber sealed over his mouth sits where th
       },
       {
         id: 'hunger',
-        label: 'Leave the shade. Walk the Hunger.',
+        label: 'Leave the shade. Walk the Gullet.',
         sub: 'Red Maw. Kallik. The blonde on the skiff.',
         tone: 'hunger',
         show: { flag: 'hungerKnown' },
@@ -223,7 +223,7 @@ Two Strays share the shade. A man with amber sealed over his mouth sits where th
       },
       {
         id: 'hunger',
-        label: 'Walk the Hunger toward Red Maw',
+        label: 'Walk the Gullet toward Red Maw',
         tone: 'hunger',
         show: { flag: 'hungerKnown' },
         effects: {
@@ -517,7 +517,7 @@ You can run south, or get back under Silas's canvas.`,
     choices: [
       {
         id: 'east',
-        label: 'Take the Hunger south',
+        label: 'Take the Gullet south',
         tone: 'hunger',
         show: { flag: 'hungerKnown' },
         effects: { startChapter: 'cache-run', goto: 'ch1:leave', heat: { cartel: 1 } },

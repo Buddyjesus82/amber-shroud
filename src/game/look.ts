@@ -360,7 +360,7 @@ function authored(state: GameState, scene: Scene): string[] {
   if (id === 'spine:korvan') {
     if (on(state, 'korvanTook')) push(lines, 'He keeps his back to you.')
     else {
-      if (!on(state, 'korvanHunger')) push(lines, 'A Drop or 2 scrap buys his Hunger lead. 1 scrap buys the east wash.')
+      if (!on(state, 'korvanHunger')) push(lines, 'A Drop or 2 scrap buys his Gullet lead. 1 scrap buys the east wash.')
       push(lines, 'He talks to you. He will not say what the brand is for.')
     }
     return lines

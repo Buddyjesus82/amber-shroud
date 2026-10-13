@@ -316,7 +316,7 @@ export const HUBS: Record<string, HubDef> = {
     ],
     hungerHook: {
       label: 'Take the rumor into the dunes',
-      sub: 'Red Maw: days east. Four roads from the pens. Then the Hunger.',
+      sub: 'Red Maw: days east. Four roads from the pens. Then the Gullet.',
       sceneId: 'ch1:leave',
       show: { flag: 'hungerKnown' },
     },
@@ -336,7 +336,7 @@ export const HUBS: Record<string, HubDef> = {
       { id: 'hound', name: 'Hound Sign', sceneId: 'spine:hound' },
     ],
     hungerHook: {
-      label: 'Walk the Hunger toward Red Maw',
+      label: 'Walk the Gullet toward Red Maw',
       sub: 'Red Maw: a hard day south. Closer than Ironwood. Not close.',
       sceneId: 'ch1:leave',
       show: { flag: 'hungerKnown' },
@@ -358,8 +358,8 @@ export const HUBS: Record<string, HubDef> = {
       { id: 'guard', name: 'Guard Post', sceneId: 'thresh:guard' },
     ],
     hungerHook: {
-      label: 'Ride the stolen Strider into Hunger',
-      sub: 'The Spire is sealed. What opens it is at Red Maw. Shortest Hunger-road.',
+      label: 'Ride the stolen Strider into the Gullet',
+      sub: 'The Spire is sealed. What opens it is at Red Maw. Shortest road into the Gullet.',
       sceneId: 'ch1:leave',
       show: { any: [{ flag: 'hungerKnown' }, { item: 'oram_map' }] },
     },
@@ -369,7 +369,7 @@ export const HUBS: Record<string, HubDef> = {
   redmaw: {
     id: 'redmaw',
     name: 'Red Maw Approach',
-    region: 'The Hunger holds',
+    region: 'The Gullet holds',
     blurb: 'Harder sand. Sybella hunting. The Maw breathes at night.',
     defaultScene: 'maw:rim',
     places: [
@@ -382,7 +382,7 @@ export const HUBS: Record<string, HubDef> = {
     ],
     hungerHook: {
       label: 'Under the jaw',
-      sub: 'Hunger is open. Run, leave, or take the Hunger.',
+      sub: 'The Gullet is open. Run, leave, or take the Gullet.',
       sceneId: 'ch2:stub',
       show: { flag: 'chapter1Done' },
     },

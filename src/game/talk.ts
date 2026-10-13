@@ -342,7 +342,7 @@ const ossa: IntentRule[] = [
   },
   {
     tags: TALK,
-    reply: '"I\'m alive. That is the greeting and the warning. Stilts. Vial. I might walk the lip next Hunger. I might not."',
+    reply: '"I\'m alive. That is the greeting and the warning. Stilts. Vial. I might walk the lip next Gullet. I might not."',
     effects: { ticks: 1 },
   },
   {
@@ -484,7 +484,7 @@ const korvan: IntentRule[] = [
   },
   {
     tags: TRADE,
-    reply: '"A Drop or two scrap for the Hunger lead. One scrap for the east wash. Silas has the shelf."',
+    reply: '"A Drop or two scrap for the Gullet lead. One scrap for the east wash. Silas has the shelf."',
     effects: { ticks: 1 },
   },
   {

@@ -15,9 +15,9 @@ function norm(text: string): string {
 /** Typed Hunger, not Kaelen's lead. Buttons still own "take the Hunger lead". */
 export function isHungerCommand(text: string): boolean {
   const hay = norm(text)
-  if (!/\bhunger\b/.test(hay)) return false
+  if (!/\b(?:hunger|gullet)\b/.test(hay)) return false
   if (/\b(lead|intel|rumou?r|glint)\b/.test(hay)) return false
-  if (/^(?:the\s+)?hunger$/.test(hay)) return true
+  if (/^(?:the\s+)?(?:hunger|gullet)$/.test(hay)) return true
   return /^(?:take|grab|walk|enter|start|follow|ride|begin|run|flee|leave|go|break)\b/.test(hay)
 }
 
@@ -33,7 +33,7 @@ export function hungerCommandEffect(state: GameState, choices: Choice[]): Effect
 
   const starters = choices.filter((c) => c.effects.startChapter === 'cache-run')
   if (starters.length) {
-    const named = starters.filter((c) => /\bhunger\b/i.test(`${c.label} ${c.id}`))
+    const named = starters.filter((c) => /\b(?:hunger|gullet)\b/i.test(`${c.label} ${c.id}`))
     const pool = named.length ? named : starters
     const known = pool.find((c) => !c.effects.flag?.cacheBlind)
     return (known ?? pool[0]).effects
@@ -78,7 +78,7 @@ export const AIMLESS_RUN =
   'Running without a heading is how the Maw gets fed. Pick a place. Map if you need a road.'
 
 export const AIMLESS_RUN_HUNGER =
-  'Running without a heading is how the Maw gets fed. Pick a place, or take the Hunger. Map if you need a road.'
+  'Running without a heading is how the Maw gets fed. Pick a place, or take the Gullet. Map if you need a road.'
 
 export function aimlessRunReply(offered: boolean): string {
   return offered ? AIMLESS_RUN_HUNGER : AIMLESS_RUN
@@ -108,6 +108,6 @@ export function isRimDepartCommand(text: string): boolean {
 
 export const RIM_NOWHERE = 'Nowhere to run yet. The rim holds.'
 
-export const RIM_HUNGER_OPEN = 'Hunger is open. Run, leave, or take the Hunger.'
+export const RIM_HUNGER_OPEN = 'The Gullet is open. Run, leave, or take the Gullet.'
 
-export const HUNGER_BLOCKED = 'The Hunger is not a road on this beat.'
+export const HUNGER_BLOCKED = 'The Gullet is not a road on this beat.'
