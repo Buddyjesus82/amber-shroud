@@ -314,8 +314,38 @@ export function clashOf(state: GameState, floor = DAMAGE_FLOOR): Clash {
   }
 }
 
-function compareLines(c: Clash): string {
-  return `You Strike ${c.strike} vs their Shell ${c.spec.shell}\n\nTheir Strike ${c.spec.strike} vs your Shell ${c.shell}`
+/** Short stat label: the last word of the name, in caps (CUTTER, SHARD-HOUND, VALERIUS). */
+export function statName(spec: Pick<Spec, 'name'>): string {
+  const words = spec.name.trim().split(/\s+/)
+  return (words[words.length - 1] ?? spec.name).toUpperCase()
+}
+
+/** One clean stat row. No maths: Health, Strike, Shell. */
+export function statRow(label: string, hp: number, strike: number, shell: number): string {
+  return `${label} ♥ ${Math.max(0, hp)} ⚔ Strike ${strike} 🛡 Shell ${shell}`
+}
+
+/** The two stat rows at the top of every fight card: you, then them. */
+function statRows(yourHp: number, strike: number, shell: number, spec: Spec, theirHp: number, theirStrike = spec.strike): string {
+  return `${statRow('YOU', yourHp, strike, shell)}\n\n${statRow(statName(spec), theirHp, theirStrike, spec.shell)}`
+}
+
+/** Gear that sets your numbers gets its own short line. */
+function gearLines(state: GameState): string[] {
+  const out: string[] = []
+  const eq = state.equipped ?? {}
+  for (const id of Object.values(eq) as (ItemId | undefined)[]) {
+    const it = id ? ITEMS[id] : undefined
+    if (!it) continue
+    if (it.strike != null) out.push(`${it.name}: Strike ${it.strike}.`)
+    if (it.shell != null) out.push(`${it.name}: Shell ${it.shell}.`)
+  }
+  return out
+}
+
+function compareLines(state: GameState, c: Clash): string {
+  const gear = gearLines(state)
+  return [statRows(c.yourHp, c.strike, c.shell, c.spec, c.theirHp), ...gear].join('\n\n')
 }
 
 
@@ -340,12 +370,13 @@ export function encounterCard(state: GameState): string {
   const clashText = state.flags.encounterClash
   if (typeof clashText === 'string' && clashText) return clashText
   const c = clashOf(state)
-  const compares = compareLines(c)
+  const compares = compareLines(state, c)
   const head = `${openerOf(state, c.spec)}\n\n${terrainOf(state).line}`
+  // Stat rows sit at the top of the card.
   if (!state.flags.fightTaught) {
-    return `${head}\n\n${compares}\n\n${TEACH}`
+    return `${compares}\n\n${head}\n\n${TEACH}`
   }
-  return `${head}\n\n${compares}`
+  return `${compares}\n\n${head}`
 }
 
 export function encounterAppend(state: GameState): string {
@@ -382,7 +413,7 @@ export function encounterChoices(state: GameState): Choice[] {
     {
       id: 'enc-fight',
       label: `Fight ${whoOf(spec)}`,
-      sub: f.encounterFeint ? 'Strike. Your feint is set: next hit +2.' : 'Strike vs Shell. Health takes the hits.',
+      sub: f.encounterFeint ? 'Strike. Your feint is set: next hit +2.' : 'Swing at them. Health takes the hits.',
       tone: 'danger',
       enable: { healthMin: 1 },
       locked: 'Too hurt to fight.',
@@ -773,33 +804,33 @@ export function resolveEncounter(
   const inTags: string[] = []
   if (attacking && f.encounterShocked) {
     swingOut = 0
-    outTags.push('numb arm')
+    outTags.push('Numb arm: no extra force on your hit.')
   } else if (attacking && f.encounterFeint) {
     swingOut += 2
-    outTags.push('feint +2')
+    outTags.push('Feint: +2 to your hit.')
   }
   const outRaw = swingOut
   const inRaw = swingIn
   swingOut = Math.max(0, swingOut + ground.you)
   swingIn = Math.max(0, swingIn + ground.them)
-  if (attacking && swingOut > outRaw) outTags.push(`high ground +${swingOut - outRaw}`)
-  if (attacking && swingOut < outRaw) outTags.push(`loose sand −${outRaw - swingOut}`)
-  if (swingIn < inRaw) inTags.push(`sun in their eyes −${inRaw - swingIn}`)
+  if (attacking && swingOut > outRaw) outTags.push(`High ground: +${swingOut - outRaw} to your hit.`)
+  if (attacking && swingOut < outRaw) outTags.push(`Loose sand: −${outRaw - swingOut} to your hit.`)
+  if (swingIn < inRaw) inTags.push(`Sun in their eyes: you take ${inRaw - swingIn} less damage.`)
   if (ground.cap != null) {
     const o = swingOut
     const i = swingIn
     swingOut = Math.min(ground.cap, swingOut)
     swingIn = Math.min(ground.cap, swingIn)
-    if (attacking && swingOut < o) outTags.push('blowing sand')
-    if (swingIn < i) inTags.push('blowing sand')
+    if (attacking && swingOut < o) outTags.push('Blowing sand: your big swing falls short.')
+    if (swingIn < i) inTags.push('Blowing sand: their big swing falls short.')
   }
   let theirStrike = Math.max(0, spec.strike + ground.strike)
-  if (theirStrike < spec.strike) inTags.push(`steam vent −${spec.strike - theirStrike}`)
+  if (theirStrike < spec.strike) inTags.push(`Steam vent: you take ${spec.strike - theirStrike} less damage.`)
   let pinned = !!f.encounterPinned
   if (spec.kind === 'carapace' && round === 1) {
     theirStrike += 1
     pinned = true
-    inTags.push('harpoon +1')
+    inTags.push('Harpoon: they hit for 1 more.')
     notes.push('The harpoon line pins you. No running until you land a hit.')
   }
 
@@ -827,7 +858,7 @@ export function resolveEncounter(
   }
   if (f.encounterPair && c.theirHp >= 2) {
     hitIn((d) => d + 1)
-    inTags.push('second jackal +1')
+    inTags.push('Second jackal: they hit for 1 more.')
   }
   let stunNext = false
   if (f.encounterStun) hitIn(() => 0)
@@ -842,7 +873,7 @@ export function resolveEncounter(
     coreTried = true
     if (roll(state, 'core', 10) < 5) {
       dmgOut *= 2
-      outTags.push('cracked the core ×2')
+      outTags.push('Cracked the core: double damage.')
     } else {
       dmgOut = 0
       critOut = false
@@ -876,12 +907,12 @@ export function resolveEncounter(
   if (move === 'guard') {
     const cut = spec.kind === 'overseer' || spec.kind === 'husk' ? 1 : 2
     hitIn((d) => Math.max(0, d - cut))
-    inTags.push(`guard −${cut}`)
+    inTags.push(`Guard: you take ${cut} less damage.`)
     notes.push('You guard.')
   } else if (move === 'feint') {
     hitIn((d) => Math.max(0, d - 1))
     feintNext = true
-    inTags.push('feint −1')
+    inTags.push('Feint: you take 1 less damage.')
     notes.push('You feint and slip back. Your next hit gets +2.')
   } else if (move === 'trick') {
     trickUsed = true
@@ -910,7 +941,7 @@ export function resolveEncounter(
       notes.push(`You try to run. ${cap(who)} catches you.`)
       if (spec.kind === 'handler') {
         hitIn((d) => d + 1)
-        inTags.push('hound bite +1')
+        inTags.push('Hound bite: they hit for 1 more.')
       }
     }
   }
@@ -945,21 +976,23 @@ export function resolveEncounter(
   }
 
   // Plain result lines: who hit whom for how much. Named extras in brackets; a crit gets its own line.
-  const tags = (t: string[]) => (t.length ? ` (${t.join(', ')})` : '')
+  // Stat rows on top, then plain result lines. Every bonus gets its own short line; a crit gets its own line.
   const critLine = (n: number) => `\n\nCritical Strike! ${n}`
   const youLine = !attacking
     ? 'You do not attack this round.'
     : dmgOut <= 0
-      ? `You miss ${who}${tags(outTags)}.`
-      : `You hit ${who} for ${critOut ? dmgOut / 2 : dmgOut}${tags(outTags)}.${critOut ? critLine(dmgOut) : ''}`
+      ? `You miss ${who}.`
+      : `You hit ${who} for ${critOut ? dmgOut / 2 : dmgOut}.${critOut ? critLine(dmgOut) : ''}`
   const themLine = f.encounterStun
-    ? `${cap(who)} misses (sand in the eyes).`
+    ? `${cap(who)} misses. Sand in the eyes.`
     : dmgIn <= 0
-      ? `${cap(who)} misses you${tags(inTags)}.`
+      ? `${cap(who)} misses you.`
       : critIn && dmgIn > dmgInPlain
-        ? `${cap(who)} hits you for ${dmgInPlain}${tags(inTags)}.${critLine(dmgIn)}`
-        : `${cap(who)} hits you for ${dmgIn}${tags(inTags)}.`
-  const hitCard = `${youLine}\n\n${themLine}${notes.length ? `\n\n${notes.join(' ')}` : ''}`
+        ? `${cap(who)} hits back for ${dmgInPlain}.${critLine(dmgIn)}`
+        : `${cap(who)} hits back for ${dmgIn}.`
+  const bonusLines = [...(attacking ? outTags : outTags.filter((t) => !/your hit/.test(t))), ...inTags]
+  const top = statRows(yourHp, c.strike, c.shell, spec, theirHp)
+  const hitCard = [top, youLine, themLine, ...bonusLines, ...(notes.length ? [notes.join(' ')] : [])].join('\n\n')
   const sap = sapLoss ? -sapLoss : undefined
 
   if (theirHp <= 0 && spec.kind === 'patrol') {
@@ -1094,7 +1127,7 @@ export function resolveEncounter(
   }
 
   const tail = events.length ? `\n\n${events.join(' ')}` : ''
-  const standing = `${hitCard}${tail}\n\nThey still stand. Their Health ${theirHp}/${f.encounterPair ? 2 : Math.max(spec.hp, c.theirHp)}. Yours ${yourHp}/${max}. No loot yet.`
+  const standing = `${hitCard}${tail}\n\nThey still stand. No loot yet.`
   flag.encounterClash = standing
   const sapTotal = (sap ?? 0) + resinSap
   return {

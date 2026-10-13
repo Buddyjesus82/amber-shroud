@@ -389,7 +389,7 @@ function threshHuntChoices(state: GameState): Choice[] {
     {
       id: 'thresh-fight',
       label: 'Meet the spear',
-      sub: 'Strike vs Shell. Health takes the hits. You stay.',
+      sub: 'Fight it out. Health takes the hits. You stay.',
       tone: 'danger',
       enable: { healthMin: 1 },
       locked: 'Too hurt to fight.',

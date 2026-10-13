@@ -1136,7 +1136,7 @@ A vent patrol is in place: one clerk, shock baton, eyes on the joint. Unwatched 
       {
         id: 'scrap',
         label: 'Scrap the patrol off the bolt',
-        sub: 'Short fight. Strike vs Shell. Then the vent.',
+        sub: 'Short fight. Then the vent.',
         tone: 'danger',
         show: { flag: 'ventPatrol' },
         effects: {

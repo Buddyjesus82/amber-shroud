@@ -384,7 +384,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
           {(held ? held.body : shownText(state, bodyOf(state)))
             .split('\n\n')
             .map((p, i) => (
-              <p key={i}>{p}</p>
+              <p key={i} className={/^[A-Z][A-Z'-]* ♥ \d/.test(p) ? 'fight-stat' : undefined}>{p}</p>
             ))}
           {held ? <p className="flash result-flash">{held.result}</p> : null}
           {state.flash && !overlay && !held ? <p className="flash">{shownText(state, state.flash)}</p> : null}
