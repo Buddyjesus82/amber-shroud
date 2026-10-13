@@ -44,7 +44,7 @@ const SPECS: Spec[] = [
     strike: 2,
     shell: 2,
     hp: 2,
-    line: 'The court guard levels his spear. Sunburn and belief. He was told to keep Vessels inside.',
+    line: 'The court guard raises his curved falchion. Sunburn and belief. He was told to keep Vessels inside.',
   },
   {
     kind: 'tick',
