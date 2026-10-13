@@ -242,7 +242,7 @@ Zafir is at his stall. He has watched buyers fail and kept the tray anyway. On i
       {
         if: { flag: 'ossaRobbed' },
         mode: 'replace',
-        body: `She is alive. She makes sure you see it. "You took a Drop off a woman on sticks. The Maw has a sense of humor. I have a memory. Next Gullet, do not stand in my shade unless you like falling."`,
+        body: `She is alive. She makes sure you see it. "You took a Drop off a woman on sticks. The Maw has a sense of humor. I have a memory. Next run, do not stand in my shade unless you like falling."`,
       },
     ],
     choices: [

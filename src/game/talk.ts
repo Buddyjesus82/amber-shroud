@@ -342,7 +342,7 @@ const ossa: IntentRule[] = [
   },
   {
     tags: TALK,
-    reply: '"I\'m alive. That is the greeting and the warning. Stilts. Vial. I might walk the lip next Gullet. I might not."',
+    reply: '"I\'m alive. That is the greeting and the warning. Stilts. Vial. I might walk the lip on the next run. I might not."',
     effects: { ticks: 1 },
   },
   {
