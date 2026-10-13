@@ -134,7 +134,7 @@ const kaelen: IntentRule[] = [
 const valerius: IntentRule[] = [
   {
     tags: TALK,
-    reply: '"Out of position is the whole conversation. Useful scrapes. Escaped spends a Hound. Oil-Tooth thinks I cannot hear his jokes from the tower. I hear every one. Pick which line I write."',
+    reply: '"Out of position is the whole conversation. Escape spends a Hound. Usefulness buys your life. Oil-Tooth thinks I cannot hear his jokes from the tower. I hear every one. Pick which line I write."',
     effects: { ticks: 1, pressure: 1 },
   },
   {

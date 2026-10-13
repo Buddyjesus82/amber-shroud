@@ -2676,7 +2676,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v89'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v90'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')

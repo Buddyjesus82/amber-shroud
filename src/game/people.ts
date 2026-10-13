@@ -177,7 +177,7 @@ He is the immediate antagonist. The looming shadow. First major victory: get out
       'camp:tower': `The tower leaks shade, steam, and authority. Valerius stands in it like a nail stands in wood. The shock baton hisses. He is already writing you down.`,
       'camp:valerius': `Valerius does not bother to raise the shock baton. Steam hisses in the grip anyway.
 
-"You are out of position," he says, cruel and calculating, mild as boiled water. "Escaped spends a Hound. Useful scrapes until the hands forget they were hands."`,
+"You are out of position," he says, cruel and calculating, mild as boiled water. "Escape spends a Hound. Usefulness buys your life. You will scrape until your hands forget they were hands."`,
       'camp:hunter': `Whistles. Boots. The Yard becomes a diagram.
 
 Valerius arrives. He does not run. "The penniless laborer is upright. How optimistic." Behind him a Hound-handler checks a muzzle.`,
