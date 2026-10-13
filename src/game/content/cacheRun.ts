@@ -1932,7 +1932,7 @@ You are on the Approach. What you gave the sand is still on you.`,
       {
         id: 'hub',
         label: 'Enter the Approach',
-        sub: 'Harder hub. Hunters. The next Hunger waits.',
+        sub: 'Harder hub. Hunters. The next Gullet waits.',
         tone: 'hunger',
         effects: {
           enterHub: 'redmaw',

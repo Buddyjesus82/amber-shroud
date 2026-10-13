@@ -42,7 +42,7 @@ Thalia stands at the dais. The gold on her cheeks might be kohl and might be sap
       },
       {
         id: 'hunger',
-        label: 'Ride the stolen Strider into Hunger',
+        label: 'Ride the stolen Strider into the Gullet',
         sub: "Oram's map. Kallik's cache. Before the cloth fails.",
         tone: 'hunger',
         show: { any: [{ flag: 'hungerKnown' }, { item: 'oram_map' }] },
@@ -232,13 +232,13 @@ Oram is here more often than he is in the Court. He prefers the animals to the h
       {
         id: 'ready',
         label: 'Ready the stolen Strider',
-        sub: 'Put the bit in. When you ride into the Hunger, it carries the first stretch: 2 Sap saved.',
+        sub: 'Put the bit in. When you ride into the Gullet, it carries the first stretch: 2 Sap saved.',
         show: { all: [{ item: 'strider_bit' }, { flagUnset: 'striderReady' }] },
         effects: {
           flag: { striderReady: true },
           ticks: 1,
           flash:
-            'Bit in. The Strider hates you in a workable way. When the Hunger starts, this beast will spend itself on your behalf.',
+            'Bit in. The Strider hates you in a workable way. When the Gullet starts, this beast will spend itself on your behalf.',
         },
       },
     ],
@@ -401,11 +401,11 @@ Oram is here more often than he is in the Court. He prefers the animals to the h
 
 Thalia\'s gold is ruined. The guard remembers he has a spear. Oram, traitor-kind, flicks his eyes at the paddock.
 
-This is the hour a fake Vessel becomes Hunger or becomes a lesson.`,
+This is the hour a fake Vessel takes the Gullet or becomes a lesson.`,
     choices: [
       {
         id: 'ride',
-        label: 'Take the Strider into Hunger',
+        label: 'Take the Strider into the Gullet',
         tone: 'hunger',
         show: { flag: 'hungerKnown' },
         effects: { startChapter: 'cache-run', goto: 'ch1:leave', heat: { seekers: 2 } },

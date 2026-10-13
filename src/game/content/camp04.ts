@@ -1339,7 +1339,7 @@ He hunts Sap thieves and unpermitted relic hoarders. You look like both. First m
       },
       {
         id: 'run',
-        label: 'Break for the dunes — Hunger, now',
+        label: 'Break for the dunes — Gullet, now',
         show: { flag: 'hungerKnown' },
         tone: 'hunger',
         effects: {
@@ -1409,7 +1409,7 @@ You can stay and scrape until the Drop in you burns out. Or take Jaxson's Stride
     choices: [
       {
         id: 'go',
-        label: 'Take the Hunger',
+        label: 'Take the Gullet',
         tone: 'hunger',
         show: { flag: 'hungerKnown' },
         effects: { startChapter: 'cache-run', goto: 'ch1:leave' },

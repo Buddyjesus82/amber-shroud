@@ -150,7 +150,7 @@ He will not sell anything meant to harm a fellow survivor. He trades Drops for s
 
 Kaelen the Sifter is here when profit says here — pack, gloves, already counting. Rumors if you ask. Drops if you pay.
 
-Ironclad Skiff-Striders patrol the other side of this line. The Hunger lives past it. So do Hounds.`,
+Ironclad Skiff-Striders patrol the other side of this line. The Gullet lives past it. So do Hounds.`,
       'camp:kaelen': `Kaelen works the pack with both gloves. The Wire at his back like a second strap. "Pick a shelf," he says. "Buy. Sell. Rumors."`,
       'thresh:sift': `Hymn-shade off the paddock. Not a stall. A pack on a false-route wall.
 

@@ -41,7 +41,7 @@ export function rumorChoices(state: GameState, authored: Choice[]): Choice[] {
     if (!rows.length) {
       rows.push({
         id: 'intel-empty',
-        label: 'No Hunger lead on this shelf',
+        label: 'No Gullet lead on this shelf',
         sub: 'Glints buy intel. You already bought it, or the pack is waiting on coin.',
         group: 'intel',
         enable: { flag: '__no__' },
@@ -72,7 +72,7 @@ export function rumorChoices(state: GameState, authored: Choice[]): Choice[] {
     {
       id: 'rumor-intel',
       label: 'Intel',
-      sub: 'Glints. The Hunger. A heading that goes forward.',
+      sub: 'Glints. The Gullet. A heading that goes forward.',
       group: 'intel',
       effects: {
         flag: { rumorShelf: 'intel' },
@@ -100,7 +100,7 @@ export function matchRumorText(state: GameState, text: string): { effects: impor
   if (shelf && /\b(back|counter|pack|menu)\b/.test(hay)) {
     return { effects: { unsetFlag: ['rumorShelf'], flash: 'Back to the counter.' }, verb: 'back' }
   }
-  if (/\b(intel|hunger|kallik|cache|heading|glint)\b/.test(hay) && shelf !== 'intel') {
+  if (/\b(intel|hunger|gullet|kallik|cache|heading|glint)\b/.test(hay) && shelf !== 'intel') {
     return {
       effects: { flag: { rumorShelf: 'intel' }, flash: '"Glints buy intel. Point."' },
       verb: 'intel',

@@ -109,7 +109,7 @@ const FIGHT_SECTIONS: HelpSection[] = [
 const SCAVENGE_SECTIONS: HelpSection[] = [
   {
     rows: [
-      { key: 'WHERE', text: 'Any hub ground off the Hunger road. Not in a crisis, an opening, or a chapter beat.' },
+      { key: 'WHERE', text: 'Any hub ground off the Gullet road. Not in a crisis, an opening, or a chapter beat.' },
       { key: 'ONCE', text: 'You can scavenge once per fresh scene. Trying again right away says the patch is already in your hands.' },
       { key: 'FINDS', text: 'Scrap most often. Sometimes 2 scrap, a Glint, a Drop, or Cartel Scrip in Camp-04. Vats, vents, and wells turn up Drops more often. Rarely, a Resin Salve turns up with the find. Now and then a worn piece (Head Wrap, Shin Wraps, Hide Gloves, Scrap Buckler) or a Sinew Cord turns up too, and very rarely a Hauler Pack or, outside the Vessel door, a Vessel Cloth.' },
       { key: 'COST', text: 'Each scavenge passes time and adds 1 Pressure. Hunters use the hours you spend lingering.' },

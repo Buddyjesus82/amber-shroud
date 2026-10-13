@@ -114,7 +114,7 @@ function hungerOuts(heat: Choice['effects']['heat']): Choice[] {
     },
     {
       id: 'hunter-run',
-      label: 'Break for the Hunger',
+      label: 'Break for the Gullet',
       show: { any: [{ flag: 'hungerKnown' }, { item: 'oram_map' }] },
       tone: 'hunger',
       effects: {

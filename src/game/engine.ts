@@ -1260,7 +1260,7 @@ export function interpret(state: GameState, raw: string): GameState {
   if (isHungerCommand(text)) {
     const fx = hungerCommandEffect(state, enabled)
     if (fx) return withVerb(applyEffect(state, fx), 'hunger')
-    const named = enabled.filter((c) => /\bhunger\b/i.test(`${c.label} ${c.sub ?? ''}`))
+    const named = enabled.filter((c) => /\b(?:hunger|gullet)\b/i.test(`${c.label} ${c.sub ?? ''}`))
     const namedHit = matchChoiceText(text, named)
     if (namedHit) return withVerb(applyEffect(state, namedHit.effects), namedHit.id)
     if (!state.flags.encounterHere && !isPressureOverlay(state)) {

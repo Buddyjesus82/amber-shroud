@@ -1,7 +1,7 @@
 import { FENCE_HOLE_BACK } from '../campJob'
 import type { Scene } from '../types'
 
-const rumorHook = `"News is inventory. I don't give it away. Scrap buys a Drop of Oasis Sap. Glints buy intel. Ask. Pay. Then you get a lead — side trouble, or the Hunger, or both if your pockets are honest."`
+const rumorHook = `"News is inventory. I don't give it away. Scrap buys a Drop of Oasis Sap. Glints buy intel. Ask. Pay. Then you get a lead — side trouble, or the Gullet, or both if your pockets are honest."`
 
 export const campKaelenScenes: Scene[] = [
   {
@@ -22,7 +22,7 @@ export const campKaelenScenes: Scene[] = [
       {
         id: 'rumors',
         label: 'Ask for rumors. News.',
-        sub: 'He sells leads. Leads open trouble. Leads can point at the Hunger.',
+        sub: 'He sells leads. Leads open trouble. Leads can point at the Gullet.',
         effects: {
           goto: 'camp:kaelen-rumors',
           ticks: 1,
@@ -68,7 +68,7 @@ export const campKaelenScenes: Scene[] = [
       },
       {
         tags: ['kallik', 'cache', 'hunger', 'maw', 'heading'],
-        reply: '"That lead is intel. Glints. I do not donate the Hunger."',
+        reply: '"That lead is intel. Glints. I do not donate the Gullet."',
         effects: { goto: 'camp:kaelen-rumors', flag: { kaelenKnown: true } },
       },
       {
@@ -97,7 +97,7 @@ export const campKaelenScenes: Scene[] = [
     body: `"Ask. Pay.
 
 One: a Drop of Oasis Sap for scrap. That shelf is the shop.
-Two: Glints buy intel. Kallik's cache. The Hunger. A blonde on a skiff.
+Two: Glints buy intel. Kallik's cache. The Gullet. A blonde on a skiff.
 Three: cheaper leads. Side trouble. Relics Valerius hunts. When the storm hits the guard station. A hole in the wire."`,
     variants: [
       {
@@ -109,7 +109,7 @@ Three: cheaper leads. Side trouble. Relics Valerius hunts. When the storm hits t
     choices: [
       {
         id: 'hunger-glint',
-        label: 'Buy the Hunger lead — Kallik, cache, the skiff',
+        label: 'Buy the Gullet lead — Kallik, cache, the skiff',
         sub: 'Glints buy intel.',
         group: 'intel',
         show: { all: [{ flagUnset: 'kaelenGlintOut' }, { flagUnset: 'kaelenHunger' }] },
@@ -127,7 +127,7 @@ Three: cheaper leads. Side trouble. Relics Valerius hunts. When the storm hits t
       },
       {
         id: 'hunger-paid',
-        label: 'Take the Hunger lead. Intel is already paid.',
+        label: 'Take the Gullet lead. Intel is already paid.',
         show: { all: [{ flag: 'kaelenGlintOut' }, { flagUnset: 'kaelenHunger' }] },
         effects: {
           add: { kallik_mark: 1, cache_map: 1 },
@@ -328,7 +328,7 @@ Kaelen the Sifter is here when the road says he is here. He will pay for a way o
       {
         id: 'rumors',
         label: 'Ask for rumors. News.',
-        sub: 'Seeker Heat. Runners. Oram. The Hunger if you pay.',
+        sub: 'Seeker Heat. Runners. Oram. The Gullet if you pay.',
         effects: {
           goto: 'thresh:kaelen-rumors',
           ticks: 1,
@@ -372,7 +372,7 @@ Kaelen the Sifter is here when the road says he is here. He will pay for a way o
       },
       {
         tags: ['kallik', 'cache', 'hunger', 'maw', 'heading'],
-        reply: '"That lead is intel. Glints. I do not donate the Hunger. Thalia will try to."',
+        reply: '"That lead is intel. Glints. I do not donate the Gullet. Thalia will try to."',
         effects: { goto: 'thresh:kaelen-rumors', flag: { kaelenKnown: true } },
       },
       {
@@ -401,7 +401,7 @@ Kaelen the Sifter is here when the road says he is here. He will pay for a way o
     body: `"Ask. Pay.
 
 One: a Drop of Oasis Sap for scrap. That shelf is the shop.
-Two: Glints buy intel. Kallik's cache. The Hunger. A blonde on a skiff. Thalia will call it a hymn. I call it inventory.
+Two: Glints buy intel. Kallik's cache. The Gullet. A blonde on a skiff. Thalia will call it a hymn. I call it inventory.
 Three: cheaper leads. Seeker runners on the hymn-road. How Heat works here. Oram's false-route, if you want his map.
 
 Scrip and blessing stay off the tray."`,
@@ -415,7 +415,7 @@ Scrip and blessing stay off the tray."`,
     choices: [
       {
         id: 'hunger-glint',
-        label: 'Buy the Hunger lead — Kallik, cache, the skiff',
+        label: 'Buy the Gullet lead — Kallik, cache, the skiff',
         sub: 'Glints buy intel. Not a hymn.',
         group: 'intel',
         show: { all: [{ flagUnset: 'kaelenGlintOut' }, { flagUnset: 'kaelenHunger' }] },
@@ -432,7 +432,7 @@ Scrip and blessing stay off the tray."`,
       },
       {
         id: 'hunger-paid',
-        label: 'Take the Hunger lead. Intel is already paid.',
+        label: 'Take the Gullet lead. Intel is already paid.',
         show: { all: [{ flag: 'kaelenGlintOut' }, { flagUnset: 'kaelenHunger' }] },
         effects: {
           add: { kallik_mark: 1, cache_map: 1 },

@@ -69,7 +69,7 @@ const backToShade: Choice = {
 
 const hungerFromShade = (flash: string): Choice => ({
   id: 'hunger',
-  label: 'Walk the Hunger toward Red Maw',
+  label: 'Walk the Gullet toward Red Maw',
   tone: 'hunger',
   show: { flag: 'hungerKnown' },
   effects: { startChapter: 'cache-run', goto: 'ch1:leave', ticks: 1, flash },
@@ -110,7 +110,7 @@ He cannot see through the amber. He heard the shade go quiet when you walked in,
   choices: [
     {
       id: 'hunger-drop',
-      label: 'Trade a Drop for the Hunger lead',
+      label: 'Trade a Drop for the Gullet lead',
       sub: 'Costs 1 Drop. He names Red Maw, the cache, and the woman on the skiff.',
       group: 'intel',
       show: { all: [{ flagUnset: 'korvanHunger' }, { flagUnset: 'korvanTook' }] },
@@ -125,7 +125,7 @@ He cannot see through the amber. He heard the shade go quiet when you walked in,
     },
     {
       id: 'hunger-scrap',
-      label: 'Trade 2 scrap for the Hunger lead',
+      label: 'Trade 2 scrap for the Gullet lead',
       sub: 'Costs 2 scrap. Same lead. He buys water with it later.',
       group: 'intel',
       show: { all: [{ flagUnset: 'korvanHunger' }, { flagUnset: 'korvanTook' }] },
@@ -203,7 +203,7 @@ He cannot see through the amber. He heard the shade go quiet when you walked in,
     {
       tags: ['rumor', 'rumors', 'news', 'lead', 'intel', 'kallik', 'cache', 'hunger', 'maw', 'heading'],
       show: { flagUnset: 'korvanTook' },
-      reply: '"A Drop or two scrap for the Hunger lead. One scrap for the east wash."',
+      reply: '"A Drop or two scrap for the Gullet lead. One scrap for the east wash."',
       effects: { ticks: 1 },
     },
     {
