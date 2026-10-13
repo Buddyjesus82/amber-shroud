@@ -45,6 +45,7 @@ export type CoverKey =
   | 'rim_bonewash'
   | 'rim_pilgrims_scar'
   | 'courtguard'
+  | 'down'
 
 const FILES: Record<CoverKey, string> = {
   world: 'world.jpg',
@@ -87,6 +88,7 @@ const FILES: Record<CoverKey, string> = {
   rim_bonewash: 'rim-bonewash.jpg',
   rim_pilgrims_scar: 'rim-pilgrims-scar.jpg',
   courtguard: 'courtguard.jpg',
+  down: 'down.jpg',
 }
 
 /**
@@ -155,6 +157,8 @@ export const COVER_BAND: Record<CoverKey, [number, number]> = {
   rim_pilgrims_scar: [0.15, 0.9],
   // Court Guard: face, coat, and the curved blade.
   courtguard: [0.05, 0.85],
+  // Approach Dry: the fallen figure and the empty glass, center-lower.
+  down: [0.35, 0.95],
 }
 
 export function coverBand(key: CoverKey): [number, number] {
@@ -224,6 +228,7 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   if (id === 'camp:bay') return bayLookout(state) ? 'hotwire' : 'skiffbay'
   if (id === 'camp:bay-pike') return 'bay_pike'
   if (id === 'camp:relic') return 'hoard'
+  if (id === 'crisis:maw') return 'down'
   // The Maw arrival shows the road each door came in by.
   if (id === 'maw:rim' || id === 'ch1:land') {
     if (state.door === 'outcast') return 'rim_bonewash'

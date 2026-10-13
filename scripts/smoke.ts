@@ -2688,7 +2688,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v104'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v105'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -5592,4 +5592,16 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   assert(existsSync('public/covers/courtguard.jpg') && sw.includes('covers/courtguard.jpg'), 'v104: courtguard.jpg on disk and precached')
   for (const k of ['rim_gullet', 'rim_bonewash', 'rim_pilgrims_scar', 'courtguard'] as const) assert(COVER_BAND[k], `v104: ${k} has a phone crop`)
   console.log('v104 rim art checks OK')
+}
+
+// v105: Approach Dry collapse art; other crises stay on hub art.
+{
+  const sw = readFileSync('public/sw.js', 'utf8')
+  const s = { ...GE.newGame('prisoner'), sceneId: 'crisis:maw', hubId: 'redmaw' }
+  s.flags = { ...s.flags, encounterHere: false }
+  assert(playCoverKey(s, getScene('crisis:maw')) === 'down', 'v105: Approach Dry shows down.jpg')
+  assert(existsSync('public/covers/down.jpg') && sw.includes('covers/down.jpg') && COVER_BAND.down, 'v105: down.jpg on disk, precached, cropped')
+  const camp = { ...GE.newGame('prisoner'), sceneId: 'crisis:camp', hubId: 'camp04' }
+  assert(playCoverKey(camp, { id: 'crisis:camp', art: 'world', chapterId: 'ch1', hubId: 'camp04' } as never) !== 'down', 'v105: other crises keep hub art')
+  console.log('v105 down checks OK')
 }
