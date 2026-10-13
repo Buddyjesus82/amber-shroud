@@ -2688,7 +2688,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v99'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v100'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -5500,4 +5500,22 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   const all = ALL_SCENES.map((sc) => [sc.body, ...(sc.variants ?? []).map((v) => v.body)].join('\n')).join('\n')
   assert(!/handler is dead|Seeker runner is already there/i.test(all), 'v99: no dead-handler text anywhere')
   console.log('v99 handler checks OK')
+}
+
+// v100: the Hound-handler drops his gear; other enemies keep "On the body".
+{
+  const E = await import('../src/game/encounter.ts')
+  assert(E.dropNoun('Rusted Dagger') === 'a Rusted Dagger' && E.dropNoun('Ironwood Baton') === 'an Ironwood Baton' && E.dropNoun('Hide Gloves') === 'Hide Gloves', 'v100: drop article reads right')
+  let handlerGear = '', cutterGear = ''
+  for (let t = 0; t < 200 && !(handlerGear && cutterGear); t++) {
+    for (const kind of ['handler', 'cutter']) {
+      const r = E.resolveEncounter(primedFight('prisoner', t, kind, { hp: 1 }), 'fight').fx
+      const card = String(r.flag?.encounterClash ?? '')
+      if (kind === 'handler' && /He drops /.test(card)) handlerGear = card
+      if (kind === 'cutter' && /On the body: /.test(card)) cutterGear = card
+    }
+  }
+  assert(handlerGear && !/On the body/.test(handlerGear) && /He drops (an? )?[A-Z][^.]*\./.test(handlerGear), `v100: the handler drops his gear (${handlerGear.slice(-120)})`)
+  assert(cutterGear && !/He drops/.test(cutterGear), 'v100: other enemies keep On the body')
+  console.log('v100 handler loot checks OK')
 }
