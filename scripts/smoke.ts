@@ -2688,7 +2688,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v98'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v99'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -5265,9 +5265,9 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   assert(/>\s*Discard\s*</.test(inv) && !/Drop 1/.test(inv) && /c\.id === 'scrap'/.test(inv), 'Discard button; Scrap shows its count')
   const txt = ['content/spine.ts', 'content/cacheRun.ts', 'content/catalog.ts', 'people.ts', 'campJob.ts'].map((f) => readFileSync(`src/game/${f}`, 'utf8')).join('\n')
   assert(!/a honest|magiks|Razor-wire|[Ff]our roads/.test(txt), 'typos and four roads fixed')
-  const crisis = { ...GE.newGame('prisoner'), sceneId: 'crisis:maw', hubId: 'redmaw', flags: { handlerDown: true } } as unknown as GameState
-  assert(!/Hound-handler is already there/.test(GE.bodyOf(crisis)), 'a killed Hound-handler is not already there')
-  assert(readFileSync('src/game/encounter.ts', 'utf8').includes("spec.kind === 'handler' ? { handlerDown: true }"), 'beating the handler is remembered')
+  const crisis = { ...GE.newGame('prisoner'), sceneId: 'crisis:maw', hubId: 'redmaw', flags: { handlerInjured: true } } as unknown as GameState
+  assert(/Hound-handler is already there, arm strapped/.test(GE.bodyOf(crisis)), 'v99: an injured Hound-handler is still the one who comes')
+  assert(readFileSync('src/game/encounter.ts', 'utf8').includes('handlerInjured: true'), 'beating the handler is remembered')
   const save = readFileSync('src/game/save.ts', 'utf8')
   assert(/state\.door !== door\) return null/.test(save) && /slots\[id\]\?\.door === id/.test(save), 'a slot only loads its own door')
 }
@@ -5419,9 +5419,9 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   const upOf = (s: GameState) => GE.visibleChoices(s).find((c) => c.id.startsWith('up'))!
   const p1 = GE.applyEffect(dry('prisoner'), upOf(dry('prisoner')).effects)
   assert(p1.heat.cartel === 1 && p1.heat.seekers === 0, 'v98: the Cartel handler raises Cartel Heat')
-  const ph = dry('prisoner', { handlerDown: true })
-  assert(/Seeker/.test(GE.bodyOf(ph)) && !/Hound-handler/.test(GE.bodyOf(ph)), 'v98: with the handler dead, a Seeker rescues')
-  assert(GE.applyEffect(ph, upOf(ph).effects).heat.seekers === 1, 'v98: a Seeker rescue raises Seeker Heat')
+  const ph = dry('prisoner', { handlerInjured: true })
+  assert(/Hound-handler is already there, arm strapped, still sore about the yard\./.test(GE.bodyOf(ph)) && !/Seeker runner|dead/.test(GE.bodyOf(ph)), 'v99: an injured handler still rescues')
+  assert(GE.applyEffect(ph, upOf(ph).effects).heat.cartel === 1, 'v99: his rescue is Cartel Heat')
   assert(GE.applyEffect(dry('outcast'), upOf(dry('outcast')).effects).heat.strays === 1, 'v98: a Stray rescue raises Stray Heat')
   const again = dry('prisoner', { mawRescued: true })
   const p2 = GE.applyEffect(again, upOf(again).effects)
@@ -5474,4 +5474,30 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   }
   assert(!/\d+ in \d+|Strike \+ swing/.test(fightHelpText()), 'v98: help fight has no odds numbers or formula')
   console.log('v98 bug pass checks OK')
+}
+
+// v99: the Hound-handler is injured, never killed.
+{
+  const E = await import('../src/game/encounter.ts')
+  const H = await import('../src/game/hunter.ts')
+  let won: string | null = null
+  for (let t = 0; t < 80 && !won; t++) {
+    const st = primedFight('prisoner', t, 'handler', { hp: 1 })
+    const r = E.resolveEncounter(st, 'fight').fx
+    if (r.flag?.handlerInjured) {
+      won = String(r.flag.encounterClash)
+      assert(r.heat?.cartel === 2, 'v99: beating the handler is Cartel +2')
+      assert(!('handlerDown' in r.flag), 'v99: no handlerDown on a new win')
+    }
+  }
+  assert(won && won.includes(E.HANDLER_BEATEN) && !/They drop\./.test(won), `v99: he limps off (${won?.slice(-160)})`)
+  const old = repairLoadedState({ ...GE.newGame('prisoner'), flags: { handlerDown: true } } as GameState)
+  assert(old.flags.handlerInjured && !('handlerDown' in old.flags), 'v99: old handlerDown saves load as handlerInjured')
+  const hunt = { ...GE.newGame('prisoner'), sceneId: 'camp:yard', hubId: 'camp04', heat: { cartel: 3, seekers: 0, strays: 0 }, flags: { hunterHere: true, hunterFrom: 'camp:yard', handlerInjured: true } } as unknown as GameState
+  const app = H.pressureAppend(hunt) ?? ''
+  assert(app.includes(H.HANDLER_GRUDGE), `v99: he returns with a grudge (${app.slice(0, 80)})`)
+  assert(!(H.pressureAppend({ ...hunt, flags: { ...hunt.flags, handlerInjured: false } }) ?? '').includes(H.HANDLER_GRUDGE), 'v99: no grudge before you beat him')
+  const all = ALL_SCENES.map((sc) => [sc.body, ...(sc.variants ?? []).map((v) => v.body)].join('\n')).join('\n')
+  assert(!/handler is dead|Seeker runner is already there/i.test(all), 'v99: no dead-handler text anywhere')
+  console.log('v99 handler checks OK')
 }
