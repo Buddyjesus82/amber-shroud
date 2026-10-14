@@ -173,7 +173,9 @@ export default function App() {
         setView('intro')
       }}
       onContinue={() => {
-        const s = loadSave()
+        const loaded = loadSave()
+        // A result line belongs to the moment it happened. Resuming starts clean, so no stale flash.
+        const s = loaded ? { ...loaded, flash: undefined } : loaded
         if (s) {
           stateRef.current = s
           setState(s)

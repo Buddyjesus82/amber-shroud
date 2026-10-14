@@ -245,6 +245,8 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   if (id === 'camp:bay-pike') return 'bay_pike'
   if (id === 'camp:relic') return 'hoard'
   if (id === 'crisis:maw') return 'down'
+  // The Outcast's road start (Cache Run / the Bone Wash) gets the Bone Wash art, not the title art.
+  if (id === 'ch1:leave' && state.door === 'outcast') return 'rim_bonewash'
   if (id === 'open:vessel') return 'resin_vault'
   if (id === 'thresh:crucible-rig') return 'extraction_rig'
   if (id === 'thresh:crucible-stairs') return 'thalia'
