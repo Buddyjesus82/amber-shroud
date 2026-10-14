@@ -175,7 +175,7 @@ const TRADE_SECTIONS: HelpSection[] = [
       { key: 'WHO', text: 'Buy and Sell shelves: Kaelen the Sifter in Camp-04 and the Threshold, Silas Vane in his shade on the Spine, and Varro at the Maw stall.' },
       { key: 'BUY', text: 'buy <item>, for example buy a drop. Prices are on the shelf.' },
       { key: 'SELL', text: 'Unequipped items only. Keys never. They pay less than they charge.' },
-      { key: 'HAULER', text: 'A Hauler Pack (20 slots) costs 2 Glints or 4 scrap, once. Prisoner: Kaelen at the Wire. Outcast: Silas on the Spine. Vessel: Varro at the Maw stall. In any door it can also turn up when you scavenge.' },
+      { key: 'HAULER', text: 'A Hauler Pack (20 slots) costs 3 Glints or 6 scrap, once. Prisoner: Kaelen at the Wire. Outcast: Silas on the Spine. Vessel: Varro at the Maw stall. In any door it can also turn up when you scavenge.' },
       { key: 'CLOTH', text: 'Vessel Cloth costs 2 Glints, once, from Kaelen in the Prisoner door. In the Outcast door it only turns up when you scavenge.' },
       { key: 'RUMORS', text: 'Kaelen sells rumors in Camp-04 and the Threshold: Glints buy intel, scrap buys side trouble. On the Spine, Korvan Drell trades leads for a Drop or scrap.' },
     ],

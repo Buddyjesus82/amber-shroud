@@ -2728,7 +2728,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v128'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v129'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -6624,4 +6624,18 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
     }
   }
   console.log('v128 checks OK')
+}
+
+// v129: Hauler Pack 3 Glints or 6 scrap, at every seller; help text matches.
+{
+  const T9 = await import('../src/game/trade.ts')
+  for (const [scene, door, hub] of [['camp:kaelen', 'prisoner', 'camp04'], ['spine:silas', 'outcast', 'spine'], ['maw:zafir', 'vessel', 'redmaw']] as const) {
+    const v = T9.vendorFor(scene)!
+    let s = GE.applyEffect(newGame(door), { goto: scene, enterHub: hub as never })
+    s = { ...s, flags: { ...s.flags, kaelenHub: hub } }
+    const h = T9.offersFor(s, v).find((o) => o.item === 'hauler_pack')
+    assert(!!h && h.cost.glints === 3 && h.cost.scrap === 6, `v129: ${scene} Hauler Pack 3 Glints or 6 scrap`)
+  }
+  assert(readFileSync(new URL('../src/game/helpTopics.ts', import.meta.url), 'utf8').includes('costs 3 Glints or 6 scrap'), 'v129: help text price')
+  console.log('v129 checks OK')
 }
