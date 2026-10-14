@@ -42,6 +42,7 @@ import { markFirstDrop } from './firstDrop'
 import { amberFindSign, downedSign, lowHealthSign, sandTouchReply } from './sandSign'
 import { isPressureOverlay, pressureAppend, pressureChoices, pressureVerb, spineGround, spineHunterKindAt, straysHeard } from './hunter'
 import { bareFightIsRoad, offButton } from './verbs'
+import { roadHunterKind } from './roadHunt'
 import { noticeFaction, noticeGround, noticeLine, SCAVENGE_NOTICE_MAX, SCAVENGE_NOTICE_STEP } from './noticeHeat'
 import {
   canEncounter,
@@ -784,6 +785,12 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     next.flags = { ...fresh, ...fightStartFlags(next, kind), roadFightSeen: true }
   } else if (firstWalk) {
     next.flags = { ...next.flags, roadFightSeen: true }
+  }
+  // Road hunters: the faction behind you sends someone down the road. One per run; ambushes ignore Health.
+  const roadHunt = roadHunterKind(state, next)
+  if (roadHunt) {
+    next.flags = { ...next.flags, ...fightStartFlags(next, roadHunt.kind), encounterNoSkip: true, roadHuntDone: true, roadFightSeen: true }
+    next.flash = roadHunt.line
   }
   // Heat comes due: count fight-free danger scenes; any fight or hunt clears the count.
   if (next.flags.encounterHere || next.flags.hunterHere) {

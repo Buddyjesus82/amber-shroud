@@ -41,8 +41,11 @@ function clearRoadFight(st: GameState): GameState {
   return { ...st, health: Math.max(st.health, 6), sap: Math.max(st.sap, 6), flash: undefined }
 }
 
+// v120 road hunters are checked in their own block; older walks step the road as before.
+let keepRoadHunt = false
 function applyEffect(state: Parameters<typeof rawApplyEffect>[0], fx: Parameters<typeof rawApplyEffect>[1]) {
-  const next = rawApplyEffect(state, fx)
+  let next = rawApplyEffect(state, fx)
+  if (!keepRoadHunt && !state.flags.roadHuntDone && next.flags.roadHuntDone) next = rawApplyEffect({ ...state, flags: { ...state.flags, roadHuntDone: 'smoke' } }, fx)
   // v95: older walks also step through the one-time End of Chapter One screen at the Rim.
   if (next.sceneId === 'ch1:end' && state.sceneId !== 'ch1:end') {
     const on = rawApplyEffect(next, getScene('ch1:end').choices[0].effects)
@@ -2691,7 +2694,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
   ridge = pick(ridge, 'stand')
   const noHeading = interpret(ridge, 'take hunger')
   assert(noHeading.chapterId !== 'cache-run', 'Outcast cannot type past the heading gate on the ridge')
-  ridge = applyEffect(ridge, { flag: { hungerKnown: true } })
+  ridge = applyEffect(ridge, { flag: { hungerKnown: true, roadHuntDone: 'smoke' } })
   const ridgeButton = pick(ridge, 'hunger')
   const ridgeDo = interpret(ridge, 'take hunger')
   assert(ridgeDo.sceneId === ridgeButton.sceneId && ridgeDo.flash === ridgeButton.flash, 'Outcast take hunger is the ridge button')
@@ -2707,7 +2710,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v119'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v120'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -6200,4 +6203,29 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   const hurt = { ...again, health: 0 }
   assert(!H.pressureChoices(hurt).some((c) => c.locked === H.HUNT_CORNERED_LOCK), 'v120: too hurt to fight is never cornered')
   console.log('v120 Heat-to-fight checks OK')
+}
+{
+  // v120: road hunters.
+  const R = await import('../src/game/roadHunt.ts')
+  const road = (door: DoorId, heat: Partial<GameState['heat']>) => {
+    const s0 = newGame(door)
+    const st = { ...s0, chapterId: 'cache-run', hubId: null, sceneId: 'camp:yard', heat: { ...s0.heat, cartel: 0, seekers: 0, strays: 0, ...heat }, flags: { ...s0.flags } } as GameState
+    return st
+  }
+  const at = (st: GameState, id: string) => ({ ...st, sceneId: id })
+  const p4 = road('prisoner', { cartel: 4 })
+  assert(R.roadHunterKind(p4, at(p4, 'ch1:leave'))?.kind === 'scavenger', 'v120: Cartel 4 sends a scavenger down the road')
+  assert(R.roadHunterKind(p4, at(p4, 'ch1:p-clerk')) === null, 'v120: talk beats need Heat 6')
+  const p6 = road('prisoner', { cartel: 6 })
+  assert(!!R.roadHunterKind(p6, at(p6, 'ch1:p-clerk')), 'v120: Heat 6 can fight on a talk beat')
+  assert(R.roadHunterKind(p6, at({ ...p6, flags: { ...p6.flags, roadHuntDone: true } }, 'ch1:p-pipe')) === null, 'v120: one road hunter per run')
+  const p3 = road('prisoner', { cartel: 3 })
+  assert(R.roadHunterKind(p3, at(p3, 'ch1:leave')) === null, 'v120: Cartel 3 sends no road hunter')
+  const o0 = road('outcast', {})
+  assert(R.roadHunterKind(o0, at(o0, 'ch1:leave'))?.line === R.ROAD_FLOOR_LINE, 'v120: Outcast road always has a fight')
+  const v5 = road('vessel', { seekers: 5 })
+  assert(R.roadHunterKind(v5, at(v5, 'ch1:leave'))?.kind === 'runner', 'v120: Seekers send a runner')
+  assert(R.roadHunterKind(v5, at(v5, 'ch1:v-zafir')) === null, 'v120: not on the Vessel road talk')
+  for (const l of [...Object.values(R.ROAD_HUNT_LINES), R.ROAD_FLOOR_LINE]) assert(!/spear|vs\b|Kaelen|Zafir/i.test(l), 'v120: road lines clean')
+  console.log('v120 road hunter checks OK')
 }

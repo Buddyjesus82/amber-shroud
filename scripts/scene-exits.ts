@@ -144,7 +144,7 @@ function thumbActions(s: GameState): { name: string; next: GameState }[] {
   return out
 }
 
-function reachEnd(door: DoorId, limit = 2500): { ok: boolean; visited: number; path?: string[] } {
+function reachEnd(door: DoorId, limit = Number(process.env.REACH ?? 4000)): { ok: boolean; visited: number; path?: string[] } {
   const start = newGame(door)
   type Node = { s: GameState; path: string[] }
   const q: Node[] = [{ s: start, path: [start.sceneId] }]

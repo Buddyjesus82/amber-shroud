@@ -319,7 +319,7 @@ export function canEncounter(state: GameState, opts?: { traveled?: boolean; firs
   const gap = heat >= 7 ? 2 : heat >= 4 ? 3 : 5
   // Heat comes due: on danger ground, enough fight-free scenes at this Heat and a fight is certain.
   // The road out answers Heat: at the ground's Heat 3+, the road beat always fields a fight.
-  if (ROAD_BEATS.has(state.sceneId) && heat >= ROAD_HEAT_SURE) return true
+  if (ROAD_BEATS.has(state.sceneId) && heat >= ROAD_HEAT_SURE && !state.flags.roadHuntDone) return true
   if (last >= 0 && state.ticks - last < gap && !opts?.firstWalk) return false
   const owed = heatOwed(heat)
   if (owed != null && hubDanger(state) >= 1 && Number(state.flags.fightQuiet ?? 0) >= owed) return true
