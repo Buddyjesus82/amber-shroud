@@ -402,6 +402,7 @@ assert(ids(s).includes('rumors'), 'rumor menu exists')
 s = interpret(s, 'ask for rumors news')
 assert(s.sceneId === 'camp:kaelen-rumors', 'asking opens the rumor counter')
 s = pick(s, 'back')
+s = { ...s, items: { ...s.items, scrap: (s.items.scrap ?? 0) + 2 } }
 s = openShop(s, 'buy')
 s = pick(s, 'drop')
 assert((s.items.vial_drop ?? 0) >= 1, 'scrap buys a Drop of Oasis Sap')
@@ -862,7 +863,7 @@ assert(!/(\bshe\b|\bher\b)/i.test(s.flash ?? ''), 'Kaelen is not she')
 s = pick(s, 'kaelen')
 assert(sceneOf(s).speaker === 'Kaelen the Sifter', 'Kaelen talk after the card')
 assert(!bodyOf(s).includes('diminutive merchant'), 'later Kaelen is only what they are doing now')
-s = applyEffect(s, { add: { scrap: 1 } })
+s = applyEffect(s, { add: { scrap: 3 } })
 assert(ids(s).includes('shop-buy'), 'Kaelen counter offers Buy')
 s = openShop(s, 'buy')
 assert(ids(s).includes('drop'), 'scrap→Drop is on the Buy shelf')
@@ -2007,7 +2008,7 @@ assert(/\bhe\b/i.test(sceneOf(s).body), 'Threshold Kaelen uses he')
 assert(!/\bthey\b/i.test(sceneOf(s).body), 'Threshold Kaelen is not they')
 assert(ids(s).includes('shop-buy') && ids(s).includes('shop-sell'), 'Vessel Kaelen has Buy/Sell like Wire and well')
 s = openShop(s, 'buy')
-assert(ids(s).includes('cloak-glint') && ids(s).includes('cloak-scrap'), 'Vessel Kaelen cloak is Glint or scrap, two rows')
+assert(ids(s).includes('cloak') && !ids(s).includes('cloak-scrap'), 'v121: Threshold Kaelen cloak is three Glints, one row')
 assert(ids(s).includes('wrap'), 'Vessel Kaelen sells Scav Wrap')
 s = pick(s, 'shop-back')
 s = pick(s, 'rumors')
@@ -2710,7 +2711,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v120'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v121'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -3261,7 +3262,7 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(readied.flags.striderReady && !ids(readied).includes('ready'), 'readying the Strider sticks and the row goes away')
   const rode = pick(walkTo(readied, 'thresh:court'), 'hunger')
   const base = pick(walkTo(v, 'thresh:court'), 'hunger')
-  assert(rode.chapterId === 'cache-run' && rode.sap === base.sap + STRIDER_READY_SAP, `the readied Strider saves ${STRIDER_READY_SAP} Sap on the Gullet (${base.sap} → ${rode.sap})`)
+  assert(rode.chapterId === 'cache-run' && rode.sap === base.sap + STRIDER_READY_SAP - 1, `v121: readying costs 1, the readied Strider saves ${STRIDER_READY_SAP} Sap on the Gullet (${base.sap} → ${rode.sap})`)
   assert(rode.flags.striderSpent && !base.flags.striderSpent, 'only a readied Strider spends itself')
 }
 
@@ -5931,8 +5932,9 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
     const row = (s: GameState) => GE.visibleChoices(s).find((c) => c.id === 'rest')
     let s = at({ health: 3, sap: 4 })
     s = GE.applyEffect(s, row(s)!.effects)
-    s = GE.applyEffect(s, row(s)!.effects)
-    assert(s.health === 5 && s.sap === 2 && s.flash === GE.REST_LINE, 'v115: Rest heals 1 for 1 Sap, repeatable')
+    assert(s.health === 5 && s.sap === 3 && s.flash === GE.REST_LINE, 'v121: Rest heals 2 for 1 Sap')
+    assert(!GE.isChoiceOn(s, row(s)!.enable) && row(s)!.locked === GE.REST_DONE_LOCK, 'v121: Rest once a scene')
+    s = { ...s, flags: { ...s.flags, restedHere: false } }
     assert(!row(at({ health: v.healthMax, sap: 4 })), 'v115: Rest hidden at full Health')
     const dry = at({ health: 3, sap: 0 })
     assert(!!row(dry) && !GE.isChoiceOn(dry, row(dry)!.enable) && row(dry)!.locked === 'Needs: 2 Sap', 'v115: Rest locked with Needs: Sap')
@@ -6224,8 +6226,40 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   const o0 = road('outcast', {})
   assert(R.roadHunterKind(o0, at(o0, 'ch1:leave'))?.line === R.ROAD_FLOOR_LINE, 'v120: Outcast road always has a fight')
   const v5 = road('vessel', { seekers: 5 })
-  assert(R.roadHunterKind(v5, at(v5, 'ch1:leave'))?.kind === 'runner', 'v120: Seekers send a runner')
+  assert(R.roadHunterKind(v5, at(v5, 'ch1:leave')) === null && R.roadHunterKind(v5, at(v5, 'ch1:v-hymn'))?.kind === 'runner', 'v121: Seekers send a runner past the hymn-road, not at the start')
   assert(R.roadHunterKind(v5, at(v5, 'ch1:v-zafir')) === null, 'v120: not on the Vessel road talk')
   for (const l of [...Object.values(R.ROAD_HUNT_LINES), R.ROAD_FLOOR_LINE]) assert(!/spear|vs\b|Kaelen|Zafir/i.test(l), 'v120: road lines clean')
   console.log('v120 road hunter checks OK')
+}
+{
+  // v121 Vessel difficulty pass.
+  const E = await import('../src/game/encounter.ts')
+  const T = await import('../src/game/trade.ts')
+  const K = await import('../src/game/kit.ts')
+  assert(E.enemyHealth('courtguard') === 3, 'v121: Court Guard HP 3')
+  // Rest once a scene.
+  let r = GE.applyEffect(newGame('prisoner'), { goto: 'camp:yard', enterHub: 'camp04' })
+  r = { ...r, health: 2, sap: 6, flags: { ...r.flags, encounterHere: false, hunterHere: false } }
+  const rest = GE.visibleChoices(r).find((c) => c.id === 'rest')
+  if (rest) {
+    const r2 = GE.applyEffect(r, rest.effects)
+    const again = GE.visibleChoices(r2).find((c) => c.id === 'rest')
+    assert(!again || (!GE.isChoiceOn(r2, again.enable) && again.locked === GE.REST_DONE_LOCK), 'v121: Rest once a scene')
+  }
+  // Down costs half the scrap.
+  let d = GE.applyEffect(newGame('prisoner'), { goto: 'camp:yard', enterHub: 'camp04' })
+  d = { ...d, health: 1, items: { ...d.items, scrap: 5 } }
+  const dn = GE.applyEffect(d, { health: -5 })
+  assert(dn.flags.downed && dn.items.scrap === 3 && String(dn.flags.downedNote).includes('Scrap -2.'), `v121: down loses half the scrap (${dn.items.scrap})`)
+  // Sap 0 on the road with a Drop: drink it, no rescue.
+  let ro = { ...GE.applyEffect(newGame('vessel'), { startChapter: 'cache-run', goto: 'ch1:leave', flag: { roadHuntDone: 'smoke' } }), sap: 1 }
+  ro = { ...ro, flags: { ...ro.flags, encounterHere: false }, items: { ...ro.items, vial_drop: 1 } }
+  const dry = GE.applyEffect(ro, { sap: -1, ticks: 1 })
+  assert(!dry.sceneId.startsWith('crisis:') && dry.sap === 3 && dry.flash === GE.AUTO_DRINK_LINE, `v121: carrying a Drop, you drink it (${dry.sceneId})`)
+  const dry2 = GE.applyEffect({ ...ro, items: { ...ro.items, vial_drop: 0, glints: 2 } }, { sap: -1, ticks: 1 })
+  assert(dry2.sceneId === 'crisis:dunes' && dry2.items.glints === 1, 'v121: the rescue costs a Glint')
+  // Shell 5 waits for the Maw.
+  assert(K.shellCap(newGame('vessel')) === 4, 'v121: Shell caps at 4 before the Maw')
+  assert(T.SOLD_OUT_STOP === 'Sold out this stop.', 'v121: sold-out line')
+  console.log('v121 difficulty checks OK')
 }

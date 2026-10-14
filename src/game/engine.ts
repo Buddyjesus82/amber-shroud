@@ -389,6 +389,25 @@ function resolveDest(state: GameState, fx: Effect): string | undefined {
   return dest
 }
 
+/** Road and Rim rescues: they only come for an empty bag, and they are not free. */
+const RESCUE_CRISES = new Set(['crisis:dunes', 'crisis:maw'])
+export const AUTO_DRINK_LINE = 'The glass runs dry. Your hand finds a Drop before your knees go. Sap +3.'
+export const RESCUE_GLINT_LINE = 'The rescue is not free. A Glint is gone.'
+export const RESCUE_SCRAP_LINE = 'The rescue is not free. Scrap -1.'
+
+/** Flags that only last while you stay on one screen. */
+const VISIT_FLAGS = ['restedHere', 'oilJobHere', 'kaelenDropsHere']
+
+export const DOWN_SCRAP_LINE = (n: number) => `You wake lighter. Scrap -${n}.`
+export const DOWN_DROP_LINE = 'You wake lighter. A Drop is gone.'
+
+function downLoss(state: GameState): { item: ItemId; n: number; line: string } | null {
+  const half = Math.floor((state.items.scrap ?? 0) / 2)
+  if (half > 0) return { item: 'scrap', n: half, line: DOWN_SCRAP_LINE(half) }
+  if ((state.items.vial_drop ?? 0) > 0) return { item: 'vial_drop', n: 1, line: DOWN_DROP_LINE }
+  return null
+}
+
 export function applyEffect(state: GameState, fx: Effect): GameState {
   if (fx.pay) {
     const spent = pickPay(state, fx.pay)
@@ -640,7 +659,14 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   if (arrived.hubId) next.hubId = arrived.hubId
   if (arrived.chapterId) next.chapterId = arrived.chapterId
 
-  if (sapCollapsed && !skipCrisis && arrived.kind !== 'crisis') {
+  const rescueAt = sapCollapsed && !skipCrisis && arrived.kind !== 'crisis' ? pickCrisis(next) : null
+  const selfDrink = !!rescueAt && RESCUE_CRISES.has(rescueAt) && (next.items.vial_drop ?? 0) > 0
+  if (selfDrink) {
+    // Carrying a Drop: you drink it yourself before anyone has to find you.
+    next.items = { ...next.items, vial_drop: (next.items.vial_drop ?? 0) - 1, vial_empty: (next.items.vial_empty ?? 0) + 1 }
+    next.sap = 3
+    next.flash = AUTO_DRINK_LINE
+  } else if (sapCollapsed && !skipCrisis && arrived.kind !== 'crisis') {
     next.sap = 0
     next.flags = { ...next.flags, crisisFrom: state.sceneId }
     // The rescue tells it now. A result line from the act that emptied you (a skim, a walk) does not ride along.
@@ -648,6 +674,13 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     next.sceneId = pickCrisis(next)
     const c = getScene(next.sceneId)
     if (c.hubId) next.hubId = c.hubId
+    if (RESCUE_CRISES.has(next.sceneId)) {
+      const pay = (next.items.glints ?? 0) > 0 ? 'glints' : (next.items.scrap ?? 0) > 0 ? 'scrap' : null
+      if (pay) {
+        next.items = { ...next.items, [pay]: (next.items[pay] ?? 0) - 1 }
+        next.flash = pay === 'glints' ? RESCUE_GLINT_LINE : RESCUE_SCRAP_LINE
+      }
+    }
   }
 
   if (getScene(next.sceneId).kind === 'crisis' && next.flags.encounterHere) {
@@ -814,6 +847,14 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     const kind = next.flags.encounterKind
     const sign = downedSign({ ...next, health: 0 })
     if (sign) note = `${note}\n\n${sign}`
+    // Going down costs: half your scrap, rounded down, or a Drop when that would be nothing.
+    if (!next.flags.downedWon) {
+      const loss = downLoss(next)
+      if (loss) {
+        next = { ...next, items: { ...next.items, [loss.item]: Math.max(0, (next.items[loss.item] ?? 0) - loss.n) } }
+        note = `${note}\n\n${loss.line}`
+      }
+    }
     const flags: FlagMap = { ...next.flags, downed: true, downedNote: note, ...(sign ? { sandDownSeen: true, sandSignAt: next.ticks } : {}) }
     // The fight card is cleared below; the wake still needs to know who put you down.
     if (typeof kind === 'string' && kind) flags.downedKind = kind
@@ -830,6 +871,12 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   if (next.sceneId !== state.sceneId && next.flags.bagHeld && !fx.bagRetry) {
     const flags = { ...next.flags }
     delete flags.bagHeld
+    next.flags = flags
+  }
+  // Once-a-visit flags clear when you walk off.
+  if (next.sceneId !== state.sceneId && VISIT_FLAGS.some((k) => k in next.flags)) {
+    const flags = { ...next.flags }
+    for (const k of VISIT_FLAGS) delete flags[k]
     next.flags = flags
   }
   next = fitBag(state, next)
@@ -1357,7 +1404,14 @@ export function interpret(state: GameState, raw: string): GameState {
       )
     }
     if (wantsEncounterHide(text) || wantsEncounterSkip(text)) {
-      return withVerb(applyEffect(state, { resolveEncounter: 'skip' }), wantsEncounterHide(text) ? 'hide' : 'skip')
+      // Typed skips pay the same as the buttons.
+      const rows = visibleChoices(state)
+      const order = wantsEncounterHide(text) ? ['enc-cloak', 'enc-skip'] : ['enc-skip', 'enc-cloak']
+      const row = order.map((id) => rows.find((c) => c.id === id)).find((c) => c && isChoiceOn(state, c.enable))
+      const verb = wantsEncounterHide(text) ? 'hide' : 'skip'
+      if (row) return withVerb(applyEffect(state, row.effects), verb)
+      const shut = order.map((id) => rows.find((c) => c.id === id)).find(Boolean)
+      return withVerb(persist({ ...state, flash: shut?.locked ?? 'No way past this one. Fight, or run.', updatedAt: Date.now() }), verb)
     }
     return withVerb(
       persist({ ...state, flash: 'The fight is the ground. Fight, or give the road.', updatedAt: Date.now() }),
@@ -1671,6 +1725,8 @@ export function restAllowed(state: GameState): boolean {
 }
 
 /** Rest: 1 Health for 1 Sap, as often as you can pay. Hidden at full Health; locked with no Sap. */
+export const REST_DONE_LOCK = 'Rested here already. Move on first.'
+
 function withRest(state: GameState, rows: Choice[]): Choice[] {
   if (!restAllowed(state)) return rows
   if ((state.health ?? HEALTH_MAX) >= (state.healthMax ?? HEALTH_MAX)) return rows
@@ -1679,12 +1735,12 @@ function withRest(state: GameState, rows: Choice[]): Choice[] {
     {
       id: 'rest',
       label: 'Rest',
-      sub: '+1 Health. Costs 1 Sap.',
+      sub: '+2 Health. Costs 1 Sap. Once a scene.',
       tone: 'quiet',
       // Resting on your last Sap would empty you into the collapse, so it takes 2.
-      enable: { sapMin: 2 },
-      locked: 'Needs: 2 Sap',
-      effects: { health: 1, sap: -1, still: true, flash: REST_LINE },
+      enable: state.flags.restedHere ? { flag: '__never__' } : { sapMin: 2 },
+      locked: state.flags.restedHere ? REST_DONE_LOCK : 'Needs: 2 Sap',
+      effects: { health: 2, sap: -1, still: true, flag: { restedHere: true }, flash: REST_LINE },
     },
   ]
 }

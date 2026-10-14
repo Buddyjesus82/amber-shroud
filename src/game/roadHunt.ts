@@ -32,6 +32,8 @@ export function roadHunterKind(before: GameState, next: GameState): { kind: Enco
   if (next.door === 'outcast' && next.sceneId === 'ch1:leave') {
     return next.heat.strays >= ROAD_HUNT_HEAT ? { kind: 'collector', line: ROAD_HUNT_LINES.strays } : { kind: 'scavenger', line: ROAD_FLOOR_LINE }
   }
+  // Vessel: the hymn-road ambush is right ahead, so the Seekers do not also wait at the start.
+  if (next.sceneId === 'ch1:leave' && next.door === 'vessel') return null
   if (next.sceneId !== 'ch1:leave' && (!ROAD.test(next.sceneId) || SKIP.has(next.sceneId))) return null
   const f = next.sceneId === 'ch1:leave' ? DOOR_FACTION[next.door] : turfFaction(next)
   const heat = next.heat[f]

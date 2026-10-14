@@ -18,7 +18,7 @@ import {
   listedKit,
   SCAV_PACK_LOCKED,
   KNOT_TIE_LOCKED,
-  SHELL_CAP,
+  shellCap,
   SLOT_EMPTY,
   SLOT_LABEL,
   slotsFor,
@@ -64,7 +64,7 @@ export function InventorySheet({ state, onClose, onChange }: Props) {
         </header>
         <p className="kit-sap">
           Sap {state.sap}/{state.sapMax} · {sapLabel(state.sap)}. Health {state.health}/{state.healthMax}. Strike{' '}
-          {equippedStrike(state)} · Shell {equippedShell(state)} (max {SHELL_CAP}).{' '}
+          {equippedStrike(state)} · Shell {equippedShell(state)} (max {shellCap(state)}).{' '}
           <b className={load > cap ? 'bag-over' : undefined}>
             Bag {load}/{cap} slots
           </b>

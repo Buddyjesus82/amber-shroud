@@ -90,7 +90,13 @@ export function equippedShell(state: GameState): number {
     if (slot === 'offhand' && def.offhand !== 'shield') continue
     total += def.shell
   }
-  return Math.min(SHELL_CAP, total)
+  return Math.min(shellCap(state), total)
+}
+
+/** Shell 5 opens past the Maw. Before it, Shell tops out at 4. */
+export const SHELL_CAP_EARLY = 4
+export function shellCap(state: Pick<GameState, 'flags' | 'hubId'>): number {
+  return state.flags.chapter1Done || state.flags.chapter1EndSeen || state.hubId === 'redmaw' ? SHELL_CAP : SHELL_CAP_EARLY
 }
 
 // ── Bag ──

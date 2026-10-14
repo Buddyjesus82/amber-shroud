@@ -43,7 +43,7 @@ const SPECS: Spec[] = [
     name: 'Court Guard',
     strike: 2,
     shell: 2,
-    hp: 2,
+    hp: 3,
     line: 'The court guard raises his curved falchion. Sunburn and belief. He was told to keep Vessels inside.',
   },
   {
@@ -310,6 +310,14 @@ export function heatOwed(heat: number): number | null {
   return HEAT_OWED.find((r) => h >= r.heatMin && h <= r.heatMax)?.scenes ?? null
 }
 
+/** Skips cost Sap. The cloak hides you once per area. */
+export const SKIP_COST_SUB = 'Costs 1 Sap.'
+export const CLOAK_SKIP_SUB = 'Costs 1 Sap. Once per area.'
+export const CLOAK_USED_LOCK = 'The cloak already hid you here. They know the shape now.'
+export function areaKey(state: Pick<GameState, 'hubId' | 'chapterId' | 'sceneId'>): string {
+  return state.hubId ?? state.chapterId ?? state.sceneId
+}
+
 export function canEncounter(state: GameState, opts?: { traveled?: boolean; firstWalk?: boolean }): boolean {
   if (state.flags.hunterHere || state.flags.encounterHere || state.flags.downed) return false
   if ((state.health ?? 1) <= 0) return false
@@ -463,6 +471,7 @@ export function encounterChoices(state: GameState): Choice[] {
     : f.encounterLatched
       ? 'The tick is on you. Pull it off first.'
       : ''
+  const cloakUsed = state.flags.cloakSkipArea === areaKey(state)
   const rows: Choice[] = [
     {
       id: 'enc-fight',
@@ -570,15 +579,21 @@ export function encounterChoices(state: GameState): Choice[] {
     {
       id: 'enc-skip',
       label: 'Give the road. No loot.',
+      sub: SKIP_COST_SUB,
       tone: 'quiet',
       show: { all: [{ flagUnset: 'encounterRound' }, { flagUnset: 'encounterNoSkip' }] },
-      effects: { resolveEncounter: 'skip' },
+      enable: { sapMin: 2 },
+      locked: 'Needs: 2 Sap',
+      effects: { resolveEncounter: 'skip', sap: -1 },
     },
     {
       id: 'enc-cloak',
       label: 'Let the cloak eat the glance. Skip.',
+      sub: cloakUsed ? undefined : CLOAK_SKIP_SUB,
       show: { all: [{ any: [{ slot: 'armor' }, { slot: 'cloak' }] }, { flagUnset: 'encounterRound' }] },
-      effects: { resolveEncounter: 'skip' },
+      enable: cloakUsed ? { flag: '__never__' } : { sapMin: 2 },
+      locked: cloakUsed ? CLOAK_USED_LOCK : 'Needs: 2 Sap',
+      effects: { resolveEncounter: 'skip', sap: -1, flag: { cloakSkipArea: areaKey(state) } },
     },
   ]
   if (disguiseCheck(state, spec.kind)) {

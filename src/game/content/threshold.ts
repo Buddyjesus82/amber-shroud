@@ -249,9 +249,12 @@ Oram is here more often than he is in the Court. He prefers the animals to the h
       {
         id: 'ready',
         label: 'Ready the stolen Strider',
-        sub: 'Put the bit in. When you ride into the Gullet, it carries the first stretch: 2 Sap saved.',
+        sub: 'Costs 1 Sap. When you ride into the Gullet, it carries the first stretch: 2 Sap saved.',
         show: { all: [{ item: 'strider_bit' }, { flagUnset: 'striderReady' }] },
+        enable: { sapMin: 2 },
+        locked: 'Needs: 2 Sap',
         effects: {
+          sap: -1,
           flag: { striderReady: true },
           ticks: 1,
           flash:
