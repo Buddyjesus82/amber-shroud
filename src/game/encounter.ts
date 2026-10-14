@@ -1,3 +1,4 @@
+import { STRAY_HUNTER_ENCOUNTERS } from './strayLines'
 import { ITEMS } from './content/catalog'
 import { getScene } from './content'
 import { check } from './logic'
@@ -6,7 +7,7 @@ import { CARAPACE_HUNTER, SPINE_HUNTER } from './content/spineHunter'
 import type { Choice, Effect, FlagMap, GameState, ItemId } from './types'
 import { hash, OPENERS, sandAnswers, PAIR_LINE, HUSK_CONTROLLER_LINE, sandGripLine, TERRAINS, terrainPool, type Terrain, type TerrainId } from './fightTricks'
 
-export type EncounterKind = 'jackal' | 'cutter' | 'courtguard' | 'tick' | 'pup' | 'scavenger' | 'patrol' | 'handler' | 'hound' | 'overseer' | 'collector' | 'carapace' | 'husk' | 'runner'
+export type EncounterKind = 'jackal' | 'cutter' | 'courtguard' | 'tick' | 'pup' | 'scavenger' | 'patrol' | 'handler' | 'hound' | 'overseer' | 'collector' | 'carapace' | 'husk' | 'runner' | 'strayhunter' | 'strayhound'
 
 /** Fight hits. Sap stays thirst/travel. */
 export const HEALTH_MAX = 6
@@ -21,6 +22,8 @@ type Spec = {
 }
 
 const SPECS: Spec[] = [
+  { kind: 'strayhunter', ...STRAY_HUNTER_ENCOUNTERS.strayhunter },
+  { kind: 'strayhound', ...STRAY_HUNTER_ENCOUNTERS.strayhound },
   {
     kind: 'jackal',
     name: 'Dust-jackal',
@@ -644,7 +647,7 @@ function pocket(state: GameState): number {
  * Fauna pay scrap or sap. People sometimes pay with a knife, a scav wrap, or a cloak.
  */
 /** People carry salve sometimes. Beasts never do. */
-export const HUMAN_KINDS: readonly EncounterKind[] = ['cutter', 'courtguard', 'scavenger', 'patrol', 'handler', 'overseer', 'collector', 'carapace']
+export const HUMAN_KINDS: readonly EncounterKind[] = ['cutter', 'courtguard', 'scavenger', 'patrol', 'handler', 'overseer', 'collector', 'carapace', 'strayhunter', 'strayhound']
 export const BEAST_KINDS: readonly EncounterKind[] = ['jackal', 'tick', 'pup', 'hound']
 /** Percent chance a downed human also carries a Resin Salve. */
 export const HUMAN_SALVE_PCT = 18

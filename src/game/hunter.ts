@@ -58,6 +58,7 @@ export function isPressureOverlay(state: Pick<GameState, 'flags' | 'sceneId' | '
 export function pressureFace(state: Pick<GameState, 'flags' | 'sceneId' | 'hubId' | 'heat'>): string | null {
   const hot = (state.heat?.cartel ?? 0) >= 7
   if (isSybellaOverlay(state)) return 'Sybella'
+  if (state.flags.strayHunterHere && !state.flags.encounterHere) return 'Stray Hunter'
   if (isCampHunt(state)) return hot ? 'Valerius' : 'Hound-handler'
   if (isSpineHunt(state)) return spineHunterFor(state).face
   if (isThreshHunt(state)) return 'Court Guard'
