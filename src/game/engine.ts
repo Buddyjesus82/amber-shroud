@@ -42,6 +42,7 @@ import { markFirstDrop } from './firstDrop'
 import { amberFindSign, downedSign, lowHealthSign, sandTouchReply } from './sandSign'
 import { isPressureOverlay, pressureAppend, pressureChoices, pressureVerb, spineGround, spineHunterKindAt, straysHeard } from './hunter'
 import { bareFightIsRoad, offButton } from './verbs'
+import { noticeFaction, noticeGround, noticeLine, SCAVENGE_NOTICE_MAX, SCAVENGE_NOTICE_STEP } from './noticeHeat'
 import {
   canEncounter,
   dismissEncounter,
@@ -971,12 +972,51 @@ function verbLabel(tag: string): string {
   return t
 }
 
+const NOTICE_OPTS = { vendor: (id: string) => isVendorScene(id), kind: (id: string) => getScene(id).kind as string }
+
+export function noticeOn(state: GameState): boolean {
+  return noticeGround(state, NOTICE_OPTS)
+}
+
+/** Searching the same area again and again: a growing chance the ground's faction notices. Resets when you leave. */
+function scavengeNotice(before: GameState, next: GameState): GameState {
+  const count = before.flags.scavArea === before.sceneId ? Number(before.flags.scavCount ?? 0) + 1 : 1
+  next = { ...next, flags: { ...next.flags, scavArea: before.sceneId, scavCount: count } }
+  if (!noticeOn(before)) return next
+  const chance = Math.min(SCAVENGE_NOTICE_MAX, SCAVENGE_NOTICE_STEP * count)
+  let h = (before.ticks * 2654435761 + count * 40503 + 977) >>> 0
+  for (const ch of before.sceneId) h = Math.imul(h ^ ch.charCodeAt(0), 2246822519) >>> 0
+  h ^= h >>> 15
+  if (h % 100 >= chance) return next
+  const f = noticeFaction(before)
+  const line = noticeLine(before, 'scavenge')
+  return { ...next, heat: { ...next.heat, [f]: Math.min(8, (next.heat[f] ?? 0) + 1) }, flash: next.flash ? `${next.flash}\n\n${line}` : line }
+}
+
+/**
+ * Rushing or stalling, timed by the Play screen (visible, online time only) and rolled there.
+ * At most +1 per scene from timing; never off danger ground.
+ */
+export function timingNotice(state: GameState, kind: 'rush' | 'stall'): GameState {
+  if (!noticeOn(state) || state.flags.timingNoticeAt === state.sceneId) return state
+  const f = noticeFaction(state)
+  const line = noticeLine(state, kind)
+  return persist({
+    ...state,
+    heat: { ...state.heat, [f]: Math.min(8, (state.heat[f] ?? 0) + 1) },
+    flags: { ...state.flags, timingNoticeAt: state.sceneId },
+    flash: state.flash ? `${state.flash}\n\n${line}` : line,
+    updatedAt: Date.now(),
+  })
+}
+
 export function scavenge(state: GameState): GameState {
   // applyDelta only — never applyEffect, never goto, never hunter/crisis relocate.
   const pinned = { sceneId: state.sceneId, hubId: state.hubId, chapterId: state.chapterId }
   let next = fitBag(state, applyScavenge(state))
   const warm = amberFindSign(state, (next.items.glints ?? 0) > (state.items.glints ?? 0))
   if (warm) next = { ...next, flash: `${next.flash ?? ''} ${warm}`.trim(), flags: { ...next.flags, amberWarmSeen: true, sandSignAt: next.ticks } }
+  next = scavengeNotice(state, next)
   return withVerb(
     persist({
       ...next,

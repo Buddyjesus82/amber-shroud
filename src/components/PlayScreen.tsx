@@ -30,6 +30,8 @@ import { isPressureOverlay, pressureFace } from '../game/hunter'
 import { DISGUISE_SOFTEN_NOTE } from '../game/disguise'
 import { ROADS, shownText } from '../game/roads'
 import { scavengeLock } from '../game/scavenge'
+import { RUSH_CHANCE, RUSH_MOVES, RUSH_WINDOW_MS, STALL_BASE, STALL_MAX_S, STALL_MIN_S, STALL_STEP, STALL_TICK_S } from '../game/noticeHeat'
+import { noticeOn, timingNotice } from '../game/engine'
 import { isShopOpen } from '../game/trade'
 import type { Choice, Faction, GameState } from '../game/types'
 import { helpEntries } from '../game/help'
@@ -283,6 +285,45 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     const flash = story.querySelector('.flash')
     if (flash instanceof HTMLElement) story.scrollTo({ top: Math.max(0, flash.offsetTop - 12) })
   }, [state.sceneId, state.flash, held])
+
+  // Jodi's Heat: rushing and stalling on danger ground. Visible, online time only; at most +1 a scene.
+  const liveState = useRef(state)
+  liveState.current = state
+  const paused = helpOpen || !!topicOpen || kit || mapOpen || journalOpen || !!held
+  const pausedRef = useRef(paused)
+  pausedRef.current = paused
+  const moves = useRef<number[]>([])
+  const lastStamp = useRef(state.updatedAt)
+  useEffect(() => {
+    if (state.updatedAt === lastStamp.current) return
+    lastStamp.current = state.updatedAt
+    const now = Date.now()
+    moves.current = [...moves.current.filter((t) => now - t <= RUSH_WINDOW_MS), now]
+    if (moves.current.length < RUSH_MOVES || !noticeOn(state)) return
+    moves.current = []
+    if (Math.random() < RUSH_CHANCE) onChange(timingNotice(state, 'rush'))
+  }, [state.updatedAt])
+  useEffect(() => {
+    if (!noticeOn(state) || state.flags.timingNoticeAt === state.sceneId) return
+    const threshold = STALL_MIN_S + Math.random() * (STALL_MAX_S - STALL_MIN_S)
+    let waited = 0
+    let chance = STALL_BASE
+    const away = () => {
+      if (document.hidden) moves.current = []
+    }
+    document.addEventListener('visibilitychange', away)
+    const tick = window.setInterval(() => {
+      if (document.hidden || !navigator.onLine || pausedRef.current) return
+      waited += 1
+      if (waited < threshold || (waited - threshold) % STALL_TICK_S !== 0) return
+      if (Math.random() < chance) onChange(timingNotice(liveState.current, 'stall'))
+      else chance = Math.min(0.9, chance + STALL_STEP)
+    }, 1000)
+    return () => {
+      window.clearInterval(tick)
+      document.removeEventListener('visibilitychange', away)
+    }
+  }, [state.sceneId, state.updatedAt])
 
   useEffect(() => {
     const prev = prevHeat.current
