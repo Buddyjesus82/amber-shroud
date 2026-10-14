@@ -117,10 +117,10 @@ The road is not shared. The destination is. What it costs you depends on the lif
       {
         id: 'go',
         label: 'Take the hymn-road',
-        sub: 'Take the road the Seekers already walk. Costs 2 sap. Runners are looking for a Vessel.',
+        sub: 'Take the road the Seekers already walk. Costs 1 sap. Runners are looking for a Vessel.',
         tone: 'hunger',
         show: { door: 'vessel' },
-        effects: { goto: 'ch1:v-hymn', ticks: 1, sap: -2, pressure: 1, ambush: { kind: 'runner', line: AMBUSH_RUNNER } },
+        effects: { goto: 'ch1:v-hymn', ticks: 1, sap: -1, pressure: 1, ambush: { kind: 'runner', line: AMBUSH_RUNNER } },
       },
     ],
     intents: [
@@ -140,7 +140,7 @@ The road is not shared. The destination is. What it costs you depends on the lif
         tags: ['go', 'walk', 'trail', 'dune', 'leave', 'hunger', 'hymn', 'runner', 'cup'],
         show: { door: 'vessel' },
         reply: 'The hymn is already walking. You match it or you get collected.',
-        effects: { goto: 'ch1:v-hymn', ticks: 1, sap: -2, pressure: 1, ambush: { kind: 'runner', line: AMBUSH_RUNNER } },
+        effects: { goto: 'ch1:v-hymn', ticks: 1, sap: -1, pressure: 1, ambush: { kind: 'runner', line: AMBUSH_RUNNER } },
       },
     ],
   },
