@@ -1153,7 +1153,30 @@ function scavengeNotice(before: GameState, next: GameState): GameState {
   if (h % 100 >= chance) return next
   const f = noticeFaction(before)
   const line = noticeLine(before, 'scavenge')
-  return { ...next, heat: { ...next.heat, [f]: Math.min(8, (next.heat[f] ?? 0) + 1) }, flash: next.flash ? `${next.flash}\n\n${line}` : line }
+  const out = { ...next, heat: { ...next.heat, [f]: Math.min(8, (next.heat[f] ?? 0) + 1) }, flash: next.flash ? `${next.flash}\n\n${line}` : line }
+  return (before.heat[f] ?? 0) >= 8 ? noticeHunt(out) : out
+}
+
+/** Noticed with that faction's Heat already at 8: this ground's hunt comes now, talk scene or not. Ignores Health. */
+export function noticeHunt(state: GameState): GameState {
+  if (state.flags.encounterHere || state.flags.hunterHere || state.flags.downed) return state
+  if (getScene(state.sceneId).kind === 'crisis') return state
+  const maw = state.hubId === 'redmaw' || state.sceneId.startsWith('maw:')
+  if (maw && Number(state.flags.sceneSteps ?? 0) - Number(state.flags.sybellaShadowStep ?? -99) < SYBELLA_GAP) return state
+  const flags = {
+    ...state.flags,
+    hunterHere: true,
+    hunterFrom: state.sceneId,
+    hunterAt: state.ticks,
+    huntQuiet: 0,
+    fightQuiet: 0,
+    ...(maw ? { sybellaShadowed: true, sybellaShadowStep: Number(state.flags.sceneSteps ?? 0) } : {}),
+    ...(state.hubId === 'camp04' ? { metHandler: true } : {}),
+    ...(state.hubId === 'spine' ? { spineHunterKind: spineHunterKindAt(state.heat.strays), metCarapace: spineHunterKindAt(state.heat.strays) === 'carapace' ? true : state.flags.metCarapace } : {}),
+  }
+  const hunted = { ...state, flags }
+  // Only grounds that have a hunt screen: never strand a screen with a hunt it cannot show.
+  return isPressureOverlay(hunted) ? hunted : state
 }
 
 /**
@@ -1164,13 +1187,14 @@ export function timingNotice(state: GameState, kind: 'rush' | 'stall'): GameStat
   if (!noticeOn(state) || state.flags.timingNoticeAt === state.sceneId) return state
   const f = noticeFaction(state)
   const line = noticeLine(state, kind)
-  return persist({
+  const out: GameState = {
     ...state,
     heat: { ...state.heat, [f]: Math.min(8, (state.heat[f] ?? 0) + 1) },
     flags: { ...state.flags, timingNoticeAt: state.sceneId },
     flash: state.flash ? `${state.flash}\n\n${line}` : line,
     updatedAt: Date.now(),
-  })
+  }
+  return persist((state.heat[f] ?? 0) >= 8 ? noticeHunt(out) : out)
 }
 
 export function scavenge(state: GameState): GameState {

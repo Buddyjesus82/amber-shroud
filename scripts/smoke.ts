@@ -2728,7 +2728,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v129'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v130'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -6645,4 +6645,29 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   s = { ...s, flags: { ...s.flags, kaelenHub: 'threshold' } }
   const c = T9.offersFor(s, T9.vendorFor('thresh:kaelen')!).find((o) => o.item === 'dust_cloak')!
   assert(c.cost.glints === 1 && c.cost.scrap === 2, 'v129: Threshold cloak 1 Glint or 2 scrap')
+}
+
+// v130: noticed at Heat 8 brings the ground's hunt, even on a talk scene.
+{
+  for (const [door, at, hub, f] of [['vessel', 'thresh:paddock', 'threshold', 'seekers'], ['outcast', 'spine:ridge', 'spine', 'strays']] as const) {
+    let s = GE.applyEffect(newGame(door), { goto: at, enterHub: hub })
+    s = { ...s, sap: 9, health: 1, heat: { ...s.heat, [f]: 8 }, flags: { ...s.flags, encounterHere: false, hunterHere: false } }
+    let hunted = false, talkHunt = false
+    for (let i = 0; i < 40 && !hunted; i++) {
+      s = GE.scavenge(s)
+      if (s.flags.hunterHere) { hunted = true; talkHunt = sceneOf(s).kind === 'talk'; break }
+      const go = GE.visibleChoices(s).filter((c) => GE.isChoiceOn(s, c.enable) && c.effects.goto && !c.effects.startChapter)[0]
+      if (!go) break
+      s = GE.applyEffect({ ...s, sap: 9, health: 1 }, go.effects)
+      if (s.flags.encounterHere) s = { ...s, flags: { ...s.flags, encounterHere: false } }
+      hunted = !!s.flags.hunterHere
+    }
+    assert(hunted && GE.visibleChoices(s).length > 0, `v130: ${door} farming loop at Heat 8 gets hunted`)
+    void talkHunt
+  }
+  // Below cap: notice only raises Heat.
+  let low = GE.applyEffect(newGame('vessel'), { goto: 'thresh:paddock', enterHub: 'threshold' })
+  low = { ...low, heat: { ...low.heat, seekers: 5 }, flags: { ...low.flags, encounterHere: false, hunterHere: false } }
+  assert(!GE.noticeHunt({ ...low, flags: { ...low.flags, encounterHere: true } }).flags.hunterHere, 'v130: no hunt over a fight')
+  console.log('v130 checks OK')
 }
