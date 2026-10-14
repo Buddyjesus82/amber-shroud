@@ -2691,7 +2691,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v116'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v117'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -6018,8 +6018,8 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
     assert(cov(door, 'thresh:court-guard', { downed: true }) === 'down' && cov(door, 'camp:yard', { downed: true }) === 'down', `v116: ${door} Down uses down.jpg`)
     assert(cov(door, 'crisis:dunes') === 'down', `v116: ${door} The Wash Takes You uses down.jpg`)
   }
-  assert(cov('vessel', 'thresh:paddock', { encounterHere: true, encounterKind: 'jackal' }) === 'threshold', 'v116: a Paddock fight is not Oram')
-  assert(cov('vessel', 'maw:rim', { encounterHere: true, encounterKind: 'husk' }) === 'rim_pilgrims_scar', 'v116: the Approach husk fight is not threshold')
+  assert(cov('vessel', 'thresh:paddock', { encounterHere: true, encounterKind: 'jackal' }) === 'dust_jackal', 'v116→v117: a Paddock fight is not Oram')
+  assert(cov('vessel', 'maw:rim', { encounterHere: true, encounterKind: 'husk' }) === 'amber_husk', 'v116→v117: the Approach husk fight is not threshold')
   for (const k of ['scavenger', 'cutter']) assert(cov('prisoner', 'maw:rim', { encounterHere: true, encounterKind: k }) !== 'hunger', `v116: ${k} fight is not the title art`)
   assert(cov('outcast', 'ch1:south-wind') === 'rim_bonewash', 'v116: South Wind is not her face yet')
   // 5. The dais clears once the Court Guard is gone.
@@ -6078,4 +6078,22 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
     assert(Number(n.flags.encounterHp) < 9 && !n.flags.encounterLatched, 'v116: Hide Gloves pull also strikes')
   }
   console.log('v116 retest checks OK')
+}
+
+// v117: six fight covers, wired by enemy on every door.
+{
+  const want: Record<string, string> = { cutter: 'rim-cutter.jpg', scavenger: 'waste-scavenger.jpg', husk: 'amber-husk.jpg', jackal: 'dust-jackal.jpg', tick: 'amber-tick.jpg', pup: 'shard-pup.jpg' }
+  const swText = readFileSync('public/sw.js', 'utf8')
+  for (const [kind, file] of Object.entries(want)) {
+    assert(existsSync(`public/covers/${file}`) && swText.includes(`covers/${file}`), `v117: ${file} shipped and precached`)
+    for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
+      for (const id of ['camp:yard', 'spine:well', 'thresh:paddock', 'ch1:leave', 'maw:rim']) {
+        const g = GE.newGame(door)
+        const sc = getScene(id)!
+        const key = playCoverKey({ ...g, sceneId: id, hubId: sc.hubId, chapterId: sc.chapterId, flags: { ...g.flags, encounterHere: true, encounterKind: kind as never } }, sc)
+        assert(playCoverFile(key) === file && !!COVER_BAND[key], `v117: ${door} ${kind} fight at ${id} uses ${file}`)
+      }
+    }
+  }
+  console.log('v117 fight cover checks OK')
 }
