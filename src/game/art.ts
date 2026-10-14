@@ -61,7 +61,7 @@ const FILES: Record<CoverKey, string> = {
   hound: 'hound.jpg',
   sybella: 'sybella.jpg',
   thalia: 'thalia.jpg',
-  zafir: 'zafir.jpg',
+  zafir: 'bonewright.jpg',
   ossa: 'ossa.jpg',
   kaelen: 'kaelen.jpg',
   oiltooth: 'oiltooth.jpg',
@@ -214,20 +214,33 @@ export function playCoverFile(key: CoverKey): string {
   return FILES[key]
 }
 
+/** Neutral fight cover: the hub's land, or the door's road on the Cache Run and at the Maw. */
+function fightGround(state: GameState, scene: Pick<Scene, 'id' | 'chapterId' | 'hubId'>): CoverKey {
+  const hub = scene.chapterId === 'cache-run' || state.chapterId === 'cache-run' ? undefined : (scene.hubId ?? state.hubId)
+  if (hub === 'camp04') return 'camp04'
+  if (hub === 'spine') return 'spine'
+  if (hub === 'threshold') return 'threshold'
+  if (state.door === 'outcast') return 'rim_bonewash'
+  if (state.door === 'vessel') return 'rim_pilgrims_scar'
+  return 'rim_gullet'
+}
+
 /** Interrupt faces first, then the door's land, then Hunger / world. */
 export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' | 'chapterId' | 'hubId'>): CoverKey {
   const id = scene.id
+  // Down, on every door: the collapse art, never the scene you fell in.
+  if (state.flags.downed || (state.health ?? 1) <= 0) return 'down'
   if (state.flags.encounterHere) {
     const kind = state.flags.encounterKind
     // The pup has no handler, so it gets the ground you are on (like jackals and ticks), not the handler portrait.
     if (kind === 'handler' || kind === 'hound') return 'hound'
     if (kind === 'overseer') return 'valerius'
     if (kind === 'patrol') return 'rell'
-    if (kind === 'scavenger' || kind === 'cutter') return 'hunger'
     if (kind === 'courtguard') return 'courtguard'
-    if (kind === 'husk') return 'threshold'
     if (kind === 'collector') return SPINE_HUNTER.art
     if (kind === 'carapace') return CARAPACE_HUNTER.art
+    // No enemy art yet (husk, scavenger, cutter, jackal, tick, pup): the neutral ground cover, never a face from the scene.
+    return fightGround(state, scene)
   }
   if (isSybellaOverlay(state) || id.startsWith('maw:sybella')) return 'sybella'
   if (isCampHunt(state)) return 'hound'
@@ -247,14 +260,10 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   if (id === 'camp:bay-pike') return 'bay_pike'
   if (id === 'camp:relic') return 'hoard'
   if (id === 'crisis:maw') return 'down'
-  // Down on title-art ground: the collapse art, not the key art.
-  if (state.flags.downed || (state.health ?? 1) <= 0) {
-    if (scene.chapterId === 'cache-run' || state.chapterId === 'cache-run' || state.hubId === 'redmaw' || id.startsWith('maw:') || id.startsWith('ch1:')) return 'down'
-  }
   // The Cache Run collapse is a Down screen too.
   if (id === 'crisis:dunes') return 'down'
-  // Sybella's skiff on the South Wind.
-  if (id === 'ch1:south-wind') return 'sybella'
+  // The South Wind: the hull on the horizon, not yet her face. The door's road art.
+  if (id === 'ch1:south-wind') return fightGround(state, scene)
   // The Vessel's Cache Run (the Pilgrim's Scar) shows the Scar, not the title art.
   if (state.door === 'vessel' && (id === 'ch1:leave' || id === 'ch1:v-hymn')) return 'rim_pilgrims_scar'
   // The Outcast's road start (Cache Run / the Bone Wash) gets the Bone Wash art, not the title art.

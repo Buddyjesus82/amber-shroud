@@ -709,7 +709,8 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     next.flags = { ...next.flags, kaelenKnown: true, kaelenIntroNow: true, kaelenIntroSeen: true }
   }
   // He stops at one roadside spot. Walk on without visiting and he is gone; he does not follow you scene to scene.
-  if (state.flags.kaelenPassing && next.flags.kaelenPassing && next.sceneId !== state.sceneId && next.sceneId !== 'roam:kaelen') {
+  // A new chapter (the Cache Run) leaves his stop behind too.
+  if (next.flags.kaelenPassing && ((next.sceneId !== state.sceneId && next.sceneId !== 'roam:kaelen' && state.flags.kaelenPassing) || next.chapterId !== state.chapterId || next.chapterId === 'cache-run')) {
     const flags = { ...next.flags }
     delete flags.kaelenPassing
     next.flags = flags
@@ -717,6 +718,7 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   if (
     lingered &&
     place &&
+    next.chapterId !== 'cache-run' &&
     !kaelenHeld(next.sceneId) &&
     !next.flags.kaelenPassing &&
     !next.flags.hunterHere &&
@@ -864,6 +866,13 @@ export const TOO_DRY_TO_WALK = 'You are too dry to walk that far. Drink a Drop, 
 
 export function travelTo(state: GameState, sceneId: string): GameState {
   if (state.sceneId === sceneId) return state
+  // The Bone Wash node on the Spine map is the road out: same as typing the road.
+  if (sceneId === 'ch1:leave' && state.hubId && !state.chapterId) {
+    const enabled = visibleChoices(state).filter((c) => isChoiceOn(state, c.enable))
+    const fx = hungerCommandEffect(state, enabled)
+    if (fx) return applyEffect(state, fx)
+    return persist({ ...state, flash: hungerBlockedFor(ROADS[state.door].name) })
+  }
   const gate = travelGate(state, sceneId)
   if (!gate.ok) {
     return persist({ ...state, flash: gate.reason })
@@ -1491,11 +1500,17 @@ function scopeDecoy(state: GameState, choices: ReturnType<typeof sceneOf>['choic
   })
 }
 
+export const DAIS_CLEAR = 'The dais is clear. You go up the steps into the Court.'
+
 /** Waking after a fight closes that fight: you lost it, and the foe has gone. */
 function fightLostWake(state: GameState): Effect {
-  const fx = wakeEffect(state)
+  let fx = wakeEffect(state)
+  // The Court Guard gone from the dais (beaten or moved on): you wake with the steps clear.
+  if (state.sceneId === 'thresh:court-guard' && (state.flags.downedKind === 'courtguard' || state.flags.crucibleGuardBeaten) && !fx.goto) {
+    fx = { ...fx, goto: 'thresh:court', flag: { ...(fx.flag ?? {}), courtGuardGone: true }, flash: fx.flash ? `${fx.flash} ${DAIS_CLEAR}` : DAIS_CLEAR }
+  }
   const name = foeName(state.flags.downedKind)
-  if (!name) return fx
+  if (!name || state.flags.downedWon) return fx
   const lost = `Fight lost. The ${name} has moved on.`
   return { ...fx, flash: fx.flash ? `${lost} ${fx.flash}` : lost }
 }
@@ -1571,7 +1586,8 @@ export const REST_LINE = 'You sit in what shade there is and let the cut close a
 export function restAllowed(state: GameState): boolean {
   const id = state.sceneId
   const sc = getScene(id)
-  if (sc.kind !== 'place' && !(sc.kind === 'story' && sc.chapterId === 'cache-run')) return false
+  // Hubs: place screens. The road (Cache Run): every walking beat, including the people met on it.
+  if (sc.kind !== 'place' && !((sc.kind === 'story' || sc.kind === 'talk') && sc.chapterId === 'cache-run')) return false
   if (id.startsWith('open:') || id.startsWith('roam:') || id.startsWith('ch2:') || id === CHAPTER_ONE_END || id === 'ch1:sybella' || id === 'ch1:storm') return false
   if (id.includes('kaelen') || id === 'thresh:sift' || isVendorScene(id)) return false
   if (state.flags.encounterHere || state.flags.hunterHere || state.flags.downed || state.flags.kaelenIntroNow) return false
@@ -1591,8 +1607,9 @@ function withRest(state: GameState, rows: Choice[]): Choice[] {
       label: 'Rest',
       sub: '+1 Health. Costs 1 Sap.',
       tone: 'quiet',
-      enable: { sapMin: 1 },
-      locked: 'Needs: Sap',
+      // Resting on your last Sap would empty you into the collapse, so it takes 2.
+      enable: { sapMin: 2 },
+      locked: 'Needs: 2 Sap',
       effects: { health: 1, sap: -1, still: true, flash: REST_LINE },
     },
   ]

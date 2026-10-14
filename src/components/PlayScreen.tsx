@@ -102,9 +102,16 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
   // A held result only covers the exact state it was made for. Walking on by Map must not carry it along.
   const held = heldRaw && heldRaw.stamp === heldStamp(state) ? heldRaw : null
   const prevHeat = useRef(state.heat)
-  const talky = scene.kind === 'talk' || scene.kind === 'place' || scene.kind === 'story'
   // No Map in the Crucible Chambers: the only way up is the stairs.
-  const showNav = !!hub && scene.kind !== 'crisis' && state.chapterId !== 'cache-run' && !(CRUCIBLE_SCENES as readonly string[]).includes(scene.id)
+  // Map on every hub and road screen, but not in a crisis, a fight, Down, or the Crucible Chambers (the only way up is the stairs).
+  const showNav =
+    (!!hub || state.chapterId === 'cache-run') &&
+    scene.kind !== 'crisis' &&
+    scene.kind !== 'ending' &&
+    !state.flags.encounterHere &&
+    !state.flags.downed &&
+    state.health > 0 &&
+    !(CRUCIBLE_SCENES as readonly string[]).includes(scene.id)
   const hook = hub?.hungerHook
   const hookOn = hook && isChoiceOn(state, hook.show) && isMawExit(state)
   const closing = !state.flags.chapter1Done && state.pressure >= 10 && !state.chapterId
@@ -255,7 +262,8 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     optionRows.push({ key: 'look-around', tone: 'quiet', label: 'Look around', sub: 'Take stock of where you are.', onClick: () => onChange(interpret({ ...state, flash: undefined }, 'look')) })
   }
   const split = optionRows.length >= 4
-  const showDo = !held && (talky || roam || overlay || stuck)
+  // The Do box is on every screen.
+  const showDo = !held
 
   const scrolledScene = useRef(state.sceneId)
   useEffect(() => {
@@ -465,6 +473,12 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
           })}
         </div>
 
+        {/* With the actions, above the Do box: at narrow widths it sat under the form like a stray footnote. */}
+        {(state.items.vial_drop ?? 0) > 0 && !held ? (
+          <button type="button" className="text-link drink" onClick={() => onChange(drinkDrop(state))}>
+            Drink a Drop · +3 Sap
+          </button>
+        ) : null}
         {showDo ? (
           <form
             className="say"
@@ -501,11 +515,6 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
           </p>
         ) : null}
 
-        {(state.items.vial_drop ?? 0) > 0 && !held ? (
-          <button type="button" className="text-link drink" onClick={() => onChange(drinkDrop(state))}>
-            Drink a Drop · +3 Sap
-          </button>
-        ) : null}
       </div>
 
       {helpOpen ? (

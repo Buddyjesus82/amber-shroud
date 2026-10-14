@@ -64,12 +64,14 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
     height: 120,
     defaultNode: 'ridge',
     blurb: 'Stray country. Walk only the roads that connect.',
-    maw: { x: 86, y: 112, label: 'Bone Wash ↓ Red Maw' },
+    maw: { x: 86, y: 116, label: '↓ Red Maw' },
     nodes: [
       { id: 'ridge', name: 'Noon Spine', short: 'Ridge', sceneId: 'spine:ridge', x: 30, y: 26 },
       { id: 'shade', name: "Silas's Shade", short: 'Shade', sceneId: 'spine:shade', x: 22, y: 58 },
       { id: 'well', name: 'Dry Well', sceneId: 'spine:well', x: 58, y: 46 },
       { id: 'hound', name: 'Hound Sign', short: 'Hounds', sceneId: 'spine:hound', x: 76, y: 78, mawExit: true },
+      // The road out. Open once you have a heading (Korvan's lead, or reading the wash).
+      { id: 'wash', name: 'Bone Wash', short: 'Wash', sceneId: 'ch1:leave', x: 70, y: 102 },
     ],
     edges: [
       { a: 'ridge', b: 'shade' },
@@ -78,6 +80,7 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
       { a: 'well', b: 'hound', sap: 2 },
       // The east wash: Korvan's heading runs straight down it from Silas's shade to Hound Sign.
       { a: 'shade', b: 'hound', sap: 2 },
+      { a: 'hound', b: 'wash' },
     ],
     sceneNode: {
       'spine:ridge': 'ridge',

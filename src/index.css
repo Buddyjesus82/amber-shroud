@@ -1608,6 +1608,10 @@ h2 {
 
 .drink {
   align-self: center;
+  display: block;
+  margin: 0.35rem auto 0.25rem;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .sheet-backdrop {

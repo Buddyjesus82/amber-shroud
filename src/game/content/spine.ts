@@ -48,9 +48,9 @@ Down-slope: a tent the color of old teeth. Silas Vane sells shade by the minute.
         effects: {
           ticks: 1,
           sap: -1,
-          flag: { sawMawHaze: true, washRead: true },
+          flag: { sawMawHaze: true, washRead: true, hungerKnown: true },
           flash:
-            'South, a bruise of red in the heat. Maw-country. People bury fortunes there because they think the Maw is a lock. It is a mouth.',
+            'South, a bruise of red in the heat. Maw-country. People bury fortunes there because they think the Maw is a lock. It is a mouth. That is a heading. The Bone Wash is open to you now.',
         },
       },
       {
