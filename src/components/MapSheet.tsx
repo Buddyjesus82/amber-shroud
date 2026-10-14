@@ -22,6 +22,9 @@ type Props = {
   onClose: () => void
 }
 
+/** On the Cache Run there is no hub map: the road is the heading. */
+export const ROAD_MAP_LINE = 'On the road. The only map is the heading: keep walking toward Red Maw.'
+
 export function MapSheet({ state, onChange, onClose }: Props) {
   const map = hubMapOf(state)
   const here = currentNode(state)
@@ -39,7 +42,9 @@ export function MapSheet({ state, onChange, onClose }: Props) {
             Stow
           </button>
         </header>
-        {!map || !map.ready ? (
+        {state.chapterId === 'cache-run' ? (
+          <p className="map-coming">{ROAD_MAP_LINE}</p>
+        ) : !map || !map.ready ? (
           <p className="map-coming">{map?.coming ?? 'This ground is still being scratched. Coming.'}</p>
         ) : (
           <HubMapView

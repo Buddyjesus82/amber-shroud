@@ -1124,7 +1124,7 @@ export function resolveEncounter(
       // Beating the handler: Cartel +2.
       heat: spec.kind === 'hound' ? { cartel: 1 } : handlerWin ? { cartel: 2 } : undefined,
       pressure: dmgIn > 0 ? 1 : undefined,
-      flag: { encounterGrip: grip, ...(handlerWin ? { handlerInjured: true } : {}), ...(state.sceneId === 'thresh:court-guard' && spec.kind === 'courtguard' ? { crucibleGuardBeaten: true } : {}) },
+      flag: { encounterGrip: grip, ...(stagger ? { downedWon: true } : {}), ...(handlerWin ? { handlerInjured: true } : {}), ...(state.sceneId === 'thresh:court-guard' && spec.kind === 'courtguard' ? { crucibleGuardBeaten: true } : {}) },
     })
   }
 
