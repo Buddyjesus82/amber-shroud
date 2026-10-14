@@ -26,6 +26,7 @@ export type CoverKey =
   | 'handler'
   | 'skiffbay'
   | 'skiff_bay_docks'
+  | 'stray_collector'
   | 'bay_pike'
   | 'corvin'
   | 'guard'
@@ -72,6 +73,7 @@ const FILES: Record<CoverKey, string> = {
   handler: 'hound.jpg',
   skiffbay: 'skiffbay.jpg',
   skiff_bay_docks: 'skiff-bay-docks.jpg',
+  stray_collector: 'stray-collector.jpg',
   bay_pike: 'bay_pike.jpg',
   corvin: 'corvin.jpg',
   guard: 'guard.jpg',
@@ -128,6 +130,8 @@ export const COVER_BAND: Record<CoverKey, [number, number]> = {
   skiffbay: [0.2, 0.84],
   // The Cartel barge, the tarp Strider, and the white skiff's amber crane.
   skiff_bay_docks: [0.15, 0.85],
+  // The hooded collector, hood to boots, with the spine bones at his feet.
+  stray_collector: [0.02, 0.85],
   // Pike's bolt glows in the rear knee joint; the skiff legs reach the cradle.
   bay_pike: [0.12, 0.82],
   // Corvin's face sits high; keep his head and hands.
@@ -191,7 +195,7 @@ const PERSON_COVER: Record<PersonId, CoverKey> = {
   ossa: 'ossa',
   sybella: 'sybella',
   handler: 'handler',
-  // No portraits yet for the Spine Strays. They use the Spine art.
+  // The Stray collector hunt has its own cover (stray_collector); the named Strays use their portraits.
   korvan: 'korvan',
   mira: 'mira',
   corvin: 'corvin',

@@ -2691,7 +2691,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v112'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v113'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -5770,4 +5770,16 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
     assert(!/Two Strays share/i.test(readFileSync(f, 'utf8')), `v112: no stale count of two in ${f}`)
   }
   console.log('v112 shade checks OK')
+}
+
+// v113: the Stray collector hunt has its own cover; the Dry Well keeps the Spine art.
+{
+  const sw = readFileSync('public/sw.js', 'utf8')
+  assert(existsSync('public/covers/stray-collector.jpg') && sw.includes('covers/stray-collector.jpg') && COVER_BAND.stray_collector, 'v113: collector art on disk, precached, cropped')
+  const fight = { ...GE.newGame('outcast'), sceneId: 'spine:ridge', hubId: 'spine' }
+  fight.flags = { ...fight.flags, encounterHere: true, encounterKind: 'collector' }
+  assert(playCoverKey(fight, getScene('spine:ridge')!) === 'stray_collector', 'v113: the collector fight shows the collector')
+  const well = { ...GE.newGame('outcast'), sceneId: 'spine:well', hubId: 'spine' }
+  assert(playCoverKey(well, getScene('spine:well')!) === 'spine', 'v113: the Dry Well uses the Spine art, not the title art')
+  console.log('v113 collector checks OK')
 }

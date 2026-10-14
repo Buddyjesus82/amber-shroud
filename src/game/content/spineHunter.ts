@@ -24,7 +24,7 @@ export type SpineHunter = {
   /** Encounter card for the fight. */
   encounter: { name: string; strike: number; shell: number; hp: number; line: string }
   /** Scene art key while the hunt is on this ground. */
-  art: 'hunger' | 'carapace'
+  art: 'stray_collector' | 'carapace'
 }
 
 /** The low-heat face. */
@@ -45,7 +45,7 @@ export const SPINE_HUNTER: SpineHunter = {
     hp: 2,
     line: 'A Stray collector. Resin under the nails, a short knife, two friends down-slope who stay out of it.',
   },
-  art: 'hunger',
+  art: 'stray_collector',
 }
 
 /** Stray Heat at which the Carapace hunter takes over the Spine hunt from the collector. */
