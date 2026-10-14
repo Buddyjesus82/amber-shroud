@@ -1985,7 +1985,7 @@ s = openShop(s, 'buy')
 assert(ids(s).includes('cloak-glint') && ids(s).includes('cloak-scrap'), 'Prisoner Kaelen cloak is Glint or scrap, two rows')
 assert(ids(s).includes('wrap'), 'Prisoner Kaelen sells Scav Wrap')
 s = pick(s, 'wrap')
-assert(s.items.scav_wrap === 1 && (s.items.scrap ?? 0) === 1, 'one scrap buys Scav Wrap and leaves the rest')
+assert(s.items.scav_wrap === 1 && (s.items.scrap ?? 0) === 0, 'v128: two scrap buys Scav Wrap')
 s = equipItem(s, 'scav_wrap')
 assert(s.equipped.armor === 'scav_wrap' && equippedShell(s) === 2, 'Scav Wrap is the only Shell when worn')
 s = applyEffect(s, { goto: 'camp:wire' })
@@ -2728,7 +2728,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v127'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v128'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -6591,4 +6591,37 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   }
   assert(lost > 0 && caught > 0, `v127: cutting the trail can lose them or not (${lost}/${caught})`)
   console.log('v127 checks OK')
+}
+
+// v128: prices
+{
+  const { ITEMS: IT } = await import('../src/game/content/catalog.ts')
+  const rowsAt = (scene: string, hub: string, shelf: 'buy' | 'sell', door: 'prisoner' | 'outcast' | 'vessel' = 'prisoner') => {
+    let s = GE.applyEffect(newGame(door), { goto: scene, enterHub: hub as never })
+    const items: Record<string, number> = { glints: 30, scrap: 30 }
+    for (const id of Object.keys(IT)) items[id] = items[id] ?? 1
+    s = { ...s, items: items as never, equipped: {}, flags: { ...s.flags, encounterHere: false, hunterHere: false, shopShelf: shelf, kaelenHub: hub, kaelenPassing: true } }
+    return GE.visibleChoices(s)
+  }
+  const val = (m: Record<string, number> | undefined) => (m?.scrap ?? 0) + 2 * (m?.glints ?? 0)
+  const buyCost = (c: { label: string }) => { const g = /(\d+) Glints?/.exec(c.label); const sc = /(\d+) scrap/.exec(c.label); return Math.min(g ? 2 * Number(g[1]) : 99, sc ? Number(sc[1]) : 99) }
+  const mawKnife = rowsAt('roam:kaelen', 'redmaw', 'buy').find((c) => c.id === 'knife')!
+  assert(/4 scrap/.test(mawKnife.label), `v128: Maw knife 4 scrap (${mawKnife.label})`)
+  const campKnife = rowsAt('camp:kaelen', 'camp04', 'buy').find((c) => c.id === 'knife')!
+  assert(/2 scrap/.test(campKnife.label), `v128: early-road knife stays 2 scrap (${campKnife.label})`)
+  const sell = rowsAt('maw:zafir', 'redmaw', 'sell')
+  const pay = (id: string) => sell.find((c) => c.id === `sell-${id}`)!.effects.add as Record<string, number>
+  assert(pay('needle_knife').scrap === 2 && pay('seeker_extractor').scrap === 2 && pay('ceremonial_cloth').scrap === 2 && pay('hide_wrap').scrap === 3 && !pay('hide_wrap').glints, 'v128: sell table')
+  const ksell = rowsAt('roam:kaelen', 'redmaw', 'sell')
+  assert(JSON.stringify(ksell.filter((c) => c.id.startsWith('sell-') && c.id !== 'sell-scrip').map((c) => [c.id, c.effects.add])) === JSON.stringify(sell.filter((c) => c.id.startsWith('sell-') && c.id !== 'sell-scrip').map((c) => [c.id, c.effects.add])), 'v128: Kaelen sells on Varro\'s table')
+  // No sell above any buy, anywhere.
+  for (const [scene, hub, door] of [['camp:kaelen', 'camp04', 'prisoner'], ['thresh:kaelen', 'threshold', 'vessel'], ['roam:kaelen', 'redmaw', 'prisoner'], ['spine:silas', 'spine', 'outcast'], ['maw:zafir', 'redmaw', 'vessel']] as const) {
+    for (const b of rowsAt(scene, hub, 'buy', door)) {
+      const item = Object.keys(b.effects.add ?? {})[0]
+      if (!item || item === 'glints' || item === 'scrap') continue
+      const s = sell.find((c) => c.id === `sell-${item}`)
+      if (s) assert(val(s.effects.add as never) <= buyCost(b), `v128: ${scene} ${item} sells ${val(s.effects.add as never)} <= buys ${buyCost(b)}`)
+    }
+  }
+  console.log('v128 checks OK')
 }
