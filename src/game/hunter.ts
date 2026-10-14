@@ -547,7 +547,49 @@ export function pressureChoices(state: GameState): Choice[] {
         : isThreshHunt(state)
           ? threshHuntChoices(state)
           : []
-  return rows.filter((c) => check(c.show, state))
+  const shown = rows.filter((c) => check(c.show, state))
+  // Never corner someone who cannot fight: then the old outs stay open.
+  const canFight = shown.some((c) => isFightRow(c) && check(c.enable, state))
+  return shown.map((c) => payOnce(state, c, canFight))
+}
+
+/** Each faction takes a fee once. After that the pay rows stay on the card, locked. */
+export const HUNT_PAID_LOCK = 'Paid once already. They want more than coin now.'
+/** Slipped them before and their Heat is 4+: only the fight rows open. */
+export const HUNT_CORNERED_LOCK = 'They came ready this time. Fight is the only way out.'
+export const HUNT_CORNERED_HEAT = 4
+/** At this Heat even the first hunt is cornered. */
+export const HUNT_CORNERED_FIRST = 6
+const PAY_ROWS = new Set(['hunter-scrap', 'hunter-glint', 'hunter-scrip', 'spine-scrap', 'spine-glint', 'thresh-scrip', 'thresh-glint'])
+
+export function huntPaidFlag(f: 'cartel' | 'strays' | 'seekers'): string {
+  return `huntPaid_${f}`
+}
+export function huntDodgedFlag(f: 'cartel' | 'strays' | 'seekers'): string {
+  return `huntDodged_${f}`
+}
+
+function huntFaction(state: GameState): 'cartel' | 'strays' | 'seekers' | null {
+  if (isSybellaOverlay(state)) return null
+  if (isCampHunt(state)) return 'cartel'
+  if (isSpineHunt(state)) return 'strays'
+  if (isThreshHunt(state)) return 'seekers'
+  return null
+}
+
+function isFightRow(c: Choice): boolean {
+  return /fight|hound/.test(c.id) || !!c.effects.resolveEncounter || !!c.effects.flag?.encounterHere
+}
+
+function payOnce(state: GameState, c: Choice, canFight: boolean): Choice {
+  const f = huntFaction(state)
+  if (!f || isFightRow(c) || c.effects.startChapter) return c
+  if (canFight && ((state.flags[huntDodgedFlag(f)] && state.heat[f] >= HUNT_CORNERED_HEAT) || state.heat[f] >= HUNT_CORNERED_FIRST)) return { ...c, enable: { flag: '__never__' }, locked: HUNT_CORNERED_LOCK }
+  const pay = PAY_ROWS.has(c.id)
+  if (pay && state.flags[huntPaidFlag(f)]) return { ...c, enable: { flag: '__never__' }, locked: HUNT_PAID_LOCK }
+  const mark: Record<string, boolean> = { [huntDodgedFlag(f)]: true }
+  if (pay) mark[huntPaidFlag(f)] = true
+  return { ...c, effects: { ...c.effects, flag: { ...(c.effects.flag ?? {}), ...mark } } }
 }
 
 function findId(rows: Choice[], id: string): Choice | null {

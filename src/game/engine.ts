@@ -49,6 +49,7 @@ import {
   encounterCard,
   encounterChoices,
   encounterGround,
+  hubDanger,
   FIGHT_RESET,
   fightStartFlags,
   ENCOUNTER_FLAGS,
@@ -252,7 +253,7 @@ function huntHeat(state: GameState): number {
  */
 export const HUNTER_QUIET_GAPS = [
   { heatMin: 0, heatMax: 0, quiet: null },
-  { heatMin: 1, heatMax: 3, quiet: 8 },
+  { heatMin: 1, heatMax: 3, quiet: 6 },
   { heatMin: 4, heatMax: 5, quiet: 6 },
   { heatMin: 6, heatMax: 7, quiet: 4 },
   { heatMin: 8, heatMax: 8, quiet: 2 },
@@ -783,6 +784,12 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     next.flags = { ...fresh, ...fightStartFlags(next, kind), roadFightSeen: true }
   } else if (firstWalk) {
     next.flags = { ...next.flags, roadFightSeen: true }
+  }
+  // Heat comes due: count fight-free danger scenes; any fight or hunt clears the count.
+  if (next.flags.encounterHere || next.flags.hunterHere) {
+    if (next.flags.fightQuiet) next.flags = { ...next.flags, fightQuiet: 0 }
+  } else if (roamBeat && !talkBeat && encounterGround(next) && hubDanger(next) >= 1) {
+    next.flags = { ...next.flags, fightQuiet: Number(next.flags.fightQuiet ?? 0) + 1 }
   }
 
   if (arrived.onEnter && next.sceneId === arrived.id && state.sceneId !== arrived.id && !next.flags.encounterHere && !next.flags.hunterHere) {

@@ -1353,9 +1353,9 @@ assert(s.flags.hunterFrom === 'maw:lip', 'facing her smoke keeps the ground unde
     'leaving the Court hunter does not immediately re-arm at Heat 5',
   )
 
-  assert(HUNTER_QUIET_GAPS.map((row) => row.quiet ?? 0).join(',') === '0,8,6,4,2', 'hunter gaps are one table: Heat 0 / 8 / 6 / 4 / 2')
+  assert(HUNTER_QUIET_GAPS.map((row) => row.quiet ?? 0).join(',') === '0,6,6,4,2', 'hunter gaps are one table: Heat 0 / 6 / 6 / 4 / 2')
   assert(huntGap(0) === null, 'Heat 0 does not interrupt')
-  for (const heat of [1, 2, 3]) assert(huntGap(heat) === 8, `Heat ${heat} waits 8 quiet scenes`)
+  for (const heat of [1, 2, 3]) assert(huntGap(heat) === 6, `Heat ${heat} waits 6 quiet scenes`)
   for (const heat of [4, 5]) assert(huntGap(heat) === 6, `Heat ${heat} waits 6 quiet scenes`)
   for (const heat of [6, 7]) assert(huntGap(heat) === 4, `Heat ${heat} waits 4 quiet scenes`)
   assert(huntGap(8) === 2, 'Heat 8 waits 2 quiet scenes and is not back-to-back')
@@ -1387,13 +1387,13 @@ assert(s.flags.hunterFrom === 'maw:lip', 'facing her smoke keeps the ground unde
     sk = { ...sk, flags: { ...sk.flags, huntQuiet: 30 } }
     assert(!stepQuiet(sk).flags.hunterHere, `${door} Seeker Heat 0 does not call Sybella`)
     sk = armed(sk, { seekers: 2 })
-    const early = passQuiet(sk, 7)
+    const early = passQuiet(sk, 5)
     assert(
-      !early.flags.hunterHere && early.sceneId === 'maw:stilt' && Number(early.flags.huntQuiet) === 7,
-      `${door} Seeker Heat 2: Sybella does not re-fire within 8 quiet scenes`,
+      !early.flags.hunterHere && early.sceneId === 'maw:stilt' && Number(early.flags.huntQuiet) === 5,
+      `${door} Seeker Heat 2: Sybella does not re-fire within 6 quiet scenes`,
     )
     const due = stepQuiet(early)
-    assert(due.flags.hunterHere && pressureFace(due) === 'Sybella', `${door} Seeker Heat 2 re-arms Sybella on the 8th quiet scene`)
+    assert(due.flags.hunterHere && pressureFace(due) === 'Sybella', `${door} Seeker Heat 2 re-arms Sybella on the 6th quiet scene`)
   }
 
   let hound = newGame('prisoner')
@@ -1407,8 +1407,8 @@ assert(s.flags.hunterFrom === 'maw:lip', 'facing her smoke keeps the ground unde
   hound = { ...hound, flags: { ...hound.flags, huntQuiet: 30 } }
   assert(!stepQuiet(hound).flags.hunterHere, 'Cartel Heat 0 does not call the handler')
   hound = armed(hound, { cartel: 2 })
-  assert(!passQuiet(hound, 7).flags.hunterHere, 'Cartel Heat 2: the handler does not re-fire within 8 quiet scenes')
-  assert(pressureFace(stepQuiet(passQuiet(hound, 7))) === 'Hound-handler', 'Cartel Heat 2 re-arms the handler on the 8th quiet scene')
+  assert(!passQuiet(hound, 5).flags.hunterHere, 'Cartel Heat 2: the handler does not re-fire within 6 quiet scenes')
+  assert(pressureFace(stepQuiet(passQuiet(hound, 5))) === 'Hound-handler', 'Cartel Heat 2 re-arms the handler on the 6th quiet scene')
   hound = armed(hound, { cartel: 7 })
   assert(!passQuiet(hound, 3).flags.hunterHere, 'Cartel Heat 7: Valerius does not re-fire within 4 quiet scenes')
   assert(pressureFace(stepQuiet(passQuiet(hound, 3))) === 'Valerius', 'Cartel Heat 7 still brings Valerius, after 4 quiet scenes')
@@ -1429,9 +1429,9 @@ assert(s.flags.hunterFrom === 'maw:lip', 'facing her smoke keeps the ground unde
   assert(!stepQuiet(ridge).flags.hunterHere, 'Spine waits for the Strays to notice you (or pressure 6)')
   ridge = armed(ridge, { strays: 2 })
   ridge = { ...ridge, flags: { ...ridge.flags, strayNotice: true } }
-  const ridgeEarly = passQuiet(ridge, 7)
-  assert(!ridgeEarly.flags.hunterHere, 'Spine Stray Heat 2 uses the low-Heat gap of 8')
-  assert(stepQuiet(ridgeEarly).flags.hunterHere, 'Spine Stray Heat 2, noticed, re-arms after 8 quiet scenes')
+  const ridgeEarly = passQuiet(ridge, 5)
+  assert(!ridgeEarly.flags.hunterHere, 'Spine Stray Heat 2 uses the low-Heat gap of 6')
+  assert(stepQuiet(ridgeEarly).flags.hunterHere, 'Spine Stray Heat 2, noticed, re-arms after 6 quiet scenes')
   ridge = armed(ridge, { strays: 2 })
   delete ridge.flags.strayNotice
   ridge = { ...ridge, pressure: 6 }
@@ -6175,4 +6175,29 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   assert(!GE.noticeOn({ ...base, sceneId: 'camp:bay' }), 'v119: no timing at rest')
   assert(!GE.noticeOn({ ...base, flags: { ...base.flags, encounterHere: true } }), 'v119: no timing in a fight')
   console.log('v119 Heat timing checks OK')
+}
+{
+  // v120: Heat turns into fights.
+  const E = await import('../src/game/encounter.ts')
+  const H = await import('../src/game/hunter.ts')
+  assert(E.heatOwed(2) === null && E.heatOwed(3) === 8 && E.heatOwed(5) === 6 && E.heatOwed(7) === 4 && E.heatOwed(8) === 3, 'v120: Heat owed table 8/6/4/3')
+  let yard = GE.applyEffect(newGame('prisoner'), { goto: 'camp:yard', enterHub: 'camp04', flag: { encounterAt: -99 } })
+  yard = { ...yard, ticks: 50, heat: { ...yard.heat, cartel: 5 }, flags: { ...yard.flags, fightQuiet: 6, encounterHere: false, hunterHere: false, encounterAt: 0 } }
+  assert(E.canEncounter(yard), 'v120: six fight-free scenes at Cartel 5 make a fight certain')
+  assert(!E.canEncounter({ ...yard, sceneId: 'camp:bay' }), 'v120: the bay never owes a fight')
+  let hunt = GE.applyEffect(newGame('prisoner'), { goto: 'camp:yard', enterHub: 'camp04', add: { scrap: 2 } })
+  hunt = { ...hunt, health: 6, heat: { ...hunt.heat, cartel: 4 }, flags: { ...hunt.flags, encounterHere: false, cartelNotice: true, hunterHere: true, hunterFrom: 'camp:yard' } }
+  const pay = H.pressureChoices(hunt).find((c) => c.id === 'hunter-scrap')
+  assert(!!pay && pay.locked === undefined, 'v120: first fee is open')
+  const after = GE.applyEffect(hunt, pay!.effects)
+  assert(after.flags.huntPaid_cartel && after.flags.huntDodged_cartel, 'v120: paying marks the faction')
+  const again = { ...after, flags: { ...after.flags, hunterHere: true, hunterFrom: 'camp:yard' } }
+  const rows = H.pressureChoices(again)
+  assert(rows.some((c) => /fight|hound/.test(c.id) && GE.isChoiceOn(again, c.enable)), 'v120: the fight rows stay open')
+  assert(rows.filter((c) => !/fight|hound/.test(c.id) && !c.effects.startChapter).every((c) => c.locked === H.HUNT_CORNERED_LOCK), 'v120: second hunt at Heat 4 is cornered, rows stay visible')
+  const low = { ...again, heat: { ...again.heat, cartel: 2 } }
+  assert(H.pressureChoices(low).find((c) => c.id === 'hunter-scrap')?.locked === H.HUNT_PAID_LOCK, 'v120: a fee is taken once')
+  const hurt = { ...again, health: 0 }
+  assert(!H.pressureChoices(hurt).some((c) => c.locked === H.HUNT_CORNERED_LOCK), 'v120: too hurt to fight is never cornered')
+  console.log('v120 Heat-to-fight checks OK')
 }
