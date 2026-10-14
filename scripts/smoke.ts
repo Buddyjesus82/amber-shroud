@@ -2025,7 +2025,7 @@ assert(/\bhe\b/i.test(sceneOf(s).body), 'Threshold Kaelen uses he')
 assert(!/\bthey\b/i.test(sceneOf(s).body), 'Threshold Kaelen is not they')
 assert(ids(s).includes('shop-buy') && ids(s).includes('shop-sell'), 'Vessel Kaelen has Buy/Sell like Wire and well')
 s = openShop(s, 'buy')
-assert(ids(s).includes('cloak') && !ids(s).includes('cloak-scrap'), 'v121: Threshold Kaelen cloak is three Glints, one row')
+assert(ids(s).includes('cloak-glint') && ids(s).includes('cloak-scrap'), 'v129: Threshold Kaelen cloak is 1 Glint or 2 scrap, two rows')
 assert(ids(s).includes('wrap'), 'Vessel Kaelen sells Scav Wrap')
 s = pick(s, 'shop-back')
 s = pick(s, 'rumors')
@@ -2728,7 +2728,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v128'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v129'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -6624,4 +6624,25 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
     }
   }
   console.log('v128 checks OK')
+}
+
+// v129: Hauler Pack 3 Glints or 6 scrap, at every seller; help text matches.
+{
+  const T9 = await import('../src/game/trade.ts')
+  for (const [scene, door, hub] of [['camp:kaelen', 'prisoner', 'camp04'], ['spine:silas', 'outcast', 'spine'], ['maw:zafir', 'vessel', 'redmaw']] as const) {
+    const v = T9.vendorFor(scene)!
+    let s = GE.applyEffect(newGame(door), { goto: scene, enterHub: hub as never })
+    s = { ...s, flags: { ...s.flags, kaelenHub: hub } }
+    const h = T9.offersFor(s, v).find((o) => o.item === 'hauler_pack')
+    assert(!!h && h.cost.glints === 3 && h.cost.scrap === 6, `v129: ${scene} Hauler Pack 3 Glints or 6 scrap`)
+  }
+  assert(readFileSync(new URL('../src/game/helpTopics.ts', import.meta.url), 'utf8').includes('costs 3 Glints or 6 scrap'), 'v129: help text price')
+  console.log('v129 checks OK')
+}
+{
+  const T9 = await import('../src/game/trade.ts')
+  let s = GE.applyEffect(newGame('vessel'), { goto: 'thresh:kaelen', enterHub: 'threshold' })
+  s = { ...s, flags: { ...s.flags, kaelenHub: 'threshold' } }
+  const c = T9.offersFor(s, T9.vendorFor('thresh:kaelen')!).find((o) => o.item === 'dust_cloak')!
+  assert(c.cost.glints === 1 && c.cost.scrap === 2, 'v129: Threshold cloak 1 Glint or 2 scrap')
 }

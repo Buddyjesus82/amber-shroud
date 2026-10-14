@@ -108,7 +108,7 @@ const KAELEN_STOCK: StockOffer[] = [
     item: 'hauler_pack',
     label: 'Buy a Hauler Pack',
     sub: 'A bigger bag: 20 slots.',
-    cost: { glints: 2, scrap: 4 },
+    cost: { glints: 3, scrap: 6 },
     doors: ['prisoner'],
     onceFlag: 'kaelenSoldHauler',
     extraFlag: { kaelenSoldHauler: true },
@@ -242,7 +242,7 @@ const SILAS_STOCK: StockOffer[] = [
     item: 'hauler_pack',
     label: 'Buy a Hauler Pack',
     sub: 'A bigger bag: 20 slots.',
-    cost: { glints: 2, scrap: 4 },
+    cost: { glints: 3, scrap: 6 },
     doors: ['outcast'],
     onceFlag: 'silasSoldHauler',
     extraFlag: { silasSoldHauler: true },
@@ -318,7 +318,6 @@ export function kaelenOffers(state: GameState): StockOffer[] {
         ? {
             ...kaelenPiece('cloak'),
             sub: 'Hymn-dust canvas. Cloak · Shell 2. Hides a silhouette. Does not hide Heat.',
-            cost: { glints: 3 },
           }
         : kaelenPiece('cloak')
   const rows = [...basics, wrap, cloak]
@@ -405,7 +404,7 @@ const VENDORS: Vendor[] = [
       item: 'hauler_pack',
       label: 'Buy a Hauler Pack',
       sub: 'A bigger bag: 20 slots.',
-      cost: { glints: 2, scrap: 4 },
+      cost: { glints: 3, scrap: 6 },
       doors: ['vessel'],
       onceFlag: 'zafirSoldHauler',
       extraFlag: { zafirSoldHauler: true },
