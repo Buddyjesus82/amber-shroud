@@ -100,6 +100,10 @@ export type Cond = {
 export type Effect = {
   /** Self-care in place (drink, bind). Time passes, but no road fight or hunt rolls. */
   still?: boolean
+  /** A sneak that can fail: on a spotted roll (odds in 10) a real fight opens on the ground you reach. */
+  sneak?: { odds: number; kind: string; spotted: string }
+  /** An ambush that opens on arrival and cannot be skipped (Run still can). Ignores Health. */
+  ambush?: { kind: string; line: string }
   sap?: number
   health?: number
   heat?: Partial<Heat>

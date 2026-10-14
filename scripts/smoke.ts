@@ -31,6 +31,16 @@ import { INTRO_CARDS, INTRO_FADE_MS, INTRO_HOLD_MS, INTRO_TEXT_IN_MS, introCardM
 
 const atHunger = (s: { sceneId: string }) => s.sceneId === 'ch1:leave' || s.sceneId === 'ch1:storm'
 // Older walks predate the Camp-04 storm beat; they step straight through it. The storm checks use GE.applyEffect.
+/** v118: fight through a road fight (or wake from it) and stand back on the scene. */
+function clearRoadFight(st: GameState): GameState {
+  for (let i = 0; i < 20 && (st.flags.encounterHere || st.flags.downed || st.health <= 0); i++) {
+    const rows = GE.visibleChoices(st)
+    const c = rows.find((x) => x.id === 'enc-fight') ?? rows.find((x) => x.id === 'enc-continue') ?? rows.find((x) => x.id === 'wake') ?? rows[0]
+    st = GE.applyEffect(st, c.effects)
+  }
+  return { ...st, health: Math.max(st.health, 6), sap: Math.max(st.sap, 6), flash: undefined }
+}
+
 function applyEffect(state: Parameters<typeof rawApplyEffect>[0], fx: Parameters<typeof rawApplyEffect>[1]) {
   const next = rawApplyEffect(state, fx)
   // v95: older walks also step through the one-time End of Chapter One screen at the Rim.
@@ -101,6 +111,8 @@ function assert(cond: unknown, msg: string): asserts cond {
 
 function dismissFight(s: GameState): GameState {
   if (!s.flags.encounterHere) return s
+  // v118: an ambush cannot be skipped; the walkthroughs fight it out and stand back up.
+  if (s.flags.encounterNoSkip && !s.flags.encounterDone) return clearRoadFight(s)
   if (!s.flags.encounterDone) s = applyEffect(s, { resolveEncounter: 'skip' })
   if (s.flags.encounterDone) {
     const row = visibleChoices(s).find((x) => x.id === 'enc-continue')
@@ -641,6 +653,9 @@ assert(ids(s).includes('dagger'), 'guard dagger verb')
 s = applyEffect(s, { startChapter: 'cache-run', goto: 'ch1:leave', ticks: 1 })
 s = pick(s, 'go')
 assert(s.sceneId === 'ch1:v-hymn', 'vessel beat 1 is the hymn-road')
+assert(!!s.flags.encounterHere && s.flags.encounterKind === 'runner' && !ids(s).includes('enc-skip'), 'v118: the hymn-road opens on a runner ambush with no skip')
+s = clearRoadFight(s)
+assert(s.sceneId === 'ch1:v-hymn', 'v118: the ambush resolves on the hymn-road')
 assert(ids(s).includes('oram'), 'cache run oram heading')
 assert(!ids(s).includes('wrench'), 'vessel hymn-road has no Cartel grate')
 assert(!ids(s).includes('silas'), 'vessel hymn-road has no Silas cut')
@@ -1448,10 +1463,11 @@ assert(s.flags.hunterFrom === 'maw:lip', 'facing her smoke keeps the ground unde
     flag: { huntQuiet: 0, encounterAt: 999 },
   })
   courtLow = armed(courtLow, { seekers: 2 })
-  assert(!passQuiet(courtLow, 7).flags.hunterHere, 'Court Heat 2: the guard does not re-fire within 8 quiet scenes')
+  // v118: the Vessel's Threshold answers from Seeker Heat 2 at the 6-scene pace.
+  assert(!passQuiet(courtLow, 5).flags.hunterHere, 'Court Heat 2: the guard does not re-fire within 6 quiet scenes')
   assert(
-    pressureFace(stepQuiet(passQuiet(courtLow, 7))) === 'Court Guard',
-    'Court Heat 2 re-arms the guard on the 8th quiet scene',
+    pressureFace(stepQuiet(passQuiet(courtLow, 5))) === 'Court Guard',
+    'v118: Court Heat 2 re-arms the guard on the 6th quiet scene',
   )
 }
 
@@ -2691,7 +2707,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v117'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v118'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -5644,8 +5660,8 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   const cut = pick(rig, 'release'), plate = pick(rig, 'plate'), slip = pick(rig, 'slip')
   for (const s of [cut, plate, slip]) assert(s.sceneId === 'thresh:crucible-stairs' && !!s.flash, 'v107: each result shows, then the stairs')
   assert(cut.heat.seekers === h0 + 1 && cut.flags.crucibleAlarm && /release lever/.test(cut.flash!) && !/\bcut/i.test(cut.flash! + GE.bodyOf(rig)), 'v107: releasing the clamps raises Seeker Heat; no cutting')
-  assert(plate.heat.seekers === h0 && (plate.items.crucible_map ?? 0) === 1 && plate.flags.crucibleMemory, 'v107: the plate gives the map scrap and memories')
-  assert(slip.heat.seekers === h0 && !slip.items.crucible_map && /statues/.test(slip.flash!), 'v107: slipping past costs no Heat; he joins the statues')
+  assert(plate.heat.seekers === h0 && (plate.items.crucible_map ?? 0) === 1 && plate.flags.crucibleMemory && plate.health === rig.health - 2, 'v107/v118: the plate gives the map scrap and memories, and burns 2 Health')
+  assert(slip.heat.seekers === h0 + 1 && !slip.items.crucible_map && /statues/.test(slip.flash!) && /Watcher/.test(slip.flash!), 'v118: slipping past costs Seeker Heat +1 (a Watcher); he joins the statues')
   assert(GE.bodyOf(slip).includes("You think we're killing them. We're the only ones keeping them. The sand would take everything."), 'v107: Thalia line')
   const court = pick(slip, 'keep')
   assert(court.sceneId === 'thresh:court' && court.hubId === 'threshold', 'v107: then the existing Court')
@@ -6096,4 +6112,46 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
     }
   }
   console.log('v117 fight cover checks OK')
+}
+
+// v118: the Vessel road bites back.
+{
+  const { NO_SKIP_LINE, sneakSpotted } = await import('../src/game/encounter.ts')
+  const { AMBUSH_RUNNER, SNEAK_SPOTTED } = await import('../src/game/content/cacheRun.ts')
+  const v = GE.newGame('vessel')
+  // Hymn-road ambush: no skip button, typed skip refused, Health ignored.
+  let road: GameState = { ...v, chapterId: 'cache-run', sceneId: 'ch1:leave', sap: 6, health: 1 }
+  road = GE.applyEffect(road, GE.visibleChoices(road).find((c) => c.id === 'go')!.effects)
+  assert(road.sceneId === 'ch1:v-hymn' && road.flags.encounterKind === 'runner' && road.flags.encounterNoSkip && road.flash === AMBUSH_RUNNER, 'v118: hymn-road ambush at any Health')
+  assert(!GE.visibleChoices(road).some((c) => c.id === 'enc-skip') && GE.visibleChoices(road).some((c) => c.id === 'enc-run'), 'v118: ambush has Run, not Skip')
+  const typed = GE.applyEffect(road, { resolveEncounter: 'skip' })
+  assert(typed.flags.encounterHere && !typed.flags.encounterDone && typed.flash === NO_SKIP_LINE, 'v118: typed skip is refused on an ambush')
+  assert(playCoverKey(road, getScene('ch1:v-hymn')!) === 'brin', 'v118: runner fights use the Seeker runner art')
+  // Runner is an early fight: hits capped at 3; card rows clean.
+  assert(/^RUNNER ♥ \d+ ⚔ Strike 2 🛡 Shell 0$/m.test(GE.bodyOf(road)) && GE.bodyOf(road).includes('Fight, or try to run.'), 'v118: runner Strike/Shell row')
+  for (let t = 0; t < 30; t++) {
+    const f: GameState = { ...road, ticks: t, health: 6 }
+    assert(6 - GE.applyEffect(f, GE.visibleChoices(f).find((c) => c.id === 'enc-fight')!.effects).health <= 3, 'v118: runner hits capped at 3')
+  }
+  // Wrapping the thread can be spotted, and sometimes is not.
+  let spotted = 0, clean = 0
+  for (let t = 0; t < 40; t++) {
+    const h: GameState = { ...v, chapterId: 'cache-run', sceneId: 'ch1:v-hymn', sap: 6, ticks: t }
+    const n = GE.applyEffect(h, GE.visibleChoices(h).find((c) => c.id === 'hide')!.effects)
+    assert(n.sceneId === 'ch1:v-runners', 'v118: the wrap still walks on')
+    if (n.flags.encounterHere) { spotted++; assert(n.flags.encounterKind === 'runner' && n.flash === SNEAK_SPOTTED, 'v118: spotted opens a runner fight') } else clean++
+  }
+  assert(spotted > 5 && clean > 5, `v118: the sneak is a real roll (${spotted} spotted / ${clean} clean)`)
+  void sneakSpotted
+  // Sap: the hymn-road and its beats cost 2.
+  const hymn = { ...v, chapterId: 'cache-run' as const, sceneId: 'ch1:v-hymn', sap: 6 }
+  for (const id of ['hide', 'hymn', 'dagger', 'oram']) {
+    const c = GE.visibleChoices(hymn).find((x) => x.id === id)
+    if (c) assert(c.effects.sap === -2, `v118: ${id} costs 2 sap`)
+  }
+  // Rest still works on the road.
+  assert(GE.visibleChoices({ ...hymn, health: 3 }).some((c) => c.id === 'rest'), 'v118: Rest still works on the hymn-road')
+  // Seeker Heat 2 shows the runners turning.
+  assert(/runners, still far off/.test(GE.bodyOf({ ...hymn, heat: { ...hymn.heat, seekers: 2 } })), 'v118: Seeker Heat 2 wakes the hymn-road')
+  console.log('v118 Vessel challenge checks OK')
 }
