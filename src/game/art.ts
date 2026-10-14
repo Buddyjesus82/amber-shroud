@@ -235,6 +235,8 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   if (isSpineHunt(state)) return spineHunterFor(state).art
   if (id === 'spine:valerius') return 'valerius'
   if (id === 'spine:hunter' || id === 'spine:hound') return 'hound'
+  // Cup-Shadow is Kaelen's pack-shade, never Thalia's.
+  if (id === 'thresh:sift') return 'kaelen'
   if (id === 'thresh:thalia' || id.startsWith('thresh:thalia')) return 'thalia'
 
   const who = npcCover(id)
@@ -245,6 +247,16 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   if (id === 'camp:bay-pike') return 'bay_pike'
   if (id === 'camp:relic') return 'hoard'
   if (id === 'crisis:maw') return 'down'
+  // Down on title-art ground: the collapse art, not the key art.
+  if (state.flags.downed || (state.health ?? 1) <= 0) {
+    if (scene.chapterId === 'cache-run' || state.chapterId === 'cache-run' || state.hubId === 'redmaw' || id.startsWith('maw:') || id.startsWith('ch1:')) return 'down'
+  }
+  // The Cache Run collapse is a Down screen too.
+  if (id === 'crisis:dunes') return 'down'
+  // Sybella's skiff on the South Wind.
+  if (id === 'ch1:south-wind') return 'sybella'
+  // The Vessel's Cache Run (the Pilgrim's Scar) shows the Scar, not the title art.
+  if (state.door === 'vessel' && (id === 'ch1:leave' || id === 'ch1:v-hymn')) return 'rim_pilgrims_scar'
   // The Outcast's road start (Cache Run / the Bone Wash) gets the Bone Wash art, not the title art.
   if (id === 'ch1:leave' && state.door === 'outcast') return 'rim_bonewash'
   if (id === 'open:vessel') return 'resin_vault'

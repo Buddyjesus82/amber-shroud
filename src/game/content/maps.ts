@@ -64,7 +64,7 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
     height: 120,
     defaultNode: 'ridge',
     blurb: 'Stray country. Walk only the roads that connect.',
-    maw: { x: 86, y: 112, label: 'Bone Wash ↓ Red Maw, south' },
+    maw: { x: 86, y: 112, label: 'Bone Wash ↓ Red Maw' },
     nodes: [
       { id: 'ridge', name: 'Noon Spine', short: 'Ridge', sceneId: 'spine:ridge', x: 30, y: 26 },
       { id: 'shade', name: "Silas's Shade", short: 'Shade', sceneId: 'spine:shade', x: 22, y: 58 },

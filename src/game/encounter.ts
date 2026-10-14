@@ -57,8 +57,8 @@ const SPECS: Spec[] = [
   {
     kind: 'pup',
     name: 'Shard-pup',
-    strike: 3,
-    shell: 2,
+    strike: 1,
+    shell: 1,
     hp: 2,
     line: 'A Shard-pup, already a jaw. Cartel leftovers. Fight or give the road.',
   },
@@ -81,8 +81,8 @@ const SPECS: Spec[] = [
   {
     kind: 'handler',
     name: 'Hound-handler',
-    strike: 3,
-    shell: 2,
+    strike: 2,
+    shell: 1,
     hp: 2,
     line: 'The Hound-handler. Lean kit, shock-leash, an amber-eyed shard-hound at his heel with its eyes open. He is the fight. The hound stays on the leash.',
   },
@@ -456,7 +456,7 @@ export function encounterChoices(state: GameState): Choice[] {
     {
       id: 'enc-feint',
       label: 'Feint',
-      sub: 'No attack. Their hit is 1 lighter, and your next Strike gets +2.',
+      sub: 'No attack. You slip their swing: their hit is 1 lighter, and your next Strike gets +2.',
       enable: { all: [{ healthMin: 1 }, { flagUnset: 'encounterFeint' }] },
       locked: 'Your feint is already set. Strike now.',
       effects: { resolveEncounter: 'feint', ticks: 1 },
@@ -558,7 +558,9 @@ export function encounterChoices(state: GameState): Choice[] {
       effects: { resolveEncounter: 'disguise', ticks: 1 },
     })
   }
-  return rows.filter((c) => check(c.show, state))
+  return rows
+    .filter((c) => check(c.show, state))
+    .map((c) => ({ ...c, label: pronounText(spec.kind, c.label), sub: c.sub ? pronounText(spec.kind, c.sub) : c.sub }))
 }
 
 /** Cartel people on the road. The vent clerk at the sabotage stays a fight. */
@@ -727,7 +729,32 @@ export function dismissEncounter(state: GameState): Effect {
   }
 }
 
+/** He/him for named men on the fight card. Everyone else stays they/them. */
+const HE_KINDS: readonly EncounterKind[] = ['courtguard']
+const HE_SWAPS: [RegExp, string][] = [
+  [/\bThey still stand\b/g, 'He still stands'],
+  [/\bThey drop\b/g, 'He drops'],
+  [/\bThey miss\b/g, 'He misses'],
+  [/\bthey miss\b/g, 'he misses'],
+  [/\bthey hit\b/g, 'he hits'],
+  [/\bthey read\b/g, 'he reads'],
+  [/\bthey look\b/g, 'he looks'],
+  [/\bthey let\b/g, 'he lets'],
+  [/\bwith them\b/g, 'with him'],
+  [/\bat them\b/g, 'at him'],
+  [/\bTheir\b/g, 'His'],
+  [/\btheir\b/g, 'his'],
+  [/\bthem\b/g, 'him'],
+  [/\bthemselves\b/g, 'himself'],
+]
+export function pronounText(kind: EncounterKind | undefined, text: string): string {
+  if (!kind || !HE_KINDS.includes(kind)) return text
+  return HE_SWAPS.reduce((t, [re, to]) => t.replace(re, to), text)
+}
+
 function holdCard(state: GameState, spec: Spec, card: string, short: string, extra: Effect = {}): { fx: Effect; flash: string } {
+  card = pronounText(spec.kind, card)
+  short = pronounText(spec.kind, short)
   return {
     fx: {
       ...extra,
@@ -870,6 +897,8 @@ export function resolveEncounter(
 
   let dmgOut = attacking ? exchangeDamage(c.strike, swingOut, spec.shell, floor) : 0
   let dmgIn = exchangeDamage(theirStrike, swingIn, c.shell, floor)
+  // Every hit reads plainly: a big swing says what it added.
+  if (swingIn > 0 && !f.encounterStun) inTags.push(`Hard swing: they hit for ${swingIn} more.`)
 
   let critOut = false
   if (attacking && dmgOut > 0 && roll(state, 'critYou', 10) < CRIT_IN_10) {
@@ -880,7 +909,9 @@ export function resolveEncounter(
   let dmgInPlain = dmgIn
   let critIn = false
   const critOdds = spec.kind === 'pup' ? CRIT_IN_10 * 2 : CRIT_IN_10
-  if (dmgIn > 0 && roll(state, 'critThem', 10) < critOdds) {
+  // Guard and Feint are defensive rounds: no crit lands on you, so the stated lighter hit holds.
+  const defending = move === 'guard' || move === 'feint'
+  if (dmgIn > 0 && !defending && roll(state, 'critThem', 10) < critOdds) {
     dmgIn *= 2
     // A crit never takes you from full Health to Down in one exchange.
     if (c.yourHp >= max) dmgIn = Math.min(dmgIn, max - 1)
@@ -890,6 +921,13 @@ export function resolveEncounter(
     critIn = dmgIn > dmgInPlain
     if (!critIn) dmgIn = dmgInPlain
   }
+  // Blowing sand: both hits top out at the stated cap, crits included.
+  if (ground.cap != null) {
+    dmgOut = Math.min(ground.cap, dmgOut)
+    dmgIn = Math.min(ground.cap, dmgIn)
+    dmgInPlain = Math.min(ground.cap, dmgInPlain)
+    critIn = critIn && dmgIn > dmgInPlain
+  }
   const hitIn = (fn: (d: number) => number) => {
     dmgIn = fn(dmgIn)
     dmgInPlain = fn(dmgInPlain)
@@ -897,6 +935,12 @@ export function resolveEncounter(
   if (f.encounterPair && c.theirHp >= 2) {
     hitIn((d) => d + 1)
     inTags.push('Second jackal: they hit for 1 more.')
+  }
+  // Early fights: no single hit takes more than EARLY_CRIT_CAP Health, crit or not.
+  if (EARLY_KINDS.includes(spec.kind) && dmgIn > EARLY_CRIT_CAP) {
+    hitIn((d) => Math.min(d, EARLY_CRIT_CAP))
+    critIn = critIn && dmgIn > dmgInPlain
+    inTags.push(`Early fight: a hit takes at most ${EARLY_CRIT_CAP} Health.`)
   }
   let stunNext = false
   if (f.encounterStun) hitIn(() => 0)
@@ -948,7 +992,9 @@ export function resolveEncounter(
     inTags.push(`Guard: you take ${cut} less damage.`)
     notes.push('You guard.')
   } else if (move === 'feint') {
-    hitIn((d) => Math.max(0, d - 1))
+    // Feint: you slip the swing. Their hit loses its extra force, then 1 lighter.
+    const slipped = Math.max(0, exchangeDamage(theirStrike, 0, c.shell, floor) - 1)
+    hitIn((d) => Math.min(d, slipped))
     feintNext = true
     inTags.push('Feint: you take 1 less damage.')
     notes.push('You feint and slip back. Your next hit gets +2.')
@@ -1172,7 +1218,7 @@ export function resolveEncounter(
   }
 
   const tail = events.length ? `\n\n${events.join(' ')}` : ''
-  const standing = `${hitCard}${tail}\n\nThey still stand. No loot yet.`
+  const standing = pronounText(spec.kind, `${hitCard}${tail}\n\nThey still stand. No loot yet.`)
   flag.encounterClash = standing
   const sapTotal = (sap ?? 0) + resinSap
   return {
@@ -1277,4 +1323,10 @@ export function healthLabel(n: number): string {
   if (n <= 2) return 'Hurt'
   if (n <= 4) return 'Holding'
   return 'Steady'
+}
+
+/** Display name of a foe kind, for lines spoken after its fight card is gone. */
+export function foeName(kind: unknown): string | undefined {
+  const spec = SPECS.find((x) => x.kind === kind)
+  return spec ? pronounText(spec.kind, spec.name) : undefined
 }

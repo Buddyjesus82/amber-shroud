@@ -24,7 +24,7 @@ Down-slope: a tent the color of old teeth. Silas Vane sells shade by the minute.
         body: `Your vial is full. It sits warm against your ribs.`,
       },
       {
-        if: { all: [{ sapMax: 2 }, { not: { item: 'vial_drop' } }] },
+        if: { all: [{ sapMax: 2 }, { not: { item: 'vial_drop' } }, { flagUnset: 'firstDropMarked' }] },
         mode: 'append',
         body: `Your vision frays at the edges. You need a Drop before noon.`,
       },

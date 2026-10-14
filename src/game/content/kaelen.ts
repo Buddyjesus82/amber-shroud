@@ -173,7 +173,7 @@ Three: cheaper leads. Side trouble. Relics Valerius hunts. When the storm hits t
           ticks: 1,
           goto: 'camp:kaelen-rumors',
           flash:
-            '"Steam-vent on the west bolt. storm-hour. Guards look at the vats. Tell Oil-Tooth I sold a clock."',
+            '"Steam-vent on the west bolt. Storm-hour. Guards look at the vats. Tell Oil-Tooth I sold a clock."',
         },
       },
       {

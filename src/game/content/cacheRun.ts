@@ -1517,7 +1517,7 @@ The skiff is coming. What you have heard about the woman on it is all you get be
         body: `Korvan kept the Seekers' records until they named him heretic. He said her name slowly, like it cost him.`,
       },
       {
-        if: { all: [{ flag: 'kaelenKnown' }, { not: { door: 'outcast' } }] },
+        if: { all: [{ flag: 'kaelenHunger' }, { not: { door: 'outcast' } }] },
         mode: 'append',
         body: `Kaelen called her a Seeker of old roads, old ruins, old magic. He does not scare easy. He was careful with her name. That is the reliable telling.`,
       },
@@ -1571,7 +1571,7 @@ Sybella steps down. Older than the hymns. Blindfold pushed up, kohl ruined on pu
         body: `Korvan's lead sits in your mouth: she hunts people who carry sap and keep walking. Use it or waste it.`,
       },
       {
-        if: { all: [{ flag: 'kaelenKnown' }, { not: { door: 'outcast' } }] },
+        if: { all: [{ flag: 'kaelenHunger' }, { not: { door: 'outcast' } }] },
         mode: 'append',
         body: `Kaelen's telling sits in your mouth: old roads, old faith, not a clerk's enemy. Use it or waste it.`,
       },
