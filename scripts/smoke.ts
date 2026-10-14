@@ -2025,7 +2025,7 @@ assert(/\bhe\b/i.test(sceneOf(s).body), 'Threshold Kaelen uses he')
 assert(!/\bthey\b/i.test(sceneOf(s).body), 'Threshold Kaelen is not they')
 assert(ids(s).includes('shop-buy') && ids(s).includes('shop-sell'), 'Vessel Kaelen has Buy/Sell like Wire and well')
 s = openShop(s, 'buy')
-assert(ids(s).includes('cloak') && !ids(s).includes('cloak-scrap'), 'v121: Threshold Kaelen cloak is three Glints, one row')
+assert(ids(s).includes('cloak-glint') && ids(s).includes('cloak-scrap'), 'v129: Threshold Kaelen cloak is 1 Glint or 2 scrap, two rows')
 assert(ids(s).includes('wrap'), 'Vessel Kaelen sells Scav Wrap')
 s = pick(s, 'shop-back')
 s = pick(s, 'rumors')
@@ -6638,4 +6638,11 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   }
   assert(readFileSync(new URL('../src/game/helpTopics.ts', import.meta.url), 'utf8').includes('costs 3 Glints or 6 scrap'), 'v129: help text price')
   console.log('v129 checks OK')
+}
+{
+  const T9 = await import('../src/game/trade.ts')
+  let s = GE.applyEffect(newGame('vessel'), { goto: 'thresh:kaelen', enterHub: 'threshold' })
+  s = { ...s, flags: { ...s.flags, kaelenHub: 'threshold' } }
+  const c = T9.offersFor(s, T9.vendorFor('thresh:kaelen')!).find((o) => o.item === 'dust_cloak')!
+  assert(c.cost.glints === 1 && c.cost.scrap === 2, 'v129: Threshold cloak 1 Glint or 2 scrap')
 }

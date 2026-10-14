@@ -318,7 +318,6 @@ export function kaelenOffers(state: GameState): StockOffer[] {
         ? {
             ...kaelenPiece('cloak'),
             sub: 'Hymn-dust canvas. Cloak · Shell 2. Hides a silhouette. Does not hide Heat.',
-            cost: { glints: 3 },
           }
         : kaelenPiece('cloak')
   const rows = [...basics, wrap, cloak]
