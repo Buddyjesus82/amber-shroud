@@ -75,14 +75,15 @@ const NEVER_SELL = new Set<ItemId>([
 
 const SELL_PAY: Partial<Record<ItemId, Money>> = {
   vial_drop: { scrap: 1 },
-  needle_knife: { scrap: 1 },
+  needle_knife: { scrap: 2 },
+  seeker_extractor: { scrap: 2 },
   dust_cloak: { scrap: 1 },
-  hide_wrap: { glints: 1 },
+  hide_wrap: { scrap: 3 },
   ironwood_baton: { glints: 2 },
   shiv: { scrap: 1 },
   wrench: { scrap: 2 },
   rusted_dagger: { scrap: 1 },
-  ceremonial_cloth: { scrap: 1 },
+  ceremonial_cloth: { scrap: 2 },
   scav_wrap: { scrap: 1 },
 }
 
@@ -151,9 +152,9 @@ const KAELEN_STOCK: StockOffer[] = [
   {
     id: 'wrap',
     item: 'scav_wrap',
-    label: 'Buy a Scav Wrap — one scrap',
+    label: 'Buy a Scav Wrap — two scrap',
     sub: 'Armor · Shell 2. The step before a cloak. Equip it in Gear.',
-    cost: { scrap: 1 },
+    cost: { scrap: 2 },
     onceFlag: 'kaelenSoldWrap',
     extraFlag: { kaelenSoldWrap: true },
     flash: '"Wire and rag. Shell 2. Wear it until a better shell turns up."',
@@ -162,9 +163,9 @@ const KAELEN_STOCK: StockOffer[] = [
   {
     id: 'salve',
     item: 'salve',
-    label: 'Buy Resin Salve — one scrap',
+    label: 'Buy Resin Salve — two scrap',
     sub: 'Binds a cut. Health, not sap.',
-    cost: { scrap: 1 },
+    cost: { scrap: 2 },
     flash: '"Thumb of resin. Put it on the blood. I do not sell anything meant to open a survivor."',
     tags: ['salve', 'bandage', 'heal', 'resin'],
   },
@@ -197,9 +198,9 @@ const SILAS_STOCK: StockOffer[] = [
   {
     id: 'salve',
     item: 'salve',
-    label: 'Buy Resin Salve — one scrap',
+    label: 'Buy Resin Salve — two scrap',
     sub: 'Binds a cut. Health, not sap.',
-    cost: { scrap: 1 },
+    cost: { scrap: 2 },
     flash: '"Resin for the blood. Put it on the cut, not in your mouth."',
     tags: ['salve', 'bandage', 'heal', 'resin'],
   },
@@ -217,9 +218,9 @@ const SILAS_STOCK: StockOffer[] = [
   {
     id: 'wrap',
     item: 'scav_wrap',
-    label: 'Buy a Scav Wrap — one scrap',
+    label: 'Buy a Scav Wrap — two scrap',
     sub: 'Dune rag. Armor · Shell 2. The step before a cloak. Equip it in Gear.',
-    cost: { scrap: 1 },
+    cost: { scrap: 2 },
     onceFlag: 'silasSoldWrap',
     extraFlag: { silasSoldWrap: true },
     flash: '"Rag and wire. Shell 2. Wear it until a better shell turns up."',
@@ -289,6 +290,8 @@ function kaelenPiece(id: string): StockOffer {
 }
 
 /** Shared basics (Drop, salve) plus a small set that matches the hub. */
+export const MAW_KNIFE_COST: Money = { scrap: 4 }
+
 export function kaelenOffers(state: GameState): StockOffer[] {
   const hub = kaelenShelfHub(state)
   const drop = kaelenPiece('drop')
@@ -296,7 +299,8 @@ export function kaelenOffers(state: GameState): StockOffer[] {
   const basics = [drop, salve]
   if (hub === 'redmaw') {
     const tone = KNIFE_TONE.redmaw
-    return [...basics, { ...kaelenPiece('knife'), sub: tone.sub, flash: tone.flash }]
+    // Maw prices: the knife is 4 scrap here.
+    return [...basics, { ...kaelenPiece('knife'), label: 'Buy a Needle Knife — four scrap', cost: MAW_KNIFE_COST, sub: tone.sub, flash: tone.flash }]
   }
   const wrap =
     hub === 'spine'
