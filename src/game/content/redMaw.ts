@@ -1,8 +1,9 @@
 import { ROADS } from '../roads'
 import type { Choice, Scene } from '../types'
 
+export const SMOKE_NO_MARK = 'Her eyes go to your bare brow. "You talked. The sand remembers talk."'
 export const RIM_NO_MARK = 'No mark on your brow. She listened anyway. She will come.'
-export const SYBELLA_ASKED_AGAIN = 'She heard you the first time. Asking again buys nothing.'
+export const SYBELLA_ASKED_AGAIN = 'She heard you the first time. She lets you pass, and the waiting costs you. Sap -1.'
 
 /** Resolve Sybella and leave her smoke. Underlying ground if she interrupted it, otherwise the Approach. */
 function sybellaOn(extra: Choice['effects']): Choice['effects'] {
@@ -396,9 +397,14 @@ She is here, and she is hunting. Walk up and she will talk. You can also slip pa
 "The Approach is patient. So am I. Give the sand something to remember you by, or I leave you for what sleeps under the ribs."`,
     variants: [
       {
-        if: { flag: 'sybellaBargain' },
+        if: { all: [{ flag: 'sybellaBargain' }, { item: 'kohl_smear' }] },
         mode: 'append',
         body: `Her eyes go to the kohl on your brow. "The sand has seen this one."`,
+      },
+      {
+        if: { all: [{ flag: 'sybellaBargain' }, { not: { item: 'kohl_smear' } }] },
+        mode: 'append',
+        body: SMOKE_NO_MARK,
       },
       {
         if: { flagEq: ['climax', 'flee'] },
@@ -422,9 +428,12 @@ She is here, and she is hunting. Walk up and she will talk. You can also slip pa
       {
         id: 'hold-again',
         label: 'Ask for help',
-        sub: 'Walk when the Maw opens.',
+        sub: 'Costs 1 Sap. Walk when the Maw opens.',
         show: { all: [{ door: 'vessel' }, { flag: 'sybellaHelpAsked' }] },
+        enable: { sapMin: 2 },
+        locked: 'Needs: 2 Sap',
         effects: sybellaOn({
+          sap: -1,
           flash: SYBELLA_ASKED_AGAIN,
         }),
       },
@@ -497,7 +506,7 @@ She is here, and she is hunting. Walk up and she will talk. You can also slip pa
     intents: [
       {
         tags: ['bargain', 'deal', 'useful'],
-        reply: 'She already wrote that contract in kohl. Repeating it does not make it kinder.',
+        reply: 'She already heard your terms. Repeating them does not make them kinder.',
         effects: { ticks: 1 },
       },
       {

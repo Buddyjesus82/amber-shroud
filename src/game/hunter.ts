@@ -238,10 +238,14 @@ function campHuntChoices(state: GameState): Choice[] {
   rows.push({
     id: 'hunter-line',
     label: 'Dive the scrape-line',
-    sub: 'Cartel Heat -1. You stay on this ground.',
+    sub: 'Cartel Heat -1, once. You stay on this ground.',
+    // One scrape-line cool per run: the Yard line and this dive share it.
+    enable: { flagUnset: 'yardLineCooled' },
+    locked: 'The line knows your face now. It will not cool you twice.',
     effects: stay(state, {
       sap: -1,
       heat: { cartel: -1 },
+      flag: { yardLineCooled: true },
       flash: 'You drop into work that is already here. Cartel Heat cools. The handler loses the shape of you. You never left.',
     }),
   })

@@ -313,10 +313,13 @@ export function heatOwed(heat: number): number | null {
 /** Skips cost Sap. The cloak hides you once per area. */
 export const CLOAK_SKIP_LINE = 'The cloak eats the glance. You slip away. No loot.'
 export const SKIP_COST_SUB = 'Costs 1 Sap.'
-export const CLOAK_SKIP_SUB = 'Costs 1 Sap. Once per area.'
+export const CLOAK_SKIP_SUB = 'Costs 1 Sap. Once per place.'
 export const CLOAK_USED_LOCK = 'The cloak already hid you here. They know the shape now.'
-export function areaKey(state: Pick<GameState, 'hubId' | 'chapterId' | 'sceneId'>): string {
-  return state.hubId ?? state.chapterId ?? state.sceneId
+/** An area is one scene: a skip in one place never locks the cloak somewhere else. */
+export function areaKey(state: Pick<GameState, 'sceneId' | 'flags'>): string {
+  // A hunter's own screen counts as the ground it interrupted.
+  const from = state.flags?.hunterFrom
+  return state.flags?.hunterHere && typeof from === 'string' && from ? from : state.sceneId
 }
 
 export function canEncounter(state: GameState, opts?: { traveled?: boolean; firstWalk?: boolean }): boolean {
