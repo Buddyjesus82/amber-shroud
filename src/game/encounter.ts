@@ -6,7 +6,7 @@ import { CARAPACE_HUNTER, SPINE_HUNTER } from './content/spineHunter'
 import type { Choice, Effect, FlagMap, GameState, ItemId } from './types'
 import { hash, OPENERS, sandAnswers, PAIR_LINE, HUSK_CONTROLLER_LINE, sandGripLine, TERRAINS, terrainPool, type Terrain, type TerrainId } from './fightTricks'
 
-export type EncounterKind = 'jackal' | 'cutter' | 'courtguard' | 'tick' | 'pup' | 'scavenger' | 'patrol' | 'handler' | 'hound' | 'overseer' | 'collector' | 'carapace' | 'husk'
+export type EncounterKind = 'jackal' | 'cutter' | 'courtguard' | 'tick' | 'pup' | 'scavenger' | 'patrol' | 'handler' | 'hound' | 'overseer' | 'collector' | 'carapace' | 'husk' | 'runner'
 
 /** Fight hits. Sap stays thirst/travel. */
 export const HEALTH_MAX = 6
@@ -45,6 +45,15 @@ const SPECS: Spec[] = [
     shell: 2,
     hp: 2,
     line: 'The court guard raises his curved falchion. Sunburn and belief. He was told to keep Vessels inside.',
+  },
+  {
+    // Vessel Cache Run: a hymn-road runner who caught you. Early weight, his own name.
+    kind: 'runner',
+    name: 'Seeker runner',
+    strike: 2,
+    shell: 0,
+    hp: 2,
+    line: 'A Seeker runner cuts across the rib, hymn on his breath. He means to walk the Vessel back on a leash.',
   },
   {
     kind: 'tick',
@@ -116,6 +125,8 @@ const SPECS: Spec[] = [
 ]
 
 const TEACH = 'Fight or give the road. The rules: help fight.'
+/** An ambush: there is no road to give. */
+const TEACH_NO_SKIP = 'Fight, or try to run. The rules: help fight.'
 
 /** Every exchange that lands deals at least this much, both ways. */
 export const DAMAGE_FLOOR = 1
@@ -228,7 +239,7 @@ export function pickEncounterKind(state: GameState): EncounterKind {
   }
   if (turf === 'seekers') {
     const pool: EncounterKind[] =
-      state.heat.seekers >= 3
+      state.heat.seekers >= 2
         ? ['husk', 'husk', 'cutter', 'jackal', 'tick', 'scavenger']
         : ['cutter', 'cutter', 'jackal', 'tick', 'scavenger']
     return pool[n % pool.length]
@@ -393,7 +404,7 @@ export function encounterCard(state: GameState): string {
   const head = `${openerOf(state, c.spec)}\n\n${terrainOf(state).line}`
   // Stat rows sit at the top of the card.
   if (!state.flags.fightTaught) {
-    return `${compares}\n\n${head}\n\n${TEACH}`
+    return `${compares}\n\n${head}\n\n${state.flags.encounterNoSkip ? TEACH_NO_SKIP : TEACH}`
   }
   return `${compares}\n\n${head}`
 }
@@ -540,7 +551,7 @@ export function encounterChoices(state: GameState): Choice[] {
       id: 'enc-skip',
       label: 'Give the road. No loot.',
       tone: 'quiet',
-      show: { flagUnset: 'encounterRound' },
+      show: { all: [{ flagUnset: 'encounterRound' }, { flagUnset: 'encounterNoSkip' }] },
       effects: { resolveEncounter: 'skip' },
     },
     {
@@ -687,6 +698,7 @@ function lootLine(add: Partial<Record<ItemId, number>>, dropped = false): string
 
 export const ENCOUNTER_FLAGS = [
   'encounterHere',
+  'encounterNoSkip',
   'encounterKind',
   'encounterHp',
   'encounterClash',
@@ -730,7 +742,7 @@ export function dismissEncounter(state: GameState): Effect {
 }
 
 /** He/him for named men on the fight card. Everyone else stays they/them. */
-const HE_KINDS: readonly EncounterKind[] = ['courtguard']
+const HE_KINDS: readonly EncounterKind[] = ['courtguard', 'runner']
 const HE_SWAPS: [RegExp, string][] = [
   [/\bThey still stand\b/g, 'He still stands'],
   [/\bThey drop\b/g, 'He drops'],
@@ -779,7 +791,7 @@ export type FightMove = 'fight' | 'guard' | 'feint' | 'trick' | 'run' | 'pull' |
 export const CRIT_IN_10 = 1
 
 /** First-hub enemies. Their crits are softened. */
-export const EARLY_KINDS: readonly EncounterKind[] = ['cutter', 'pup', 'patrol', 'courtguard', 'jackal', 'tick', 'scavenger', 'handler']
+export const EARLY_KINDS: readonly EncounterKind[] = ['cutter', 'pup', 'patrol', 'courtguard', 'jackal', 'tick', 'scavenger', 'handler', 'runner']
 export const EARLY_CRIT_CAP = 3
 
 /** Seeded 0..n-1 roll for this round, so a save replays the same fight. */
@@ -830,6 +842,9 @@ export function resolveEncounter(
       },
       flash: '',
     }
+  }
+  if (how === 'skip' && f.encounterNoSkip) {
+    return { fx: { flash: NO_SKIP_LINE }, flash: NO_SKIP_LINE }
   }
   if (how === 'skip') {
     const line = `You give ${whoOf(spec)} the road. No loot. No bill.`
@@ -1308,6 +1323,13 @@ export const FIGHT_RESET = ENCOUNTER_FLAGS.filter(
 )
 
 /** Open a road fight on the current ground. Strike vs Shell stays in the encounter card. */
+export const NO_SKIP_LINE = 'No giving the road this time. He is already on you. Fight, or try to run.'
+
+/** A sneak roll: true means you were spotted. Same seed the road fights use, so a run plays the same way twice. */
+export function sneakSpotted(state: GameState, odds: number): boolean {
+  return hash(state, 'sneak', 1) % 10 < odds
+}
+
 export function beginEncounter(state: GameState, kind?: EncounterKind, flash?: string): Effect {
   const k = kind ?? pickEncounterKind(state)
   return {

@@ -65,6 +65,8 @@ import {
   wantsEncounterHide,
   wantsEncounterSkip,
   foeName,
+  sneakSpotted,
+  type EncounterKind,
 } from './encounter'
 import { talkFallback, talkIntentsFor } from './talk'
 import { answerAsk, answerLate, hintLine, readAsk, readLateAsk, sceneVoice, voiceOnScreen } from './politeAsk'
@@ -227,6 +229,11 @@ function spendFalse(state: GameState): GameState {
   return spendFirst(state, ['scrap', 'wrench', 'cache_map', 'oram_map'], 'falseSpent')
 }
 
+function seekerHuntGround(state: GameState): boolean {
+  // The Vessel's own ground: the Outer Threshold. Sybella at the Maw keeps her own pace.
+  return state.door === 'vessel' && (state.hubId === 'threshold' || state.sceneId.startsWith('thresh:'))
+}
+
 function huntHeat(state: GameState): number {
   // Spine hub and the Outcast road: the Strays are the ones looking.
   if (spineGround(state)) return state.heat.strays
@@ -290,7 +297,10 @@ function hunterScene(state: GameState): string | null {
   if (state.sceneId.startsWith('open:') || state.sceneId.startsWith('crisis:') || state.sceneId.startsWith('ch1:')) return null
   if (state.chapterId && state.hubId !== 'redmaw') return null
   const quiet = Number(state.flags.huntQuiet ?? 0)
-  const gap = huntGap(huntHeat(state))
+  const heat = huntHeat(state)
+  let gap = huntGap(heat)
+  // Vessel ground answers sooner: from Seeker Heat 2 the Threshold hunts at the 4-5 Heat pace.
+  if (gap != null && heat >= 2 && seekerHuntGround(state)) gap = Math.min(gap, 6)
   if (gap == null || quiet < gap) return null
   if (state.hubId === 'redmaw' || state.sceneId.startsWith('maw:')) {
     if (state.sceneId === 'maw:sybella' || state.sceneId === 'maw:sybella-shadow' || state.sceneId === 'maw:smoke') {
@@ -645,6 +655,16 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     if (short) next.flash = short
   }
 
+  // A failed sneak or a road ambush opens a real fight on the ground you reached.
+  if ((fx.sneak || fx.ambush) && getScene(next.sceneId).kind !== 'crisis' && !next.flags.encounterHere && !next.flags.downed && (next.health ?? 1) > 0) {
+    if (fx.ambush) {
+      next.flags = { ...next.flags, ...fightStartFlags(next, fx.ambush.kind as EncounterKind), encounterNoSkip: true }
+      next.flash = fx.ambush.line
+    } else if (fx.sneak && sneakSpotted(next, fx.sneak.odds)) {
+      next.flags = { ...next.flags, ...fightStartFlags(next, fx.sneak.kind as EncounterKind) }
+      next.flash = fx.sneak.spotted
+    }
+  }
   next = markCartelNotice(state, next, fx)
   next = markStrayNotice(state, next, fx)
   if (next.sceneId === 'camp:sabotage' && state.sceneId !== 'camp:sabotage' && !next.flags.guardDown) {

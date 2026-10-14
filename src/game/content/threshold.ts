@@ -11,7 +11,7 @@ export const thresholdScenes: Scene[] = [
 Thalia stands at the dais. The gold on her cheeks might be kohl and might be sap. Oram is not chanting. Oram is counting the Striders. That is why you might live.`,
     variants: [
       {
-        if: { heatMin: ['seekers', 3] },
+        if: { heatMin: ['seekers', 2] },
         mode: 'append',
         body: `Thalia's gold tracks find you even when she is not looking. Seeker Heat is a pressure behind the chant. The cloth is already a countdown.`,
       },

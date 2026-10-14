@@ -70,6 +70,7 @@ export function terrainPool(state: Pick<GameState, 'hubId' | 'sceneId'>): Terrai
 /** Three ways each enemy can show up. The first is the catalog line. */
 export const OPENERS: Record<EncounterKind, string[]> = {
   courtguard: [],
+  runner: [],
   jackal: [
     'A dust-jackal blocks the grit — ribs like wire, eyes like spent Glints. It will take a hand or a skip.',
     'A dust-jackal comes out of the grit low and fast, ears flat. It wants whatever you are carrying.',

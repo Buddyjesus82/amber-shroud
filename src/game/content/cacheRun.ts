@@ -13,6 +13,11 @@ const done = {
   sybellaHunting: true,
 } as const
 
+/** Vessel Cache Run: the hymn-road start has a runner on it, every time. */
+export const AMBUSH_RUNNER = 'A Seeker runner was waiting where the hymn-road starts. He drops off the rock in front of you, spear low. No way around him.'
+/** Wrapping the gold thread can fail. */
+export const SNEAK_SPOTTED = 'The wrap slips. A runner catches the gold thread in the sun and comes for you, spear first.'
+
 export const cacheRunScenes: Scene[] = [
   {
     // Every escape out of Camp-04 passes through this beat before the Hunger.
@@ -112,10 +117,10 @@ The road is not shared. The destination is. What it costs you depends on the lif
       {
         id: 'go',
         label: 'Take the hymn-road',
-        sub: 'Take the road the Seekers already walk. Costs sap. Runners are looking for a Vessel.',
+        sub: 'Take the road the Seekers already walk. Costs 2 sap. Runners are looking for a Vessel.',
         tone: 'hunger',
         show: { door: 'vessel' },
-        effects: { goto: 'ch1:v-hymn', ticks: 1, sap: -1, pressure: 1 },
+        effects: { goto: 'ch1:v-hymn', ticks: 1, sap: -2, pressure: 1, ambush: { kind: 'runner', line: AMBUSH_RUNNER } },
       },
     ],
     intents: [
@@ -135,7 +140,7 @@ The road is not shared. The destination is. What it costs you depends on the lif
         tags: ['go', 'walk', 'trail', 'dune', 'leave', 'hunger', 'hymn', 'runner', 'cup'],
         show: { door: 'vessel' },
         reply: 'The hymn is already walking. You match it or you get collected.',
-        effects: { goto: 'ch1:v-hymn', ticks: 1, sap: -1, pressure: 1 },
+        effects: { goto: 'ch1:v-hymn', ticks: 1, sap: -2, pressure: 1, ambush: { kind: 'runner', line: AMBUSH_RUNNER } },
       },
     ],
   },
@@ -934,7 +939,7 @@ The Seekers sent their Vessel to Red Maw for what opens the Spire, and they mean
         body: `The gold thread catches noon. Hide it and you look like a thief. Wear it and you look like a hymn the runners are allowed to collect.`,
       },
       {
-        if: { heatMin: ['seekers', 3] },
+        if: { heatMin: ['seekers', 2] },
         mode: 'append',
         body: `The Seekers are already watching. You can hear runners, still far off, already turning toward you.`,
       },
@@ -948,7 +953,7 @@ The Seekers sent their Vessel to Red Maw for what opens the Spire, and they mean
         effects: {
           goto: 'ch1:v-runners',
           ticks: 1,
-          sap: -1,
+          sap: -2,
           heat: { seekers: 1 },
           flag: { oramHeading: true },
           flash: 'You follow Oram\'s map. You keep it. Two Seeker runners see a Vessel who already knows the road. Seeker Heat rises.',
@@ -957,12 +962,13 @@ The Seekers sent their Vessel to Red Maw for what opens the Spire, and they mean
       {
         id: 'hide',
         label: 'Wrap the gold thread',
-        sub: 'Hide the gold thread. Costs sap. The runners still find you, and they trust you less.',
+        sub: 'Hide the gold thread. Costs 2 sap. The runners still find you, and they trust you less. One may see through it and fight.',
         effects: {
           goto: 'ch1:v-runners',
           ticks: 1,
-          sap: -1,
+          sap: -2,
           flag: { clothHid: true },
+          sneak: { odds: 5, kind: 'runner', spotted: SNEAK_SPOTTED },
           flash: 'You wrap the gold thread until it looks like a rag. The runners still find you. They are more suspicious of a Vessel who hides.',
         },
       },
@@ -973,7 +979,7 @@ The Seekers sent their Vessel to Red Maw for what opens the Spire, and they mean
         effects: {
           goto: 'ch1:v-runners',
           ticks: 1,
-          sap: -1,
+          sap: -2,
           heat: { seekers: 2 },
           flag: { hymnWalk: true },
         },
@@ -981,13 +987,13 @@ The Seekers sent their Vessel to Red Maw for what opens the Spire, and they mean
       {
         id: 'dagger',
         label: 'Keep the rusted dagger visible',
-        sub: 'They see a weapon under the hymn. Costs sap. Seeker Heat rises.',
+        sub: 'They see a weapon under the hymn. Costs 2 sap. Seeker Heat rises.',
         show: { item: 'rusted_dagger' },
         tone: 'danger',
         effects: {
           goto: 'ch1:v-runners',
           ticks: 1,
-          sap: -1,
+          sap: -2,
           heat: { seekers: 1 },
           flag: { bladeOut: true },
           flash: 'You keep the rusted dagger where they can see it. The runners see a weapon under the hymn. Seeker Heat rises.',
@@ -1002,7 +1008,7 @@ The Seekers sent their Vessel to Red Maw for what opens the Spire, and they mean
         effects: {
           goto: 'ch1:v-runners',
           ticks: 1,
-          sap: -1,
+          sap: -2,
           heat: { seekers: 1 },
           flag: { oramHeading: true },
         },
@@ -1104,12 +1110,12 @@ The Seekers sent their Vessel to Red Maw for what opens the Spire, and they mean
       {
         id: 'bolt',
         label: 'Bolt the second rib',
-        sub: 'You run. Costs more sap. They do not chase. They tell the road what you look like. Seeker Heat rises harder.',
+        sub: 'You run. Costs 3 sap. They do not chase. They tell the road what you look like. Seeker Heat rises harder.',
         tone: 'danger',
         effects: {
           goto: 'ch1:v-zafir',
           ticks: 1,
-          sap: -2,
+          sap: -3,
           heat: { seekers: 2 },
           flag: { brinMet: true, brinBolt: true },
           flash: 'You run. They do not chase. They sing your description ahead, so Varro hears you coming. Seeker Heat rises harder.',
@@ -1174,7 +1180,7 @@ The Seekers sent their Vessel to Red Maw for what opens the Spire, and they mean
         body: `"You already poured for spears. She will want the rest. I do not stock pardons."`,
       },
       {
-        if: { heatMin: ['seekers', 3] },
+        if: { heatMin: ['seekers', 2] },
         mode: 'append',
         body: `"Seekers are paying for news of a walking cup. You are expensive gossip I already sold once."`,
       },
