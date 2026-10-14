@@ -2707,7 +2707,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v118'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v119'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -6154,4 +6154,25 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   // Seeker Heat 2 shows the runners turning.
   assert(/runners, still far off/.test(GE.bodyOf({ ...hymn, heat: { ...hymn.heat, seekers: 2 } })), 'v118: Seeker Heat 2 wakes the hymn-road')
   console.log('v118 Vessel challenge checks OK')
+}
+{
+  // v119 Jodi's Heat: scavenging, rushing, stalling.
+  const base = GE.applyEffect(newGame('prisoner'), { goto: 'camp:wire', enterHub: 'camp04', flag: { encounterAt: 99999 } })
+  const tot = (x: GameState) => x.heat.cartel + x.heat.seekers + x.heat.strays
+  let hits = 0
+  for (let i = 0; i < 60; i++) {
+    let w: GameState = { ...base, ticks: base.ticks + i * 7, flags: { ...base.flags } }
+    const b = tot(w)
+    for (let k = 0; k < 2; k++) w = { ...GE.scavenge(w), sceneId: 'camp:wire', flags: { ...GE.scavenge(w).flags, encounterHere: false, hunterHere: false } }
+    if (tot(w) > b) hits++
+  }
+  assert(hits > 5 && hits < 60, `v119: repeated scavenging sometimes draws Heat (${hits}/60)`)
+  assert(GE.noticeOn(base), 'v119: the wire is danger ground')
+  const r = GE.timingNotice(base, 'rush')
+  assert(tot(r) === tot(base) + 1 && /moved fast and loud\. Someone noticed\. .+ Heat \+1\./.test(r.flash ?? ''), 'v119: rush line names the faction')
+  assert(tot(GE.timingNotice(r, 'stall')) === tot(r), 'v119: timing caps at +1 a scene')
+  assert(!GE.noticeOn(newGame('prisoner')), 'v119: no timing in the intro')
+  assert(!GE.noticeOn({ ...base, sceneId: 'camp:bay' }), 'v119: no timing at rest')
+  assert(!GE.noticeOn({ ...base, flags: { ...base.flags, encounterHere: true } }), 'v119: no timing in a fight')
+  console.log('v119 Heat timing checks OK')
 }
