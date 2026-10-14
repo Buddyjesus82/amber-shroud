@@ -1,5 +1,5 @@
 import { bayLookout } from './campJob'
-import { isCampHunt, isSpineHunt, isSybellaOverlay } from './hunter'
+import { isCampHunt, isSpineHunt, isSybellaOverlay, isThreshHunt } from './hunter'
 import { CARAPACE_HUNTER, SPINE_HUNTER, spineHunterFor } from './content/spineHunter'
 import { PEOPLE, type PersonId } from './people'
 import type { GameState, Scene } from './types'
@@ -312,9 +312,11 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
     return fightGround(state, scene)
   }
   if (isSybellaOverlay(state) || id.startsWith('maw:sybella')) return 'sybella'
-  if (isCampHunt(state)) return 'handler'
+  if (isCampHunt(state)) return (state.heat?.cartel ?? 0) >= 7 ? 'valerius' : 'handler'
   if (id === 'camp:hunter' || id === 'camp:valerius' || id === 'camp:tower') return 'valerius'
   if (isSpineHunt(state)) return spineHunterFor(state).art
+  // The Court Guard hunt shows the guard, not Thalia's portrait.
+  if (isThreshHunt(state)) return 'courtguard'
   if (id === 'spine:valerius') return 'valerius'
   if (id === 'spine:hunter' || id === 'spine:hound') return 'hound'
   // Cup-Shadow is Kaelen's pack-shade, never Thalia's.
@@ -336,7 +338,7 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   if (id === 'ch1:end') return 'ch1_end'
   if (id === 'ch2:stub') return 'under_jaw'
   // The South Wind: the hull on the horizon, not yet her face. The door's road art.
-  if (id === 'ch1:south-wind') return fightGround(state, scene)
+  if (id === 'ch1:south-wind') return state.door === 'outcast' ? 'skiff_bay_docks' : fightGround(state, scene)
   // The Vessel's Cache Run (the Pilgrim's Scar) shows the Scar, not the title art.
   if (state.door === 'vessel' && (id === 'ch1:leave' || id === 'ch1:v-hymn')) return 'rim_pilgrims_scar'
   // The Outcast's road start (Cache Run / the Bone Wash) gets the Bone Wash art, not the title art.

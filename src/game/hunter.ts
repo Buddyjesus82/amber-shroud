@@ -250,7 +250,18 @@ function campHuntChoices(state: GameState): Choice[] {
     }),
   })
   rows.push(...hungerOuts({ cartel: 2 }))
-  return rows
+  return (state.heat?.cartel ?? 0) >= 7 ? rows.map((c) => valeriusRow(state, c)) : rows
+}
+
+/** Cartel 7+: Valerius came himself, so the rows name him, not the handler. */
+function valeriusName(t: string | undefined): string | undefined {
+  return t?.replace(/ Valerius still has the tower\./g, '').replace(/ and the handler is lazy/g, '').replace(/the Hound-handler/g, 'Valerius').replace(/The handler/g, 'Valerius').replace(/the handler/g, 'Valerius')
+}
+function valeriusRow(state: GameState, c: Choice): Choice {
+  if (c.id === 'hunter-fight') {
+    return { ...c, label: 'Fight Valerius', sub: 'He came himself. You stay.', effects: beginEncounter(state, 'overseer', 'Overseer Valerius. Bald, scarred, steam baton in the fist. He came himself.') }
+  }
+  return { ...c, label: valeriusName(c.label) ?? c.label, sub: valeriusName(c.sub), effects: { ...c.effects, flash: valeriusName(c.effects.flash) } }
 }
 
 /** Which Spine face the hunt fields at this Stray Heat, before the hunt locks it in. */

@@ -2723,7 +2723,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v124'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v125'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -6054,7 +6054,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   assert(cov('vessel', 'thresh:paddock', { encounterHere: true, encounterKind: 'jackal' }) === 'dust_jackal', 'v116→v117: a Paddock fight is not Oram')
   assert(cov('vessel', 'maw:rim', { encounterHere: true, encounterKind: 'husk' }) === 'amber_husk', 'v116→v117: the Approach husk fight is not threshold')
   for (const k of ['scavenger', 'cutter']) assert(cov('prisoner', 'maw:rim', { encounterHere: true, encounterKind: k }) !== 'hunger', `v116: ${k} fight is not the title art`)
-  assert(cov('outcast', 'ch1:south-wind') === 'rim_bonewash', 'v116: South Wind is not her face yet')
+  assert(cov('outcast', 'ch1:south-wind') === 'skiff_bay_docks', 'v116→v125: South Wind is skiffs, not her face yet')
   // 5. The dais clears once the Court Guard is gone.
   {
     const v = GE.newGame('vessel')
@@ -6444,4 +6444,41 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
     assert(hit > 0, 'v124: dais lie can be seen through at Heat 8')
   }
   console.log('v124 checks OK')
+}
+
+// v125
+{
+  const A5 = await import('../src/game/art.ts')
+  const H5 = await import('../src/game/hunter.ts')
+  // Giving the road in the toll fight leaves the toll owed.
+  let tr = GE.applyEffect(newGame('prisoner'), { goto: 'maw:ribs', enterHub: 'redmaw' })
+  tr = { ...tr, sap: 6, health: 6, flags: { ...tr.flags, encounterHere: false, hunterHere: false } }
+  let fl = GE.applyEffect(tr, GE.visibleChoices(tr).find((c) => c.id === 'toll-fight')!.effects)
+  fl = GE.applyEffect(fl, GE.visibleChoices(fl).find((c) => c.id === 'enc-skip')!.effects)
+  for (let i = 0; i < 4 && fl.flags.encounterHere; i++) fl = GE.applyEffect(fl, GE.visibleChoices(fl)[0].effects)
+  assert(!fl.flags.encounterHere && !fl.flags.mawTollDone && GE.visibleChoices(fl).some((c) => c.id === 'toll-pay'), 'v125: giving the road leaves the toll owed')
+  // Cartel 7+: Valerius art and rows.
+  let hunt = GE.applyEffect(newGame('prisoner'), { goto: 'camp:yard', enterHub: 'camp04' })
+  hunt = { ...hunt, health: 6, sap: 6, heat: { ...hunt.heat, cartel: 7 }, flags: { ...hunt.flags, encounterHere: false, hunterHere: true, hunterFrom: 'camp:yard' } }
+  assert(A5.playCoverKey(hunt, sceneOf(hunt)) === 'valerius', 'v125: Cartel 7+ hunt shows Valerius')
+  const vr = H5.pressureChoices(hunt)
+  assert(!vr.some((c) => /handler/i.test(`${c.label} ${c.sub ?? ''} ${c.effects.flash ?? ''}`)), 'v125: no handler wording when Valerius is there')
+  assert(vr.find((c) => c.id === 'hunter-fight')?.label === 'Fight Valerius', 'v125: Fight Valerius')
+  // Court Guard hunt art; Outcast South Wind skiff art.
+  let th = GE.applyEffect(newGame('vessel'), { goto: 'thresh:court', enterHub: 'threshold' })
+  th = { ...th, flags: { ...th.flags, encounterHere: false, hunterHere: true, hunterFrom: 'thresh:court' } }
+  assert(A5.playCoverKey(th, sceneOf(th)) === 'courtguard', 'v125: Court Guard hunt shows the guard')
+  const sw = { ...newGame('outcast'), sceneId: 'ch1:south-wind', chapterId: 'cache-run' as never }
+  assert(A5.playCoverKey(sw, getScene('ch1:south-wind')) === 'skiff_bay_docks', 'v125: Outcast South Wind shows skiffs')
+  // Locked Haul row says 3 scrap with the pack.
+  let w = GE.applyEffect(newGame('prisoner'), { goto: 'maw:tuner', enterHub: 'redmaw' })
+  w = { ...w, sap: 6, items: { ...w.items, hauler_pack: 1 }, flags: { ...w.flags, encounterHere: false, hunterHere: false, oilJobStep: Number(w.flags.sceneSteps ?? 0) } }
+  const job = GE.visibleChoices(w).find((c) => c.id === 'job')!
+  assert(job.locked === GE.HAUL_LOCK && job.sub === GE.HAULER_JOB_SUB, 'v125: locked Haul row says 3 scrap with the pack')
+  // Court payoffs stop after any Court Guard fight.
+  const ct = GE.applyEffect(newGame('vessel'), { goto: 'thresh:court', enterHub: 'threshold', flag: { thaliaCalledOff: true, courtGuardFought: true } })
+  assert(!GE.sceneProse(ct).includes('He watches Thalia, not you'), 'v125: no called-off line after a Court Guard fight')
+  const fg = GE.applyEffect(ct, { flag: { encounterHere: true, encounterKind: 'courtguard' } })
+  assert(!!fg.flags.courtGuardFought, 'v125: a Court Guard fight marks courtGuardFought')
+  console.log('v125 checks OK')
 }

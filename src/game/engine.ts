@@ -917,6 +917,10 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     delete flags.encounterFled
     next.flags = flags
   }
+  // Any Court Guard fight ends the Court payoffs (called off, sent down the wrong corridor).
+  if (next.flags.encounterHere && next.flags.encounterKind === 'courtguard' && !next.flags.courtGuardFought) {
+    next.flags = { ...next.flags, courtGuardFought: true }
+  }
   // The Maw toll is once a visit: leaving the Maw resets it.
   if (next.flags.mawTollDone && next.hubId !== 'redmaw') {
     const flags = { ...next.flags }
@@ -1860,10 +1864,11 @@ function withRest(state: GameState, rows: Choice[]): Choice[] {
     return rows.map((c) => {
       if (c.id === 'bench' && state.flags.restedHere) return { ...c, enable: { flag: '__never__' }, locked: REST_DONE_LOCK }
       if (c.id === 'job') {
-        if (hauledAgo < HAUL_GAP) return { ...c, enable: { flag: '__never__' }, locked: HAUL_LOCK }
+        const packed = (state.items.hauler_pack ?? 0) > 0
+        if (hauledAgo < HAUL_GAP) return { ...c, sub: packed ? HAULER_JOB_SUB : c.sub, enable: { flag: '__never__' }, locked: HAUL_LOCK }
         const fx = { ...c.effects, flag: { ...(c.effects.flag ?? {}), oilJobStep: Number(state.flags.sceneSteps ?? 0) } }
         // The Hauler Pack carries more parts: +1 scrap on each haul.
-        if ((state.items.hauler_pack ?? 0) > 0) {
+        if (packed) {
           return { ...c, sub: HAULER_JOB_SUB, effects: { ...fx, add: { ...(fx.add ?? {}), scrap: (fx.add?.scrap ?? 0) + 1 }, flash: HAULER_JOB_LINE } }
         }
         return { ...c, effects: fx }
