@@ -13,7 +13,7 @@ export const campKaelenScenes: Scene[] = [
     body: `He has the Wire at his back like a second pack-strap. "You're the trench story," he says. "Buy. Sell. Rumors that open roads. Pick a shelf."`,
     variants: [
       {
-        if: { flag: 'kaelenSoldDrop' },
+        if: { all: [{ flag: 'kaelenSoldDrop' }, { not: { item: 'vial_drop' } }] },
         mode: 'append',
         body: `A vial-gap in the pack where your Drop used to live. He notices you noticing. Paranoid is a lifestyle.`,
       },
@@ -43,7 +43,9 @@ export const campKaelenScenes: Scene[] = [
       {
         id: 'oil',
         label: 'Ask him to muddy your name with the Cartel',
-        sub: 'A rumor pointed the wrong way. Cartel Heat cools.',
+        sub: 'A rumor pointed the wrong way. Cartel Heat cools. Once.',
+        enable: { flagUnset: 'kaelenMud' },
+        locked: 'He already muddied it once. A second rumor reads as a lie.',
         effects: {
           ticks: 1,
           heat: { cartel: -1 },

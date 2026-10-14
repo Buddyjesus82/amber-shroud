@@ -71,12 +71,15 @@ Overseer Valerius is the shadow over the Yard. Getting out from under him is the
       {
         id: 'line',
         label: 'Fall into the scrape-line',
-        sub: 'Look like you belong. Costs sap. Cartel Heat drops, because a working prisoner looks solved.',
+        sub: 'Look like you belong. Costs sap. Cartel Heat drops once, because a working prisoner looks solved.',
+        enable: { flagUnset: 'yardLineCooled' },
+        locked: 'The line knows your face now. It will not cool you twice.',
         effects: {
           ticks: 1,
           pressure: 1,
           sap: -1,
           heat: { cartel: -1 },
+          flag: { yardLineCooled: true },
           flash:
             'You scrape amber with the line. Nobody thanks you. Cartel Heat drops, because a prisoner who is working looks like a solved problem.',
         },

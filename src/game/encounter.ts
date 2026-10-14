@@ -311,6 +311,7 @@ export function heatOwed(heat: number): number | null {
 }
 
 /** Skips cost Sap. The cloak hides you once per area. */
+export const CLOAK_SKIP_LINE = 'The cloak eats the glance. You slip away. No loot.'
 export const SKIP_COST_SUB = 'Costs 1 Sap.'
 export const CLOAK_SKIP_SUB = 'Costs 1 Sap. Once per area.'
 export const CLOAK_USED_LOCK = 'The cloak already hid you here. They know the shape now.'
@@ -859,7 +860,7 @@ function grabbable(state: GameState, kind: EncounterKind): ItemId | null {
 export function resolveEncounter(
   state: GameState,
   how: FightMove | 'skip' | 'disguise',
-  opts: { floor?: number } = {},
+  opts: { floor?: number; cloak?: boolean } = {},
 ): { fx: Effect; flash: string } {
   const spec = encounterSpec(state)
   const f = state.flags
@@ -878,11 +879,15 @@ export function resolveEncounter(
       flash: '',
     }
   }
+  if (how === 'skip' && opts.cloak) {
+    const line = CLOAK_SKIP_LINE
+    return holdCard(state, spec, line, line)
+  }
   if (how === 'skip' && f.encounterNoSkip) {
     return { fx: { flash: NO_SKIP_LINE }, flash: NO_SKIP_LINE }
   }
   if (how === 'skip') {
-    const line = `You give ${whoOf(spec)} the road. No loot. No bill.`
+    const line = `You give ${whoOf(spec)} the road. No loot.`
     return holdCard(state, spec, line, line)
   }
   const snatched = typeof f.encounterSnatch === 'string' && f.encounterSnatch ? (f.encounterSnatch as ItemId) : null

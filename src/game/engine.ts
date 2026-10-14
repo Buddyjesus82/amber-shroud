@@ -40,7 +40,7 @@ import { markMetOnLeave, matchPersonQuery, personAtScene } from './people'
 import { downedNote, wakeEffect } from './downed'
 import { markFirstDrop } from './firstDrop'
 import { amberFindSign, downedSign, lowHealthSign, sandTouchReply } from './sandSign'
-import { isPressureOverlay, pressureAppend, pressureChoices, pressureVerb, spineGround, spineHunterKindAt, straysHeard } from './hunter'
+import { isPressureOverlay, isSybellaOverlay, pressureAppend, pressureChoices, pressureVerb, spineGround, spineHunterKindAt, straysHeard } from './hunter'
 import { bareFightIsRoad, offButton } from './verbs'
 import { roadHunterKind } from './roadHunt'
 import { noticeFaction, noticeGround, noticeLine, SCAVENGE_NOTICE_MAX, SCAVENGE_NOTICE_STEP } from './noticeHeat'
@@ -390,13 +390,13 @@ function resolveDest(state: GameState, fx: Effect): string | undefined {
 }
 
 /** Road and Rim rescues: they only come for an empty bag, and they are not free. */
-const RESCUE_CRISES = new Set(['crisis:dunes', 'crisis:maw'])
+const RESCUE_CRISES = new Set(['crisis:dunes', 'crisis:maw', 'crisis:camp', 'crisis:thresh'])
 export const AUTO_DRINK_LINE = 'The glass runs dry. Your hand finds a Drop before your knees go. Sap +3.'
 export const RESCUE_GLINT_LINE = 'The rescue is not free. A Glint is gone.'
 export const RESCUE_SCRAP_LINE = 'The rescue is not free. Scrap -1.'
 
 /** Flags that only last while you stay on one screen. */
-const VISIT_FLAGS = ['restedHere', 'oilJobHere', 'kaelenDropsHere']
+const VISIT_FLAGS = ['restedHere', 'kaelenDropsHere']
 
 export const DOWN_SCRAP_LINE = (n: number) => `You wake lighter. Scrap -${n}.`
 export const DOWN_DROP_LINE = 'You wake lighter. A Drop is gone.'
@@ -500,7 +500,7 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     next.flags = flags
   }
   if (fx.resolveEncounter) {
-    const result = resolveEncounter(state, fx.resolveEncounter)
+    const result = resolveEncounter(state, fx.resolveEncounter, { cloak: fx.resolveEncounter === 'skip' && typeof fx.flag?.cloakSkipArea === 'string' })
     next = applyDelta(next, softenCartel(state, result.fx))
     if (result.fx.flag?.encounterGrip && !state.flags.encounterGrip) {
       next.flags = { ...next.flags, sandGripSeen: true, sandSignAt: next.ticks }
@@ -848,7 +848,8 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     const sign = downedSign({ ...next, health: 0 })
     if (sign) note = `${note}\n\n${sign}`
     // Going down costs: half your scrap, rounded down, or a Drop when that would be nothing.
-    if (!next.flags.downedWon) {
+    {
+      // Any Down costs, even a stagger win that leaves you on the ground.
       const loss = downLoss(next)
       if (loss) {
         next = { ...next, items: { ...next.items, [loss.item]: Math.max(0, (next.items[loss.item] ?? 0) - loss.n) } }
@@ -873,6 +874,8 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     delete flags.bagHeld
     next.flags = flags
   }
+  // Scene steps: a walking count for cooldowns (Haul parts).
+  if (next.sceneId !== state.sceneId) next.flags = { ...next.flags, sceneSteps: Number(next.flags.sceneSteps ?? 0) + 1 }
   // Once-a-visit flags clear when you walk off.
   if (next.sceneId !== state.sceneId && VISIT_FLAGS.some((k) => k in next.flags)) {
     const flags = { ...next.flags }
@@ -1217,12 +1220,17 @@ export function phoneText(text: string): string {
 
 const BARE_FIGHT = /^(?:i\s+)?(?:attack|fight|kill|stab|hit|punch|strike)(?:\s+(?:something|someone|anyone|anything|now|back))?$/
 export const NOTHING_TO_FIGHT = 'Nothing here to fight.'
+export const SHADOW_NO_FIGHT = 'She is a shadow, not a body. If you mean it, swing at the shadow.'
 
 export function interpret(state: GameState, raw: string): GameState {
   const text = phoneText(raw)
   const scene = sceneOf(state)
   const bare = text.trim().toLowerCase()
   const said = bare === 'l' || /^l\s/.test(bare) ? bare.replace(/^l\b/, 'look') : bare
+  // Sybella's shadow is not a body: a bare typed fight does not swing at it. The button does.
+  if (isSybellaOverlay(state) && BARE_FIGHT.test(said)) {
+    return withVerb(persist({ ...state, flash: SHADOW_NO_FIGHT, updatedAt: Date.now() }), 'fight')
+  }
   // A bare typed 'fight' names no target: no hunt, no threat to whoever stands here.
   if (
     !state.flags.encounterHere &&
@@ -1232,6 +1240,14 @@ export function interpret(state: GameState, raw: string): GameState {
     !visibleChoices(state).some((c) => /\b(fight|attack|scrap)\b/i.test(c.label) && isChoiceOn(state, c.enable))
   ) {
     return withVerb(persist({ ...state, flash: NOTHING_TO_FIGHT, updatedAt: Date.now() }), 'fight')
+  }
+  // Typed rest is the Rest row (or the Wreck bench), with its cost and its once-a-scene lock.
+  if (/^(?:rest|sit|sleep)(?:\s+(?:again|here|a while|on the bench))?$/.test(said) && !state.flags.encounterHere && !isPressureOverlay(state)) {
+    const row = visibleChoices(state).find((c) => c.id === 'rest' || c.id === 'bench')
+    if (row) {
+      if (isChoiceOn(state, row.enable)) return withVerb(applyEffect(state, row.effects), 'rest')
+      return withVerb(persist({ ...state, flash: row.locked ?? REST_DONE_LOCK, updatedAt: Date.now() }), 'rest')
+    }
   }
   // Typed "go to X" walks to a named place on this hub's map; never the aimless run.
   const goTo = /^(?:go|walk|head|travel|move|run|return)\s+(?:back\s+)?(?:to|toward|towards|into)\s+(?:the\s+)?(.+)$/.exec(said)
@@ -1675,7 +1691,20 @@ export function visibleChoices(state: GameState): Choice[] {
     : isRumorCounter(state.sceneId)
       ? rumorChoices(state, authored).filter((c) => check(c.show, state))
       : authored
-  return [...bag, ...withRest(state, withKaelenPass(state, rows))]
+  return [...bag, ...withRest(state, withKaelenPass(state, hymnSapLocks(state, rows)))]
+}
+
+export const HYMN_STAGGER_LABEL = 'Stagger on with what you have'
+export const HYMN_STAGGER_SUB = 'Costs your last Sap.'
+
+/** Hymn-road: the 2-Sap walks lock under 2 Sap. A last-Sap stagger keeps the road open (it empties you into the rescue). */
+function hymnSapLocks(state: GameState, rows: Choice[]): Choice[] {
+  if (state.sceneId !== 'ch1:v-hymn') return rows
+  const out = rows.map((c) => ((c.effects.sap ?? 0) <= -2 && !c.enable ? { ...c, enable: { sapMin: -(c.effects.sap ?? 0) }, locked: `Needs: ${-(c.effects.sap ?? 0)} Sap` } : c))
+  if (state.sap >= 2) return out
+  const lead = rows.find((c) => c.id === 'hymn') ?? rows.find((c) => c.effects.goto)
+  if (!lead?.effects.goto) return out
+  return [...out, { id: 'stagger', label: HYMN_STAGGER_LABEL, sub: HYMN_STAGGER_SUB, tone: 'quiet', effects: { goto: lead.effects.goto, ticks: 1, sap: -1 } }]
 }
 
 /** Bag full: drop something to free a slot and take what is on the ground, or leave it. */
@@ -1725,9 +1754,24 @@ export function restAllowed(state: GameState): boolean {
 }
 
 /** Rest: 1 Health for 1 Sap, as often as you can pay. Hidden at full Health; locked with no Sap. */
+/** Haul parts: once, then not again until you have walked 4 scenes. */
+export const HAUL_GAP = 4
+export const HAUL_LOCK = 'He has nothing to haul yet. Come back after a few stops.'
 export const REST_DONE_LOCK = 'Rested here already. Move on first.'
 
 function withRest(state: GameState, rows: Choice[]): Choice[] {
+  // The Wreck has its own bench: that is the rest there, once a scene, and nothing stacks on it.
+  if (state.sceneId === 'maw:tuner') {
+    const hauledAgo = Number(state.flags.sceneSteps ?? 0) - Number(state.flags.oilJobStep ?? -99)
+    return rows.map((c) => {
+      if (c.id === 'bench' && state.flags.restedHere) return { ...c, enable: { flag: '__never__' }, locked: REST_DONE_LOCK }
+      if (c.id === 'job') {
+        if (hauledAgo < HAUL_GAP) return { ...c, enable: { flag: '__never__' }, locked: HAUL_LOCK }
+        return { ...c, effects: { ...c.effects, flag: { ...(c.effects.flag ?? {}), oilJobStep: Number(state.flags.sceneSteps ?? 0) } } }
+      }
+      return c
+    })
+  }
   if (!restAllowed(state)) return rows
   if ((state.health ?? HEALTH_MAX) >= (state.healthMax ?? HEALTH_MAX)) return rows
   return [
