@@ -99,6 +99,11 @@ function lookHit(state: GameState, scene: Scene, hay: string, labels: string[]):
   }
 }
 
+/** A bare typed fight on open road ground picks a road scrap; anywhere else there is nothing to fight. */
+export function bareFightIsRoad(scene: Scene): boolean {
+  return !mouthHere(scene) && roadPressureScene(scene.id) && scene.kind !== 'talk' && scene.kind !== 'crisis' && scene.kind !== 'ending'
+}
+
 function wantsFight(hay: string): boolean {
   return /\b(attack|fight|bite|kill|stab|hit|punch|strike)\b/.test(hay)
 }

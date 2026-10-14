@@ -115,3 +115,9 @@ export const RIM_NOWHERE = 'Nowhere to run yet. The rim holds.'
 export const RIM_HUNGER_OPEN = 'The Gullet is open. Run, leave, or take the Gullet.'
 
 export const HUNGER_BLOCKED = 'The Gullet is not a road on this beat.'
+
+/** Typed road with the road still shut: name the door's road and what opens it. */
+export function hungerBlockedFor(roadName: string): string {
+  const road = roadName.charAt(0).toUpperCase() + roadName.slice(1)
+  return `${road} is not open to you yet. You need a heading toward Red Maw first.`
+}

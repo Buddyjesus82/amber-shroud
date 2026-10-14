@@ -5,6 +5,7 @@ import {
   aimlessRunReply,
   hungerCommandEffect,
   HUNGER_BLOCKED,
+  hungerBlockedFor,
   isHungerCommand,
   isRimDepartBeat,
   isRimDepartCommand,
@@ -40,7 +41,7 @@ import { downedNote, wakeEffect } from './downed'
 import { markFirstDrop } from './firstDrop'
 import { amberFindSign, downedSign, lowHealthSign, sandTouchReply } from './sandSign'
 import { isPressureOverlay, pressureAppend, pressureChoices, pressureVerb, spineGround, spineHunterKindAt, straysHeard } from './hunter'
-import { offButton } from './verbs'
+import { bareFightIsRoad, offButton } from './verbs'
 import {
   canEncounter,
   dismissEncounter,
@@ -63,6 +64,7 @@ import {
   wantsEncounterTrick,
   wantsEncounterHide,
   wantsEncounterSkip,
+  foeName,
 } from './encounter'
 import { talkFallback, talkIntentsFor } from './talk'
 import { answerAsk, answerLate, hintLine, readAsk, readLateAsk, sceneVoice, voiceOnScreen } from './politeAsk'
@@ -187,7 +189,8 @@ export function bodyOf(state: GameState): string {
 }
 
 /** The first time you meet him, he says his name. Until then every line calls him "the trader". */
-export const KAELEN_INTRO = '"Kaelen," he says, and taps his chest with a gloved thumb. "The Sifter. Now you know who to pay."'
+export { KAELEN_INTRO } from './roads'
+import { KAELEN_INTRO, ROADS } from './roads'
 
 function pickCrisis(state: GameState): string {
   if (state.chapterId === 'cache-run') return 'crisis:dunes'
@@ -701,8 +704,15 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     delete flags.kaelenIntroNow
     next.flags = flags
   }
-  if ((next.sceneId === 'camp:kaelen' || next.sceneId === 'thresh:kaelen' || next.sceneId === 'roam:kaelen') && !next.flags.kaelenKnown) {
-    next.flags = { ...next.flags, kaelenKnown: true, kaelenIntroNow: true }
+  // First meeting on any door: he says his name, even when the step that brought you set kaelenKnown.
+  if ((next.sceneId === 'camp:kaelen' || next.sceneId === 'thresh:kaelen' || next.sceneId === 'roam:kaelen') && !state.flags.kaelenKnown && !state.flags.kaelenIntroSeen) {
+    next.flags = { ...next.flags, kaelenKnown: true, kaelenIntroNow: true, kaelenIntroSeen: true }
+  }
+  // He stops at one roadside spot. Walk on without visiting and he is gone; he does not follow you scene to scene.
+  if (state.flags.kaelenPassing && next.flags.kaelenPassing && next.sceneId !== state.sceneId && next.sceneId !== 'roam:kaelen') {
+    const flags = { ...next.flags }
+    delete flags.kaelenPassing
+    next.flags = flags
   }
   if (
     lingered &&
@@ -1075,11 +1085,24 @@ export function phoneText(text: string): string {
     .trim()
 }
 
+const BARE_FIGHT = /^(?:i\s+)?(?:attack|fight|kill|stab|hit|punch|strike)(?:\s+(?:something|someone|anyone|anything|now|back))?$/
+export const NOTHING_TO_FIGHT = 'Nothing here to fight.'
+
 export function interpret(state: GameState, raw: string): GameState {
   const text = phoneText(raw)
   const scene = sceneOf(state)
   const bare = text.trim().toLowerCase()
   const said = bare === 'l' || /^l\s/.test(bare) ? bare.replace(/^l\b/, 'look') : bare
+  // A bare typed 'fight' names no target: no hunt, no threat to whoever stands here.
+  if (
+    !state.flags.encounterHere &&
+    !isPressureOverlay(state) &&
+    BARE_FIGHT.test(said) &&
+    !bareFightIsRoad(scene) &&
+    !visibleChoices(state).some((c) => /\b(fight|attack|scrap)\b/i.test(c.label) && isChoiceOn(state, c.enable))
+  ) {
+    return withVerb(persist({ ...state, flash: NOTHING_TO_FIGHT, updatedAt: Date.now() }), 'fight')
+  }
   // Typed "go to X" walks to a named place on this hub's map; never the aimless run.
   const goTo = /^(?:go|walk|head|travel|move|run|return)\s+(?:back\s+)?(?:to|toward|towards|into)\s+(?:the\s+)?(.+)$/.exec(said)
   if (goTo && state.hubId && !state.flags.encounterHere && !isPressureOverlay(state) && !(atTheWire(state) && wantsFenceHoleBack(text)) && !visibleChoices(state).some((c) => c.label.toLowerCase().replace(/[^a-z0-9 ]/g, '').trim() === said.replace(/[^a-z0-9 ]/g, '').trim())) {
@@ -1357,7 +1380,7 @@ export function interpret(state: GameState, raw: string): GameState {
     const namedHit = matchChoiceText(text, named)
     if (namedHit) return withVerb(applyEffect(state, namedHit.effects), namedHit.id)
     if (!state.flags.encounterHere && !isPressureOverlay(state)) {
-      return withVerb(persist({ ...state, flash: HUNGER_BLOCKED, updatedAt: Date.now() }), 'hunger')
+      return withVerb(persist({ ...state, flash: state.flags.chapter1Done || state.hubId === 'redmaw' || state.chapterId ? HUNGER_BLOCKED : hungerBlockedFor(ROADS[state.door].name), updatedAt: Date.now() }), 'hunger')
     }
   }
 
@@ -1468,6 +1491,15 @@ function scopeDecoy(state: GameState, choices: ReturnType<typeof sceneOf>['choic
   })
 }
 
+/** Waking after a fight closes that fight: you lost it, and the foe has gone. */
+function fightLostWake(state: GameState): Effect {
+  const fx = wakeEffect(state)
+  const name = foeName(state.flags.downedKind)
+  if (!name) return fx
+  const lost = `Fight lost. The ${name} has moved on.`
+  return { ...fx, flash: fx.flash ? `${lost} ${fx.flash}` : lost }
+}
+
 export function visibleChoices(state: GameState): Choice[] {
   if (state.flags.downed || (state.health ?? 1) <= 0) {
     return [
@@ -1476,7 +1508,7 @@ export function visibleChoices(state: GameState): Choice[] {
         label: 'Take the hand. Get up.',
         sub: 'Too hurt to fight.',
         tone: 'quiet',
-        effects: wakeEffect(state),
+        effects: fightLostWake(state),
       },
       {
         id: 'too-hurt',
@@ -1500,7 +1532,7 @@ export function visibleChoices(state: GameState): Choice[] {
     : isRumorCounter(state.sceneId)
       ? rumorChoices(state, authored).filter((c) => check(c.show, state))
       : authored
-  return [...bag, ...withKaelenPass(state, rows)]
+  return [...bag, ...withRest(state, withKaelenPass(state, rows))]
 }
 
 /** Bag full: drop something to free a slot and take what is on the ground, or leave it. */
@@ -1531,6 +1563,39 @@ function bagChoices(state: GameState): Choice[] {
     effects: { bagLeave: true, flash: `You leave the ${names} where it lies.` },
   })
   return rows
+}
+
+export const REST_LINE = 'You sit in what shade there is and let the cut close a little. Health returns. Sap pays for it.'
+
+/** Road and hub ground only: no fight, no trade, no Kaelen, not facing a hunter. */
+export function restAllowed(state: GameState): boolean {
+  const id = state.sceneId
+  const sc = getScene(id)
+  if (sc.kind !== 'place' && !(sc.kind === 'story' && sc.chapterId === 'cache-run')) return false
+  if (id.startsWith('open:') || id.startsWith('roam:') || id.startsWith('ch2:') || id === CHAPTER_ONE_END || id === 'ch1:sybella' || id === 'ch1:storm') return false
+  if (id.includes('kaelen') || id === 'thresh:sift' || isVendorScene(id)) return false
+  if (state.flags.encounterHere || state.flags.hunterHere || state.flags.downed || state.flags.kaelenIntroNow) return false
+  if (state.flags.shopShelf || state.flags.rumorShelf) return false
+  if (Object.keys(heldOf(state.flags)).length) return false
+  return true
+}
+
+/** Rest: 1 Health for 1 Sap, as often as you can pay. Hidden at full Health; locked with no Sap. */
+function withRest(state: GameState, rows: Choice[]): Choice[] {
+  if (!restAllowed(state)) return rows
+  if ((state.health ?? HEALTH_MAX) >= (state.healthMax ?? HEALTH_MAX)) return rows
+  return [
+    ...rows,
+    {
+      id: 'rest',
+      label: 'Rest',
+      sub: '+1 Health. Costs 1 Sap.',
+      tone: 'quiet',
+      enable: { sapMin: 1 },
+      locked: 'Needs: Sap',
+      effects: { health: 1, sap: -1, still: true, flash: REST_LINE },
+    },
+  ]
 }
 
 function withKaelenPass(state: GameState, rows: Choice[]): Choice[] {

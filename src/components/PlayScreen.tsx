@@ -123,7 +123,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     (scene.id === 'camp:bay' && bayLookout(state) ? 'Jaxson Vance' : null) ??
     (scene.id === 'camp:lean' && bayLookout(state) ? '' : null) ??
     (scene.id === 'maw:tuner' && state.door === 'prisoner' ? 'Jaxson' : null) ??
-    scene.speaker
+    shownText(state, scene.speaker)
   function screenKey(s: GameState): string {
     return `${s.sceneId}|${isPressureOverlay(s) ? 1 : 0}|${s.flags.encounterHere ? 1 : 0}|${s.flags.downed || s.health <= 0 ? 1 : 0}`
   }
@@ -393,8 +393,8 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
 
       <div className="scene-stage" style={held ? held.band : artBand}>
         <div className="scene-art" aria-hidden="true">
-          <img className="scene-fill" src={held ? held.art : artSrc} alt="" />
-          <img className="scene-img" src={held ? held.art : artSrc} alt="" />
+          <img key={held ? held.art : artSrc} className="scene-fill" src={held ? held.art : artSrc} alt="" />
+          <img key={held ? held.art : artSrc} className="scene-img" src={held ? held.art : artSrc} alt="" />
         </div>
 
         <div className="story" ref={storyRef}>
@@ -483,7 +483,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
                   ? 'on'
                   : overlay
                     ? 'talk / fight / bribe / run'
-                    : `look / talk / fight / bribe / help / who is ${state.door === 'outcast' ? 'silas' : state.door === 'vessel' ? 'oram' : 'kaelen'}`
+                    : `look / talk / fight / bribe / help / who is ${state.door === 'outcast' ? 'silas' : state.door === 'vessel' ? 'oram' : state.flags.kaelenKnown ? 'kaelen' : 'valerius'}`
               }
               enterKeyHint="go"
               autoComplete="off"
