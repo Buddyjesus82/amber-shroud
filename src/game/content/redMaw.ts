@@ -1,6 +1,7 @@
 import { ROADS } from '../roads'
 import type { Choice, Scene } from '../types'
 
+export const RIM_NO_MARK = 'No mark on your brow. She listened anyway. She will come.'
 export const SYBELLA_ASKED_AGAIN = 'She heard you the first time. Asking again buys nothing.'
 
 /** Resolve Sybella and leave her smoke. Underlying ground if she interrupted it, otherwise the Approach. */
@@ -35,9 +36,14 @@ The ground out here takes more than the camp ever did. Sap goes faster. Hunters 
         body: `The Gullet is open. Run, leave, or take the Gullet.`,
       },
       {
-        if: { flagEq: ['climax', 'bargain'] },
+        if: { all: [{ flagEq: ['climax', 'bargain'] }, { item: 'kohl_smear' }] },
         mode: 'append',
         body: `Kohl on your brow itches when the wind hits it. She marked you. She will come.`,
+      },
+      {
+        if: { all: [{ flagEq: ['climax', 'bargain'] }, { not: { item: 'kohl_smear' } }] },
+        mode: 'append',
+        body: RIM_NO_MARK,
       },
       {
         if: { all: [{ flag: 'sybellaHunting' }, { flagUnset: 'sybellaShadowed' }] },
@@ -809,7 +815,7 @@ You can bind your cuts, rest here, or haul parts for him. None of it opens Kalli
         },
       },
       {
-        id: 'rest',
+        id: 'bench',
         label: 'Rest on the bench',
         sub: 'Costs a little sap. Your health comes back a little.',
         enable: { sapMin: 1 },
@@ -818,6 +824,7 @@ You can bind your cuts, rest here, or haul parts for him. None of it opens Kalli
           health: 2,
           sap: -1,
           ticks: 1,
+          flag: { restedHere: true },
           flash: 'The wreck holds you. Health comes back a little. He pretends not to watch.',
         },
       },
@@ -825,13 +832,11 @@ You can bind your cuts, rest here, or haul parts for him. None of it opens Kalli
         id: 'job',
         label: 'Take a side job. Haul parts.',
         sub: 'Costs sap. You get 2 scrap. The rig gets one bolt closer to finished.',
-        enable: { flagUnset: 'oilJobHere' },
-        locked: 'One haul a visit. Come back later.',
         effects: {
           add: { scrap: 2 },
           sap: -1,
           ticks: 1,
-          flag: { oilJob: true, oilJobHere: true },
+          flag: { oilJob: true },
           flash: 'Scrap +2. A coil he needed and a cut on your palm. The rig is one bolt less imaginary.',
         },
       },

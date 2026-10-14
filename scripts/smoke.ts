@@ -2711,7 +2711,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v121'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v122'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -3604,7 +3604,7 @@ function assertHelpResolves(s: GameState, where: string) {
 
   // The Maw wreck: a short nameless cameo off the Prisoner door.
   const wreck = applyEffect(newGame('outcast'), { goto: 'maw:tuner', enterHub: 'redmaw' })
-  assert(!PRISONER_NAMES.test(bodyOf(wreck)) && /brass jaw/.test(bodyOf(wreck)) && ids(wreck).includes('rest'), 'Outcast wreck is a nameless cameo with the bench')
+  assert(!PRISONER_NAMES.test(bodyOf(wreck)) && /brass jaw/.test(bodyOf(wreck)) && ids(wreck).includes('bench'), 'Outcast wreck is a nameless cameo with the bench')
   assert(/Jaxson/.test(bodyOf(applyEffect(newGame('prisoner'), { goto: 'maw:tuner', enterHub: 'redmaw' }))), 'Prisoner wreck still names Jaxson')
 
   // Resin Salve: a rare scavenge find on every door; humans sometimes carry one, beasts never.
@@ -6262,4 +6262,59 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   assert(K.shellCap(newGame('vessel')) === 4, 'v121: Shell caps at 4 before the Maw')
   assert(T.SOLD_OUT_STOP === 'Sold out this stop.', 'v121: sold-out line')
   console.log('v121 difficulty checks OK')
+}
+{
+  // v122 retest fixes.
+  const RM = await import('../src/game/content/redMaw.ts')
+  const E = await import('../src/game/encounter.ts')
+  const dupes: string[] = []
+  for (const door of ['prisoner', 'outcast', 'vessel'] as DoorId[]) {
+    for (const sc of ALL_SCENES) {
+      const st = { ...newGame(door), sceneId: sc.id, hubId: sc.hubId ?? null, chapterId: sc.chapterId ?? null, health: 2, sap: 6 } as GameState
+      let ids: string[] = []
+      try { ids = GE.visibleChoices({ ...st, flags: { ...st.flags, encounterHere: false, hunterHere: false } }).map((c) => c.id) } catch { continue }
+      if (new Set(ids).size !== ids.length) dupes.push(`${door}:${sc.id}`)
+    }
+  }
+  assert(!dupes.length, `v122: no screen has two buttons with one id (${dupes.slice(0, 4).join(', ')})`)
+  // Bench: Wreck only, once a scene, no stacking Rest.
+  let w = { ...GE.applyEffect(newGame('vessel'), { goto: 'maw:tuner', enterHub: 'redmaw', flag: { chapter1Done: true, chapter1EndSeen: true, rimRoadSeen: true, encounterAt: 99999 } }), health: 2, sap: 6 }
+  w = { ...w, flags: { ...w.flags, encounterHere: false, hunterHere: false } }
+  const wid = GE.visibleChoices(w).map((c) => c.id)
+  assert(wid.includes('bench') && !wid.includes('rest'), 'v122: the Wreck has the bench, not Rest too')
+  const benched = GE.interpret(w, 'rest')
+  assert(benched.health === 4, 'v122: typed rest at the Wreck is the bench')
+  const again = GE.interpret(benched, 'rest again')
+  assert(again.health === 4 && again.flash === GE.REST_DONE_LOCK, 'v122: rest again respects once a scene')
+  // Haul: once per 4 scenes, not reset by stepping out and back.
+  const job = GE.visibleChoices(w).find((c) => c.id === 'job')!
+  let h = GE.applyEffect(w, job.effects)
+  h = GE.travelTo(GE.travelTo(h, 'maw:rim'), 'maw:tuner')
+  h = { ...h, flags: { ...h.flags, encounterHere: false, hunterHere: false } }
+  const job2 = GE.visibleChoices(h).find((c) => c.id === 'job')!
+  assert(!GE.isChoiceOn(h, job2.enable) && job2.locked === GE.HAUL_LOCK, 'v122: out and back does not reset Haul')
+  // Typed fight on the road names no target.
+  let rd = { ...GE.applyEffect(newGame('prisoner'), { startChapter: 'cache-run', goto: 'ch1:p-pipe', flag: { roadHuntDone: 'smoke' } }) }
+  rd = { ...rd, flags: { ...rd.flags, encounterHere: false, hunterHere: false } }
+  const tf = GE.interpret(rd, 'fight the handler')
+  assert(!tf.flags.hunterHere && tf.flags.encounterKind !== 'handler', 'v122: typed fight the handler with no hunt spawns no handler')
+  // Cloak skip ends an ambush.
+  let am = { ...rd, equipped: { ...rd.equipped, cloak: 'dust_cloak' as ItemId }, items: { ...rd.items, dust_cloak: 1 }, sap: 5 }
+  am = { ...am, flags: { ...am.flags, ...E.fightStartFlags(am, 'runner'), encounterNoSkip: true } }
+  const ck = GE.visibleChoices(am).find((c) => c.id === 'enc-cloak')
+  assert(!!ck, 'v122: cloak row on the ambush')
+  const ran = GE.applyEffect(am, ck!.effects)
+  const done = GE.visibleChoices(ran).find((c) => c.id === 'enc-continue')
+  const after = done ? GE.applyEffect(ran, done.effects) : ran
+  assert(!after.flags.encounterHere && after.sap === 4, 'v122: cloak skip ends the ambush for 1 Sap')
+  assert(RM.RIM_NO_MARK.includes('No mark'), 'v122: Rim no-mark line')
+  // Any Down costs, Approach Dry charges.
+  let mw = { ...GE.applyEffect(newGame('vessel'), { goto: 'maw:rim', enterHub: 'redmaw', flag: { chapter1Done: true, chapter1EndSeen: true, rimRoadSeen: true, encounterAt: 99999 } }), sap: 1 }
+  mw = { ...mw, items: { ...mw.items, vial_drop: 0, glints: 2 }, flags: { ...mw.flags, encounterHere: false, hunterHere: false } }
+  const dry = GE.applyEffect(mw, { sap: -1, ticks: 1 })
+  assert(dry.sceneId === 'crisis:maw' && dry.items.glints === 1 && dry.flash === GE.RESCUE_GLINT_LINE, 'v122: Approach Dry charges a Glint and says so')
+  const up = GE.applyEffect(dry, GE.visibleChoices(dry)[0].effects)
+  const dry2 = GE.applyEffect({ ...up, sap: 1, flags: { ...up.flags, encounterHere: false, hunterHere: false } }, { sap: -1, ticks: 1 })
+  assert(dry2.items.glints === 0, 'v122: and charges again the next time')
+  console.log('v122 retest checks OK')
 }

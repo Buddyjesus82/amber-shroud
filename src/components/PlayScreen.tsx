@@ -240,10 +240,15 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
         ),
     })
   }
+  const usedKeys = new Set<string>()
   for (const c of choices) {
     const on = isChoiceOn(state, c.enable)
+    // Keys must be unique: a repeated id let React keep a stale button (and its old state) on later screens.
+    let key = c.id
+    for (let n = 2; usedKeys.has(key); n++) key = `${c.id}~${n}`
+    usedKeys.add(key)
     optionRows.push({
-      key: c.id,
+      key,
       tone: `${c.tone ?? 'default'}${on ? '' : ' locked'}`,
       label: shownText(state, c.label),
       sub: shownText(state, c.sub),

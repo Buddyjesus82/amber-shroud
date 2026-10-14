@@ -1,5 +1,5 @@
 import { CARAPACE_HUNTER_HEAT, SPINE_HUNTER, spineHunterFor } from './content/spineHunter'
-import { beginEncounter } from './encounter'
+import { areaKey, beginEncounter, CLOAK_SKIP_SUB, CLOAK_USED_LOCK } from './encounter'
 import { check } from './logic'
 import type { Choice, GameState } from './types'
 
@@ -550,7 +550,7 @@ export function pressureChoices(state: GameState): Choice[] {
   const shown = rows.filter((c) => check(c.show, state))
   // Never corner someone who cannot fight: then the old outs stay open.
   const canFight = shown.some((c) => isFightRow(c) && check(c.enable, state))
-  return shown.map((c) => payOnce(state, c, canFight))
+  return shown.map((c) => payOnce(state, cloakCost(state, c), canFight))
 }
 
 /** Each faction takes a fee once. After that the pay rows stay on the card, locked. */
@@ -579,6 +579,20 @@ function huntFaction(state: GameState): 'cartel' | 'strays' | 'seekers' | null {
 
 function isFightRow(c: Choice): boolean {
   return /fight|hound/.test(c.id) || !!c.effects.resolveEncounter || !!c.effects.flag?.encounterHere
+}
+
+/** A hunter's cloak row costs like the road skip: 1 Sap, once per area. */
+const CLOAK_ROWS = new Set(['hunter-cloak', 'spine-cloak', 'thresh-cloak', 'sybella-cloak'])
+function cloakCost(state: GameState, c: Choice): Choice {
+  if (!CLOAK_ROWS.has(c.id)) return c
+  const used = state.flags.cloakSkipArea === areaKey(state)
+  return {
+    ...c,
+    sub: CLOAK_SKIP_SUB,
+    enable: used ? { flag: '__never__' } : { sapMin: 2 },
+    locked: used ? CLOAK_USED_LOCK : 'Needs: 2 Sap',
+    effects: { ...c.effects, sap: (c.effects.sap ?? 0) - 1, flag: { ...(c.effects.flag ?? {}), cloakSkipArea: areaKey(state) } },
+  }
 }
 
 function payOnce(state: GameState, c: Choice, canFight: boolean): Choice {

@@ -119,7 +119,7 @@ function combatHit(state: GameState, scene: Scene, hay: string): DoHit | null {
       verb: 'fight',
     }
   }
-  if (wantsFight(hay) && /\b(hound[- ]handler|handler)\b/.test(hay)) {
+  if (wantsFight(hay) && isCampHunt(state) && /\b(hound[- ]handler|handler)\b/.test(hay)) {
     return {
       effects: beginEncounter(state, 'handler', 'You go for the man with the leash. The hound stays on it.'),
       verb: 'fight',
