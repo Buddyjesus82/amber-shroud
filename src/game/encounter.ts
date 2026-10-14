@@ -1080,7 +1080,7 @@ export function resolveEncounter(
       notes.push(pinned ? 'The harpoon line holds you. You cannot run.' : 'The tick holds on. You cannot run with it on you.')
     } else if (roll(state, 'run', 100) < runChance(state)) {
       const line = `You break away and run. ${cap(who)} does not follow. No loot.`
-      return holdCard(state, spec, line, line)
+      return holdCard(state, spec, line, line, { flag: { encounterFled: true } })
     } else {
       notes.push(`You try to run. ${cap(who)} catches you.`)
       if (spec.kind === 'handler') {

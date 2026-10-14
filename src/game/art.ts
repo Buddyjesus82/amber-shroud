@@ -59,6 +59,10 @@ export type CoverKey =
   | 'noon_country'
   | 'hymn_road'
   | 'cache_run'
+  | 'lash_holds'
+  | 'valued_thing'
+  | 'ch1_end'
+  | 'under_jaw'
   | 'rim_pilgrims_scar'
   | 'courtguard'
   | 'down'
@@ -114,6 +118,10 @@ const FILES: Record<CoverKey, string> = {
   noon_country: 'noon-country.jpg',
   hymn_road: 'hymn-road.jpg',
   cache_run: 'cache-run.jpg',
+  lash_holds: 'lash-holds.jpg',
+  valued_thing: 'valued-thing.jpg',
+  ch1_end: 'ch1-end.jpg',
+  under_jaw: 'under-jaw.jpg',
   rim_pilgrims_scar: 'rim-pilgrims-scar.jpg',
   courtguard: 'courtguard.jpg',
   down: 'down.jpg',
@@ -203,6 +211,10 @@ export const COVER_BAND: Record<CoverKey, [number, number]> = {
   noon_country: [0.2, 0.9],
   hymn_road: [0.2, 0.9],
   cache_run: [0.2, 0.9],
+  lash_holds: [0.2, 0.9],
+  valued_thing: [0.2, 0.9],
+  ch1_end: [0.2, 0.9],
+  under_jaw: [0.2, 0.9],
   rim_pilgrims_scar: [0.15, 0.9],
   // Court Guard: face, coat, and the curved blade.
   courtguard: [0.05, 0.85],
@@ -319,6 +331,10 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   if (id === 'crisis:maw') return 'down'
   // The Cache Run collapse is a Down screen too.
   if (id === 'crisis:dunes') return 'down'
+  if (id === 'ch1:ossa-fix') return 'lash_holds'
+  if (id === 'ch1:hollow') return 'valued_thing'
+  if (id === 'ch1:end') return 'ch1_end'
+  if (id === 'ch2:stub') return 'under_jaw'
   // The South Wind: the hull on the horizon, not yet her face. The door's road art.
   if (id === 'ch1:south-wind') return fightGround(state, scene)
   // The Vessel's Cache Run (the Pilgrim's Scar) shows the Scar, not the title art.

@@ -6374,7 +6374,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   assert(/\.choice\.held-continue \{[^}]*position: sticky/.test(css), 'v124: the held Continue stays on screen at narrow widths')
   assert(!ALL_SCENES.some((sc) => sc.choices.some((c) => c.id === 'held-continue')), 'v124: no scene choice shares the held Continue id')
   // Covers.
-  for (const f of ['maw-lip', 'maw-ribs', 'maw-hold', 'maw-wreck', 'handler', 'last-fence', 'noon-country', 'hymn-road', 'cache-run']) {
+  for (const f of ['maw-lip', 'maw-ribs', 'maw-hold', 'maw-wreck', 'handler', 'last-fence', 'noon-country', 'hymn-road', 'cache-run', 'lash-holds', 'valued-thing', 'ch1-end', 'under-jaw']) {
     assert(existsSync(new URL(`../public/covers/${f}.jpg`, import.meta.url)) && readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8').includes(`covers/${f}.jpg`), `v124: ${f} cover ships and is precached`)
   }
   const road = (door: 'prisoner' | 'outcast' | 'vessel', id: string) => { const s = GE.applyEffect(newGame(door), { startChapter: 'cache-run', goto: id, flag: { roadHuntDone: 'smoke' } }); const t = { ...s, flags: { ...s.flags, encounterHere: false } }; return A4.playCoverKey(t, sceneOf(t)) }
@@ -6412,5 +6412,36 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   assert(GE.sceneProse(ct).includes('He watches Thalia, not you'), 'v124: Thalia called him off: Court line')
   const cf = GE.applyEffect(newGame('vessel'), { goto: 'thresh:court', enterHub: 'threshold', flag: { crucibleGuardFooled: true } })
   assert(GE.sceneProse(cf).includes('still searching the wrong corridor'), 'v124: guard fooled: Court line')
+  for (const [id, key] of [['ch1:ossa-fix', 'lash_holds'], ['ch1:hollow', 'valued_thing'], ['ch1:end', 'ch1_end'], ['ch2:stub', 'under_jaw']] as const) {
+    const sc = getScene(id)
+    const st = { ...newGame('prisoner'), sceneId: id, chapterId: sc.chapterId as never, hubId: sc.hubId }
+    assert(A4.playCoverKey(st, sc) === key, `v124: ${id} cover`)
+  }
+  // Fleeing the toll fight does not settle the toll.
+  {
+    let tr = GE.applyEffect(newGame('prisoner'), { goto: 'maw:ribs', enterHub: 'redmaw' })
+    tr = { ...tr, sap: 6, health: 6, flags: { ...tr.flags, encounterHere: false, hunterHere: false } }
+    let fl = GE.applyEffect(tr, GE.visibleChoices(tr).find((c) => c.id === 'toll-fight')!.effects)
+    let ran = false
+    for (let i = 0; i < 12 && fl.flags.encounterHere; i++) {
+      const ch = GE.visibleChoices(fl)
+      if (!fl.flags.encounterDone) { const run = ch.find((c) => c.id === 'enc-run'); fl = GE.applyEffect({ ...fl, ticks: fl.ticks + i }, (run ?? ch[0]).effects); ran = ran || !!fl.flags.encounterFled; continue }
+      fl = GE.applyEffect(fl, ch[0].effects)
+    }
+    assert(ran && !fl.flags.mawTollDone && GE.visibleChoices(fl).some((c) => c.id === 'toll-pay'), 'v124: running from the toll fight leaves the toll owed')
+  }
+  // A seen-through dais lie clears the fooled flag.
+  {
+    let hit = 0
+    for (let t = 0; t < 80; t++) {
+      let d = { ...newGame('vessel'), sceneId: 'thresh:court-guard', hubId: 'threshold' as never, ticks: t, sap: 6, health: 6, items: { ...newGame('vessel').items, crucible_map: 1 } }
+      d = { ...d, heat: { ...d.heat, seekers: 8 } }
+      const lie = GE.visibleChoices(d).find((c) => c.id === 'lie')
+      if (!lie) continue
+      const n = GE.applyEffect(d, lie.effects)
+      if (n.flags.encounterHere) { hit++; assert(!n.flags.crucibleGuardFooled, 'v124: seen-through dais lie clears crucibleGuardFooled') }
+    }
+    assert(hit > 0, 'v124: dais lie can be seen through at Heat 8')
+  }
   console.log('v124 checks OK')
 }

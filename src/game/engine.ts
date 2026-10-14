@@ -714,6 +714,11 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   }
   // Threshold lies at high Seeker Heat: seen through.
   if (fx.ruse && !next.flags.encounterHere && !next.flags.downed && (next.health ?? 1) > 0 && getScene(next.sceneId).kind !== 'crisis' && ruseSeen(state)) {
+    // A seen-through dais lie fooled nobody: no 'wrong corridor' line later.
+    if (next.flags.crucibleGuardFooled && fx.flag?.crucibleGuardFooled) {
+      next.flags = { ...next.flags }
+      delete next.flags.crucibleGuardFooled
+    }
     if ((state.heat.seekers ?? 0) >= 8) {
       next.flags = { ...next.flags, ...fightStartFlags(next, 'courtguard'), encounterHp: 3 }
       next.flash = RUSE_FIGHT_LINE
@@ -898,6 +903,18 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   if (next.sceneId !== state.sceneId && next.flags.bagHeld && !fx.bagRetry) {
     const flags = { ...next.flags }
     delete flags.bagHeld
+    next.flags = flags
+  }
+  // The toll fight settles the toll only when it ends without running or going down.
+  if (state.flags.mawTollFight && state.flags.encounterHere && !next.flags.encounterHere) {
+    const flags = { ...next.flags }
+    if (!state.flags.encounterFled && !next.flags.downed && (next.health ?? 1) > 0) flags.mawTollDone = true
+    delete flags.mawTollFight
+    next.flags = flags
+  }
+  if (next.flags.encounterFled && !next.flags.encounterHere) {
+    const flags = { ...next.flags }
+    delete flags.encounterFled
     next.flags = flags
   }
   // The Maw toll is once a visit: leaving the Maw resets it.
@@ -1761,7 +1778,7 @@ function mawToll(state: GameState, rows: Choice[]): Choice[] {
       tone: 'danger',
       enable: { healthMin: 1 },
       locked: 'Too hurt to fight.',
-      effects: { ...beginEncounter(state, 'scavenger', 'The digger lets go of the rope and picks up a pick.'), flag: { ...beginEncounter(state, 'scavenger').flag, mawTollDone: true }, ticks: 1 },
+      effects: { ...beginEncounter(state, 'scavenger', 'The digger lets go of the rope and picks up a pick.'), flag: { ...beginEncounter(state, 'scavenger').flag, mawTollFight: true }, ticks: 1 },
     },
     ...gated,
   ]
