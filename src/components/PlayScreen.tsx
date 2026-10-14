@@ -113,6 +113,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     scene.kind !== 'crisis' &&
     scene.kind !== 'ending' &&
     !state.flags.encounterHere &&
+    !state.flags.strayHunterHere &&
     !state.flags.downed &&
     state.health > 0 &&
     !(CRUCIBLE_SCENES as readonly string[]).includes(scene.id)
@@ -126,7 +127,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
   const roam = canScavenge(state)
   const skimOn = canSkim(state)
   const downed = !!state.flags.downed || state.health <= 0
-  const overlay = !held && (!!state.flags.encounterHere || isPressureOverlay(state) || downed)
+  const overlay = !held && (!!state.flags.encounterHere || !!state.flags.strayHunterHere || isPressureOverlay(state) || downed)
   const face = downed
     ? null
     : (state.flags.encounterHere ? encounterSpeaker(state) : null) ??

@@ -46,6 +46,8 @@ let keepRoadHunt = false
 function applyEffect(state: Parameters<typeof rawApplyEffect>[0], fx: Parameters<typeof rawApplyEffect>[1]) {
   let next = rawApplyEffect(state, fx)
   if (!keepRoadHunt && !state.flags.roadHuntDone && next.flags.roadHuntDone) next = rawApplyEffect({ ...state, flags: { ...state.flags, roadHuntDone: 'smoke' } }, fx)
+  // v127: older walks predate Stray Hunters; the v127 block tests them with the raw engine.
+  if (next.flags.strayHunterHere && !state.flags.strayHunterHere) next = rawApplyEffect({ ...state, flags: { ...state.flags, strayHuntStep: 1e9 } }, fx)
   // v95: older walks also step through the one-time End of Chapter One screen at the Rim.
   if (next.sceneId === 'ch1:end' && state.sceneId !== 'ch1:end') {
     const on = rawApplyEffect(next, getScene('ch1:end').choices[0].effects)
@@ -113,6 +115,7 @@ function assert(cond: unknown, msg: string): asserts cond {
 }
 
 function dismissFight(s: GameState): GameState {
+  if (s.flags.strayHunterHere) s = { ...s, flags: { ...s.flags, strayHunterHere: false, strayHunterHound: false } }
   if (!s.flags.encounterHere) return s
   // v118: an ambush cannot be skipped; the walkthroughs fight it out and stand back up.
   if (s.flags.encounterNoSkip && !s.flags.encounterDone) return clearRoadFight(s)
@@ -140,6 +143,8 @@ function crackVent(s: GameState): GameState {
 }
 
 function pick(s: GameState, id: string) {
+  // v127: the older walkthroughs step past a Stray Hunter; the v127 block tests them.
+  if (s.flags.strayHunterHere && !id.startsWith('stray-')) s = { ...s, flags: { ...s.flags, strayHunterHere: false, strayHunterHound: false } }
   if (s.flags.encounterHere && id !== 'enc-fight' && id !== 'enc-skip' && id !== 'enc-cloak' && id !== 'enc-continue') {
     s = dismissFight(s)
   }
@@ -2723,7 +2728,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v126'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v127'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -6526,4 +6531,64 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   }
   assert(n >= 2 && minGap >= GE.SYBELLA_GAP, `v126: Sybella at most once per 3 scenes (${n} intercepts, min gap ${minGap})`)
   console.log('v126 checks OK')
+}
+
+// v127: Stray Hunters
+{
+  const SH = await import('../src/game/strayHunter.ts')
+  const A7 = await import('../src/game/art.ts')
+  const onRoadAt = (door: 'prisoner' | 'outcast' | 'vessel', strays: number, t: number, health = 6) => {
+    let s = GE.applyEffect(newGame(door), { startChapter: 'cache-run', goto: 'ch1:leave', flag: { roadHuntDone: 'smoke' } })
+    s = { ...s, ticks: t, sap: 6, health, heat: { ...s.heat, strays }, flags: { ...s.flags, encounterHere: false, strayHunterHere: false, roadFightSeen: true } }
+    const to = door === 'prisoner' ? 'ch1:p-pipe' : door === 'outcast' ? 'ch1:o-noon' : 'ch1:v-hymn'
+    return { s, next: GE.applyEffect(s, { goto: to, ticks: 1 }) }
+  }
+  // The first arrival (by seed) where no road fight took the walk.
+  const onRoad = (door: 'prisoner' | 'outcast' | 'vessel', strays: number, health = 6, from = 0) => {
+    for (let t = from; t < from + 60; t++) { const r = onRoadAt(door, strays, t, health); if (!r.next.flags.encounterHere) return r }
+    return onRoadAt(door, strays, from, health)
+  }
+  for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
+    const { next } = onRoad(door, 3)
+    assert(!!next.flags.strayHunterHere && !next.flags.strayHunterHound, `v127: ${door} Stray Hunter at Stray Heat 3`)
+    const body = GE.bodyOf(next)
+    assert(body.includes(SH.STRAY_ARRIVAL_LINE) && body.includes(SH.STRAY_OUTCAST_LINE) === (door === 'outcast'), `v127: ${door} arrival copy`)
+    const ids = GE.visibleChoices(next).map((c) => c.id)
+    assert(ids.join() === 'stray-cut,stray-fight', `v127: ${door} rows without a hound (${ids})`)
+    assert(A7.playCoverKey(next, sceneOf(next)) !== 'hunger', 'v127: Stray Hunter uses neutral fight ground')
+    assert(!!onRoad(door, 3, 1).next.flags.strayHunterHere, `v127: ${door} ambush ignores Health`)
+  }
+  assert(!onRoad('prisoner', 2).next.flags.strayHunterHere, 'v127: no Stray Hunter under Stray Heat 3')
+  const h = onRoad('prisoner', 5).next
+  {
+    assert(!!h.flags.strayHunterHound && GE.bodyOf(h).includes(SH.STRAY_HOUND_LINE), 'v127: Stray Heat 5 brings a shard-hound')
+    const withDrop = { ...h, items: { ...h.items, vial_drop: 1 } }
+    const feed = GE.visibleChoices(withDrop).find((c) => c.id === 'stray-feed')!
+    const fed = GE.applyEffect(withDrop, feed.effects)
+    assert(!fed.flags.strayHunterHere && !fed.flags.encounterHere && (fed.items.vial_drop ?? 0) === 0 && fed.flash === SH.STRAY_FEED_LINE, 'v127: feeding the hound ends it')
+    const f = GE.applyEffect(h, GE.visibleChoices(h).find((c) => c.id === 'stray-fight')!.effects)
+    assert(f.flags.encounterKind === 'strayhound' && !f.flags.strayHunterHere && GE.visibleChoices(f).every((c) => c.id !== 'enc-skip'), 'v127: the hound fight is the tougher one, no skip')
+  }
+  // Kill: Stray Heat +1 on its own line. Respawn after the gap.
+  const { next: k0 } = onRoad('vessel', 3)
+  {
+    let k = GE.applyEffect(k0, GE.visibleChoices(k0).find((c) => c.id === 'stray-fight')!.effects)
+    k = { ...k, flags: { ...k.flags, encounterHp: 1 } }
+    for (let i = 0; i < 12 && k.flags.encounterHere; i++) {
+      const ch = GE.visibleChoices(k)
+      k = GE.applyEffect({ ...k, health: 6, ticks: k.ticks + 1 }, (k.flags.encounterDone ? ch[0] : ch.find((c) => c.id === 'enc-fight')!).effects)
+    }
+    assert(k.heat.strays === 4 && String(k.flash).split('\n').includes(SH.STRAY_KILL_LINE), `v127: killing one is Stray Heat +1 (${k.heat.strays}, ${k.flash})`)
+  }
+  // Cut your trail: either loses them or opens the fight.
+  let lost = 0, caught = 0
+  for (let t = 0; t < 40; t++) {
+    const { next } = onRoad('outcast', 3, 6, t * 3)
+    if (!next.flags.strayHunterHere) continue
+    const n = GE.applyEffect(next, GE.visibleChoices(next).find((c) => c.id === 'stray-cut')!.effects)
+    if (n.flags.encounterHere) caught++
+    else if (!n.flags.strayHunterHere && n.flash === SH.STRAY_CUT_LINE) lost++
+  }
+  assert(lost > 0 && caught > 0, `v127: cutting the trail can lose them or not (${lost}/${caught})`)
+  console.log('v127 checks OK')
 }

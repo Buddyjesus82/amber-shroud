@@ -1,3 +1,4 @@
+import { isStrayHunt, STRAY_ARRIVAL_LINE, STRAY_CUT_FAIL_LINE, STRAY_CUT_LINE, STRAY_CUT_ODDS, STRAY_HOUND_HEAT, STRAY_HOUND_LINE, STRAY_KILL_LINE, strayHuntBody, strayHuntChoices, strayHunterArrives } from './strayHunter'
 import { HUB_MAPS } from './content/maps'
 import { DOORS, HUBS, ITEMS, getScene, hasScene, resolveBody } from './content'
 import { applyDelta, check, clamp } from './logic'
@@ -191,6 +192,7 @@ export function bodyOf(state: GameState): string {
   if (state.flags.encounterHere) {
     return encounterCard(state)
   }
+  if (isStrayHunt(state)) return strayHuntBody(state)
   const knock = pressureAppend(state)
   if (knock) return knock
   if (state.flags.kaelenIntroNow && state.sceneId.includes('kaelen')) return `${sceneProse(state)}\n\n${KAELEN_INTRO}`
@@ -861,6 +863,25 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     next.flags = { ...next.flags, ...fightStartFlags(next, roadHunt.kind), encounterNoSkip: true, roadHuntDone: true, roadFightSeen: true }
     next.flash = roadHunt.line
   }
+  // Stray Hunters: any door, Stray Heat 3+, a road arrival; once every few scenes, and there are always more.
+  if (!roadHunt && strayHunterArrives(state, next)) {
+    const hound = (next.heat.strays ?? 0) >= STRAY_HOUND_HEAT
+    next.flags = { ...next.flags, strayHunterHere: true, strayHunterHound: hound, strayHuntStep: Number(next.flags.sceneSteps ?? 0) + (next.sceneId !== state.sceneId ? 1 : 0), fightQuiet: 0 }
+    next.flash = undefined
+  }
+  // Cutting your trail: a seeded roll loses them, or the fight opens here.
+  if (fx.flag?.strayCut) {
+    const flags = { ...next.flags }
+    delete flags.strayCut
+    next.flags = flags
+    if (sneakSpotted(next, 10 - STRAY_CUT_ODDS)) {
+      const kind: EncounterKind = state.flags.strayHunterHound ? 'strayhound' : 'strayhunter'
+      next.flags = { ...next.flags, ...fightStartFlags(next, kind), encounterNoSkip: true, strayHuntFight: true }
+      next.flash = STRAY_CUT_FAIL_LINE
+    } else {
+      next.flash = STRAY_CUT_LINE
+    }
+  }
   // Heat comes due: count fight-free danger scenes; any fight or hunt clears the count.
   if (next.flags.encounterHere || next.flags.hunterHere) {
     if (next.flags.fightQuiet) next.flags = { ...next.flags, fightQuiet: 0 }
@@ -935,6 +956,16 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   // Any Court Guard fight ends the Court payoffs (called off, sent down the wrong corridor).
   if (next.flags.encounterHere && next.flags.encounterKind === 'courtguard' && !next.flags.courtGuardFought) {
     next.flags = { ...next.flags, courtGuardFought: true }
+  }
+  // Killing a Stray Hunter: Stray Heat +1, on its own line. Running or going down does not count.
+  if (state.flags.strayHuntFight && state.flags.encounterHere && !next.flags.encounterHere) {
+    const flags = { ...next.flags }
+    delete flags.strayHuntFight
+    next.flags = flags
+    if (!state.flags.encounterFled && !next.flags.downed && (next.health ?? 1) > 0) {
+      next.heat = { ...next.heat, strays: Math.min(8, (next.heat.strays ?? 0) + 1) }
+      next.flash = next.flash ? `${next.flash}\n\n${STRAY_KILL_LINE}` : STRAY_KILL_LINE
+    }
   }
   // The Maw toll is once a visit: leaving the Maw resets it.
   if (next.flags.mawTollDone && next.hubId !== 'redmaw') {
@@ -1751,6 +1782,10 @@ export function visibleChoices(state: GameState): Choice[] {
   }
   if (state.flags.encounterHere) {
     return encounterChoices(state)
+  }
+  if (isStrayHunt(state)) {
+    const kind: EncounterKind = state.flags.strayHunterHound ? 'strayhound' : 'strayhunter'
+    return strayHuntChoices(state, { ambush: { kind, line: state.flags.strayHunterHound ? STRAY_HOUND_LINE : STRAY_ARRIVAL_LINE }, still: true, ticks: 1 })
   }
   const knock = pressureChoices(state)
   if (knock.length) return knock

@@ -1,3 +1,4 @@
+import { STRAY_HUNTER_COVER } from './strayHunter'
 import { bayLookout } from './campJob'
 import { isCampHunt, isSpineHunt, isSybellaOverlay, isThreshHunt } from './hunter'
 import { CARAPACE_HUNTER, SPINE_HUNTER, spineHunterFor } from './content/spineHunter'
@@ -311,6 +312,8 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
     // No enemy art yet (husk, scavenger, cutter, jackal, tick, pup): the neutral ground cover, never a face from the scene.
     return fightGround(state, scene)
   }
+  // Stray Hunter: its cover slot, neutral fight ground until the art lands.
+  if (state.flags.strayHunterHere) return (STRAY_HUNTER_COVER as CoverKey | null) ?? fightGround(state, scene)
   if (isSybellaOverlay(state) || id.startsWith('maw:sybella')) return 'sybella'
   if (isCampHunt(state)) return (state.heat?.cartel ?? 0) >= 7 ? 'valerius' : 'handler'
   if (id === 'camp:hunter' || id === 'camp:valerius' || id === 'camp:tower') return 'valerius'
