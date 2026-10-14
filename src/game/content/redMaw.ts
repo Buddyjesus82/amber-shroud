@@ -1,6 +1,8 @@
 import { ROADS } from '../roads'
 import type { Choice, Scene } from '../types'
 
+export const SYBELLA_ASKED_AGAIN = 'She heard you the first time. Asking again buys nothing.'
+
 /** Resolve Sybella and leave her smoke. Underlying ground if she interrupted it, otherwise the Approach. */
 function sybellaOn(extra: Choice['effects']): Choice['effects'] {
   const { flag, ...rest } = extra
@@ -403,11 +405,21 @@ She is here, and she is hunting. Walk up and she will talk. You can also slip pa
         id: 'hold',
         label: 'Ask for help',
         sub: 'Walk when the Maw opens.',
-        show: { door: 'vessel' },
+        show: { all: [{ door: 'vessel' }, { flagUnset: 'sybellaHelpAsked' }] },
         effects: sybellaOn({
           heat: { seekers: -1 },
+          flag: { sybellaHelpAsked: true },
           flash:
             'She accepts the ask the way old stone accepts a hand. Temporarily. The faith keeps its own. She does not keep you.',
+        }),
+      },
+      {
+        id: 'hold-again',
+        label: 'Ask for help',
+        sub: 'Walk when the Maw opens.',
+        show: { all: [{ door: 'vessel' }, { flag: 'sybellaHelpAsked' }] },
+        effects: sybellaOn({
+          flash: SYBELLA_ASKED_AGAIN,
         }),
       },
       {
@@ -813,11 +825,13 @@ You can bind your cuts, rest here, or haul parts for him. None of it opens Kalli
         id: 'job',
         label: 'Take a side job. Haul parts.',
         sub: 'Costs sap. You get 2 scrap. The rig gets one bolt closer to finished.',
+        enable: { flagUnset: 'oilJobHere' },
+        locked: 'One haul a visit. Come back later.',
         effects: {
           add: { scrap: 2 },
           sap: -1,
           ticks: 1,
-          flag: { oilJob: true },
+          flag: { oilJob: true, oilJobHere: true },
           flash: 'Scrap +2. A coil he needed and a cut on your palm. The rig is one bolt less imaginary.',
         },
       },

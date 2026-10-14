@@ -113,7 +113,7 @@ The Seekers camp in a fallen spire to the southeast. The sealed Spire lies beyon
         locked: 'Too hurt to fight.',
         effects: {
           unsetFlag: ['encounterDone', 'encounterClash', 'encounterFlash', 'encounterRound', 'encounterStall', 'hunterHere', 'hunterFrom'],
-          flag: { encounterHere: true, encounterKind: 'courtguard', encounterHp: 2 },
+          flag: { encounterHere: true, encounterKind: 'courtguard', encounterHp: 3 },
           ticks: 1,
           flash: 'The falchion comes up. This ground is the fight.',
         },

@@ -1,3 +1,4 @@
+import { turfFaction } from './encounter'
 import { bagCap, bagFits, bagLoad, wornCount } from './kit'
 import { ITEMS } from './content/catalog'
 import type { Choice, Cond, DoorId, Effect, FlagMap, GameState, ItemId } from './types'
@@ -18,6 +19,29 @@ export type StockOffer = {
   tags: string[]
   /** Only sold in these doors. */
   doors?: DoorId[]
+  /** Sells out after n buys on one visit (the counter flag clears when you walk off). */
+  perStop?: { flag: string; n: number }
+}
+
+export const SOLD_OUT_STOP = 'Sold out this stop.'
+
+function soldOutHere(state: GameState, o: StockOffer): boolean {
+  return !!o.perStop && Number(state.flags[o.perStop.flag] ?? 0) >= o.perStop.n
+}
+
+function stopFlag(state: GameState, o: StockOffer, flag: FlagMap | undefined): FlagMap | undefined {
+  if (!o.perStop) return flag
+  return { ...(flag ?? {}), [o.perStop.flag]: Number(state.flags[o.perStop.flag] ?? 0) + 1 }
+}
+
+/** Seekers Heat 8 on Seeker ground: every price is one higher. */
+export const SEEKER_MARKUP_HEAT = 8
+function seekerMarkup(state: GameState, cost: Money): Money {
+  if (state.heat.seekers < SEEKER_MARKUP_HEAT || turfFaction(state) !== 'seekers') return cost
+  const out: Money = { ...cost }
+  if (out.scrap) out.scrap += 1
+  if (out.glints) out.glints += 1
+  return out
 }
 
 export type Vendor = {
@@ -105,9 +129,10 @@ const KAELEN_STOCK: StockOffer[] = [
   {
     id: 'drop',
     item: 'vial_drop',
-    label: 'Buy a Drop of Oasis Sap — one scrap',
-    sub: 'One Drop of sap. Kaelen\'s price.',
-    cost: { scrap: 1 },
+    label: 'Buy a Drop of Oasis Sap — three scrap',
+    sub: 'One Drop of sap. Two a stop.',
+    cost: { scrap: 3 },
+    perStop: { flag: 'kaelenDropsHere', n: 2 },
     extraFlag: { kaelenSoldDrop: true },
     flash: '"Scrap in. Drop out. I don\'t do charity. I do arithmetic." He gloves the vial like it might bite him back.',
     tags: ['drop', 'vial', 'sap', 'oasis'],
@@ -289,6 +314,7 @@ export function kaelenOffers(state: GameState): StockOffer[] {
         ? {
             ...kaelenPiece('cloak'),
             sub: 'Hymn-dust canvas. Cloak · Shell 2. Hides a silhouette. Does not hide Heat.',
+            cost: { glints: 3 },
           }
         : kaelenPiece('cloak')
   const rows = [...basics, wrap, cloak]
@@ -315,8 +341,13 @@ export function kaelenBuyFlash(state: GameState): string {
 
 export function offersFor(state: GameState, vendor: Vendor): StockOffer[] {
   const all = vendor.id === 'kaelen' ? kaelenOffers(state) : vendor.stock
-  return all.filter((o) => !o.doors || o.doors.includes(state.door))
+  return all.filter((o) => !o.doors || o.doors.includes(state.door)).map((o) => {
+    const cost = seekerMarkup(state, o.cost)
+    return cost === o.cost ? o : { ...o, cost, sub: [o.sub, SEEKER_MARKUP_NOTE].filter(Boolean).join(' ') }
+  })
 }
+
+export const SEEKER_MARKUP_NOTE = 'Seeker Heat 8: +1 on every price here.'
 
 const VENDORS: Vendor[] = [
   {
@@ -522,8 +553,12 @@ function buyRows(state: GameState, vendor: Vendor): Choice[] {
   const rows: Choice[] = []
   for (const offer of offersFor(state, vendor)) {
     if (offer.onceFlag && state.flags[offer.onceFlag]) continue
-    const flag = knownFlag(vendor, state.sceneId, offer.extraFlag)
+    const flag = stopFlag(state, offer, knownFlag(vendor, state.sceneId, offer.extraFlag))
     const opts = priceOptions(offer.cost)
+    if (soldOutHere(state, offer)) {
+      rows.push({ id: offer.id, label: offerLabel(offer, offer.cost), sub: offer.sub, group: 'buy', enable: NEVER, locked: SOLD_OUT_STOP, effects: {} })
+      continue
+    }
     for (const opt of opts) {
       const id = opts.length > 1 ? `${offer.id}-${opt.key}` : offer.id
       rows.push({
@@ -691,7 +726,7 @@ export function matchShopText(state: GameState, text: string): { effects: Effect
     return { effects: { flag: { shopShelf: 'sell' }, flash: vendor.openSellFlash }, verb: 'sell' }
   }
 
-  const offers = offersFor(state, vendor).filter((o) => !o.onceFlag || !state.flags[o.onceFlag])
+  const offers = offersFor(state, vendor).filter((o) => (!o.onceFlag || !state.flags[o.onceFlag]) && !soldOutHere(state, o))
   const named = offers.find((o) => o.tags.some((t) => word(hay, t)))
   if (named && (wantsBuy || shelf === 'buy' || (!wantsSell && named.tags.some((t) => word(hay, t) && t !== 'scrap' && t !== 'glint')))) {
     const opts = priceOptions(named.cost)
@@ -720,7 +755,7 @@ export function matchShopText(state: GameState, text: string): { effects: Effect
       return { effects: { flag: { shopShelf: 'buy' }, flash: `${bagFullNote(state)} first.` }, verb: 'buy' }
     }
     if (cost && canPay(state, cost)) {
-      const flag = knownFlag(vendor, state.sceneId, named.extraFlag)
+      const flag = stopFlag(state, named, knownFlag(vendor, state.sceneId, named.extraFlag))
       return {
         effects: {
           pay: cost,

@@ -14,6 +14,8 @@ const done = {
 } as const
 
 /** Vessel Cache Run: the hymn-road start has a runner on it, every time. */
+export const BARGAIN_EMPTY_LINE = 'You talk. She listens the way old stone listens. No mark for talk. Seeker Heat +1. She still follows.'
+export const LAND_BARGAIN_EMPTY = 'You talked. She listened. No mark on your brow. She is still coming.'
 export const AMBUSH_RUNNER = 'A Seeker runner was waiting where the hymn-road starts. He drops off the rock in front of you, spear low. No way around him.'
 /** Wrapping the gold thread can fail. */
 export const SNEAK_SPOTTED = 'The wrap slips. A runner catches the gold thread in the sun and comes for you, spear first.'
@@ -1701,13 +1703,14 @@ Sybella steps down. Older than the hymns. Blindfold pushed up, kohl ruined on pu
       {
         id: 'bargain',
         label: 'Bargain empty-handed',
+        sub: 'No mark for talk. Seeker Heat +1.',
         tone: 'quiet',
         show: { door: 'vessel' },
         effects: {
-          add: { kohl_smear: 1 },
-          flag: { ...done, climax: 'bargain', sybellaBargain: true },
+          flag: { ...done, climax: 'bargain', sybellaBargain: true, bargainEmpty: true },
+          heat: { seekers: 1 },
           goto: 'ch1:land',
-          flash: 'You talk. She listens the way old stone listens. Kohl on your brow. The faith marks you. She still follows.',
+          flash: BARGAIN_EMPTY_LINE,
         },
       },
       {
@@ -1732,8 +1735,8 @@ Sybella steps down. Older than the hymns. Blindfold pushed up, kohl ruined on pu
         show: { door: 'vessel' },
         reply: 'You nod like an adult. She almost looks grateful. That is worse. Seekers-only.',
         effects: {
-          add: { kohl_smear: 1 },
-          flag: { ...done, climax: 'bargain', sybellaBargain: true },
+          flag: { ...done, climax: 'bargain', sybellaBargain: true, bargainEmpty: true },
+          heat: { seekers: 1 },
           goto: 'ch1:land',
         },
       },
@@ -1839,9 +1842,14 @@ For a breath the skiff sinks to one runner. Sybella's head turns as if someone s
 You are on the Approach. What you gave the sand is still on you.`,
     variants: [
       {
-        if: { flagEq: ['climax', 'bargain'] },
+        if: { all: [{ flagEq: ['climax', 'bargain'] }, { flagUnset: 'bargainEmpty' }] },
         mode: 'append',
         body: `Kohl on your brow. You talked. She listened. She is still coming.`,
+      },
+      {
+        if: { all: [{ flagEq: ['climax', 'bargain'] }, { flag: 'bargainEmpty' }] },
+        mode: 'append',
+        body: LAND_BARGAIN_EMPTY,
       },
       {
         if: { flagEq: ['climax', 'push'] },
