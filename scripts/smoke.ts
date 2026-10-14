@@ -41,8 +41,11 @@ function clearRoadFight(st: GameState): GameState {
   return { ...st, health: Math.max(st.health, 6), sap: Math.max(st.sap, 6), flash: undefined }
 }
 
+// v120 road hunters are checked in their own block; older walks step the road as before.
+let keepRoadHunt = false
 function applyEffect(state: Parameters<typeof rawApplyEffect>[0], fx: Parameters<typeof rawApplyEffect>[1]) {
-  const next = rawApplyEffect(state, fx)
+  let next = rawApplyEffect(state, fx)
+  if (!keepRoadHunt && !state.flags.roadHuntDone && next.flags.roadHuntDone) next = rawApplyEffect({ ...state, flags: { ...state.flags, roadHuntDone: 'smoke' } }, fx)
   // v95: older walks also step through the one-time End of Chapter One screen at the Rim.
   if (next.sceneId === 'ch1:end' && state.sceneId !== 'ch1:end') {
     const on = rawApplyEffect(next, getScene('ch1:end').choices[0].effects)
@@ -1353,9 +1356,9 @@ assert(s.flags.hunterFrom === 'maw:lip', 'facing her smoke keeps the ground unde
     'leaving the Court hunter does not immediately re-arm at Heat 5',
   )
 
-  assert(HUNTER_QUIET_GAPS.map((row) => row.quiet ?? 0).join(',') === '0,8,6,4,2', 'hunter gaps are one table: Heat 0 / 8 / 6 / 4 / 2')
+  assert(HUNTER_QUIET_GAPS.map((row) => row.quiet ?? 0).join(',') === '0,6,6,4,2', 'hunter gaps are one table: Heat 0 / 6 / 6 / 4 / 2')
   assert(huntGap(0) === null, 'Heat 0 does not interrupt')
-  for (const heat of [1, 2, 3]) assert(huntGap(heat) === 8, `Heat ${heat} waits 8 quiet scenes`)
+  for (const heat of [1, 2, 3]) assert(huntGap(heat) === 6, `Heat ${heat} waits 6 quiet scenes`)
   for (const heat of [4, 5]) assert(huntGap(heat) === 6, `Heat ${heat} waits 6 quiet scenes`)
   for (const heat of [6, 7]) assert(huntGap(heat) === 4, `Heat ${heat} waits 4 quiet scenes`)
   assert(huntGap(8) === 2, 'Heat 8 waits 2 quiet scenes and is not back-to-back')
@@ -1387,13 +1390,13 @@ assert(s.flags.hunterFrom === 'maw:lip', 'facing her smoke keeps the ground unde
     sk = { ...sk, flags: { ...sk.flags, huntQuiet: 30 } }
     assert(!stepQuiet(sk).flags.hunterHere, `${door} Seeker Heat 0 does not call Sybella`)
     sk = armed(sk, { seekers: 2 })
-    const early = passQuiet(sk, 7)
+    const early = passQuiet(sk, 5)
     assert(
-      !early.flags.hunterHere && early.sceneId === 'maw:stilt' && Number(early.flags.huntQuiet) === 7,
-      `${door} Seeker Heat 2: Sybella does not re-fire within 8 quiet scenes`,
+      !early.flags.hunterHere && early.sceneId === 'maw:stilt' && Number(early.flags.huntQuiet) === 5,
+      `${door} Seeker Heat 2: Sybella does not re-fire within 6 quiet scenes`,
     )
     const due = stepQuiet(early)
-    assert(due.flags.hunterHere && pressureFace(due) === 'Sybella', `${door} Seeker Heat 2 re-arms Sybella on the 8th quiet scene`)
+    assert(due.flags.hunterHere && pressureFace(due) === 'Sybella', `${door} Seeker Heat 2 re-arms Sybella on the 6th quiet scene`)
   }
 
   let hound = newGame('prisoner')
@@ -1407,8 +1410,8 @@ assert(s.flags.hunterFrom === 'maw:lip', 'facing her smoke keeps the ground unde
   hound = { ...hound, flags: { ...hound.flags, huntQuiet: 30 } }
   assert(!stepQuiet(hound).flags.hunterHere, 'Cartel Heat 0 does not call the handler')
   hound = armed(hound, { cartel: 2 })
-  assert(!passQuiet(hound, 7).flags.hunterHere, 'Cartel Heat 2: the handler does not re-fire within 8 quiet scenes')
-  assert(pressureFace(stepQuiet(passQuiet(hound, 7))) === 'Hound-handler', 'Cartel Heat 2 re-arms the handler on the 8th quiet scene')
+  assert(!passQuiet(hound, 5).flags.hunterHere, 'Cartel Heat 2: the handler does not re-fire within 6 quiet scenes')
+  assert(pressureFace(stepQuiet(passQuiet(hound, 5))) === 'Hound-handler', 'Cartel Heat 2 re-arms the handler on the 6th quiet scene')
   hound = armed(hound, { cartel: 7 })
   assert(!passQuiet(hound, 3).flags.hunterHere, 'Cartel Heat 7: Valerius does not re-fire within 4 quiet scenes')
   assert(pressureFace(stepQuiet(passQuiet(hound, 3))) === 'Valerius', 'Cartel Heat 7 still brings Valerius, after 4 quiet scenes')
@@ -1429,9 +1432,9 @@ assert(s.flags.hunterFrom === 'maw:lip', 'facing her smoke keeps the ground unde
   assert(!stepQuiet(ridge).flags.hunterHere, 'Spine waits for the Strays to notice you (or pressure 6)')
   ridge = armed(ridge, { strays: 2 })
   ridge = { ...ridge, flags: { ...ridge.flags, strayNotice: true } }
-  const ridgeEarly = passQuiet(ridge, 7)
-  assert(!ridgeEarly.flags.hunterHere, 'Spine Stray Heat 2 uses the low-Heat gap of 8')
-  assert(stepQuiet(ridgeEarly).flags.hunterHere, 'Spine Stray Heat 2, noticed, re-arms after 8 quiet scenes')
+  const ridgeEarly = passQuiet(ridge, 5)
+  assert(!ridgeEarly.flags.hunterHere, 'Spine Stray Heat 2 uses the low-Heat gap of 6')
+  assert(stepQuiet(ridgeEarly).flags.hunterHere, 'Spine Stray Heat 2, noticed, re-arms after 6 quiet scenes')
   ridge = armed(ridge, { strays: 2 })
   delete ridge.flags.strayNotice
   ridge = { ...ridge, pressure: 6 }
@@ -2691,7 +2694,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
   ridge = pick(ridge, 'stand')
   const noHeading = interpret(ridge, 'take hunger')
   assert(noHeading.chapterId !== 'cache-run', 'Outcast cannot type past the heading gate on the ridge')
-  ridge = applyEffect(ridge, { flag: { hungerKnown: true } })
+  ridge = applyEffect(ridge, { flag: { hungerKnown: true, roadHuntDone: 'smoke' } })
   const ridgeButton = pick(ridge, 'hunger')
   const ridgeDo = interpret(ridge, 'take hunger')
   assert(ridgeDo.sceneId === ridgeButton.sceneId && ridgeDo.flash === ridgeButton.flash, 'Outcast take hunger is the ridge button')
@@ -2707,7 +2710,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v119'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v120'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -6175,4 +6178,54 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   assert(!GE.noticeOn({ ...base, sceneId: 'camp:bay' }), 'v119: no timing at rest')
   assert(!GE.noticeOn({ ...base, flags: { ...base.flags, encounterHere: true } }), 'v119: no timing in a fight')
   console.log('v119 Heat timing checks OK')
+}
+{
+  // v120: Heat turns into fights.
+  const E = await import('../src/game/encounter.ts')
+  const H = await import('../src/game/hunter.ts')
+  assert(E.heatOwed(2) === null && E.heatOwed(3) === 8 && E.heatOwed(5) === 6 && E.heatOwed(7) === 4 && E.heatOwed(8) === 3, 'v120: Heat owed table 8/6/4/3')
+  let yard = GE.applyEffect(newGame('prisoner'), { goto: 'camp:yard', enterHub: 'camp04', flag: { encounterAt: -99 } })
+  yard = { ...yard, ticks: 50, heat: { ...yard.heat, cartel: 5 }, flags: { ...yard.flags, fightQuiet: 6, encounterHere: false, hunterHere: false, encounterAt: 0 } }
+  assert(E.canEncounter(yard), 'v120: six fight-free scenes at Cartel 5 make a fight certain')
+  assert(!E.canEncounter({ ...yard, sceneId: 'camp:bay' }), 'v120: the bay never owes a fight')
+  let hunt = GE.applyEffect(newGame('prisoner'), { goto: 'camp:yard', enterHub: 'camp04', add: { scrap: 2 } })
+  hunt = { ...hunt, health: 6, heat: { ...hunt.heat, cartel: 4 }, flags: { ...hunt.flags, encounterHere: false, cartelNotice: true, hunterHere: true, hunterFrom: 'camp:yard' } }
+  const pay = H.pressureChoices(hunt).find((c) => c.id === 'hunter-scrap')
+  assert(!!pay && pay.locked === undefined, 'v120: first fee is open')
+  const after = GE.applyEffect(hunt, pay!.effects)
+  assert(after.flags.huntPaid_cartel && after.flags.huntDodged_cartel, 'v120: paying marks the faction')
+  const again = { ...after, flags: { ...after.flags, hunterHere: true, hunterFrom: 'camp:yard' } }
+  const rows = H.pressureChoices(again)
+  assert(rows.some((c) => /fight|hound/.test(c.id) && GE.isChoiceOn(again, c.enable)), 'v120: the fight rows stay open')
+  assert(rows.filter((c) => !/fight|hound/.test(c.id) && !c.effects.startChapter).every((c) => c.locked === H.HUNT_CORNERED_LOCK), 'v120: second hunt at Heat 4 is cornered, rows stay visible')
+  const low = { ...again, heat: { ...again.heat, cartel: 2 } }
+  assert(H.pressureChoices(low).find((c) => c.id === 'hunter-scrap')?.locked === H.HUNT_PAID_LOCK, 'v120: a fee is taken once')
+  const hurt = { ...again, health: 0 }
+  assert(!H.pressureChoices(hurt).some((c) => c.locked === H.HUNT_CORNERED_LOCK), 'v120: too hurt to fight is never cornered')
+  console.log('v120 Heat-to-fight checks OK')
+}
+{
+  // v120: road hunters.
+  const R = await import('../src/game/roadHunt.ts')
+  const road = (door: DoorId, heat: Partial<GameState['heat']>) => {
+    const s0 = newGame(door)
+    const st = { ...s0, chapterId: 'cache-run', hubId: null, sceneId: 'camp:yard', heat: { ...s0.heat, cartel: 0, seekers: 0, strays: 0, ...heat }, flags: { ...s0.flags } } as GameState
+    return st
+  }
+  const at = (st: GameState, id: string) => ({ ...st, sceneId: id })
+  const p4 = road('prisoner', { cartel: 4 })
+  assert(R.roadHunterKind(p4, at(p4, 'ch1:leave'))?.kind === 'scavenger', 'v120: Cartel 4 sends a scavenger down the road')
+  assert(R.roadHunterKind(p4, at(p4, 'ch1:p-clerk')) === null, 'v120: talk beats need Heat 6')
+  const p6 = road('prisoner', { cartel: 6 })
+  assert(!!R.roadHunterKind(p6, at(p6, 'ch1:p-clerk')), 'v120: Heat 6 can fight on a talk beat')
+  assert(R.roadHunterKind(p6, at({ ...p6, flags: { ...p6.flags, roadHuntDone: true } }, 'ch1:p-pipe')) === null, 'v120: one road hunter per run')
+  const p3 = road('prisoner', { cartel: 3 })
+  assert(R.roadHunterKind(p3, at(p3, 'ch1:leave')) === null, 'v120: Cartel 3 sends no road hunter')
+  const o0 = road('outcast', {})
+  assert(R.roadHunterKind(o0, at(o0, 'ch1:leave'))?.line === R.ROAD_FLOOR_LINE, 'v120: Outcast road always has a fight')
+  const v5 = road('vessel', { seekers: 5 })
+  assert(R.roadHunterKind(v5, at(v5, 'ch1:leave'))?.kind === 'runner', 'v120: Seekers send a runner')
+  assert(R.roadHunterKind(v5, at(v5, 'ch1:v-zafir')) === null, 'v120: not on the Vessel road talk')
+  for (const l of [...Object.values(R.ROAD_HUNT_LINES), R.ROAD_FLOOR_LINE]) assert(!/spear|vs\b|Kaelen|Zafir/i.test(l), 'v120: road lines clean')
+  console.log('v120 road hunter checks OK')
 }

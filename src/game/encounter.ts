@@ -295,6 +295,21 @@ const ENCOUNTER_SCENES = new Set([
   'ch1:v-hymn',
 ])
 
+/** Fight-free danger scenes before the ground's faction is sure to send someone. Null: no guarantee. */
+export const HEAT_OWED = [
+  { heatMin: 3, heatMax: 3, scenes: 8 },
+  { heatMin: 4, heatMax: 5, scenes: 6 },
+  { heatMin: 6, heatMax: 7, scenes: 4 },
+  { heatMin: 8, heatMax: 8, scenes: 3 },
+] as const
+
+export const ROAD_HEAT_SURE = 3
+
+export function heatOwed(heat: number): number | null {
+  const h = Math.max(0, Math.min(8, Math.floor(heat)))
+  return HEAT_OWED.find((r) => h >= r.heatMin && h <= r.heatMax)?.scenes ?? null
+}
+
 export function canEncounter(state: GameState, opts?: { traveled?: boolean; firstWalk?: boolean }): boolean {
   if (state.flags.hunterHere || state.flags.encounterHere || state.flags.downed) return false
   if ((state.health ?? 1) <= 0) return false
@@ -302,7 +317,12 @@ export function canEncounter(state: GameState, opts?: { traveled?: boolean; firs
   const last = Number(state.flags.encounterAt ?? -99)
   const heat = state.heat[turfFaction(state)]
   const gap = heat >= 7 ? 2 : heat >= 4 ? 3 : 5
+  // Heat comes due: on danger ground, enough fight-free scenes at this Heat and a fight is certain.
+  // The road out answers Heat: at the ground's Heat 3+, the road beat always fields a fight.
+  if (ROAD_BEATS.has(state.sceneId) && heat >= ROAD_HEAT_SURE && !state.flags.roadHuntDone) return true
   if (last >= 0 && state.ticks - last < gap && !opts?.firstWalk) return false
+  const owed = heatOwed(heat)
+  if (owed != null && hubDanger(state) >= 1 && Number(state.flags.fightQuiet ?? 0) >= owed) return true
   const firstWalk = !!opts?.firstWalk && !state.flags.roadFightSeen
   const percent = encounterPercent(state, firstWalk)
   return seed(state) % 100 < percent
