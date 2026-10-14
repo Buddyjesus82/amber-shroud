@@ -51,6 +51,18 @@ export type CoverKey =
   | 'hoard'
   | 'rim_gullet'
   | 'rim_bonewash'
+  | 'maw_lip'
+  | 'maw_ribs'
+  | 'maw_hold'
+  | 'maw_wreck'
+  | 'last_fence'
+  | 'noon_country'
+  | 'hymn_road'
+  | 'cache_run'
+  | 'lash_holds'
+  | 'valued_thing'
+  | 'ch1_end'
+  | 'under_jaw'
   | 'rim_pilgrims_scar'
   | 'courtguard'
   | 'down'
@@ -76,7 +88,7 @@ const FILES: Record<CoverKey, string> = {
   oram: 'oram.jpg',
   brin: 'brin.jpg',
   rell: 'rell.jpg',
-  handler: 'hound.jpg',
+  handler: 'handler.jpg',
   skiffbay: 'skiffbay.jpg',
   skiff_bay_docks: 'skiff-bay-docks.jpg',
   stray_collector: 'stray-collector.jpg',
@@ -98,6 +110,18 @@ const FILES: Record<CoverKey, string> = {
   hoard: 'hoard.jpg',
   rim_gullet: 'rim-gullet.jpg',
   rim_bonewash: 'rim-bonewash.jpg',
+  maw_lip: 'maw-lip.jpg',
+  maw_ribs: 'maw-ribs.jpg',
+  maw_hold: 'maw-hold.jpg',
+  maw_wreck: 'maw-wreck.jpg',
+  last_fence: 'last-fence.jpg',
+  noon_country: 'noon-country.jpg',
+  hymn_road: 'hymn-road.jpg',
+  cache_run: 'cache-run.jpg',
+  lash_holds: 'lash-holds.jpg',
+  valued_thing: 'valued-thing.jpg',
+  ch1_end: 'ch1-end.jpg',
+  under_jaw: 'under-jaw.jpg',
   rim_pilgrims_scar: 'rim-pilgrims-scar.jpg',
   courtguard: 'courtguard.jpg',
   down: 'down.jpg',
@@ -137,7 +161,7 @@ export const COVER_BAND: Record<CoverKey, [number, number]> = {
   oram: [0.1, 0.9],
   brin: [0.05, 0.72],
   rell: [0.1, 0.85],
-  handler: [0.05, 0.8],
+  handler: [0, 0.75],
   // Skiff Bay: the four bays, the people, and Vetch's torch.
   skiffbay: [0.2, 0.84],
   // The Cartel barge, the tarp Strider, and the white skiff's amber crane.
@@ -178,6 +202,19 @@ export const COVER_BAND: Record<CoverKey, [number, number]> = {
   // Maw arrivals, one per door: the walker and the ribs / bone road / cairn ridge.
   rim_gullet: [0.1, 0.85],
   rim_bonewash: [0.2, 0.95],
+  // Maw places: the trail and the bone arches; the rib tunnel; the sealed amber between tusks; the wreck and the bench.
+  maw_lip: [0.25, 0.95],
+  maw_ribs: [0.2, 0.9],
+  maw_hold: [0.1, 0.9],
+  maw_wreck: [0.3, 0.95],
+  last_fence: [0.2, 0.9],
+  noon_country: [0.2, 0.9],
+  hymn_road: [0.2, 0.9],
+  cache_run: [0.2, 0.9],
+  lash_holds: [0.2, 0.9],
+  valued_thing: [0.2, 0.9],
+  ch1_end: [0.2, 0.9],
+  under_jaw: [0.2, 0.9],
   rim_pilgrims_scar: [0.15, 0.9],
   // Court Guard: face, coat, and the curved blade.
   courtguard: [0.05, 0.85],
@@ -257,7 +294,8 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   if (state.flags.encounterHere) {
     const kind = state.flags.encounterKind
     // The pup has no handler, so it gets the ground you are on (like jackals and ticks), not the handler portrait.
-    if (kind === 'handler' || kind === 'hound') return 'hound'
+    if (kind === 'handler') return 'handler'
+    if (kind === 'hound') return 'hound'
     if (kind === 'overseer') return 'valerius'
     if (kind === 'patrol') return 'rell'
     if (kind === 'courtguard') return 'courtguard'
@@ -274,7 +312,7 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
     return fightGround(state, scene)
   }
   if (isSybellaOverlay(state) || id.startsWith('maw:sybella')) return 'sybella'
-  if (isCampHunt(state)) return 'hound'
+  if (isCampHunt(state)) return 'handler'
   if (id === 'camp:hunter' || id === 'camp:valerius' || id === 'camp:tower') return 'valerius'
   if (isSpineHunt(state)) return spineHunterFor(state).art
   if (id === 'spine:valerius') return 'valerius'
@@ -293,12 +331,20 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   if (id === 'crisis:maw') return 'down'
   // The Cache Run collapse is a Down screen too.
   if (id === 'crisis:dunes') return 'down'
+  if (id === 'ch1:ossa-fix') return 'lash_holds'
+  if (id === 'ch1:hollow') return 'valued_thing'
+  if (id === 'ch1:end') return 'ch1_end'
+  if (id === 'ch2:stub') return 'under_jaw'
   // The South Wind: the hull on the horizon, not yet her face. The door's road art.
   if (id === 'ch1:south-wind') return fightGround(state, scene)
   // The Vessel's Cache Run (the Pilgrim's Scar) shows the Scar, not the title art.
   if (state.door === 'vessel' && (id === 'ch1:leave' || id === 'ch1:v-hymn')) return 'rim_pilgrims_scar'
   // The Outcast's road start (Cache Run / the Bone Wash) gets the Bone Wash art, not the title art.
   if (id === 'ch1:leave' && state.door === 'outcast') return 'rim_bonewash'
+  if (id === 'ch1:leave') return 'cache_run'
+  if (id === 'ch1:v-hymn') return 'hymn_road'
+  if (id === 'ch1:p-pipe') return 'last_fence'
+  if (id === 'ch1:o-noon') return 'noon_country'
   if (id === 'open:vessel') return 'resin_vault'
   if (id === 'thresh:crucible-rig') return 'extraction_rig'
   if (id === 'thresh:crucible-stairs') return 'thalia'
@@ -309,6 +355,10 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
     if (state.door === 'vessel') return 'rim_pilgrims_scar'
     return 'rim_gullet'
   }
+  if (id === 'maw:lip') return 'maw_lip'
+  if (id === 'maw:ribs') return 'maw_ribs'
+  if (id === 'maw:hold') return 'maw_hold'
+  if (id === 'maw:tuner') return 'maw_wreck'
   if (id === 'camp:guard' || id === 'camp:sabotage') return 'guard'
   if (id === 'camp:yard' || id === 'camp:vats') return 'yard'
   if (id === 'camp:vents') return 'vents'

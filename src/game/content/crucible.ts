@@ -127,6 +127,7 @@ The Seekers camp in a fallen spire to the southeast. The sealed Spire lies beyon
         effects: {
           goto: 'thresh:court',
           ticks: 1,
+          ruse: true,
           flag: { crucibleGuardFooled: true },
           flash: 'You show him the plate\'s map and point down the wrong corridor. He takes the stairs down at a run.',
         },

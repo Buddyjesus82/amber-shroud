@@ -75,8 +75,10 @@ type HeldScreen = {
   stamp: string
 }
 
-/** Off since v114: see act(). */
-const HOLD_RESULTS = false
+/** Back on in v124, rebuilt phone-safe: the held screen keeps its own Continue (always rendered), Map and the Do box. */
+const HOLD_RESULTS = true
+/** The held screen's Continue: one fixed id, never shared with a scene choice. */
+export const HELD_CONTINUE_KEY = 'held-continue'
 
 function heldStamp(s: GameState): string {
   return `${s.sceneId}|${s.updatedAt ?? 0}|${s.ticks}`
@@ -147,8 +149,9 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     const newChapter = next.chapterId !== state.chapterId
     // v114 hotfix: holding a result on the old screen left players on iOS with no buttons, Map, or Do box.
     // Results now show on the new screen, which always has its own actions.
+    try {
     if (HOLD_RESULTS && moved && next.flash && !fightResult && !noteOnly && !newChapter && scene.kind !== 'crisis') {
-      setHeld({
+      const heldNext: HeldScreen = {
         title: placeTitle,
         meta: hub ? hub.name : scene.id === 'ch1:storm' ? 'Camp-04' : scene.chapterId === 'cache-run' ? cap(ROADS[state.door].name) : null,
         face,
@@ -157,7 +160,12 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
         band: artBand,
         result: shownText(next, next.flash),
         stamp: heldStamp(next),
-      })
+      }
+      // Anything missing and the hold is skipped: the result shows on the new screen, as before.
+      if (heldNext.result && heldNext.title) setHeld(heldNext)
+    }
+    } catch {
+      setHeld(null)
     }
     onChange(next)
   }
@@ -261,7 +269,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
   }
   if (held) {
     optionRows.length = 0
-    optionRows.push({ key: 'continue', tone: 'default', label: 'Continue', onClick: continueOn })
+    optionRows.push({ key: HELD_CONTINUE_KEY, tone: 'default', label: 'Continue', onClick: continueOn })
   }
   // Never leave a screen with nothing to press: fall back to a look, and keep the Do box.
   const stuck = !held && optionRows.length === 0
@@ -270,7 +278,8 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
   }
   const split = optionRows.length >= 4
   // The Do box is on every screen.
-  const showDo = !held
+  // Held too: typing drops the hold and acts on the new screen, so a held result never hides the Do box.
+  const showDo = true
 
   const scrolledScene = useRef(state.sceneId)
   useEffect(() => {
@@ -347,6 +356,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
   function submitIntent() {
     const t = draft.trim()
     if (!t) return
+    setHeld(null)
     const route = helpRoute(t)
     if (route?.kind === 'list') {
       setDraft('')
@@ -495,7 +505,8 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
                 ) : null}
                 <button
                   type="button"
-                  className={`choice ${row.tone}${row.group ? ` shop-row` : ''}`}
+                  id={row.key === HELD_CONTINUE_KEY ? HELD_CONTINUE_KEY : undefined}
+                  className={`choice ${row.tone}${row.group ? ` shop-row` : ''}${row.key === HELD_CONTINUE_KEY ? ' held-continue' : ''}`}
                   disabled={row.locked}
                   onClick={row.onClick}
                 >
