@@ -831,6 +831,8 @@ export const CRIT_IN_10 = 1
 
 /** First-hub enemies. Their crits are softened. */
 export const EARLY_KINDS: readonly EncounterKind[] = ['cutter', 'pup', 'patrol', 'courtguard', 'jackal', 'tick', 'scavenger', 'handler', 'runner']
+/** Fights whose single hits cap at EARLY_CRIT_CAP: the early ones, plus a hound off its lead. */
+export const HIT_CAP_KINDS: readonly EncounterKind[] = [...EARLY_KINDS, 'hound']
 export const EARLY_CRIT_CAP = 3
 
 /** Seeded 0..n-1 roll for this round, so a save replays the same fight. */
@@ -975,7 +977,7 @@ export function resolveEncounter(
     if (c.yourHp >= max) dmgIn = Math.min(dmgIn, max - 1)
     // Early fights: an enemy crit takes at most EARLY_CRIT_CAP Health.
     // If the plain hit is already at the cap, it is just a hit, not a crit.
-    if (EARLY_KINDS.includes(spec.kind)) dmgIn = Math.min(dmgIn, EARLY_CRIT_CAP)
+    if (HIT_CAP_KINDS.includes(spec.kind)) dmgIn = Math.min(dmgIn, EARLY_CRIT_CAP)
     critIn = dmgIn > dmgInPlain
     if (!critIn) dmgIn = dmgInPlain
   }
@@ -995,10 +997,10 @@ export function resolveEncounter(
     inTags.push('Second jackal: they hit for 1 more.')
   }
   // Early fights: no single hit takes more than EARLY_CRIT_CAP Health, crit or not.
-  if (EARLY_KINDS.includes(spec.kind) && dmgIn > EARLY_CRIT_CAP) {
+  if (HIT_CAP_KINDS.includes(spec.kind) && dmgIn > EARLY_CRIT_CAP) {
     hitIn((d) => Math.min(d, EARLY_CRIT_CAP))
     critIn = critIn && dmgIn > dmgInPlain
-    inTags.push(`Early fight: a hit takes at most ${EARLY_CRIT_CAP} Health.`)
+    inTags.push(spec.kind === 'hound' ? `Off the lead: a hit takes at most ${EARLY_CRIT_CAP} Health.` : `Early fight: a hit takes at most ${EARLY_CRIT_CAP} Health.`)
   }
   let stunNext = false
   if (f.encounterStun) hitIn(() => 0)
@@ -1369,6 +1371,16 @@ export const FIGHT_RESET = ENCOUNTER_FLAGS.filter(
 export const NO_SKIP_LINE = 'No giving the road this time. He is already on you. Fight, or try to run.'
 
 /** A sneak roll: true means you were spotted. Same seed the road fights use, so a run plays the same way twice. */
+/** Seeker Heat 6+: odds in 10 that a Threshold lie is seen through (Heat 6 = 2, 7 = 3, 8 = 4). */
+export function ruseOdds(seekers: number): number {
+  return seekers < 6 ? 0 : Math.min(6, seekers - 4)
+}
+export function ruseSeen(state: GameState): boolean {
+  return hash(state, 'ruse', 1) % 10 < ruseOdds(state.heat.seekers ?? 0)
+}
+export const RUSE_HEAT_LINE = 'Someone in the crowd looks too long at the cloth. Seeker Heat +1.'
+export const RUSE_FIGHT_LINE = 'The Court Guard has seen through it. The falchion comes up.'
+
 export function sneakSpotted(state: GameState, odds: number): boolean {
   return hash(state, 'sneak', 1) % 10 < odds
 }

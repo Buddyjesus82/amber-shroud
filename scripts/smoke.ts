@@ -2351,7 +2351,7 @@ assert(html.includes('apple-touch.png?v=14'), 'apple-touch-icon is cache-busted 
     sceneId: 'camp:yard',
     flags: { ...p.flags, hunterHere: true, hunterFrom: 'camp:yard' },
   }
-  assert(playCoverKey(knock, sceneOf(knock)) === 'hound', 'Camp pressure interrupt uses the Hound-handler')
+  assert(playCoverKey(knock, sceneOf(knock)) === 'handler', 'Camp pressure interrupt uses the Hound-handler')
   assert(pressureFace(knock) === 'Hound-handler', 'Camp knock speaker is the handler')
   const hound = applyEffect(o, { goto: 'spine:hound' })
   assert(playCoverKey(hound, sceneOf(hound)) === 'hound', 'Spine hunt uses Shard-Hound art')
@@ -2502,7 +2502,7 @@ assert(s.sceneId !== 'camp:hunter', 'Camp knock does not open the Valerius sweep
 assert(s.flags.hunterHere, 'Camp knock is an overlay')
 assert(bodyOf(s).includes('Hound-handler'), 'Camp knock stars the Hound-handler')
 assert(!bodyOf(s).includes('Valerius does not run'), 'Camp knock does not star Valerius arriving')
-assert(playCoverKey(s, sceneOf(s)) === 'hound', 'Camp knock art is the Hound')
+assert(playCoverKey(s, sceneOf(s)) === 'handler', 'Camp knock art is the Hound-handler')
 assert(ids(s).includes('hunter-fight') && ids(s).includes('hunter-hold') && ids(s).includes('hunter-scrip'), 'Camp knock has fight, hide, and scrip stakes')
 {
   const sapBefore = s.sap
@@ -2723,7 +2723,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v123'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v124'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -3968,8 +3968,8 @@ function assertHelpResolves(s: GameState, where: string) {
       assert(hp === Math.max(0, 20 - Number(m[1])), `the crit line shows the final damage and the row matches: ${card.slice(0, 160)}`)
       assert(!/^You hit /m.test(card), 'no separate base-hit line for a crit')
     }
-    const houndCard = String(resolveEncounter(fv('prisoner', t, 'hound', {}, 20), 'fight').fx.flag?.encounterClash ?? '')
-    if (CRIT_THEM.test(houndCard)) critThem++ // v101: early enemies have capped crits, so the rate check uses the hound
+    const houndCard = String(resolveEncounter(fv('prisoner', t, 'collector', {}, 20), 'fight').fx.flag?.encounterClash ?? '')
+    if (CRIT_THEM.test(houndCard)) critThem++ // v101/v124: early enemies and the off-lead hound have capped crits, so the rate check uses the collector
     const pup = String(resolveEncounter(fv('prisoner', t, 'pup', {}, 20), 'fight').fx.flag?.encounterClash ?? '')
     if (CRIT_THEM.test(pup)) critPup++
   }
@@ -4841,11 +4841,11 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(GE.applyEffect(worn, { heat: { strays: 2 }, flash: 'x' }).heat.strays === sh0 + 1, 'Knot worn: Stray Heat +2 becomes +1')
   assert(GE.applyEffect(maw, { heat: { strays: 2 } }).heat.strays === maw.heat.strays + 2, 'no Knot: full Stray Heat')
   // Knot: Red Maw stilt route opens the cache rib.
-  const ribs = GE.applyEffect(worn, { goto: 'maw:ribs' })
+  const ribs = GE.applyEffect(worn, { goto: 'maw:ribs', flag: { mawTollDone: true } })
   const stilt = GE.visibleChoices(ribs).find((c) => c.id === 'stilt')
   assert(stilt && GE.isChoiceOn(ribs, stilt.enable), 'Knot opens the stilt route at the ribs')
   assert(GE.applyEffect(ribs, stilt!.effects).sceneId === 'maw:hold', 'stilt route reaches the cache')
-  const noKnot = GE.applyEffect({ ...maw, flags: { ...maw.flags, ossaAlly: true } }, { goto: 'maw:ribs' })
+  const noKnot = GE.applyEffect({ ...maw, flags: { ...maw.flags, ossaAlly: true } }, { goto: 'maw:ribs', flag: { mawTollDone: true } })
   const lockedStilt = GE.visibleChoices(noKnot).find((c) => c.id === 'stilt')
   assert(lockedStilt && !GE.isChoiceOn(noKnot, lockedStilt.enable) && lockedStilt.locked, 'stilt route stays visible, locked, with what it needs')
   // Knot + Head Wrap = Knotted Head Wrap, worn stays worn, keeps the perks and the Shell.
@@ -5858,7 +5858,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   assert(!dead.length, `v114: dead screens: ${dead.slice(0, 5).join(' | ')}`)
   // The UI never shows an empty action list, and leaving for the road is not held on the old screen.
   const ps = readFileSync('src/components/PlayScreen.tsx', 'utf8')
-  assert(ps.includes("key: 'look-around'") && ps.includes('const showDo = !held') && ps.includes('!newChapter'), 'v114: PlayScreen fallback and no hold across a chapter start')
+  assert(ps.includes("key: 'look-around'") && ps.includes('const showDo = true') && ps.includes('!newChapter'), 'v114: PlayScreen fallback and no hold across a chapter start')
   assert(/flash: undefined/.test(readFileSync('src/App.tsx', 'utf8')), 'v114: resuming clears the stale flash')
   // The Outcast road start has its own art.
   const leave = { ...GE.newGame('outcast'), sceneId: 'ch1:leave', chapterId: 'cache-run' as never, hubId: undefined }
@@ -6097,7 +6097,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   // 8. Do box everywhere; Map on roads; Drink sits above the Do box.
   {
     const ps = readFileSync('src/components/PlayScreen.tsx', 'utf8')
-    assert(ps.includes('const showDo = !held\n'), 'v116: the Do box is on every screen')
+    assert(ps.includes('const showDo = true\n'), 'v116: the Do box is on every screen')
     assert(ps.includes("(!!hub || state.chapterId === 'cache-run') &&") && ps.includes("scene.kind !== 'crisis' &&") && ps.includes('!state.flags.encounterHere &&'), 'v116: Map on hub and road screens, not crisis or fight')
     assert(ps.indexOf('Drink a Drop · +3 Sap') < ps.indexOf('className="say"'), 'v116: Drink sits above the Do box')
   }
@@ -6360,4 +6360,57 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   const pr = GE.visibleChoices(pipe)
   assert(pr.some((c) => c.id === 'stagger') && !GE.isChoiceOn(pipe, pr.find((c) => c.id === 'crawl')!.enable), 'v123: Last Fence locks 2-Sap walks and offers Stagger on')
   console.log('v123 retest checks OK')
+}
+
+// v124
+{
+  const E4 = await import('../src/game/encounter.ts')
+  const A4 = await import('../src/game/art.ts')
+  assert(E4.HIT_CAP_KINDS.includes('hound'), 'v124: off-lead Shard-Hound hits cap at 3')
+  // Held result screen: one fixed Continue id, kept on narrow phones.
+  const ps = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
+  const css = readFileSync(new URL('../src/index.css', import.meta.url), 'utf8')
+  assert(/const HOLD_RESULTS = true/.test(ps) && ps.includes("HELD_CONTINUE_KEY = 'held-continue'") && /const showDo = true/.test(ps) && ps.includes('} catch {'), 'v124: held results are on, with a fixed Continue, the Do box, and a fallback')
+  assert(/\.choice\.held-continue \{[^}]*position: sticky/.test(css), 'v124: the held Continue stays on screen at narrow widths')
+  assert(!ALL_SCENES.some((sc) => sc.choices.some((c) => c.id === 'held-continue')), 'v124: no scene choice shares the held Continue id')
+  // Covers.
+  for (const f of ['maw-lip', 'maw-ribs', 'maw-hold', 'maw-wreck', 'handler', 'last-fence', 'noon-country', 'hymn-road', 'cache-run']) {
+    assert(existsSync(new URL(`../public/covers/${f}.jpg`, import.meta.url)) && readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8').includes(`covers/${f}.jpg`), `v124: ${f} cover ships and is precached`)
+  }
+  const road = (door: 'prisoner' | 'outcast' | 'vessel', id: string) => { const s = GE.applyEffect(newGame(door), { startChapter: 'cache-run', goto: id, flag: { roadHuntDone: 'smoke' } }); const t = { ...s, flags: { ...s.flags, encounterHere: false } }; return A4.playCoverKey(t, sceneOf(t)) }
+  assert(road('prisoner', 'ch1:v-hymn') === 'hymn_road' && road('vessel', 'ch1:v-hymn') === 'rim_pilgrims_scar', 'v124: hymn-road art, Vessel keeps the Scar')
+  assert(road('prisoner', 'ch1:p-pipe') === 'last_fence' && road('outcast', 'ch1:o-noon') === 'noon_country' && road('prisoner', 'ch1:leave') === 'cache_run', 'v124: road covers')
+  // Hauler Pack: +1 scrap on the Wreck haul.
+  let w = GE.applyEffect(newGame('prisoner'), { goto: 'maw:tuner', enterHub: 'redmaw' })
+  w = { ...w, sap: 6, items: { ...w.items, hauler_pack: 1 }, flags: { ...w.flags, encounterHere: false, hunterHere: false } }
+  const job = GE.visibleChoices(w).find((c) => c.id === 'job')
+  assert(!!job && job.effects.add?.scrap === 3 && job.effects.flash === GE.HAULER_JOB_LINE, 'v124: Hauler Pack hauls 3 scrap')
+  // Maw toll.
+  let r = GE.applyEffect(newGame('prisoner'), { goto: 'maw:ribs', enterHub: 'redmaw' })
+  r = { ...r, sap: 6, health: 6, items: { ...r.items, scrap: 5 }, flags: { ...r.flags, encounterHere: false, hunterHere: false } }
+  const rows = GE.visibleChoices(r)
+  assert(['toll-pay', 'toll-sneak', 'toll-fight'].every((id) => rows.some((c) => c.id === id)), 'v124: the Maw toll offers pay, slip, fight')
+  assert(rows.filter((c) => !c.id.startsWith('toll-') && !c.effects.goto).every((c) => c.locked === GE.MAW_TOLL_LOCK), 'v124: rib picks stay visible, locked until the toll')
+  const paid = GE.applyEffect(r, rows.find((c) => c.id === 'toll-pay')!.effects)
+  assert(paid.items.scrap === 5 - GE.mawTollPrice(r) && !GE.visibleChoices(paid).some((c) => c.id === 'toll-pay'), 'v124: paying settles the toll')
+  assert(GE.mawTollPrice({ ...r, heat: { ...r.heat, cartel: 6 } }) === 4, 'v124: the toll scales with Cartel Heat')
+  // Threshold ruse.
+  assert(E4.ruseOdds(5) === 0 && E4.ruseOdds(6) === 2 && E4.ruseOdds(8) === 4, 'v124: ruse odds scale from Seeker Heat 6')
+  let seen = 0, fought = 0
+  for (let t = 0; t < 60; t++) {
+    let c = GE.applyEffect(newGame('vessel'), { goto: 'thresh:court', enterHub: 'threshold' })
+    c = { ...c, ticks: t, sap: 6, health: 6, heat: { ...c.heat, seekers: t % 2 ? 8 : 6 }, flags: { ...c.flags, encounterHere: false, hunterHere: false } }
+    const b = GE.visibleChoices(c).find((x) => x.id === 'bless')
+    if (!b) continue
+    const n = GE.applyEffect(c, b.effects)
+    if (n.flags.encounterHere && n.flags.encounterKind === 'courtguard') fought++
+    else if (c.heat.seekers === 6 && n.heat.seekers === 8) seen++
+  }
+  assert(seen > 0 && fought > 0, `v124: lies get seen through at Heat 6+ (${seen} heat, ${fought} fights)`)
+  // Payoffs.
+  const ct = GE.applyEffect(newGame('vessel'), { goto: 'thresh:court', enterHub: 'threshold', flag: { thaliaCalledOff: true } })
+  assert(GE.sceneProse(ct).includes('He watches Thalia, not you'), 'v124: Thalia called him off: Court line')
+  const cf = GE.applyEffect(newGame('vessel'), { goto: 'thresh:court', enterHub: 'threshold', flag: { crucibleGuardFooled: true } })
+  assert(GE.sceneProse(cf).includes('still searching the wrong corridor'), 'v124: guard fooled: Court line')
+  console.log('v124 checks OK')
 }

@@ -69,6 +69,10 @@ import {
   wantsEncounterSkip,
   foeName,
   sneakSpotted,
+  beginEncounter,
+  ruseSeen,
+  RUSE_FIGHT_LINE,
+  RUSE_HEAT_LINE,
   type EncounterKind,
 } from './encounter'
 import { talkFallback, talkIntentsFor } from './talk'
@@ -708,6 +712,16 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
       next.flash = fx.sneak.spotted
     }
   }
+  // Threshold lies at high Seeker Heat: seen through.
+  if (fx.ruse && !next.flags.encounterHere && !next.flags.downed && (next.health ?? 1) > 0 && getScene(next.sceneId).kind !== 'crisis' && ruseSeen(state)) {
+    if ((state.heat.seekers ?? 0) >= 8) {
+      next.flags = { ...next.flags, ...fightStartFlags(next, 'courtguard'), encounterHp: 3 }
+      next.flash = RUSE_FIGHT_LINE
+    } else {
+      next.heat = { ...next.heat, seekers: Math.min(8, (next.heat.seekers ?? 0) + 1) }
+      next.flash = next.flash ? `${next.flash}\n\n${RUSE_HEAT_LINE}` : RUSE_HEAT_LINE
+    }
+  }
   next = markCartelNotice(state, next, fx)
   next = markStrayNotice(state, next, fx)
   if (next.sceneId === 'camp:sabotage' && state.sceneId !== 'camp:sabotage' && !next.flags.guardDown) {
@@ -884,6 +898,12 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   if (next.sceneId !== state.sceneId && next.flags.bagHeld && !fx.bagRetry) {
     const flags = { ...next.flags }
     delete flags.bagHeld
+    next.flags = flags
+  }
+  // The Maw toll is once a visit: leaving the Maw resets it.
+  if (next.flags.mawTollDone && next.hubId !== 'redmaw') {
+    const flags = { ...next.flags }
+    delete flags.mawTollDone
     next.flags = flags
   }
   // Scene steps: a walking count for cooldowns (Haul parts).
@@ -1705,7 +1725,46 @@ export function visibleChoices(state: GameState): Choice[] {
     : isRumorCounter(state.sceneId)
       ? rumorChoices(state, authored).filter((c) => check(c.show, state))
       : authored
-  return [...bag, ...withRest(state, withKaelenPass(state, hymnSapLocks(state, rows)))]
+  return [...bag, ...withRest(state, withKaelenPass(state, hymnSapLocks(state, mawToll(state, rows))))]
+}
+
+/** The Maw toll: diggers hold the rope down to the Fossil Ribs. Pay (more at higher Cartel Heat), slip past, or fight. Once a Maw visit. */
+export const MAW_TOLL_LOCK = 'Needs: the diggers\' toll settled.'
+export function mawTollPrice(state: GameState): number {
+  return 2 + Math.floor((state.heat.cartel ?? 0) / 3)
+}
+function mawToll(state: GameState, rows: Choice[]): Choice[] {
+  if (state.sceneId !== 'maw:ribs' || state.flags.mawTollDone || state.flags.ribOpen) return rows
+  const price = mawTollPrice(state)
+  const gated = rows.map((c) => (c.effects.goto && !c.effects.flag?.ribOpen ? c : { ...c, enable: { flag: '__toll__' }, locked: MAW_TOLL_LOCK }))
+  return [
+    {
+      id: 'toll-pay',
+      label: "Pay the diggers' toll",
+      sub: `Scrap -${price}. They let you down to the ribs.`,
+      enable: { itemMin: ['scrap', price] },
+      locked: `Needs: ${price} scrap`,
+      effects: { remove: { scrap: price }, flag: { mawTollDone: true }, ticks: 1, flash: `Scrap -${price}. A digger pockets it and steps off the rope. The ribs are yours to pick.` },
+    },
+    {
+      id: 'toll-sneak',
+      label: 'Slip down past the rope',
+      sub: 'Costs 1 Sap. They may see you.',
+      enable: { sapMin: 1 },
+      locked: 'Needs: 1 Sap',
+      effects: { sap: -1, ticks: 1, flag: { mawTollDone: true }, flash: 'You go down the far side of the rib, where the rope does not reach.', sneak: { odds: 4, kind: 'scavenger', spotted: 'A digger sees you on the rib. He wants his toll another way.' } },
+    },
+    {
+      id: 'toll-fight',
+      label: 'Fight past the toll',
+      sub: 'A real fight. Health takes the hits.',
+      tone: 'danger',
+      enable: { healthMin: 1 },
+      locked: 'Too hurt to fight.',
+      effects: { ...beginEncounter(state, 'scavenger', 'The digger lets go of the rope and picks up a pick.'), flag: { ...beginEncounter(state, 'scavenger').flag, mawTollDone: true }, ticks: 1 },
+    },
+    ...gated,
+  ]
 }
 
 /** Road beats whose 2-Sap walks lock under 2 Sap (hymn-road, Last Fence). */
@@ -1773,6 +1832,8 @@ export function restAllowed(state: GameState): boolean {
 /** Haul parts: once, then not again until you have walked 4 scenes. */
 export const HAUL_GAP = 4
 export const HAUL_LOCK = 'He has nothing to haul yet. Come back after a few stops.'
+export const HAULER_JOB_SUB = 'Costs sap. You get 3 scrap: the Hauler Pack carries more. The rig gets one bolt closer to finished.'
+export const HAULER_JOB_LINE = 'Scrap +3. The Hauler Pack takes a second coil. A cut on your palm. The rig is one bolt less imaginary.'
 export const REST_DONE_LOCK = 'Rested here already. Move on first.'
 
 function withRest(state: GameState, rows: Choice[]): Choice[] {
@@ -1783,7 +1844,12 @@ function withRest(state: GameState, rows: Choice[]): Choice[] {
       if (c.id === 'bench' && state.flags.restedHere) return { ...c, enable: { flag: '__never__' }, locked: REST_DONE_LOCK }
       if (c.id === 'job') {
         if (hauledAgo < HAUL_GAP) return { ...c, enable: { flag: '__never__' }, locked: HAUL_LOCK }
-        return { ...c, effects: { ...c.effects, flag: { ...(c.effects.flag ?? {}), oilJobStep: Number(state.flags.sceneSteps ?? 0) } } }
+        const fx = { ...c.effects, flag: { ...(c.effects.flag ?? {}), oilJobStep: Number(state.flags.sceneSteps ?? 0) } }
+        // The Hauler Pack carries more parts: +1 scrap on each haul.
+        if ((state.items.hauler_pack ?? 0) > 0) {
+          return { ...c, sub: HAULER_JOB_SUB, effects: { ...fx, add: { ...(fx.add ?? {}), scrap: (fx.add?.scrap ?? 0) + 1 }, flash: HAULER_JOB_LINE } }
+        }
+        return { ...c, effects: fx }
       }
       return c
     })

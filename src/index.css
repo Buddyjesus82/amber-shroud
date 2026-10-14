@@ -2267,3 +2267,10 @@ h2 {
 .story p.fight-stat + p:not(.fight-stat) {
   margin-top: 0.8em;
 }
+
+/* v124: the held result's Continue stays on screen on narrow phones, even if the page scrolls. */
+.choice.held-continue {
+  position: sticky;
+  bottom: max(8px, env(safe-area-inset-bottom));
+  z-index: 3;
+}

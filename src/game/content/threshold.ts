@@ -20,6 +20,16 @@ Thalia stands at the dais. The gold on her cheeks might be kohl and might be sap
         mode: 'append',
         body: `The bowing is shallower. Someone has asked whether the cup is empty.`,
       },
+      {
+        if: { flag: 'thaliaCalledOff' },
+        mode: 'append',
+        body: `The Court Guard keeps to the wall now. He watches Thalia, not you, and waits for her word.`,
+      },
+      {
+        if: { flag: 'crucibleGuardFooled' },
+        mode: 'append',
+        body: `Somewhere under the Court, the guard is still searching the wrong corridor.`,
+      },
     ],
     choices: [
       {
@@ -76,6 +86,7 @@ Thalia stands at the dais. The gold on her cheeks might be kohl and might be sap
         sub: 'You pretend. Seeker Heat rises. Thalia notices.',
         effects: {
           ticks: 1,
+          ruse: true,
           heat: { seekers: 1 },
           pressure: 1,
           flash: 'Heads bow a half-inch. Belief is a muscle. You flex it. Seeker Heat ticks. Thalia weeps like a countdown.',
@@ -359,6 +370,7 @@ Oram is here more often than he is in the Court. He prefers the animals to the h
         label: 'Let the cloth do the talking',
         show: { item: 'ceremonial_cloth' },
         effects: {
+          ruse: true,
           flag: { guardBowed: true },
           ticks: 1,
           goto: 'thresh:guard',

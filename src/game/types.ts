@@ -102,6 +102,8 @@ export type Effect = {
   still?: boolean
   /** A sneak that can fail: on a spotted roll (odds in 10) a real fight opens on the ground you reach. */
   sneak?: { odds: number; kind: string; spotted: string }
+  /** A Vessel lie or the cloth at the Threshold: at Seeker Heat 6+ it can be seen through (Heat +1, or a Court Guard fight at 8+). */
+  ruse?: boolean
   /** An ambush that opens on arrival and cannot be skipped (Run still can). Ignores Health. */
   ambush?: { kind: string; line: string }
   sap?: number
