@@ -21,12 +21,12 @@ Thalia stands at the dais. The gold on her cheeks might be kohl and might be sap
         body: `The bowing is shallower. Someone has asked whether the cup is empty.`,
       },
       {
-        if: { flag: 'thaliaCalledOff' },
+        if: { all: [{ flag: 'thaliaCalledOff' }, { flagUnset: 'courtGuardFought' }] },
         mode: 'append',
         body: `The Court Guard keeps to the wall now. He watches Thalia, not you, and waits for her word.`,
       },
       {
-        if: { flag: 'crucibleGuardFooled' },
+        if: { all: [{ flag: 'crucibleGuardFooled' }, { flagUnset: 'courtGuardFought' }] },
         mode: 'append',
         body: `Somewhere under the Court, the guard is still searching the wrong corridor.`,
       },

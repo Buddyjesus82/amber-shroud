@@ -886,14 +886,14 @@ export function resolveEncounter(
   }
   if (how === 'skip' && opts.cloak) {
     const line = CLOAK_SKIP_LINE
-    return holdCard(state, spec, line, line)
+    return holdCard(state, spec, line, line, { flag: { encounterFled: true } })
   }
   if (how === 'skip' && f.encounterNoSkip) {
     return { fx: { flash: NO_SKIP_LINE }, flash: NO_SKIP_LINE }
   }
   if (how === 'skip') {
     const line = `You give ${whoOf(spec)} the road. No loot.`
-    return holdCard(state, spec, line, line)
+    return holdCard(state, spec, line, line, { flag: { encounterFled: true } })
   }
   const snatched = typeof f.encounterSnatch === 'string' && f.encounterSnatch ? (f.encounterSnatch as ItemId) : null
   if (how === 'deal' && f.encounterOffer) {
