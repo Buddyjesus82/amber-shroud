@@ -73,6 +73,9 @@ type HeldScreen = {
   stamp: string
 }
 
+/** Off since v114: see act(). */
+const HOLD_RESULTS = false
+
 function heldStamp(s: GameState): string {
   return `${s.sceneId}|${s.updatedAt ?? 0}|${s.ticks}`
 }
@@ -131,7 +134,11 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     // A note that only rides along (the Vessel cloth line) shows on the next screen; it is not a result to hold.
     const noteOnly = next.flash === DISGUISE_SOFTEN_NOTE
     // Leaving a crisis (Empty, Approach Dry) shows its result on the new ground, so the dry title does not linger.
-    if (moved && next.flash && !fightResult && !noteOnly && scene.kind !== 'crisis') {
+    // Starting a new chapter (leaving for the road) is not held: the result shows on the road screen, with its buttons.
+    const newChapter = next.chapterId !== state.chapterId
+    // v114 hotfix: holding a result on the old screen left players on iOS with no buttons, Map, or Do box.
+    // Results now show on the new screen, which always has its own actions.
+    if (HOLD_RESULTS && moved && next.flash && !fightResult && !noteOnly && !newChapter && scene.kind !== 'crisis') {
       setHeld({
         title: placeTitle,
         meta: hub ? hub.name : scene.id === 'ch1:storm' ? 'Camp-04' : scene.chapterId === 'cache-run' ? cap(ROADS[state.door].name) : null,
@@ -242,8 +249,13 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     optionRows.length = 0
     optionRows.push({ key: 'continue', tone: 'default', label: 'Continue', onClick: continueOn })
   }
+  // Never leave a screen with nothing to press: fall back to a look, and keep the Do box.
+  const stuck = !held && optionRows.length === 0
+  if (stuck) {
+    optionRows.push({ key: 'look-around', tone: 'quiet', label: 'Look around', sub: 'Take stock of where you are.', onClick: () => onChange(interpret({ ...state, flash: undefined }, 'look')) })
+  }
   const split = optionRows.length >= 4
-  const showDo = !held && (talky || roam || overlay)
+  const showDo = !held && (talky || roam || overlay || stuck)
 
   const scrolledScene = useRef(state.sceneId)
   useEffect(() => {

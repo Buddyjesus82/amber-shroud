@@ -2691,7 +2691,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v113'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v114'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/zafir.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -5782,4 +5782,58 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   const well = { ...GE.newGame('outcast'), sceneId: 'spine:well', hubId: 'spine' }
   assert(playCoverKey(well, getScene('spine:well')!) === 'spine', 'v113: the Dry Well uses the Spine art, not the title art')
   console.log('v113 collector checks OK')
+}
+
+// v114: no dead screens. Every hunt choice and every Kaelen / rumor path ends on a screen with actions.
+{
+  const dead: string[] = []
+  const walkAll = (s: GameState, path: string, depth: number) => {
+    const rows = GE.visibleChoices(s)
+    if (!rows.length) { dead.push(`${path} -> ${s.sceneId}`); return }
+    if (!depth) return
+    for (const c of rows) {
+      if (c.enable && !GE.isChoiceOn(s, c.enable)) continue
+      walkAll(GE.applyEffect(s, c.effects), `${path} > ${c.id}`, depth - 1)
+    }
+  }
+  const rich = (s: GameState): GameState => ({ ...s, items: { ...s.items, scrap: 5, glints: 5, vial_drop: 1 } })
+  const hunts: [DoorId, string, string | undefined, string | undefined][] = [
+    ['prisoner', 'camp:yard', undefined, 'camp04'],
+    ['outcast', 'spine:ridge', undefined, 'spine'],
+    ['outcast', 'spine:well', undefined, 'spine'],
+    ['vessel', 'thresh:paddock', undefined, 'threshold'],
+  ]
+  for (const [door, at, ch, hub] of hunts) {
+    for (const strays of [0, 4, 8]) {
+      const s0 = rich(GE.newGame(door))
+      const s = { ...s0, sceneId: at, hubId: hub, chapterId: ch as never, heat: { ...s0.heat, strays }, flags: { ...s0.flags, hungerKnown: true, hunterHere: true, hunterFrom: at, hunterAt: s0.ticks } }
+      walkAll(s, `${door}@${at} hunt strays${strays}`, 2)
+    }
+  }
+  const kaelenAt: [DoorId, string, string | undefined, string | undefined][] = [
+    ['prisoner', 'camp:kaelen', undefined, 'camp04'],
+    ['vessel', 'thresh:kaelen', undefined, 'threshold'],
+    ['prisoner', 'ch1:p-pipe', 'cache-run', undefined],
+    ['outcast', 'ch1:o-noon', 'cache-run', undefined],
+    ['vessel', 'ch1:v-hymn', 'cache-run', undefined],
+    ['outcast', 'spine:ridge', undefined, 'spine'],
+  ]
+  for (const [door, at, ch, hub] of kaelenAt) {
+    const s0 = rich(GE.newGame(door))
+    const s = { ...s0, sceneId: at, hubId: hub, chapterId: ch as never, flags: { ...s0.flags, kaelenPassing: true, kaelenKnown: true, metKaelen: true, kaelenHub: hub ?? 'spine' } }
+    walkAll(s, `${door}@${at} kaelen`, 3)
+  }
+  assert(!dead.length, `v114: dead screens: ${dead.slice(0, 5).join(' | ')}`)
+  // The UI never shows an empty action list, and leaving for the road is not held on the old screen.
+  const ps = readFileSync('src/components/PlayScreen.tsx', 'utf8')
+  assert(ps.includes("key: 'look-around'") && ps.includes('|| stuck)') && ps.includes('!newChapter'), 'v114: PlayScreen fallback and no hold across a chapter start')
+  assert(/flash: undefined/.test(readFileSync('src/App.tsx', 'utf8')), 'v114: resuming clears the stale flash')
+  // The Outcast road start has its own art.
+  const leave = { ...GE.newGame('outcast'), sceneId: 'ch1:leave', chapterId: 'cache-run' as never, hubId: undefined }
+  assert(playCoverKey(leave, getScene('ch1:leave')!) === 'rim_bonewash', 'v114: the Bone Wash road start is not the title art')
+  // The ridge Gullet button lands on the road with actions.
+  const ridge = { ...GE.newGame('outcast'), sceneId: 'spine:ridge', hubId: 'spine', flags: { ...GE.newGame('outcast').flags, hungerKnown: true } }
+  const road = GE.applyEffect(ridge, GE.visibleChoices(ridge).find((c) => c.id === 'hunger')!.effects)
+  assert(road.sceneId === 'ch1:leave' && road.chapterId === 'cache-run' && GE.visibleChoices(road).length > 0, 'v114: the ridge road button lands on the road with buttons')
+  console.log('v114 dead-screen checks OK')
 }
