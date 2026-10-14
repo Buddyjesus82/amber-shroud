@@ -2723,7 +2723,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v125'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v126'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -6358,7 +6358,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   let pipe = { ...GE.applyEffect(newGame('prisoner'), { startChapter: 'cache-run', goto: 'ch1:p-pipe', flag: { roadHuntDone: 'smoke' } }), sap: 1 }
   pipe = { ...pipe, flags: { ...pipe.flags, encounterHere: false } }
   const pr = GE.visibleChoices(pipe)
-  assert(pr.some((c) => c.id === 'stagger') && !GE.isChoiceOn(pipe, pr.find((c) => c.id === 'crawl')!.enable), 'v123: Last Fence locks 2-Sap walks and offers Stagger on')
+  assert(!pr.some((c) => c.id === 'stagger') && GE.isChoiceOn(pipe, pr.find((c) => c.id === 'crawl')!.enable), 'v123→v126: Last Fence walks cost 1 Sap, no Stagger row')
   console.log('v123 retest checks OK')
 }
 
@@ -6481,4 +6481,49 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   const fg = GE.applyEffect(ct, { flag: { encounterHere: true, encounterKind: 'courtguard' } })
   assert(!!fg.flags.courtGuardFought, 'v125: a Court Guard fight marks courtGuardFought')
   console.log('v125 checks OK')
+}
+
+// v126
+{
+  // Winning the toll fight: Cartel Heat +2, on its own line.
+  let tr = GE.applyEffect(newGame('prisoner'), { goto: 'maw:ribs', enterHub: 'redmaw' })
+  tr = { ...tr, sap: 6, health: 6, heat: { ...tr.heat, cartel: 0 }, flags: { ...tr.flags, encounterHere: false, hunterHere: false } }
+  let won = GE.applyEffect(tr, GE.visibleChoices(tr).find((c) => c.id === 'toll-fight')!.effects)
+  won = { ...won, flags: { ...won.flags, encounterHp: 1 } }
+  for (let i = 0; i < 12 && won.flags.encounterHere; i++) {
+    const ch = GE.visibleChoices(won)
+    won = GE.applyEffect({ ...won, health: 6, ticks: won.ticks + 1 }, (won.flags.encounterDone ? ch[0] : ch.find((c) => c.id === 'enc-fight')!).effects)
+  }
+  assert(!won.flags.encounterHere && !!won.flags.mawTollDone && won.heat.cartel >= 2 && String(won.flash).split('\n').includes(GE.MAW_TOLL_WIN_HEAT), `v126: toll fight win is Cartel Heat +2 (${won.heat.cartel}, ${won.flash})`)
+  // Last Fence: walks cost 1 Sap; at Sap 1 you arrive at 0, no rescue on the walk.
+  for (const id of ['crawl', 'bolt']) {
+    let pipe = GE.applyEffect(newGame('prisoner'), { startChapter: 'cache-run', goto: 'ch1:p-pipe', flag: { roadHuntDone: 'smoke' } })
+    pipe = { ...pipe, sap: 1, flags: { ...pipe.flags, encounterHere: false } }
+    const c = GE.visibleChoices(pipe).find((x) => x.id === id)!
+    assert(c.effects.sap === -1 && GE.isChoiceOn(pipe, c.enable) && !GE.visibleChoices(pipe).some((x) => x.id === 'stagger'), `v126: Last Fence ${id} costs 1 Sap, open at Sap 1`)
+    const n = GE.applyEffect(pipe, c.effects)
+    assert(n.sap === 0 && !n.sceneId.startsWith('crisis:'), `v126: Last Fence ${id} at Sap 1 arrives at 0 (${n.sceneId})`)
+  }
+  // Sybella at Seekers 8: at most once per 3 scenes; her scenes do not count toward Heat coming due.
+  let m = GE.applyEffect(newGame('vessel'), { goto: 'maw:rim', enterHub: 'redmaw' })
+  m = { ...m, sap: 8, health: 6, heat: { ...m.heat, seekers: 8 }, flags: { ...m.flags, encounterHere: false, hunterHere: false, huntQuiet: 20, roadFightSeen: true } }
+  let last = -99, minGap = 99, n = 0
+  for (let i = 0; i < 80; i++) {
+    const to = m.sceneId === 'maw:rim' ? 'maw:lip' : 'maw:rim'
+    const before = Number(m.flags.fightQuiet ?? 0)
+    if (m.flags.hunterHere || m.flags.encounterHere || m.sceneId.startsWith('maw:sybella')) {
+      const ch = GE.visibleChoices(m).filter((c) => GE.isChoiceOn(m, c.enable))
+      const pickC = ch.find((c) => /stay|hold|hide/.test(c.id)) ?? ch[0]
+      m = GE.applyEffect({ ...m, sap: 8, health: 6 }, pickC.effects)
+      if (!m.flags.encounterHere && !m.flags.hunterHere) assert(Number(m.flags.fightQuiet ?? 0) <= before, 'v126: intercept beats do not add to Heat coming due')
+      continue
+    }
+    m = GE.applyEffect({ ...m, sap: 8, health: 6, ticks: m.ticks + i }, { goto: to, ticks: 1 })
+    if (m.flags.hunterHere && String(m.flags.hunterFrom ?? '').startsWith('maw:')) {
+      const step = Number(m.flags.sceneSteps ?? 0)
+      minGap = Math.min(minGap, step - last); last = step; n++
+    }
+  }
+  assert(n >= 2 && minGap >= GE.SYBELLA_GAP, `v126: Sybella at most once per 3 scenes (${n} intercepts, min gap ${minGap})`)
+  console.log('v126 checks OK')
 }

@@ -285,6 +285,9 @@ function facingSybella(sceneId: string): boolean {
   return sceneId === 'maw:sybella' || sceneId === 'maw:sybella-shadow'
 }
 
+/** Sybella's Maw intercept: at most once per this many scenes walked. */
+export const SYBELLA_GAP = 3
+
 function hunterScene(state: GameState, walked = true): string | null {
   if (state.flags.hunterHere || state.flags.encounterHere || state.flags.downed) return null
   if (
@@ -313,6 +316,8 @@ function hunterScene(state: GameState, walked = true): string | null {
     if (state.sceneId === 'maw:sybella' || state.sceneId === 'maw:sybella-shadow' || state.sceneId === 'maw:smoke') {
       return null
     }
+    // At most once every SYBELLA_GAP scenes walked.
+    if (Number(state.flags.sceneSteps ?? 0) - Number(state.flags.sybellaShadowStep ?? -99) < SYBELLA_GAP) return null
     // At top Heat her shadow comes on a walk, never on a look, a bench, or a wait: one walk in two (seeded).
     if (heat >= 8) {
       if (!walked) return null
@@ -571,6 +576,8 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     !!fx.startChapter ||
     arrivingLand ||
     destScene?.kind === 'crisis' ||
+    // Last Fence: a 1-Sap walk on your last Sap arrives at 0; the rescue waits for the next step.
+    state.sceneId === 'ch1:p-pipe' ||
     recovering
 
   if (dest) {
@@ -737,12 +744,14 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   const crucibleBeat = (state.sceneId === 'open:vessel' && next.sceneId === 'thresh:crucible-rig') || (state.sceneId === 'thresh:crucible-rig' && next.sceneId === 'thresh:crucible-stairs') || (state.sceneId === 'thresh:court-guard' && next.sceneId === 'thresh:court')
   const lingered = !fx.still && !vendorBeat && !crucibleBeat && ((fx.ticks ?? 0) > 0 || (fx.pressure ?? 0) > 0 || !!dest)
   const clearingHunt = !!state.flags.hunterHere && (!next.flags.hunterHere || !!fx.unsetFlag?.includes('hunterHere'))
+  // Sybella's intercept scenes are their own beat: they never count toward a hunt or Heat coming due.
+  const interceptBeat = facingSybella(state.sceneId) || facingSybella(next.sceneId)
   if (clearingHunt) {
     const keepFrom = facingSybella(next.sceneId)
     next.flags = { ...next.flags, huntQuiet: 0 }
     delete next.flags.hunterHere
     if (!keepFrom) delete next.flags.hunterFrom
-  } else if (lingered && !next.flags.hunterHere && !next.flags.encounterHere) {
+  } else if (lingered && !next.flags.hunterHere && !next.flags.encounterHere && !interceptBeat) {
     const restart = HUNT_GROUND.has(state.sceneId) && next.sceneId !== state.sceneId
     const carried = restart ? 0 : Number(next.flags.huntQuiet ?? 0)
     next.flags = { ...next.flags, huntQuiet: carried + 1 }
@@ -764,6 +773,7 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
       hunterHere: true,
       huntQuiet: 0,
       sybellaShadowed: from.startsWith('maw:') || next.hubId === 'redmaw' ? true : next.flags.sybellaShadowed,
+      sybellaShadowStep: interrupt === 'maw:sybella-shadow' ? Number(next.flags.sceneSteps ?? 0) + (next.sceneId !== state.sceneId ? 1 : 0) : next.flags.sybellaShadowStep,
       metHandler: interrupt === 'camp:hunter' ? true : next.flags.metHandler,
       ...(interrupt === 'spine:hunter'
         ? {
@@ -854,7 +864,7 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   // Heat comes due: count fight-free danger scenes; any fight or hunt clears the count.
   if (next.flags.encounterHere || next.flags.hunterHere) {
     if (next.flags.fightQuiet) next.flags = { ...next.flags, fightQuiet: 0 }
-  } else if (roamBeat && !talkBeat && encounterGround(next) && hubDanger(next) >= 1) {
+  } else if (roamBeat && !talkBeat && !interceptBeat && !clearingHunt && encounterGround(next) && hubDanger(next) >= 1) {
     next.flags = { ...next.flags, fightQuiet: Number(next.flags.fightQuiet ?? 0) + 1 }
   }
 
@@ -908,7 +918,12 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   // The toll fight settles the toll only when it ends without running or going down.
   if (state.flags.mawTollFight && state.flags.encounterHere && !next.flags.encounterHere) {
     const flags = { ...next.flags }
-    if (!state.flags.encounterFled && !next.flags.downed && (next.health ?? 1) > 0) flags.mawTollDone = true
+    if (!state.flags.encounterFled && !next.flags.downed && (next.health ?? 1) > 0) {
+      flags.mawTollDone = true
+      // The diggers report it.
+      next.heat = { ...next.heat, cartel: Math.min(8, (next.heat.cartel ?? 0) + 2) }
+      next.flash = next.flash ? `${next.flash}\n\n${MAW_TOLL_WIN_HEAT}` : MAW_TOLL_WIN_HEAT
+    }
     delete flags.mawTollFight
     next.flags = flags
   }
@@ -1750,6 +1765,7 @@ export function visibleChoices(state: GameState): Choice[] {
 }
 
 /** The Maw toll: diggers hold the rope down to the Fossil Ribs. Pay (more at higher Cartel Heat), slip past, or fight. Once a Maw visit. */
+export const MAW_TOLL_WIN_HEAT = 'Cartel Heat +2.'
 export const MAW_TOLL_LOCK = 'Needs: the diggers\' toll settled.'
 export function mawTollPrice(state: GameState): number {
   return 2 + Math.floor((state.heat.cartel ?? 0) / 3)
@@ -1789,7 +1805,7 @@ function mawToll(state: GameState, rows: Choice[]): Choice[] {
 }
 
 /** Road beats whose 2-Sap walks lock under 2 Sap (hymn-road, Last Fence). */
-const SAP_LOCK_ROADS = new Set(['ch1:v-hymn', 'ch1:p-pipe'])
+const SAP_LOCK_ROADS = new Set(['ch1:v-hymn'])
 export const HYMN_STAGGER_LABEL = 'Stagger on with what you have'
 export const HYMN_STAGGER_SUB = 'Costs your last Sap.'
 

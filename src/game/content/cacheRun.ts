@@ -186,11 +186,11 @@ A payroll drone ticks behind the grate. Shard-Hound tracks are in the wash. If y
       {
         id: 'crawl',
         label: 'Crawl the hot pipe anyway',
-        sub: 'No wrench. The steam burns you (more sap). You stay off the open wash. Cartel Heat rises.',
+        sub: 'No wrench. The steam burns you. You stay off the open wash. Cartel Heat rises.',
         effects: {
           goto: 'ch1:p-clerk',
           ticks: 1,
-          sap: -2,
+          sap: -1,
           heat: { cartel: 2 },
           pressure: 1,
           flag: { pipeBurn: true },
@@ -204,7 +204,7 @@ A payroll drone ticks behind the grate. Shard-Hound tracks are in the wash. If y
         effects: {
           goto: 'ch1:p-clerk',
           ticks: 1,
-          sap: -2,
+          sap: -1,
           pressure: 1,
           heat: { cartel: 2 },
           flag: { washRun: true },
