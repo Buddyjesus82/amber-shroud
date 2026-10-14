@@ -14,6 +14,12 @@ export type CoverKey =
   | 'hound'
   | 'sybella'
   | 'thalia'
+  | 'rim_cutter'
+  | 'waste_scavenger'
+  | 'amber_husk'
+  | 'dust_jackal'
+  | 'amber_tick'
+  | 'shard_pup'
   | 'zafir'
   | 'ossa'
   | 'kaelen'
@@ -97,6 +103,12 @@ const FILES: Record<CoverKey, string> = {
   down: 'down.jpg',
   resin_vault: 'resin-vault.jpg',
   extraction_rig: 'extraction-rig.jpg',
+  rim_cutter: 'rim-cutter.jpg',
+  waste_scavenger: 'waste-scavenger.jpg',
+  amber_husk: 'amber-husk.jpg',
+  dust_jackal: 'dust-jackal.jpg',
+  amber_tick: 'amber-tick.jpg',
+  shard_pup: 'shard-pup.jpg',
 }
 
 /**
@@ -175,6 +187,18 @@ export const COVER_BAND: Record<CoverKey, [number, number]> = {
   resin_vault: [0.2, 0.95],
   // The scavenger's face, the tubes, and the ledger-drum.
   extraction_rig: [0.1, 0.85],
+  // The crouched cutter and the blade on the ledge.
+  rim_cutter: [0.05, 0.65],
+  // Club over the shoulder down to the boots.
+  waste_scavenger: [0.0, 0.65],
+  // The whole husk, head to feet, core in the chest.
+  amber_husk: [0.05, 0.95],
+  // Ears to paws.
+  dust_jackal: [0.1, 0.65],
+  // Legs, glowing sac, and the rock it clings to.
+  amber_tick: [0.05, 0.75],
+  // Crystal spines to paws.
+  shard_pup: [0.0, 0.65],
 }
 
 export function coverBand(key: CoverKey): [number, number] {
@@ -239,6 +263,12 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
     if (kind === 'courtguard') return 'courtguard'
     if (kind === 'collector') return SPINE_HUNTER.art
     if (kind === 'carapace') return CARAPACE_HUNTER.art
+    if (kind === 'cutter') return 'rim_cutter'
+    if (kind === 'scavenger') return 'waste_scavenger'
+    if (kind === 'husk') return 'amber_husk'
+    if (kind === 'jackal') return 'dust_jackal'
+    if (kind === 'tick') return 'amber_tick'
+    if (kind === 'pup') return 'shard_pup'
     // No enemy art yet (husk, scavenger, cutter, jackal, tick, pup): the neutral ground cover, never a face from the scene.
     return fightGround(state, scene)
   }
