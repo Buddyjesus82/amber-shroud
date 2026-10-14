@@ -1262,7 +1262,19 @@ assert(s.flags.hunterFrom === 'maw:lip', 'facing her smoke keeps the ground unde
   hot = pick(hot, 'on')
   assert(hot.sceneId === 'maw:rim' && !hot.flags.hunterHere, 'Heat 8 does not re-arm Sybella on the very next scene')
   hot = applyEffect(hot, { ticks: 1, flag: { encounterAt: 999 } })
-  assert(hot.sceneId === 'maw:rim' && hot.flags.hunterHere, 'Heat 8 re-arms Sybella after 2 quiet scenes')
+  assert(hot.sceneId === 'maw:rim' && !hot.flags.hunterHere, 'v123: a wait or look never brings her shadow')
+  {
+    let walks = hot
+    let fired = 0
+    for (let i = 0; i < 16; i++) {
+      const to = walks.sceneId === 'maw:rim' ? 'maw:ribs' : 'maw:rim'
+      walks = applyEffect({ ...walks, sap: 9, flags: { ...walks.flags, encounterAt: 9999, huntQuiet: 9 } }, { goto: to, ticks: 1 })
+      if (walks.flags.hunterHere) { fired++; walks = { ...walks, sceneId: to, flags: { ...walks.flags, hunterHere: false, hunterFrom: undefined, huntQuiet: 9 } } }
+      walks = { ...walks, flags: { ...walks.flags, encounterHere: false } }
+    }
+    assert(fired >= 3 && fired <= 13, `v123: at Heat 8 her shadow takes about one walk in two (${fired}/16)`)
+  }
+  hot = { ...hot, flags: { ...hot.flags, hunterHere: true, hunterFrom: 'maw:rim' }, sceneId: 'maw:sybella-shadow' }
 
   let slip = newGame('prisoner')
   slip = applyEffect(slip, {
@@ -2711,7 +2723,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v122'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v123'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -6317,4 +6329,35 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   const dry2 = GE.applyEffect({ ...up, sap: 1, flags: { ...up.flags, encounterHere: false, hunterHere: false } }, { sap: -1, ticks: 1 })
   assert(dry2.items.glints === 0, 'v122: and charges again the next time')
   console.log('v122 retest checks OK')
+}
+{
+  // v123 retest checks.
+  const H = await import('../src/game/hunter.ts')
+  // Haul relocks for 4 scenes.
+  let w = { ...GE.applyEffect(newGame('vessel'), { goto: 'maw:tuner', enterHub: 'redmaw', flag: { chapter1Done: true, chapter1EndSeen: true, rimRoadSeen: true, encounterAt: 99999 } }), health: 2, sap: 9 }
+  const clear = (s: GameState) => ({ ...s, flags: { ...s.flags, encounterHere: false, hunterHere: false, downed: false } })
+  w = clear(w)
+  w = GE.applyEffect(w, GE.visibleChoices(w).find((c) => c.id === 'job')!.effects)
+  const jobOn = (s: GameState) => { const j = GE.visibleChoices(clear(s)).find((c) => c.id === 'job'); return !!j && GE.isChoiceOn(clear(s), j.enable) }
+  let walk = w
+  for (const to of ['maw:rim', 'maw:market', 'maw:tuner']) walk = clear({ ...GE.applyEffect(clear(walk), { goto: to }), sap: 9 })
+  assert(!jobOn(walk), 'v123: Haul still locked after 3 scenes')
+  for (const to of ['maw:rim', 'maw:tuner']) walk = clear({ ...GE.applyEffect(clear(walk), { goto: to }), sap: 9 })
+  assert(jobOn(walk), `v123: Haul opens again after 4+ scenes (${walk.flags.sceneSteps} vs ${walk.flags.oilJobStep})`)
+  // Win then collapse still costs half the scrap.
+  let won = GE.applyEffect(newGame('prisoner'), { goto: 'camp:yard', enterHub: 'camp04' })
+  won = { ...won, health: 1, items: { ...won.items, scrap: 7 }, flags: { ...won.flags, encounterHere: false, hunterHere: false } }
+  const wc = GE.applyEffect(won, { health: -1, flag: { downedWon: true } })
+  assert(wc.items.scrap === 4 && String(wc.flags.downedNote).includes('Scrap -3.'), `v123: win-then-collapse halves scrap and says so (${wc.items.scrap})`)
+  // The scrape-line cool is shared.
+  let hunt = GE.applyEffect(newGame('prisoner'), { goto: 'camp:yard', enterHub: 'camp04' })
+  hunt = { ...hunt, health: 6, sap: 6, flags: { ...hunt.flags, encounterHere: false, yardLineCooled: true, cartelNotice: true, hunterHere: true, hunterFrom: 'camp:yard' } }
+  const dive = H.pressureChoices(hunt).find((c) => c.id === 'hunter-line')
+  assert(!!dive && !GE.isChoiceOn(hunt, dive.enable), 'v123: Dive the scrape-line shares the Yard line cool')
+  // Last Fence 2-Sap locks with a stagger row.
+  let pipe = { ...GE.applyEffect(newGame('prisoner'), { startChapter: 'cache-run', goto: 'ch1:p-pipe', flag: { roadHuntDone: 'smoke' } }), sap: 1 }
+  pipe = { ...pipe, flags: { ...pipe.flags, encounterHere: false } }
+  const pr = GE.visibleChoices(pipe)
+  assert(pr.some((c) => c.id === 'stagger') && !GE.isChoiceOn(pipe, pr.find((c) => c.id === 'crawl')!.enable), 'v123: Last Fence locks 2-Sap walks and offers Stagger on')
+  console.log('v123 retest checks OK')
 }

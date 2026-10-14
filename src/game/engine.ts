@@ -281,7 +281,7 @@ function facingSybella(sceneId: string): boolean {
   return sceneId === 'maw:sybella' || sceneId === 'maw:sybella-shadow'
 }
 
-function hunterScene(state: GameState): string | null {
+function hunterScene(state: GameState, walked = true): string | null {
   if (state.flags.hunterHere || state.flags.encounterHere || state.flags.downed) return null
   if (
     state.sceneId === 'camp:sabotage' ||
@@ -308,6 +308,13 @@ function hunterScene(state: GameState): string | null {
   if (state.hubId === 'redmaw' || state.sceneId.startsWith('maw:')) {
     if (state.sceneId === 'maw:sybella' || state.sceneId === 'maw:sybella-shadow' || state.sceneId === 'maw:smoke') {
       return null
+    }
+    // At top Heat her shadow comes on a walk, never on a look, a bench, or a wait: one walk in two (seeded).
+    if (heat >= 8) {
+      if (!walked) return null
+      let h = (state.ticks * 2654435761 + 97) >>> 0
+      for (const ch of state.sceneId) h = Math.imul(h ^ ch.charCodeAt(0), 2246822519) >>> 0
+      if (((h ^ (h >>> 15)) >>> 0) % 2 === 1) return null
     }
     return 'maw:sybella-shadow'
   }
@@ -725,7 +732,7 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   // opens an interrupting hunt or road fight. The next beat on the new ground can.
   // Stepping off the End of Chapter One screen counts the same: nothing jumps you on the way back to the Rim.
   const talkBeat = getScene(state.sceneId).kind === 'talk' || state.sceneId === CHAPTER_ONE_END
-  const interrupt = lingered && !clearingHunt && !talkBeat ? hunterScene(next) : null
+  const interrupt = lingered && !clearingHunt && !talkBeat ? hunterScene(next, !!dest && dest !== state.sceneId) : null
   const fightBeat = !!fx.resolveEncounter || !!next.flags.encounterHere || !!fx.unsetFlag?.includes('encounterHere')
   const arrivedKind = getScene(next.sceneId).kind
   if (interrupt && !fightBeat && arrivedKind !== 'crisis' && arrivedKind !== 'talk' && arrivedKind !== 'ending') {
@@ -852,8 +859,13 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
       // Any Down costs, even a stagger win that leaves you on the ground.
       const loss = downLoss(next)
       if (loss) {
-        next = { ...next, items: { ...next.items, [loss.item]: Math.max(0, (next.items[loss.item] ?? 0) - loss.n) } }
-        note = `${note}\n\n${loss.line}`
+        const had = next.items[loss.item] ?? 0
+        const left = Math.max(0, had - loss.n)
+        next = { ...next, items: { ...next.items, [loss.item]: left } }
+        // The line names what actually left the bag.
+        const line = loss.item === 'scrap' ? DOWN_SCRAP_LINE(had - left) : loss.line
+        note = `${note}\n\n${line}`
+        next.flags = { ...next.flags, downLost: line }
       }
     }
     const flags: FlagMap = { ...next.flags, downed: true, downedNote: note, ...(sign ? { sandDownSeen: true, sandSignAt: next.ticks } : {}) }
@@ -1656,7 +1668,9 @@ function fightLostWake(state: GameState): Effect {
   const name = foeName(state.flags.downedKind)
   if (!name || state.flags.downedWon) return fx
   const lost = `Fight lost. The ${name} has moved on.`
-  return { ...fx, flash: fx.flash ? `${lost} ${fx.flash}` : lost }
+  const base = fx.flash ? `${lost} ${fx.flash}` : lost
+  const cost = typeof state.flags.downLost === 'string' && state.flags.downLost ? state.flags.downLost : ''
+  return { ...fx, unsetFlag: [...(fx.unsetFlag ?? []), 'downLost'], flash: cost ? `${base}\n\n${cost}` : base }
 }
 
 export function visibleChoices(state: GameState): Choice[] {
@@ -1694,15 +1708,17 @@ export function visibleChoices(state: GameState): Choice[] {
   return [...bag, ...withRest(state, withKaelenPass(state, hymnSapLocks(state, rows)))]
 }
 
+/** Road beats whose 2-Sap walks lock under 2 Sap (hymn-road, Last Fence). */
+const SAP_LOCK_ROADS = new Set(['ch1:v-hymn', 'ch1:p-pipe'])
 export const HYMN_STAGGER_LABEL = 'Stagger on with what you have'
 export const HYMN_STAGGER_SUB = 'Costs your last Sap.'
 
 /** Hymn-road: the 2-Sap walks lock under 2 Sap. A last-Sap stagger keeps the road open (it empties you into the rescue). */
 function hymnSapLocks(state: GameState, rows: Choice[]): Choice[] {
-  if (state.sceneId !== 'ch1:v-hymn') return rows
+  if (!SAP_LOCK_ROADS.has(state.sceneId)) return rows
   const out = rows.map((c) => ((c.effects.sap ?? 0) <= -2 && !c.enable ? { ...c, enable: { sapMin: -(c.effects.sap ?? 0) }, locked: `Needs: ${-(c.effects.sap ?? 0)} Sap` } : c))
   if (state.sap >= 2) return out
-  const lead = rows.find((c) => c.id === 'hymn') ?? rows.find((c) => c.effects.goto)
+  const lead = rows.find((c) => c.id === 'hymn') ?? rows.find((c) => (c.effects.sap ?? 0) <= -2 && c.effects.goto) ?? rows.find((c) => c.effects.goto)
   if (!lead?.effects.goto) return out
   return [...out, { id: 'stagger', label: HYMN_STAGGER_LABEL, sub: HYMN_STAGGER_SUB, tone: 'quiet', effects: { goto: lead.effects.goto, ticks: 1, sap: -1 } }]
 }

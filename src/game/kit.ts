@@ -272,6 +272,8 @@ export type GearTab = 'worn' | 'use' | 'trade' | 'key'
 export function gearTab(id: ItemId): GearTab {
   const def = ITEMS[id]
   if (!def) return 'key'
+  // Ossa's Knot is a keepsake first: Key items, with its own Wear button there.
+  if (id === 'ossa_token') return 'key'
   if (def.slot) return 'worn'
   if (id === 'vial_drop' || id === 'salve') return 'use'
   if (def.kind === 'key' || id === 'vial_empty' || def.bag != null) return 'key'

@@ -108,7 +108,7 @@ export function InventorySheet({ state, onClose, onChange }: Props) {
 }
 
 function WornTab({ state, chips, onChange }: { state: GameState; chips: KitChip[]; onChange: (s: GameState) => void }) {
-  const spare = chips.filter((c) => c.slot && c.n > wornCount(state, c.id))
+  const spare = chips.filter((c) => c.slot && gearTab(c.id) === 'worn' && c.n > wornCount(state, c.id))
   return (
     <>
       <div className="body-grid" aria-label="Worn slots">
@@ -232,6 +232,16 @@ function ListTab({
                 <span>{c.desc}</span>
               </div>
               <div className="item-acts">
+                {c.n > wornCount(state, c.id)
+                  ? slotsFor(c.id).map((slot) => {
+                      const block = equipBlock(state, c.id, slot)
+                      return (
+                        <button key={slot} type="button" className="btn btn-tiny btn-ghost" disabled={!!block} title={block ?? undefined} onClick={() => onChange(equipItem(state, c.id, slot))}>
+                          Equip
+                        </button>
+                      )
+                    })
+                  : null}
                 <UseBtn state={state} id={c.id} onChange={onChange} onClose={onClose} />
                 <DropBtn state={state} id={c.id} onChange={onChange} />
               </div>
