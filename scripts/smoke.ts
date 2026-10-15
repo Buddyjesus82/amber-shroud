@@ -2728,7 +2728,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v130'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v131'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -6670,4 +6670,12 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   low = { ...low, heat: { ...low.heat, seekers: 5 }, flags: { ...low.flags, encounterHere: false, hunterHere: false } }
   assert(!GE.noticeHunt({ ...low, flags: { ...low.flags, encounterHere: true } }).flags.hunterHere, 'v130: no hunt over a fight')
   console.log('v130 checks OK')
+}
+
+// v131: new Jodi cover
+{
+  const jb = COVER_BAND.jodi
+  assert(jb[0] <= 0.05 && jb[1] >= 0.6, 'v131: Jodi band keeps face, python and vultures in view')
+  assert(readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8').includes('covers/jodi.jpg'), 'v131: jodi.jpg precached')
+  console.log('v131 checks OK')
 }
