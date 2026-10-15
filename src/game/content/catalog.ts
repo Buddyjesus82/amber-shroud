@@ -104,6 +104,8 @@ export const ITEMS: Record<ItemId, ItemDef> = {
     name: 'Oversized Wrench',
     kind: 'weapon',
     slot: 'weapon',
+    // v134: heavy steel, a club in the off hand: either hand, the usual +1 Strike off hand.
+    offhand: 'club',
     strike: 3,
     desc: "Jaxson's steel. Strike 3. Hotwires Cartel runners. Pries bolts, wire, and lies. Equip it if you mean to swing.",
   },

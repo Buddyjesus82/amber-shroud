@@ -12,7 +12,7 @@ import {
   KAELEN_APPEARANCE,
   KAELEN_HELD_SCENES,
   isChoiceOn,
-  newGame,
+  newGame as rawNewGame,
   scavenge,
   sceneOf,
   sceneProse,
@@ -29,6 +29,11 @@ import { heatFactions } from '../src/game/heat.ts'
 import { RUMORS } from '../src/game/journal.ts'
 import { INTRO_CARDS, INTRO_FADE_MS, INTRO_HOLD_MS, INTRO_TEXT_IN_MS, introCardMs, introMotionMs, introReadMs } from '../src/game/intro.ts'
 
+// v134: older walks predate the masked figure, so their games start with him switched off. The v133 block uses rawNewGame.
+const newGame = (door: Parameters<typeof rawNewGame>[0]) => {
+  const g = rawNewGame(door)
+  return { ...g, flags: { ...g.flags, noMasked: true } }
+}
 const atHunger = (s: { sceneId: string }) => s.sceneId === 'ch1:leave' || s.sceneId === 'ch1:storm'
 // Older walks predate the Camp-04 storm beat; they step straight through it. The storm checks use GE.applyEffect.
 /** v118: fight through a road fight (or wake from it) and stand back on the scene. */
@@ -45,7 +50,7 @@ function clearRoadFight(st: GameState): GameState {
 let keepRoadHunt = false
 function applyEffect(state: Parameters<typeof rawApplyEffect>[0], fx: Parameters<typeof rawApplyEffect>[1]) {
   // v132: older walks leave talk scenes without a road fight; the v132 block tests the roll with the raw engine.
-  let next = rawApplyEffect({ ...state, flags: { ...state.flags, noTalkExitFight: true } }, fx)
+  let next = rawApplyEffect({ ...state, flags: { ...state.flags, noTalkExitFight: true, ...(state.flags.maskedSeen === undefined && state.flags.noMasked === undefined ? { noMasked: true } : {}) } }, fx)
   if (!state.flags.noTalkExitFight) { const f = { ...next.flags }; delete f.noTalkExitFight; next = { ...next, flags: f } }
   if (!keepRoadHunt && !state.flags.roadHuntDone && next.flags.roadHuntDone) next = rawApplyEffect({ ...state, flags: { ...state.flags, roadHuntDone: 'smoke' } }, fx)
   // v127: older walks predate Stray Hunters; the v127 block tests them with the raw engine.
@@ -2730,7 +2735,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v133'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v134'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -4237,7 +4242,7 @@ function assertHelpResolves(s: GameState, where: string) {
   // hands
   let g: GameState = { ...base, items: { ...base.items, scrap_buckler: 1, wrench: 1, needle_knife: 1, shiv: 1, head_wrap: 1, shin_wraps: 1, hide_gloves: 1, dust_cloak: 1, scav_wrap: 1 } }
   assert(!!GE.equipBlock(g, 'scrap_buckler', 'weapon'), 'shield cannot go in the main hand')
-  assert(!!GE.equipBlock(g, 'wrench', 'offhand'), 'wrench cannot go in the off hand')
+  assert(!GE.equipBlock(g, 'wrench', 'offhand'), 'v134: the wrench goes in the off hand like the other club and blade weapons')
   g = equipItem(g, 'needle_knife', 'weapon')
   assert(!!GE.equipBlock(g, 'needle_knife', 'offhand'), 'one copy cannot be in both hands')
   const mainOnly = GK.equippedStrike(g)
@@ -4820,7 +4825,7 @@ function assertHelpResolves(s: GameState, where: string) {
 // Bulk v67: hound fight, Knot perks, Resin rescue, Jodi's snake, Kaelen everywhere, map blurbs.
 {
   const ids2 = (st: GameState) => GE.visibleChoices(st).map((c) => c.id)
-  let hunt = GE.applyEffect(GE.newGame('prisoner'), { goto: 'camp:yard', flag: { encounterAt: 9999 } })
+  let hunt = GE.applyEffect(newGame('prisoner'), { goto: 'camp:yard', flag: { encounterAt: 9999 } })
   hunt = { ...hunt, flags: { ...hunt.flags, hunterHere: true, hunterFrom: 'camp:yard' } }
   delete hunt.flags.encounterHere
   const hIds = ids2(hunt)
@@ -4832,7 +4837,7 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(BEAST_KINDS.includes('hound') && !HUMAN_KINDS.includes('hound'), 'the hound is a beast: no salve in its pockets')
 
   // Ossa's rescue heals with Resin, never a Drop.
-  const maw = GE.applyEffect(GE.newGame('outcast'), { goto: 'maw:stilt', flag: { ossaAlly: true }, add: { vial_drop: 1, salve: 1 } })
+  const maw = GE.applyEffect(newGame('outcast'), { goto: 'maw:stilt', flag: { ossaAlly: true }, add: { vial_drop: 1, salve: 1 } })
   const w1 = wakeEffect(maw)
   assert(w1.remove?.salve === 1 && !w1.remove?.vial_drop && /Resin Salve/.test(String(w1.flash)), 'Ossa binds with your salve, not a Drop')
   const w2 = wakeEffect({ ...maw, items: { ...maw.items, salve: 0 } })
@@ -4863,7 +4868,7 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(GE.applyEffect(tied, { heat: { strays: 1 } }).heat.strays === tied.heat.strays, 'Knotted Head Wrap keeps the Stray perk')
 
   // Jodi: look at the snake describes Grudge; no doubled names on person looks.
-  const jodi = GE.applyEffect(GE.newGame('outcast'), { goto: 'spine:jodi' })
+  const jodi = GE.applyEffect(newGame('outcast'), { goto: 'spine:jodi' })
   const snake = String(GE.interpret(jodi, 'look at the snake').flash)
   assert(/Grudge/.test(snake) && !/Jodi Hollowmere\. Jodi Hollowmere/.test(snake), `look at the snake: ${snake}`)
   const jl = String(GE.interpret(jodi, 'look at jodi').flash)
@@ -4879,7 +4884,7 @@ function assertHelpResolves(s: GameState, where: string) {
 
   // Kaelen: walks every door after the opening and sells Resin; more resin in the grit past the outpost.
   for (const [door, sceneId] of [['prisoner', 'camp:yard'], ['outcast', 'spine:ridge'], ['vessel', 'thresh:court'], ['outcast', 'maw:stilt']] as const) {
-    let st = GE.applyEffect(GE.newGame(door), { goto: sceneId, flag: { encounterAt: 99999 } })
+    let st = GE.applyEffect(newGame(door), { goto: sceneId, flag: { encounterAt: 99999 } })
     st = { ...st, heat: { cartel: 0, seekers: 0, strays: 0 }, flags: { ...st.flags, huntQuiet: 3, encounterAt: 99999 } }
     delete st.flags.encounterHere
     delete st.flags.hunterHere
@@ -4892,14 +4897,14 @@ function assertHelpResolves(s: GameState, where: string) {
     const roam = GE.applyEffect(st, GE.visibleChoices(st).find((c) => c.id === 'kaelen-pass')!.effects)
     assert(roam.sceneId === 'roam:kaelen' && kaelenOffers(roam).some((o) => o.id === 'salve'), `Kaelen sells Resin on ${door}`)
   }
-  assert(GS.scavengeSalvePct({ ...GE.newGame('outcast'), hubId: 'spine' }) > SCAVENGE_SALVE_PCT, 'more Resin in the grit past the outpost')
+  assert(GS.scavengeSalvePct({ ...newGame('outcast'), hubId: 'spine' }) > SCAVENGE_SALVE_PCT, 'more Resin in the grit past the outpost')
 }
 
 
 // v68: polite asks and in-character fallbacks on every door. The old system note never shows.
 {
   const at2 = (door: DoorId, id: string, fl: Record<string, unknown> = {}) => {
-    const st = GE.applyEffect(GE.newGame(door), { goto: id, flag: { encounterAt: 99999, ...fl } as never })
+    const st = GE.applyEffect(newGame(door), { goto: id, flag: { encounterAt: 99999, ...fl } as never })
     delete st.flags.encounterHere
     delete st.flags.hunterHere
     return st
@@ -4970,7 +4975,7 @@ function assertHelpResolves(s: GameState, where: string) {
 // v69: Jodi sells a Resin Salve for 1 Glint or 2 scrap, once per visit; locked rows say what they need.
 {
   const jo = (items: Record<string, number>) => {
-    const st = GE.applyEffect(GE.newGame('outcast'), { goto: 'spine:jodi', flag: { encounterAt: 99999 } })
+    const st = GE.applyEffect(newGame('outcast'), { goto: 'spine:jodi', flag: { encounterAt: 99999 } })
     delete st.flags.encounterHere
     return { ...st, items: { ...st.items, glints: 0, scrap: 0, ...items } }
   }
@@ -4996,7 +5001,7 @@ function assertHelpResolves(s: GameState, where: string) {
   for (const sc of ALL_SCENES) {
     if (sc.kind === 'ending' || sc.kind === 'crisis') continue
     const door: DoorId = sc.id.startsWith('thresh:') || sc.id.startsWith('ch1:v') || sc.id === 'open:vessel' ? 'vessel' : sc.id.startsWith('spine:') || sc.id.startsWith('ch1:o') || sc.id === 'open:outcast' ? 'outcast' : 'prisoner'
-    const st = GE.applyEffect(GE.newGame(door), { goto: sc.id, flag: { encounterAt: 99999 } })
+    const st = GE.applyEffect(newGame(door), { goto: sc.id, flag: { encounterAt: 99999 } })
     delete st.flags.encounterHere
     delete st.flags.hunterHere
     if (st.sceneId !== sc.id) continue
@@ -5004,18 +5009,18 @@ function assertHelpResolves(s: GameState, where: string) {
     assert(seen.size >= 3, `${sc.id}: typed lines collapse to one canned reply (${[...seen][0]?.slice(0, 60)})`)
   }
   // Curly apostrophes and phone punctuation read the same as plain.
-  const jodi = GE.applyEffect(GE.newGame('outcast'), { goto: 'spine:jodi' })
+  const jodi = GE.applyEffect(newGame('outcast'), { goto: 'spine:jodi' })
   for (const t of ['What’s that?', "what's that", 'WHAT’S THAT.', ' whats that ']) {
     assert(/Grudge/.test(GE.interpret(jodi, t).flash ?? ''), `"${t}" at Jodi is Grudge`)
   }
   // First Drop: Silas is standing over you, so he answers.
-  assert(/Silas/.test(GE.interpret(GE.newGame('outcast'), 'Who are you?').flash ?? ''), 'First Drop: Silas answers who are you')
+  assert(/Silas/.test(GE.interpret(newGame('outcast'), 'Who are you?').flash ?? ''), 'First Drop: Silas answers who are you')
 }
 
 
 // v71: phone keyboards. Smart quotes, ellipsis, and wrapping quotes read like plain typing at Jodi.
 {
-  const jd = GE.applyEffect(GE.newGame('outcast'), { goto: 'spine:jodi' })
+  const jd = GE.applyEffect(newGame('outcast'), { goto: 'spine:jodi' })
   for (const t of ['“What’s that?”', 'What’s that…', '"what\'s that"', 'What’s that?\u00a0']) {
     assert(/Grudge/.test(GE.interpret(jd, t).flash ?? ''), `phone "${t}" at Jodi is Grudge`)
   }
@@ -5032,7 +5037,7 @@ function assertHelpResolves(s: GameState, where: string) {
     const src = readFileSync(new URL(f, import.meta.url), 'utf8')
     assert(!/\bstilt/i.test(src), `${f} mentions stilts before they are introduced`)
   }
-  const bay = GE.applyEffect(GE.newGame('prisoner'), { goto: 'camp:bay', unsetFlag: ['encounterHere', 'encounterKind', 'encounterHp', 'encounterTerrain'] })
+  const bay = GE.applyEffect(newGame('prisoner'), { goto: 'camp:bay', unsetFlag: ['encounterHere', 'encounterKind', 'encounterHp', 'encounterTerrain'] })
   const cord = GE.interpret(bay, 'take the cord')
   assert(/^Cord\. Pike does not look up\. Cartel Heat ticks/.test(cord.flash ?? '') && cord.flags.lashCord, `cord take still works, plain hint: ${cord.flash}`)
 }
@@ -5041,7 +5046,7 @@ function assertHelpResolves(s: GameState, where: string) {
 // v73: Loose Bar has its own art, and breaking the bar does not name Kaelen early.
 {
   const GA = await import('../src/game/art.ts')
-  const shiv = GE.applyEffect(GE.newGame('prisoner'), { goto: 'camp:shiv', unsetFlag: ['encounterHere', 'encounterKind', 'encounterHp', 'encounterTerrain'] })
+  const shiv = GE.applyEffect(newGame('prisoner'), { goto: 'camp:shiv', unsetFlag: ['encounterHere', 'encounterKind', 'encounterHp', 'encounterTerrain'] })
   assert(GA.playCoverFile(GA.playCoverKey(shiv, GE.sceneOf(shiv))) === 'camp-shiv.jpg', 'camp:shiv uses camp-shiv.jpg')
   assert(existsSync(new URL('../public/covers/camp-shiv.jpg', import.meta.url)), 'camp-shiv.jpg ships')
   const brk = (s: any) => GE.applyEffect(s, GE.visibleChoices(s).find((c) => c.label === 'Break it down for scrap')!.effects)
@@ -5056,28 +5061,28 @@ function assertHelpResolves(s: GameState, where: string) {
 // v74: Corvin has his own portrait, and the boot-prints get a beat with their own art before him.
 {
   const GA = await import('../src/game/art.ts')
-  const at = (id: string) => GE.applyEffect(GE.newGame('outcast'), { goto: id, unsetFlag: ['encounterHere', 'encounterKind', 'encounterHp', 'encounterTerrain'] })
+  const at = (id: string) => GE.applyEffect(newGame('outcast'), { goto: id, unsetFlag: ['encounterHere', 'encounterKind', 'encounterHp', 'encounterTerrain'] })
   const cov = (s: any) => GA.playCoverFile(GA.playCoverKey(s, GE.sceneOf(s)))
   assert(cov(at('spine:corvin')) === 'corvin.jpg', 'Corvin uses corvin.jpg')
   assert(cov(at('spine:boots')) === 'bootprints.jpg', 'boot-prints use bootprints.jpg')
   assert(cov(at('spine:mira')) === 'mira.jpg', 'Mira uses mira.jpg')
   assert(cov(at('spine:korvan')) === 'korvan.jpg', 'Korvan uses korvan.jpg')
   {
-    const vs = GE.applyEffect(GE.newGame('prisoner'), { goto: 'camp:vents', unsetFlag: ['encounterHere', 'encounterKind', 'encounterHp', 'encounterTerrain'] })
+    const vs = GE.applyEffect(newGame('prisoner'), { goto: 'camp:vents', unsetFlag: ['encounterHere', 'encounterKind', 'encounterHp', 'encounterTerrain'] })
     assert(cov(vs) === 'steam-vents.jpg', 'camp:vents uses steam-vents.jpg')
   }
   for (const g of ['camp:yard', 'camp:vats']) {
-    const ys = GE.applyEffect(GE.newGame('prisoner'), { goto: g, unsetFlag: ['encounterHere', 'encounterKind', 'encounterHp', 'encounterTerrain'] })
+    const ys = GE.applyEffect(newGame('prisoner'), { goto: g, unsetFlag: ['encounterHere', 'encounterKind', 'encounterHp', 'encounterTerrain'] })
     assert(cov(ys) === 'yard.jpg', `${g} uses yard.jpg`)
   }
   for (const g of ['camp:guard', 'camp:sabotage']) {
-    const gs = GE.applyEffect(GE.newGame('prisoner'), { goto: g, unsetFlag: ['encounterHere', 'encounterKind', 'encounterHp', 'encounterTerrain'] })
+    const gs = GE.applyEffect(newGame('prisoner'), { goto: g, unsetFlag: ['encounterHere', 'encounterKind', 'encounterHp', 'encounterTerrain'] })
     assert(cov(gs) === 'guard.jpg', `${g} uses guard.jpg`)
   }
   {
     const clr = ['encounterHere', 'encounterKind', 'encounterHp', 'encounterTerrain']
     for (const from of ['camp:lean', 'camp:jaxson', 'camp:bay', 'camp:hunter', 'camp:forced', 'camp:vents']) {
-      const at0 = GE.applyEffect(GE.newGame('prisoner'), { goto: from, unsetFlag: clr })
+      const at0 = GE.applyEffect(newGame('prisoner'), { goto: from, unsetFlag: clr })
       const st = GE.applyEffect(at0, { startChapter: 'cache-run', goto: 'ch1:leave', flash: 'ROUTE LINE' })
       assert(st.sceneId === 'ch1:storm' && st.chapterId === 'cache-run' && st.flags.leftCamp, `escape from ${from} plays the storm beat`)
       assert(cov(st) === 'camp-storm.jpg', `storm beat from ${from} uses camp-storm.jpg`)
@@ -5086,7 +5091,7 @@ function assertHelpResolves(s: GameState, where: string) {
       const out = GE.applyEffect(st, go[0].effects)
       assert(atHunger(out) && /ROUTE LINE/.test(out.flash ?? '') && !out.flags.stormFlash, `storm Continue from ${from} lands the route outcome`)
     }
-    const spine = GE.applyEffect(GE.newGame('outcast'), { goto: 'spine:shade', unsetFlag: clr })
+    const spine = GE.applyEffect(newGame('outcast'), { goto: 'spine:shade', unsetFlag: clr })
     assert(atHunger(GE.applyEffect(spine, { startChapter: 'cache-run', goto: 'ch1:leave' })), 'non-camp Gullet skips the storm beat')
   }
   {
@@ -5105,7 +5110,7 @@ function assertHelpResolves(s: GameState, where: string) {
 
 // v76: Jaxson's plan beat has real follow-ups that answer in place, and no repeat recap.
 {
-  let jx = GE.applyEffect(GE.newGame('prisoner'), { goto: 'camp:jaxson', unsetFlag: ['encounterHere', 'encounterKind', 'encounterHp', 'encounterTerrain'] })
+  let jx = GE.applyEffect(newGame('prisoner'), { goto: 'camp:jaxson', unsetFlag: ['encounterHere', 'encounterKind', 'encounterHp', 'encounterTerrain'] })
   jx = GE.applyEffect(jx, GE.visibleChoices(jx).find((c) => c.id === 'plan')!.effects)
   assert(/hotwire a Cartel runner in Skiff Bay/.test(GE.bodyOf(jx)), 'plan names Skiff Bay')
   for (const [id, re] of [['ask-guard', /North, under the Overseer's tower/], ['ask-bay', /East\. Past my stall/], ['ask-trust', /apprentice/]] as const) {
@@ -5123,7 +5128,7 @@ function assertHelpResolves(s: GameState, where: string) {
 // v77: after pressing scrip at the Hound-handler, walking Yard -> Watchtower never brings the handler back,
 // and the same-screen result hold cannot ride along on Map travel.
 {
-  let hs = GE.applyEffect(GE.newGame('prisoner'), { goto: 'camp:yard', unsetFlag: ['encounterHere', 'encounterKind', 'encounterHp', 'encounterTerrain'], flag: { jaxsonInside: true, jaxsonPlan: true, cartelNotice: true } })
+  let hs = GE.applyEffect(newGame('prisoner'), { goto: 'camp:yard', unsetFlag: ['encounterHere', 'encounterKind', 'encounterHp', 'encounterTerrain'], flag: { jaxsonInside: true, jaxsonPlan: true, cartelNotice: true } })
   hs = { ...hs, health: 6, items: { ...hs.items, scrip: 1 }, heat: { ...hs.heat, cartel: 3 }, flags: { ...hs.flags, huntQuiet: 9 } }
   hs = GE.travelTo(hs, 'camp:vents')
   assert(hs.flags.hunterHere, 'hunt fires on the walk')
@@ -5145,9 +5150,9 @@ function assertHelpResolves(s: GameState, where: string) {
   const places = ['camp:guard', 'camp:yard', 'camp:vents', 'camp:tower', 'camp:bay', 'spine:ridge', 'spine:well', 'thresh:paddock', 'maw:lip']
   for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
     for (const id of places) {
-      try { GE.sceneOf({ ...GE.newGame(door), sceneId: id }) } catch { continue }
+      try { GE.sceneOf({ ...newGame(door), sceneId: id }) } catch { continue }
       for (let k = 0; k < 40; k++) {
-        let s = GE.applyEffect(GE.newGame(door), { goto: id, unsetFlag: ['encounterHere', 'encounterKind', 'encounterHp', 'encounterTerrain'] })
+        let s = GE.applyEffect(newGame(door), { goto: id, unsetFlag: ['encounterHere', 'encounterKind', 'encounterHp', 'encounterTerrain'] })
         s = { ...s, ticks: s.ticks + k, sap: 2, health: 3, items: { ...s.items, vial_drop: 3, salve: 2 }, heat: { cartel: 8, seekers: 8, strays: 8 }, flags: { ...s.flags, huntQuiet: 20, cartelNotice: true, strayNotice: true, encounterAt: -99 } }
         for (const after of [GE.drinkDrop(s), GE.bindSalve(s), GE.interpret(s, 'drink a drop')]) {
           assert(!after.flags.encounterHere && !after.flags.hunterHere && after.sceneId === s.sceneId, `${door} ${id}: self-care started a fight (${after.flags.encounterKind ?? after.sceneId})`)
@@ -5155,7 +5160,7 @@ function assertHelpResolves(s: GameState, where: string) {
       }
     }
   }
-  const pup = GE.applyEffect(GE.newGame('prisoner'), { goto: 'camp:guard', flag: { encounterHere: true, encounterKind: 'pup', encounterHp: 2 } })
+  const pup = GE.applyEffect(newGame('prisoner'), { goto: 'camp:guard', flag: { encounterHere: true, encounterKind: 'pup', encounterHp: 2 } })
   assert(GA.playCoverKey(pup, GE.sceneOf(pup)) !== 'hound', 'Shard-pup fight does not use the handler portrait')
 }
 
@@ -5171,20 +5176,20 @@ console.log('OK', {
   const zero: string[] = []
   for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
     for (const sc of ALL_SCENES) {
-      const s = { ...GE.newGame(door), sceneId: sc.id, hubId: sc.hubId ?? null } as GameState
+      const s = { ...newGame(door), sceneId: sc.id, hubId: sc.hubId ?? null } as GameState
       if (!GE.visibleChoices(s).length) zero.push(`${door}:${sc.id}`)
     }
   }
   assert(!zero.length, `scenes with zero visible choices: ${zero.join(', ')}`)
-  const lip = { ...GE.newGame('outcast'), sceneId: 'maw:lip', hubId: 'redmaw' } as GameState
+  const lip = { ...newGame('outcast'), sceneId: 'maw:lip', hubId: 'redmaw' } as GameState
   const lipRows = GE.visibleChoices(lip)
   assert(lipRows.some((c) => c.id === 'bury' && c.locked === 'Needs a Glint.') && lipRows.some((c) => c.id === 'back'), 'Hollow Lip: Bury stays visible and locked without a Glint; a way back')
   const play = readFileSync('src/components/PlayScreen.tsx', 'utf8')
   assert(/noteOnly = next\.flash === DISGUISE_SOFTEN_NOTE/.test(play) && /onBlur=\{resetPageScroll\}/.test(play), 'Vessel cloth note alone does not hold a result screen; page scroll resets after the keyboard')
-  let tw = { ...GE.newGame('prisoner'), sceneId: 'camp:tower', hubId: 'camp04', items: { ceremonial_cloth: 1 }, equipped: { garment: 'ceremonial_cloth' } } as unknown as GameState
+  let tw = { ...newGame('prisoner'), sceneId: 'camp:tower', hubId: 'camp04', items: { ceremonial_cloth: 1 }, equipped: { garment: 'ceremonial_cloth' } } as unknown as GameState
   tw = GE.applyEffect(tw, GE.visibleChoices(tw).find((c) => c.id === 'talk')!.effects)
   assert(tw.sceneId === 'camp:valerius' && GE.visibleChoices(tw).length > 0, 'Approach Valerius in the cloth lands on Valerius with choices')
-  const plain = GE.applyEffect({ ...GE.newGame('prisoner'), sceneId: 'camp:tower', hubId: 'camp04' } as GameState, getScene('camp:tower').choices.find((c) => c.id === 'talk')!.effects)
+  const plain = GE.applyEffect({ ...newGame('prisoner'), sceneId: 'camp:tower', hubId: 'camp04' } as GameState, getScene('camp:tower').choices.find((c) => c.id === 'talk')!.effects)
   assert(!(plain.flash ?? '').includes(DG.DISGUISE_SOFTEN_NOTE), 'no Vessel cloth line when the cloth is not worn')
 }
 
@@ -5198,7 +5203,7 @@ console.log('OK', {
       const sc = getScene(id)
       for (const ticks of [5, 13, 29, 41]) {
         const base = {
-          ...GE.newGame(door),
+          ...newGame(door),
           sceneId: id,
           hubId: sc.hubId ?? null,
           ticks,
@@ -5217,7 +5222,7 @@ console.log('OK', {
   }
   assert(!bad.length, `trade actions rolled a hunt, fight, pressure, or Kaelen: ${bad.slice(0, 8).join(', ')}`)
   // Kaelen arrives at Valerius, a hunt interrupts; once it is over, Kaelen is still there.
-  let k = { ...GE.newGame('prisoner'), sceneId: 'camp:tower', hubId: 'camp04', flags: { kaelenPassing: true, hunterHere: true, hunterFrom: 'camp:tower', hunterAt: 1 } } as unknown as GameState
+  let k = { ...newGame('prisoner'), sceneId: 'camp:tower', hubId: 'camp04', flags: { kaelenPassing: true, hunterHere: true, hunterFrom: 'camp:tower', hunterAt: 1 } } as unknown as GameState
   for (let i = 0; i < 8 && (k.flags.hunterHere || k.flags.encounterHere || k.flags.downed); i++) {
     const row = GE.visibleChoices(k).find((c) => GE.isChoiceOn(k, c.enable))
     if (!row) break
@@ -5232,7 +5237,7 @@ function hasSceneOrVendor(id: string): boolean {
 
 // v89: Kaelen passing always offers rumors (name-gated), and typed asks open them roll-free.
 for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['outcast', 'spine:ridge', 'spine'], ['vessel', 'thresh:court', 'threshold'], ['outcast', 'maw:rim', 'redmaw']] as const) {
-  const base = { ...GE.newGame(door), sceneId, hubId, pressure: 9, ticks: 13, heat: { cartel: 6, seekers: 6, strays: 6 }, flags: { kaelenPassing: true, huntQuiet: 9 } } as unknown as GameState
+  const base = { ...newGame(door), sceneId, hubId, pressure: 9, ticks: 13, heat: { cartel: 6, seekers: 6, strays: 6 }, flags: { kaelenPassing: true, huntQuiet: 9 } } as unknown as GameState
   const rows = GE.visibleChoices(base)
   assert(rows.some((c) => c.id === 'kaelen-rumors' && c.label === 'Ask the trader about rumors'), `${door} ${sceneId}: unnamed trader rumors button`)
   const named = GE.visibleChoices({ ...base, flags: { ...base.flags, kaelenKnown: true } })
@@ -5245,7 +5250,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
 
 // v91: Jeramie's sequence. Hand Valerius the chip, Heat 6, then bargain a quiet pass: the bargain resolves first.
 {
-  let v = { ...GE.newGame('prisoner'), sceneId: 'camp:valerius', hubId: 'camp04', pressure: 9, ticks: 17, heat: { cartel: 5, seekers: 0, strays: 1 }, items: { overseer_chip: 1 }, flags: { huntQuiet: 9, kaelenGap: 9, metValerius: true, cartelNotice: true } } as unknown as GameState
+  let v = { ...newGame('prisoner'), sceneId: 'camp:valerius', hubId: 'camp04', pressure: 9, ticks: 17, heat: { cartel: 5, seekers: 0, strays: 1 }, items: { overseer_chip: 1 }, flags: { huntQuiet: 9, kaelenGap: 9, metValerius: true, cartelNotice: true } } as unknown as GameState
   const bluff = GE.visibleChoices(v).find((c) => c.id === 'bluff')
   if (bluff) v = GE.applyEffect(v, bluff.effects)
   v = { ...v, heat: { ...v.heat, cartel: 6 } }
@@ -5278,24 +5283,24 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   assert(/northwest/.test(HUBS.threshold.mawNote) && /Pilgrim's Scar/.test(HUBS.threshold.mawNote), "Threshold: Red Maw northwest, up the Pilgrim's Scar")
   for (const door of ['outcast', 'vessel'] as const) {
     for (const sc of ALL_SCENES) {
-      const s = { ...GE.newGame(door), sceneId: sc.id, hubId: sc.hubId ?? null } as GameState
+      const s = { ...newGame(door), sceneId: sc.id, hubId: sc.hubId ?? null } as GameState
       const shown = [R.roadText(door, GE.bodyOf(s)), ...GE.visibleChoices(s).map((c) => R.roadText(door, `${c.label} ${c.sub ?? ''}`))].join(' ')
       assert(!/Gullet/.test(shown), `${door} ${sc.id}: no Gullet shown`)
     }
-    const rim = { ...GE.newGame(door), sceneId: 'maw:rim', hubId: 'redmaw' } as GameState
+    const rim = { ...newGame(door), sceneId: 'maw:rim', hubId: 'redmaw' } as GameState
     assert(GE.bodyOf(rim).includes(R.ROADS[door].rim), `${door}: Rim arrival names the road`)
   }
   assert(isHungerCommand('take the bone wash', 'outcast') && isHungerCommand('wash', 'outcast') && isHungerCommand('take the gullet', 'outcast'), 'Outcast typed Bone Wash / wash / gullet')
   assert(!isHungerCommand('walk the east wash', 'outcast'), 'the east wash is not the road')
   assert(isHungerCommand("take the pilgrim's scar", 'vessel') && isHungerCommand('scar', 'vessel') && isHungerCommand('gullet', 'vessel'), "Vessel typed Pilgrim's Scar / scar / gullet")
   assert(isHungerCommand('take the gullet', 'prisoner') && !isHungerCommand('take the scar', 'prisoner'), 'Prisoner keeps the Gullet')
-  const rimP = { ...GE.newGame('prisoner'), sceneId: 'maw:rim', hubId: 'redmaw' } as GameState
+  const rimP = { ...newGame('prisoner'), sceneId: 'maw:rim', hubId: 'redmaw' } as GameState
   assert(GE.bodyOf(rimP).includes(R.ROADS.prisoner.rim), 'Prisoner: Rim arrival names the Gullet')
 }
 
 // v94: tester bug pass.
 {
-  const yard = GE.applyEffect(GE.newGame('prisoner'), { goto: 'camp:yard', flag: { encounterAt: 99999 } })
+  const yard = GE.applyEffect(newGame('prisoner'), { goto: 'camp:yard', flag: { encounterAt: 99999 } })
   assert(GE.interpret(yard, 'go to the pens').sceneId === 'camp:cages', 'typed "go to the pens" walks there')
   assert(GE.interpret(yard, 'walk to the vents').sceneId === 'camp:vents', 'typed "walk to the vents" walks to the vents, not the Wire')
   assert(!/Running without a heading/.test(GE.interpret(yard, 'go to skiff bay').flash ?? ''), '"go to X" is never read as an aimless run')
@@ -5311,7 +5316,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   assert(/>\s*Discard\s*</.test(inv) && !/Drop 1/.test(inv) && /c\.id === 'scrap'/.test(inv), 'Discard button; Scrap shows its count')
   const txt = ['content/spine.ts', 'content/cacheRun.ts', 'content/catalog.ts', 'people.ts', 'campJob.ts'].map((f) => readFileSync(`src/game/${f}`, 'utf8')).join('\n')
   assert(!/a honest|magiks|Razor-wire|[Ff]our roads/.test(txt), 'typos and four roads fixed')
-  const crisis = { ...GE.newGame('prisoner'), sceneId: 'crisis:maw', hubId: 'redmaw', flags: { handlerInjured: true } } as unknown as GameState
+  const crisis = { ...newGame('prisoner'), sceneId: 'crisis:maw', hubId: 'redmaw', flags: { handlerInjured: true } } as unknown as GameState
   assert(/Hound-handler is already there, arm strapped/.test(GE.bodyOf(crisis)), 'v99: an injured Hound-handler is still the one who comes')
   assert(readFileSync('src/game/encounter.ts', 'utf8').includes('handlerInjured: true'), 'beating the handler is remembered')
   const save = readFileSync('src/game/save.ts', 'utf8')
@@ -5323,7 +5328,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   const { shownText, traderText } = await import('../src/game/roads.ts')
   const { effectPills } = await import('../src/game/kit.ts')
   // 6) The trader is unnamed until you meet him.
-  const p = GE.newGame('prisoner')
+  const p = newGame('prisoner')
   const wire = { ...p, sceneId: 'camp:wire', hubId: 'camp04' }
   const wireShown = shownText(wire, GE.bodyOf(wire))
   assert(!/Kaelen/.test(wireShown) && /trader/.test(wireShown), 'v95: the Wire calls him the trader before you meet him')
@@ -5355,7 +5360,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   assert(bound.health === 6 && !(bound.items.salve ?? 0), 'v95: Wreck bind works like the Gear bind')
   assert(!GE.isChoiceOn({ ...wreck, health: 6 }, bind!.enable), 'v95: no Wreck bind at full health')
   // 8) Mira's Glint costs no Heat.
-  const mira = GE.visibleChoices({ ...GE.newGame('outcast'), sceneId: 'spine:mira', hubId: 'spine' }).find((c) => c.id === 'take')
+  const mira = GE.visibleChoices({ ...newGame('outcast'), sceneId: 'spine:mira', hubId: 'spine' }).find((c) => c.id === 'take')
   assert(mira && !mira.effects.heat && !/Heat/.test(`${mira.sub} ${mira.effects.flash}`), 'v95: Mira\'s Glint costs no Heat')
   // 9) Shop tags say what moves: costs are marked, money reads as money.
   const pills = effectPills({ add: { vial_drop: 1 }, remove: { scrap: 1 } }).map((x) => x.text)
@@ -5363,7 +5368,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   assert(effectPills({ add: { glints: 1 }, remove: { scrap: 2 } }).map((x) => x.text).join('|') === '+ 1 Glint|− 2 scrap', 'v95: change tag is plain money')
   // 11) End of Chapter One, once, in every door.
   for (const door of ['prisoner', 'outcast', 'vessel'] as DoorId[]) {
-    const at = rawApplyEffect(GE.newGame(door), { enterHub: 'redmaw', goto: 'maw:rim', sap: 4 })
+    const at = rawApplyEffect(newGame(door), { enterHub: 'redmaw', goto: 'maw:rim', sap: 4 })
     assert(at.sceneId === 'ch1:end' && at.flags.chapter1EndSeen, `v95: ${door} first Rim arrival ends Chapter One`)
     const body = GE.bodyOf(at)
     assert(/Chapter One ends here/.test(body) && !/leviathan|vault|Spire|key/i.test(body), `v95: ${door} chapter end is short and spoiler-free`)
@@ -5449,7 +5454,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
 
 // v98: tester bug pass.
 {
-  const P = () => GE.newGame('prisoner')
+  const P = () => newGame('prisoner')
   // 1) The vent scene does not claim the storm already hit; the Wire has a way forward or a lock.
   const vent = getScene('camp:sabotage')
   assert(vent.title !== 'Storm' && !/The storm hits/.test(vent.body) && (vent.variants ?? []).every((v) => !/The storm hits/.test(v.body)), 'v98: the vent scene waits for the real storm')
@@ -5461,7 +5466,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   assert(GE.isChoiceOn(wired, go.enable) && GE.applyEffect(wired, go.effects).sceneId === 'camp:guard', 'v98: with the job, the Wire leads to the station')
   assert(GE.visibleChoices(wire).some((c) => c.label === 'Crawl the fence-hole back to the Pens'), 'v98: plain fence-hole label')
   // 2) Approach rescue: Heat matches the rescuer, rises once, no free loop, no stale skim line.
-  const dry = (door: DoorId, flags = {}) => ({ ...GE.newGame(door), sceneId: 'crisis:maw', hubId: 'redmaw', sap: 0, heat: { cartel: 0, seekers: 0, strays: 0 }, flags: { ...GE.newGame(door).flags, ...flags } })
+  const dry = (door: DoorId, flags = {}) => ({ ...newGame(door), sceneId: 'crisis:maw', hubId: 'redmaw', sap: 0, heat: { cartel: 0, seekers: 0, strays: 0 }, flags: { ...newGame(door).flags, ...flags } })
   const upOf = (s: GameState) => GE.visibleChoices(s).find((c) => c.id.startsWith('up'))!
   const p1 = GE.applyEffect(dry('prisoner'), upOf(dry('prisoner')).effects)
   assert(p1.heat.cartel === 1 && p1.heat.seekers === 0, 'v98: the Cartel handler raises Cartel Heat')
@@ -5475,7 +5480,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   const rim = { ...p2, sceneId: 'maw:rim', sap: 1 }
   const walked = GE.travelTo(rim, 'maw:smoke')
   assert(walked.sceneId === 'maw:rim' && walked.flash === GE.TOO_DRY_TO_WALK, 'v98: after a rescue, a walk will not drain you into another')
-  const lip = { ...GE.newGame('prisoner'), sceneId: 'maw:lip', hubId: 'redmaw', sap: 1 }
+  const lip = { ...newGame('prisoner'), sceneId: 'maw:lip', hubId: 'redmaw', sap: 1 }
   const skimmed = GE.skim(lip)
   if (skimmed.sceneId.startsWith('crisis:')) assert(!/skim a Drop/.test(skimmed.flash ?? ''), 'v98: no skim line on the rescue screen')
   // 3) Spent actions hide or lock.
@@ -5483,29 +5488,29 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   const pens = { ...P(), sceneId: 'camp:cages', hubId: 'camp04' }
   const picked = GSc.applyScavenge(pens)
   assert(GSc.scavengeLock(picked) === 'Picked clean' && GSc.scavengeLock(pens) === null, 'v98: Scavenge locks as Picked clean')
-  const thalia = { ...GE.newGame('vessel'), sceneId: 'thresh:thalia', hubId: 'threshold', flags: { ...GE.newGame('vessel').flags, heardSybellaRumor: true } }
+  const thalia = { ...newGame('vessel'), sceneId: 'thresh:thalia', hubId: 'threshold', flags: { ...newGame('vessel').flags, heardSybellaRumor: true } }
   assert(!GE.visibleChoices(thalia).some((c) => c.id === 'sybella'), 'v98: Thalia\'s Sybella ask shows once')
-  const ridge = { ...GE.newGame('outcast'), sceneId: 'spine:ridge', hubId: 'spine', flags: { ...GE.newGame('outcast').flags, washRead: true } }
+  const ridge = { ...newGame('outcast'), sceneId: 'spine:ridge', hubId: 'spine', flags: { ...newGame('outcast').flags, washRead: true } }
   assert(!GE.visibleChoices(ridge).some((c) => c.id === 'scan'), 'v98: Read the wash hides after use')
   // 4) Stale text.
   const enc = (await import('../src/game/encounter.ts')).dismissEncounter({ ...P(), flags: { encounterFlash: 'They drop. Glints +1.' } } as GameState)
   assert(!enc.flash, 'v98: On. does not carry the loot line onto the ground')
-  const full = { ...GE.newGame('outcast'), sceneId: 'spine:ridge', hubId: 'spine', sap: 2, items: { ...GE.newGame('outcast').items, vial_drop: 1, vial_empty: 0 } }
+  const full = { ...newGame('outcast'), sceneId: 'spine:ridge', hubId: 'spine', sap: 2, items: { ...newGame('outcast').items, vial_drop: 1, vial_empty: 0 } }
   assert(!/empty vial|You need a Drop/.test(GE.bodyOf(full)) && /Your vial is full/.test(GE.bodyOf(full)), 'v98: Noon Spine checks the vial')
   const emptyV = { ...full, items: { ...full.items, vial_drop: 0, vial_empty: 1 } }
   assert(/empty vial/.test(GE.bodyOf(emptyV)), 'v98: an empty vial still reads empty')
-  const leaveO = { ...GE.newGame('outcast'), sceneId: 'ch1:leave', chapterId: 'cache-run', items: { ...GE.newGame('outcast').items, vial_drop: 1 } }
+  const leaveO = { ...newGame('outcast'), sceneId: 'ch1:leave', chapterId: 'cache-run', items: { ...newGame('outcast').items, vial_drop: 1 } }
   assert(!/dry throat/.test(GE.bodyOf(leaveO)), 'v98: Cache Run vial line checks the vial')
   // 5) Lock slips.
-  const leaveV = { ...GE.newGame('vessel'), sceneId: 'ch1:leave', chapterId: 'cache-run' }
+  const leaveV = { ...newGame('vessel'), sceneId: 'ch1:leave', chapterId: 'cache-run' }
   assert(/northwest/.test(GE.bodyOf(leaveV)) && !/road there, west/.test(GE.bodyOf(leaveV)), 'v98: the Vessel road runs northwest')
   assert(Object.values(heatFactions('prisoner')).every((f) => !/Kaelen/.test(`${f.watch} ${f.body}`)), 'v98: Heat lesson does not name the trader early')
   assert(/he still charges/.test(getScene('crisis:camp').body) && !/they still charge/.test(getScene('crisis:camp').body), 'v98: "he still charges"')
-  const metK = GE.applyEffect({ ...GE.newGame('vessel'), sceneId: 'thresh:sift', hubId: 'threshold' }, { goto: 'thresh:kaelen' })
+  const metK = GE.applyEffect({ ...newGame('vessel'), sceneId: 'thresh:sift', hubId: 'threshold' }, { goto: 'thresh:kaelen' })
   assert(metK.flags.kaelenKnown && GE.bodyOf(metK).includes(GE.KAELEN_INTRO), 'v98: he says his name the first time you meet')
   assert(!GE.bodyOf(GE.applyEffect(metK, { ticks: 1 })).includes(GE.KAELEN_INTRO), 'v98: the intro shows once')
-  const guardFight = beginEncounter({ ...GE.newGame('vessel'), sceneId: 'thresh:court', hubId: 'threshold' } as GameState, 'courtguard', 'x')
-  const gs = GE.applyEffect({ ...GE.newGame('vessel'), sceneId: 'thresh:court', hubId: 'threshold' }, guardFight)
+  const guardFight = beginEncounter({ ...newGame('vessel'), sceneId: 'thresh:court', hubId: 'threshold' } as GameState, 'courtguard', 'x')
+  const gs = GE.applyEffect({ ...newGame('vessel'), sceneId: 'thresh:court', hubId: 'threshold' }, guardFight)
   assert(/^COURT GUARD|^GUARD ♥/m.test(GE.bodyOf(gs)) || /^GUARD ♥ /m.test(GE.bodyOf(gs)), `v98: the Court Guard fights under his own name (${GE.bodyOf(gs).slice(0, 80)})`)
   assert(!/CUTTER/.test(GE.bodyOf(gs)), 'v98: not a rim cutter')
   // 6) Odds in words, never numbers.
@@ -5537,9 +5542,9 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
     }
   }
   assert(won && won.includes(E.HANDLER_BEATEN) && !/They drop\./.test(won), `v99: he limps off (${won?.slice(-160)})`)
-  const old = repairLoadedState({ ...GE.newGame('prisoner'), flags: { handlerDown: true } } as GameState)
+  const old = repairLoadedState({ ...newGame('prisoner'), flags: { handlerDown: true } } as GameState)
   assert(old.flags.handlerInjured && !('handlerDown' in old.flags), 'v99: old handlerDown saves load as handlerInjured')
-  const hunt = { ...GE.newGame('prisoner'), sceneId: 'camp:yard', hubId: 'camp04', heat: { cartel: 3, seekers: 0, strays: 0 }, flags: { hunterHere: true, hunterFrom: 'camp:yard', handlerInjured: true } } as unknown as GameState
+  const hunt = { ...newGame('prisoner'), sceneId: 'camp:yard', hubId: 'camp04', heat: { cartel: 3, seekers: 0, strays: 0 }, flags: { hunterHere: true, hunterFrom: 'camp:yard', handlerInjured: true } } as unknown as GameState
   const app = H.pressureAppend(hunt) ?? ''
   assert(app.includes(H.HANDLER_GRUDGE), `v99: he returns with a grudge (${app.slice(0, 80)})`)
   assert(!(H.pressureAppend({ ...hunt, flags: { ...hunt.flags, handlerInjured: false } }) ?? '').includes(H.HANDLER_GRUDGE), 'v99: no grudge before you beat him')
@@ -5608,7 +5613,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
 
 // v103: Unpermitted Hoard art.
 {
-  const s = { ...GE.newGame('prisoner'), sceneId: 'camp:relic', hubId: 'camp04' }
+  const s = { ...newGame('prisoner'), sceneId: 'camp:relic', hubId: 'camp04' }
   assert(playCoverKey(s, getScene('camp:relic')) === 'hoard' && playCoverFile('hoard') === 'hoard.jpg', 'v103: the hoard scene shows hoard.jpg')
   assert(existsSync('public/covers/hoard.jpg') && readFileSync('public/sw.js', 'utf8').includes('covers/hoard.jpg'), 'v103: hoard art is on disk and precached')
   assert(COVER_BAND.hoard[0] >= 0.35 && COVER_BAND.hoard[1] >= 0.95, 'v103: the phone crop keeps the crate')
@@ -5621,7 +5626,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   const want: Record<string, string> = { prisoner: 'rim_gullet', outcast: 'rim_bonewash', vessel: 'rim_pilgrims_scar' }
   for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
     for (const id of ['maw:rim', 'ch1:land']) {
-      const s = { ...GE.newGame(door), sceneId: id }
+      const s = { ...newGame(door), sceneId: id }
       s.flags = { ...s.flags, encounterHere: false }
       const k = playCoverKey(s, { id, art: 'hunger', chapterId: 'ch1', hubId: undefined } as never)
       assert(k === want[door], `v104: ${door} at ${id} shows ${want[door]} (got ${k})`)
@@ -5629,9 +5634,9 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
     const f = playCoverFile(want[door] as never)
     assert(existsSync(`public/covers/${f}`) && sw.includes(`covers/${f}`), `v104: ${f} on disk and precached`)
   }
-  const other = { ...GE.newGame('outcast'), sceneId: 'maw:gate' }
+  const other = { ...newGame('outcast'), sceneId: 'maw:gate' }
   assert(playCoverKey(other, { id: 'maw:gate', art: 'hunger', chapterId: 'ch1', hubId: undefined } as never) === 'hunger', 'v104: other Maw scenes keep their art')
-  const cg = { ...GE.newGame('vessel') }
+  const cg = { ...newGame('vessel') }
   cg.flags = { ...cg.flags, encounterHere: true, encounterKind: 'courtguard' }
   assert(playCoverKey(cg, { id: 'thresh:gate', art: 'world', chapterId: 'ch1', hubId: 'threshold' } as never) === 'courtguard', 'v104: Court Guard fight shows his portrait')
   assert(existsSync('public/covers/courtguard.jpg') && sw.includes('covers/courtguard.jpg'), 'v104: courtguard.jpg on disk and precached')
@@ -5642,11 +5647,11 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
 // v105: Approach Dry collapse art; other crises stay on hub art.
 {
   const sw = readFileSync('public/sw.js', 'utf8')
-  const s = { ...GE.newGame('prisoner'), sceneId: 'crisis:maw', hubId: 'redmaw' }
+  const s = { ...newGame('prisoner'), sceneId: 'crisis:maw', hubId: 'redmaw' }
   s.flags = { ...s.flags, encounterHere: false }
   assert(playCoverKey(s, getScene('crisis:maw')) === 'down', 'v105: Approach Dry shows down.jpg')
   assert(existsSync('public/covers/down.jpg') && sw.includes('covers/down.jpg') && COVER_BAND.down, 'v105: down.jpg on disk, precached, cropped')
-  const camp = { ...GE.newGame('prisoner'), sceneId: 'crisis:camp', hubId: 'camp04' }
+  const camp = { ...newGame('prisoner'), sceneId: 'crisis:camp', hubId: 'camp04' }
   assert(playCoverKey(camp, { id: 'crisis:camp', art: 'world', chapterId: 'ch1', hubId: 'camp04' } as never) !== 'down', 'v105: other crises keep hub art')
   console.log('v105 down checks OK')
 }
@@ -5671,7 +5676,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
     assert(c, `v107: ${s.sceneId} offers ${id}`)
     return GE.applyEffect(s, c!.effects)
   }
-  const start = GE.newGame('vessel')
+  const start = newGame('vessel')
   assert(start.sceneId === 'open:vessel', 'v107: Vessel starts at the wake')
   assert(GE.bodyOf(start).startsWith('You come to on cold sand-brick under the Threshold Court.'), 'v107: wake text verbatim')
   assert(playCoverKey(start, getScene('open:vessel')!) === 'resin_vault', 'v107: wake shows the resin vault')
@@ -5706,7 +5711,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
     assert(c, `v108: ${s.sceneId} offers ${id} (have ${GE.visibleChoices(s).map((x) => x.id).join(',')})`)
     return GE.applyEffect(s, c!.effects)
   }
-  const rig = step(GE.newGame('vessel'), 'rig')
+  const rig = step(newGame('vessel'), 'rig')
   const quiet = step(step(rig, 'slip'), 'keep')
   assert(quiet.sceneId === 'thresh:court', 'v108: no alarm, straight to the Court')
   const guard = step(step(rig, 'release'), 'keep')
@@ -5733,7 +5738,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   // Drain tunnel.
   const drain = getScene('thresh:court')!.choices.find((c) => c.id === 'drain')!
   assert(GE.visibleChoices(quiet).some((c) => c.id === 'drain') && !GE.isChoiceOn(quiet, drain.enable) && drain.locked === 'Needs: a way through the drains.', 'v108: drain tunnel visible but locked without the map')
-  const plate = step(step(step(GE.newGame('vessel'), 'rig'), 'plate'), 'keep')
+  const plate = step(step(step(newGame('vessel'), 'rig'), 'plate'), 'keep')
   assert(GE.isChoiceOn(plate, drain.enable), 'v108: the Ledger-Plate Map opens the drains')
   const out = step(plate, 'drain')
   assert(out.sceneId === 'ch1:v-zafir' && out.chapterId === 'cache-run' && out.flags.drainTunnel, "v108: the drain skips the runners and comes out near the Pilgrim's Scar")
@@ -5745,7 +5750,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
 {
   const sw = readFileSync('public/sw.js', 'utf8')
   const NEW = 'Skiff Bay stinks of diesel and hot sand. Cartel barges sit low on their runners, harpoon turrets turned to face the dunes, their stacks coughing black smoke and blue sparks. A Stray Skiff-Strider idles under a patched tarp with its crew pretending not to watch you. At the far end of the dock, apart from everything else, sits a skiff painted bone-white. Something hangs from its crane, wrapped in amber.'
-  const bay = { ...GE.newGame('prisoner'), sceneId: 'camp:bay', hubId: 'camp04' }
+  const bay = { ...newGame('prisoner'), sceneId: 'camp:bay', hubId: 'camp04' }
   assert(GE.bodyOf(bay).startsWith(NEW), 'v109: new bay text verbatim')
   assert(/Pike/.test(GE.bodyOf(bay)) && /Sarn/.test(GE.bodyOf(bay)) && /Vetch/.test(GE.bodyOf(bay)) && /Jaxson's skiff/.test(GE.bodyOf(bay)), 'v109: the bay hands and Jaxson\'s skiff are still named')
   assert(playCoverKey(bay, getScene('camp:bay')!) === 'skiff_bay_docks', 'v109: the main bay shows the docks')
@@ -5800,7 +5805,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
 
 // v112: Silas's Shade shows three Strays, not two.
 {
-  const shade = { ...GE.newGame('outcast'), sceneId: 'spine:shade', hubId: 'spine' }
+  const shade = { ...newGame('outcast'), sceneId: 'spine:shade', hubId: 'spine' }
   const body = GE.bodyOf(shade)
   assert(body.includes('Three Strays share the shade.') && body.includes('A third woman sits on a scrap pile with a snake across her shoulders.') && !/Two Strays/.test(body), 'v112: the shade counts three Strays')
   const look = readFileSync('src/game/look.ts', 'utf8')
@@ -5815,10 +5820,10 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
 {
   const sw = readFileSync('public/sw.js', 'utf8')
   assert(existsSync('public/covers/stray-collector.jpg') && sw.includes('covers/stray-collector.jpg') && COVER_BAND.stray_collector, 'v113: collector art on disk, precached, cropped')
-  const fight = { ...GE.newGame('outcast'), sceneId: 'spine:ridge', hubId: 'spine' }
+  const fight = { ...newGame('outcast'), sceneId: 'spine:ridge', hubId: 'spine' }
   fight.flags = { ...fight.flags, encounterHere: true, encounterKind: 'collector' }
   assert(playCoverKey(fight, getScene('spine:ridge')!) === 'stray_collector', 'v113: the collector fight shows the collector')
-  const well = { ...GE.newGame('outcast'), sceneId: 'spine:well', hubId: 'spine' }
+  const well = { ...newGame('outcast'), sceneId: 'spine:well', hubId: 'spine' }
   assert(playCoverKey(well, getScene('spine:well')!) === 'spine', 'v113: the Dry Well uses the Spine art, not the title art')
   console.log('v113 collector checks OK')
 }
@@ -5844,7 +5849,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   ]
   for (const [door, at, ch, hub] of hunts) {
     for (const strays of [0, 4, 8]) {
-      const s0 = rich(GE.newGame(door))
+      const s0 = rich(newGame(door))
       const s = { ...s0, sceneId: at, hubId: hub, chapterId: ch as never, heat: { ...s0.heat, strays }, flags: { ...s0.flags, hungerKnown: true, hunterHere: true, hunterFrom: at, hunterAt: s0.ticks } }
       walkAll(s, `${door}@${at} hunt strays${strays}`, 2)
     }
@@ -5858,7 +5863,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
     ['outcast', 'spine:ridge', undefined, 'spine'],
   ]
   for (const [door, at, ch, hub] of kaelenAt) {
-    const s0 = rich(GE.newGame(door))
+    const s0 = rich(newGame(door))
     const s = { ...s0, sceneId: at, hubId: hub, chapterId: ch as never, flags: { ...s0.flags, kaelenPassing: true, kaelenKnown: true, metKaelen: true, kaelenHub: hub ?? 'spine' } }
     walkAll(s, `${door}@${at} kaelen`, 3)
   }
@@ -5868,10 +5873,10 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   assert(ps.includes("key: 'look-around'") && ps.includes('const showDo = true') && ps.includes('!newChapter'), 'v114: PlayScreen fallback and no hold across a chapter start')
   assert(/flash: undefined/.test(readFileSync('src/App.tsx', 'utf8')), 'v114: resuming clears the stale flash')
   // The Outcast road start has its own art.
-  const leave = { ...GE.newGame('outcast'), sceneId: 'ch1:leave', chapterId: 'cache-run' as never, hubId: undefined }
+  const leave = { ...newGame('outcast'), sceneId: 'ch1:leave', chapterId: 'cache-run' as never, hubId: undefined }
   assert(playCoverKey(leave, getScene('ch1:leave')!) === 'rim_bonewash', 'v114: the Bone Wash road start is not the title art')
   // The ridge Gullet button lands on the road with actions.
-  const ridge = { ...GE.newGame('outcast'), sceneId: 'spine:ridge', hubId: 'spine', flags: { ...GE.newGame('outcast').flags, hungerKnown: true } }
+  const ridge = { ...newGame('outcast'), sceneId: 'spine:ridge', hubId: 'spine', flags: { ...newGame('outcast').flags, hungerKnown: true } }
   const road = GE.applyEffect(ridge, GE.visibleChoices(ridge).find((c) => c.id === 'hunger')!.effects)
   assert(road.sceneId === 'ch1:leave' && road.chapterId === 'cache-run' && GE.visibleChoices(road).length > 0, 'v114: the ridge road button lands on the road with buttons')
   console.log('v114 dead-screen checks OK')
@@ -5888,14 +5893,14 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   }
   // 1. Kaelen is "the trader" until his intro plays, and the intro plays on first meeting on every door.
   for (const [door, from] of [['prisoner', 'camp:wire'], ['vessel', 'thresh:sift']] as const) {
-    const a = { ...GE.newGame(door), sceneId: from }
+    const a = { ...newGame(door), sceneId: from }
     assert(!named(a), `v115: ${from} does not name Kaelen before the intro`)
     const n = GE.applyEffect(a, GE.visibleChoices(a).find((c) => c.id === 'kaelen')!.effects)
     assert(!!n.flags.kaelenIntroNow && GE.bodyOf(n).includes(GE.KAELEN_INTRO), `v115: ${door} first meeting plays the intro`)
     assert(!named(n), `v115: ${door} intro screen names him only in his own line`)
   }
   for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
-    const r = { ...GE.newGame(door), sceneId: 'ch1:leave', chapterId: 'cache-run' as const, flags: { ...GE.newGame(door).flags, kaelenPassing: true } }
+    const r = { ...newGame(door), sceneId: 'ch1:leave', chapterId: 'cache-run' as const, flags: { ...newGame(door).flags, kaelenPassing: true } }
     assert(!named(r), `v115: ${door} roadside pass says "the trader"`)
     const n = GE.applyEffect(r, GE.visibleChoices(r).find((c) => c.id === 'kaelen-rumors')!.effects)
     assert(GE.bodyOf(n).includes(GE.KAELEN_INTRO) && !named(n), `v115: ${door} roadside rumors open on the intro, headed "the trader"`)
@@ -5904,13 +5909,13 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   assert(ps.includes("state.flags.kaelenKnown ? 'kaelen' : 'valerius'"), 'v115: the Do placeholder does not name Kaelen early')
   // 7. Kaelen's pass rows stay where he stopped.
   {
-    const v = GE.newGame('vessel')
+    const v = newGame('vessel')
     const s = { ...v, sceneId: 'thresh:paddock', hubId: 'threshold' as const, flags: { ...v.flags, kaelenPassing: true } }
     const moved = GE.applyEffect(s, { travel: 'thresh:court' })
     assert(!GE.visibleChoices(moved).some((c) => c.id === 'kaelen-pass' || c.id === 'kaelen-rumors'), 'v115: the trader does not follow you to the next scene')
   }
   // 2/3. Covers.
-  const cover = (door: DoorId, id: string, flags: Record<string, unknown> = {}) => playCoverKey({ ...GE.newGame(door), sceneId: id, flags: { ...GE.newGame(door).flags, ...flags } }, getScene(id)!)
+  const cover = (door: DoorId, id: string, flags: Record<string, unknown> = {}) => playCoverKey({ ...newGame(door), sceneId: id, flags: { ...newGame(door).flags, ...flags } }, getScene(id)!)
   assert(cover('vessel', 'ch1:leave') === 'rim_pilgrims_scar' && cover('vessel', 'ch1:v-hymn') === 'rim_pilgrims_scar', 'v115: Vessel Cache Run shows the Scar')
   assert(cover('prisoner', 'crisis:dunes') === 'down' && cover('vessel', 'crisis:dunes') === 'down', 'v115: The Wash Takes You uses down.jpg')
   assert(cover('vessel', 'ch1:leave', { downed: true }) === 'down', 'v115: Down on the road uses down.jpg')
@@ -5919,7 +5924,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   assert(ps.includes('<img key={held ? held.art : artSrc} className="scene-img"'), 'v115: the cover remounts per scene (no stale flash)')
   // 4/5. Court Guard: blowing sand caps his hit; he/him.
   {
-    const v = GE.newGame('vessel')
+    const v = newGame('vessel')
     for (let t = 0; t < 30; t++) {
       const s = { ...v, ticks: t, sceneId: 'thresh:court-guard', hubId: 'threshold' as const, flags: { ...v.flags, encounterHere: true, encounterKind: 'courtguard' as const } }
       const card = String(GE.bodyOf(s)) + encounterCard(s)
@@ -5931,13 +5936,13 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   }
   // 6. Feint: the husk's slipped hit cannot take you from 2 to 0.
   for (let t = 0; t < 40; t++) {
-    const v = GE.newGame('vessel')
+    const v = newGame('vessel')
     const s = { ...v, ticks: t, health: 2, sceneId: 'maw:rim', flags: { ...v.flags, encounterHere: true, encounterKind: 'husk' as const, encounterHp: 3 } }
     assert(GE.applyEffect(s, { resolveEncounter: 'feint' }).health >= 1, 'v115: Feint vs the husk at Health 2 leaves you standing')
   }
   // 8. Down mid-fight resolves: the fight is closed with a line, and you wake where you fell.
   {
-    const v = GE.newGame('vessel')
+    const v = newGame('vessel')
     let s: GameState = { ...v, chapterId: 'cache-run', sceneId: 'ch1:leave', ticks: 3, health: 1, flags: { ...v.flags, encounterHere: true, encounterKind: 'husk', encounterHp: 3 } }
     s = GE.applyEffect(s, GE.visibleChoices(s).find((c) => c.id === 'enc-fight')!.effects)
     assert(!!s.flags.downed, 'v115: setup downed')
@@ -5946,7 +5951,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   }
   // Rest.
   {
-    const v = GE.newGame('vessel')
+    const v = newGame('vessel')
     const at = (o: Partial<GameState>) => ({ ...v, sceneId: 'thresh:court', hubId: 'threshold' as const, ...o }) as GameState
     const row = (s: GameState) => GE.visibleChoices(s).find((c) => c.id === 'rest')
     let s = at({ health: 3, sap: 4 })
@@ -5964,7 +5969,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   }
   // Prisoner/Outcast retest.
   {
-    const p = GE.newGame('prisoner')
+    const p = newGame('prisoner')
     const bay = { ...p, sceneId: 'camp:bay', hubId: 'camp04' as const, flags: { ...p.flags, jaxsonInside: true } }
     assert(!/Black smoke/.test(GE.bodyOf(bay)), 'v115: no station smoke before the sabotage')
     assert(/Black smoke/.test(GE.bodyOf({ ...bay, flags: { ...bay.flags, guardDown: true } })), 'v115: station smoke after the sabotage')
@@ -5984,7 +5989,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
       }
     }
     assert(wins >= 80, `v115: a fresh Prisoner wins the pup most of the time (${wins}/100)`)
-    const o = GE.newGame('outcast')
+    const o = newGame('outcast')
     const drank = { ...o, sceneId: 'spine:ridge', hubId: 'spine' as const, sap: 2, flags: { ...o.flags, firstDropMarked: true } }
     assert(!/You need a Drop before noon/.test(GE.bodyOf(drank)), 'v115: the first-Drop goal stays done')
     assert(!readFileSync('src/game/content/maps.ts', 'utf8').includes('Red Maw, south'), 'v115: the Bone Wash map label fits')
@@ -6010,7 +6015,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
     return s
   }
   // 2. Handler: +2 Cartel and handlerInjured on a win, even one where you drop with him; no extra +2 or "Fight lost" for that.
-  const p = GE.newGame('prisoner')
+  const p = newGame('prisoner')
   for (let t = 0; t < 30; t++) {
     const s = run({ ...p, ticks: t, sceneId: 'camp:yard', hubId: 'camp04', flags: { ...p.flags, encounterHere: true, encounterKind: 'handler', hunterHere: true } })
     if (s.flags.handlerInjured) {
@@ -6039,7 +6044,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   }
   // 3. No roadside Kaelen on the Cache Run.
   {
-    const v = GE.newGame('vessel')
+    const v = newGame('vessel')
     let s: GameState = { ...v, chapterId: 'cache-run', sceneId: 'ch1:v-hymn', flags: { ...v.flags, kaelenPassing: true, kaelenKnown: true, kaelenGap: 99, huntQuiet: 99 } }
     s = GE.applyEffect(s, { ticks: 1 })
     assert(!GE.visibleChoices(s).some((c) => c.id === 'kaelen-pass'), 'v116: no stale roadside Kaelen on the road')
@@ -6050,7 +6055,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   }
   // 4. Covers: Down everywhere; fights never take the scene's face.
   const cov = (door: DoorId, id: string, flags: Record<string, unknown> = {}, extra: Partial<GameState> = {}) => {
-    const g = GE.newGame(door)
+    const g = newGame(door)
     const sc = getScene(id)!
     return playCoverKey({ ...g, sceneId: id, hubId: sc.hubId, chapterId: sc.chapterId, ...extra, flags: { ...g.flags, ...flags } }, sc)
   }
@@ -6064,7 +6069,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   assert(cov('outcast', 'ch1:south-wind') === 'skiff_bay_docks', 'v116→v125: South Wind is skiffs, not her face yet')
   // 5. The dais clears once the Court Guard is gone.
   {
-    const v = GE.newGame('vessel')
+    const v = newGame('vessel')
     let s: GameState = { ...v, ticks: 3, health: 1, sceneId: 'thresh:court-guard', hubId: 'threshold', flags: { ...v.flags, encounterHere: true, encounterKind: 'courtguard', encounterHp: 9 } }
     s = GE.applyEffect(s, GE.visibleChoices(s).find((c) => c.id === 'enc-fight')!.effects)
     s = GE.applyEffect(s, GE.visibleChoices(s).find((c) => c.id === 'wake')!.effects)
@@ -6078,7 +6083,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   }
   // 6. Rest: 2 Sap, and on road talk beats.
   {
-    const v = GE.newGame('vessel')
+    const v = newGame('vessel')
     const one: GameState = { ...v, sceneId: 'thresh:court', hubId: 'threshold', health: 3, sap: 1 }
     const r = GE.visibleChoices(one).find((c) => c.id === 'rest')!
     assert(!GE.isChoiceOn(one, r.enable) && r.locked === 'Needs: 2 Sap', 'v116: Rest locked at 1 Sap')
@@ -6090,7 +6095,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   }
   // 7. Outcast: reading the wash is a heading; the Bone Wash node walks the road.
   {
-    const o = GE.newGame('outcast')
+    const o = newGame('outcast')
     let s: GameState = { ...o, sceneId: 'spine:ridge', hubId: 'spine' }
     s = GE.applyEffect(s, GE.visibleChoices(s).find((c) => c.id === 'scan')!.effects)
     assert(!!s.flags.hungerKnown, 'v116: reading the wash is a heading')
@@ -6112,7 +6117,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   assert(existsSync('public/covers/bonewright.jpg') && !existsSync('public/covers/zafir.jpg') && playCoverFile('zafir') === 'bonewright.jpg', 'v116: cover renamed to bonewright.jpg')
   {
     // Hide Gloves: pulling a tick off still lets you strike.
-    const g = GE.newGame('outcast')
+    const g = newGame('outcast')
     const s: GameState = { ...g, sceneId: 'spine:well', hubId: 'spine', items: { ...g.items, hide_gloves: 1 }, equipped: { ...g.equipped, hands: 'hide_gloves' }, flags: { ...g.flags, encounterHere: true, encounterKind: 'tick', encounterHp: 9, encounterLatched: true } }
     const n = GE.applyEffect(s, { resolveEncounter: 'pull' })
     assert(Number(n.flags.encounterHp) < 9 && !n.flags.encounterLatched, 'v116: Hide Gloves pull also strikes')
@@ -6128,7 +6133,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
     assert(existsSync(`public/covers/${file}`) && swText.includes(`covers/${file}`), `v117: ${file} shipped and precached`)
     for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
       for (const id of ['camp:yard', 'spine:well', 'thresh:paddock', 'ch1:leave', 'maw:rim']) {
-        const g = GE.newGame(door)
+        const g = newGame(door)
         const sc = getScene(id)!
         const key = playCoverKey({ ...g, sceneId: id, hubId: sc.hubId, chapterId: sc.chapterId, flags: { ...g.flags, encounterHere: true, encounterKind: kind as never } }, sc)
         assert(playCoverFile(key) === file && !!COVER_BAND[key], `v117: ${door} ${kind} fight at ${id} uses ${file}`)
@@ -6142,7 +6147,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
 {
   const { NO_SKIP_LINE, sneakSpotted } = await import('../src/game/encounter.ts')
   const { AMBUSH_RUNNER, SNEAK_SPOTTED } = await import('../src/game/content/cacheRun.ts')
-  const v = GE.newGame('vessel')
+  const v = newGame('vessel')
   // Hymn-road ambush: no skip button, typed skip refused, Health ignored.
   let road: GameState = { ...v, chapterId: 'cache-run', sceneId: 'ch1:leave', sap: 6, health: 1 }
   road = GE.applyEffect(road, GE.visibleChoices(road).find((c) => c.id === 'go')!.effects)
@@ -6726,13 +6731,34 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   console.log('v132 checks OK')
 }
 
+// v134: the wrench goes in either hand, like the other off-hand weapons.
+{
+  const K = await import('../src/game/kit.ts')
+  const base = rawNewGame('prisoner')
+  const own = (items: Record<string, number>, equipped: Record<string, string>) => ({ ...base, items: { ...base.items, ...items }, equipped }) as typeof base
+  assert(K.slotsFor('wrench').join() === 'weapon,offhand', 'v134: wrench fits main hand and off hand')
+  assert(K.equippedStrike(own({ wrench: 1 }, { weapon: 'wrench' })) === 3, 'v134: wrench in the main hand is Strike 3, as before')
+  assert(K.equippedStrike(own({ wrench: 1, shiv: 1 }, { weapon: 'shiv', offhand: 'wrench' })) === 3, 'v134: wrench in the off hand adds +1 (Shiv 2 + 1)')
+  assert(K.equippedStrike(own({ wrench: 1, needle_knife: 1 }, { weapon: 'needle_knife', offhand: 'wrench' })) === 4, 'v134: Needle Knife main, wrench off hand: 3 + 1')
+  assert(K.equippedStrike(own({ wrench: 1, needle_knife: 1 }, { weapon: 'wrench', offhand: 'needle_knife' })) === 4, 'v134: wrench main, Needle Knife off hand: 3 + 1')
+  assert(K.equippedShell(own({ wrench: 1 }, { offhand: 'wrench' })) === 0, 'v134: the wrench never adds Shell')
+  const solo = own({ wrench: 1, shiv: 1 }, { weapon: 'wrench' })
+  assert(!equipItem(solo, 'wrench', 'offhand').equipped?.offhand, 'v134: one wrench cannot be in both hands')
+  const offed = equipItem(own({ wrench: 1, shiv: 1 }, { weapon: 'shiv' }), 'wrench', 'offhand')
+  assert(offed.equipped?.offhand === 'wrench' && offed.flash === 'Oversized Wrench in the off hand.', 'v134: equip the wrench in the off hand')
+  assert(equipItem(own({ wrench: 2 }, { weapon: 'wrench' }), 'wrench', 'offhand').equipped?.offhand === 'wrench', 'v134: two wrenches fill both hands')
+  const traded = rawApplyEffect(offed, { remove: { wrench: 1 } })
+  assert(!traded.equipped?.offhand && traded.equipped?.weapon === 'shiv', 'v134: spend the wrench and the off hand empties')
+  assert(visibleChoices.length > 0, 'v134: engine intact')
+}
+
 // v133: the masked figure
 {
   const M = await import('../src/game/masked.ts')
   const A9 = await import('../src/game/art.ts')
   const E9 = await import('../src/game/encounter.ts')
   const mawBase = () => {
-    let s = GE.applyEffect(newGame('prisoner'), { goto: 'maw:rim', enterHub: 'redmaw', flag: { chapter1Done: true } })
+    let s = GE.applyEffect(rawNewGame('prisoner'), { goto: 'maw:rim', enterHub: 'redmaw', flag: { chapter1Done: true } })
     return { ...s, health: 6, sap: 6, items: { ...s.items, scrap: 3 } }
   }
   const arrive = (t: number, over: Record<string, unknown> = {}, from = 'maw:rim', to = 'maw:market', hot = false) => {
@@ -6765,16 +6791,22 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
     tries++
     if (Number(n.flags.maskedSeen ?? 0) > 0) sights++
   }
-  assert(sights > tries * 0.1 && sights < tries * 0.22, `v133: about 1 in 6 arrivals (${sights}/${tries})`)
+  assert(sights > tries * 0.12 && sights < tries * 0.26, `v134: about 1 in 5 arrivals (${sights}/${tries})`)
   assert(!arrive(5, { maskedStep: 4 }).n.flags.maskedSeen, 'v133: never in two consecutive scenes')
-  let early = 0
-  for (let t = 0; t < 300; t++) {
-    let s = newGame('outcast')
-    s = { ...s, ticks: t, flags: { ...s.flags, sceneSteps: t } }
+  // v134: he walks the whole run, so Camp, the roads and the hubs carry him too (never the open scenes, a crisis, or the Chapter One end screen).
+  let early = 0, earlyKinds = 0
+  for (let t = 0; t < 400; t++) {
+    let s = rawNewGame('outcast')
+    s = { ...s, ticks: t, flags: { ...s.flags, sceneSteps: t, maskedStep: -99, huntQuiet: 0, encounterAt: t } }
     const n = rawApplyEffect(GE.applyEffect(s, { goto: 'spine:well', enterHub: 'spine' }), { goto: 'spine:ridge', ticks: 1 })
     if (n.flags.maskedSeen) early++
+    // The Outcast's first Drop stays his own: nothing he leaves is a Drop before it is marked.
+    if (!n.flags.firstDropMarked && ((n.items.vial_drop ?? 0) > 0 || n.flags.maskedDrop)) earlyKinds++
   }
-  assert(early === 0, 'v133: not before Chapter One is finished')
+  assert(early > 0 && early < 400 * 0.5, `v134: he appears before Chapter One (${early}/400)`)
+  assert(earlyKinds === 0, 'v134: nothing he leaves hands the Outcast his first Drop')
+  assert(M.MASKED_WALKS === 'whole-run' && M.MASKED_ODDS === 5, 'v134: whole run, about 1 in 5')
+  assert(!M.maskedActive({ ...rawNewGame('prisoner'), sceneId: 'open:prisoner' }) && !M.maskedActive({ ...rawNewGame('prisoner'), sceneId: 'ch1:end' }), 'v134: never on open scenes or the Chapter One end screen')
 
   // Glimpse: one line, no button, no cost; the cover is his.
   const g = find((n, s) => !!n.flags.maskedSeen && !n.flags.maskedHere && !n.flags.maskedDrop && (n.items.vial_drop ?? 0) === (s.items.vial_drop ?? 0) && M.isMaskedFlash(n.flash))
@@ -6842,5 +6874,5 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   // Art: file, precache, size.
   const sw9 = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
   assert(sw9.includes('covers/masked-figure.jpg') && existsSync(new URL('../public/covers/masked-figure.jpg', import.meta.url)), 'v133: masked cover precached')
-  console.log('v133 checks OK')
+  console.log('v134 checks OK')
 }
