@@ -43,7 +43,7 @@ import { markFirstDrop } from './firstDrop'
 import { amberFindSign, downedSign, lowHealthSign, sandTouchReply } from './sandSign'
 import { isPressureOverlay, isSybellaOverlay, pressureAppend, pressureChoices, pressureVerb, spineGround, spineHunterKindAt, straysHeard } from './hunter'
 import { bareFightIsRoad, offButton } from './verbs'
-import { roadHunterKind } from './roadHunt'
+import { roadHunterKind, secondStopRunner } from './roadHunt'
 import { noticeFaction, noticeGround, noticeLine, SCAVENGE_NOTICE_MAX, SCAVENGE_NOTICE_STEP } from './noticeHeat'
 import {
   canEncounter,
@@ -285,6 +285,15 @@ const HUNT_GROUND = new Set([
 
 function facingSybella(sceneId: string): boolean {
   return sceneId === 'maw:sybella' || sceneId === 'maw:sybella-shadow'
+}
+
+/** One talk-scene exit in two can roll a road fight. Seeded on the turn and the scene you leave. */
+function talkExitRoll(state: GameState): boolean {
+  // Test hook: older walkthroughs step out of talk scenes without a fight.
+  if (state.flags.noTalkExitFight) return false
+  let h = (state.ticks * 2654435761 + 31) >>> 0
+  for (const ch of state.sceneId) h = Math.imul(h ^ ch.charCodeAt(0), 2246822519) >>> 0
+  return ((h ^ (h >>> 15)) >>> 0) % 2 === 0
 }
 
 /** Sybella's Maw intercept: at most once per this many scenes walked. */
@@ -762,6 +771,8 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   // opens an interrupting hunt or road fight. The next beat on the new ground can.
   // Stepping off the End of Chapter One screen counts the same: nothing jumps you on the way back to the Rim.
   const talkBeat = getScene(state.sceneId).kind === 'talk' || state.sceneId === CHAPTER_ONE_END
+  // Walking out of a talk scene to a place may roll a road fight, one exit in two (seeded). Hunts never fire on a talk beat.
+  const talkWalkOut = getScene(state.sceneId).kind === 'talk' && !!dest && dest !== state.sceneId && getScene(next.sceneId).kind !== 'talk' && talkExitRoll(state)
   const interrupt = lingered && !clearingHunt && !talkBeat ? hunterScene(next, !!dest && dest !== state.sceneId) : null
   const fightBeat = !!fx.resolveEncounter || !!next.flags.encounterHere || !!fx.unsetFlag?.includes('encounterHere')
   const arrivedKind = getScene(next.sceneId).kind
@@ -841,7 +852,7 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   const roamBeat = lingered && (next.sceneId === state.sceneId || traveled || !!fx.travel)
   if (
     roamBeat &&
-    !talkBeat &&
+    (!talkBeat || talkWalkOut) &&
     !keepBayLine &&
     !fightBeat &&
     !next.flags.hunterHere &&
@@ -862,6 +873,14 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   if (roadHunt) {
     next.flags = { ...next.flags, ...fightStartFlags(next, roadHunt.kind), encounterNoSkip: true, roadHuntDone: true, roadFightSeen: true }
     next.flash = roadHunt.line
+  }
+  // Vessel's second road stop: one fixed runner, once per run, whatever came before. Ignores Health.
+  const secondStop = !roadHunt ? secondStopRunner(state, next) : null
+  if (secondStop) {
+    next.flags = { ...next.flags, ...fightStartFlags(next, secondStop.kind), encounterNoSkip: true, secondStopDone: true, roadFightSeen: true }
+    next.flash = secondStop.line
+  } else if (roadHunt && next.sceneId === 'ch1:v-runners') {
+    next.flags = { ...next.flags, secondStopDone: true }
   }
   // Stray Hunters: any door, Stray Heat 3+, a road arrival; once every few scenes, and there are always more.
   if (!roadHunt && strayHunterArrives(state, next)) {
@@ -885,7 +904,7 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   // Heat comes due: count fight-free danger scenes; any fight or hunt clears the count.
   if (next.flags.encounterHere || next.flags.hunterHere) {
     if (next.flags.fightQuiet) next.flags = { ...next.flags, fightQuiet: 0 }
-  } else if (roamBeat && !talkBeat && !interceptBeat && !clearingHunt && encounterGround(next) && hubDanger(next) >= 1) {
+  } else if (roamBeat && (!talkBeat || talkWalkOut) && !interceptBeat && !clearingHunt && encounterGround(next) && hubDanger(next) >= 1) {
     next.flags = { ...next.flags, fightQuiet: Number(next.flags.fightQuiet ?? 0) + 1 }
   }
 
@@ -973,6 +992,7 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     delete flags.mawTollDone
     next.flags = flags
   }
+  if (next.sceneId === 'spine:ridge' && state.sceneId !== 'spine:ridge') next.flags = { ...next.flags, ridgeVisits: Number(state.flags.ridgeVisits ?? 0) + 1 }
   // Scene steps: a walking count for cooldowns (Haul parts).
   if (next.sceneId !== state.sceneId) next.flags = { ...next.flags, sceneSteps: Number(next.flags.sceneSteps ?? 0) + 1 }
   // Once-a-visit flags clear when you walk off.
