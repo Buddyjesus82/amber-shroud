@@ -196,8 +196,8 @@ export const COVER_BAND: Record<CoverKey, [number, number]> = {
   // Jaxson on his back under the hull, the spark, the toolbox.
   hotwire: [0.2, 0.9],
   carapace: [0.0, 0.75],
-  // Jodi's face, the snake on her arm, and the vulture behind her are in the top half.
-  jodi: [0.04, 0.5],
+  // Jodi's face, the python, both vultures and her torso sit in the top 60%; the jar, skull and rats are below.
+  jodi: [0.02, 0.62],
   // Kaelen's crate lead: the open crate with its tally marks sits lower left-center.
   hoard: [0.42, 1.0],
   // Maw arrivals, one per door: the walker and the ribs / bone road / cairn ridge.
