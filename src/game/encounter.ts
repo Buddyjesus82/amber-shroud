@@ -1,4 +1,5 @@
 import { STRAY_HUNTER_ENCOUNTERS } from './strayLines'
+import { MASKED_BLOCK_LINE, MASKED_ROUNDS, MASKED_STRIKE_LINE, MASKED_WALKS_OFF_LINE } from './maskedLines'
 import { ITEMS } from './content/catalog'
 import { getScene } from './content'
 import { check } from './logic'
@@ -7,7 +8,7 @@ import { CARAPACE_HUNTER, SPINE_HUNTER } from './content/spineHunter'
 import type { Choice, Effect, FlagMap, GameState, ItemId } from './types'
 import { hash, OPENERS, sandAnswers, PAIR_LINE, HUSK_CONTROLLER_LINE, sandGripLine, TERRAINS, terrainPool, type Terrain, type TerrainId } from './fightTricks'
 
-export type EncounterKind = 'jackal' | 'cutter' | 'courtguard' | 'tick' | 'pup' | 'scavenger' | 'patrol' | 'handler' | 'hound' | 'overseer' | 'collector' | 'carapace' | 'husk' | 'runner' | 'strayhunter' | 'strayhound'
+export type EncounterKind = 'jackal' | 'cutter' | 'courtguard' | 'tick' | 'pup' | 'scavenger' | 'patrol' | 'handler' | 'hound' | 'overseer' | 'collector' | 'carapace' | 'husk' | 'runner' | 'strayhunter' | 'strayhound' | 'masked'
 
 /** Fight hits. Sap stays thirst/travel. */
 export const HEALTH_MAX = 6
@@ -22,6 +23,8 @@ type Spec = {
 }
 
 const SPECS: Spec[] = [
+  // The masked figure: he cannot be killed. A fight with him always ends with him walking off.
+  { kind: 'masked', name: 'Masked Figure', strike: 1, shell: 3, hp: 3, line: MASKED_BLOCK_LINE },
   { kind: 'strayhunter', ...STRAY_HUNTER_ENCOUNTERS.strayhunter },
   { kind: 'strayhound', ...STRAY_HUNTER_ENCOUNTERS.strayhound },
   {
@@ -384,6 +387,7 @@ export function clashOf(state: GameState, floor = DAMAGE_FLOOR): Clash {
 
 /** Short stat label: the last word of the name, in caps (CUTTER, SHARD-HOUND, VALERIUS). */
 export function statName(spec: Pick<Spec, 'name'>): string {
+  if (spec.name === 'Masked Figure') return 'MASKED'
   const words = spec.name.trim().split(/\s+/)
   return (words[words.length - 1] ?? spec.name).toUpperCase()
 }
@@ -614,7 +618,9 @@ export function encounterChoices(state: GameState): Choice[] {
       effects: { resolveEncounter: 'disguise', ticks: 1 },
     })
   }
-  return rows
+  // He is fought plainly: Strike, Guard, Run.
+  const shown = spec.kind === 'masked' ? rows.filter((c) => ['enc-fight', 'enc-guard', 'enc-run'].includes(c.id)) : rows
+  return shown
     .filter((c) => check(c.show, state))
     .map((c) => ({ ...c, label: pronounText(spec.kind, c.label), sub: c.sub ? pronounText(spec.kind, c.sub) : c.sub }))
 }
@@ -787,7 +793,7 @@ export function dismissEncounter(state: GameState): Effect {
 }
 
 /** He/him for named men on the fight card. Everyone else stays they/them. */
-const HE_KINDS: readonly EncounterKind[] = ['courtguard', 'runner']
+const HE_KINDS: readonly EncounterKind[] = ['courtguard', 'runner', 'masked']
 const HE_SWAPS: [RegExp, string][] = [
   [/\bThey still stand\b/g, 'He still stands'],
   [/\bThey drop\b/g, 'He drops'],
@@ -850,6 +856,7 @@ function roll(state: GameState, salt: string, n: number): number {
 const PROPER_KINDS: EncounterKind[] = ['overseer', 'carapace']
 
 function whoOf(spec: Spec): string {
+  if (spec.kind === 'masked') return 'the masked figure'
   return PROPER_KINDS.includes(spec.kind) ? spec.name : `the ${spec.name}`
 }
 
@@ -993,6 +1000,15 @@ export function resolveEncounter(
     dmgIn = Math.min(ground.cap, dmgIn)
     dmgInPlain = Math.min(ground.cap, dmgInPlain)
     critIn = critIn && dmgIn > dmgInPlain
+  }
+  // The masked figure: your swings never land, his hit is 1 and never puts you on the ground.
+  if (spec.kind === 'masked') {
+    const room = Math.min(1, Math.max(0, c.yourHp - 1))
+    dmgOut = 0
+    critOut = false
+    dmgIn = Math.min(dmgIn, room)
+    dmgInPlain = Math.min(dmgInPlain, room)
+    critIn = false
   }
   const hitIn = (fn: (d: number) => number) => {
     dmgIn = fn(dmgIn)
@@ -1146,6 +1162,13 @@ export function resolveEncounter(
   const top = statRows(yourHp, c.strike, c.shell, spec, theirHp)
   const hitCard = [top, youLine, themLine, ...bonusLines, ...(notes.length ? [notes.join(' ')] : [])].join('\n\n')
   const sap = sapLoss ? -sapLoss : undefined
+
+  // He cannot be killed. A strike ends it, and so does the third round: he walks off. No loot, no Heat.
+  if (spec.kind === 'masked' && (attacking || round >= MASKED_ROUNDS)) {
+    const outcome = attacking ? MASKED_STRIKE_LINE : MASKED_WALKS_OFF_LINE
+    const card = attacking ? `${top}\n\n${outcome}` : `${hitCard}\n\n${outcome}`
+    return holdCard(state, spec, card, outcome, { health: attacking ? 0 : healthDelta, sap, flag: { maskedFought: true } })
+  }
 
   if (theirHp <= 0 && spec.kind === 'patrol') {
     const stagger = yourHp <= 0

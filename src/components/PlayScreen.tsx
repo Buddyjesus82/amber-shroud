@@ -27,6 +27,7 @@ import { encounterSpeaker, isEncounterResult } from '../game/encounter'
 import { coverBand, playCoverFile, playCoverKey } from '../game/art'
 import { bayLookout } from '../game/campJob'
 import { isPressureOverlay, pressureFace } from '../game/hunter'
+import { isMaskedFlash } from '../game/masked'
 import { DISGUISE_SOFTEN_NOTE } from '../game/disguise'
 import { ROADS, shownText } from '../game/roads'
 import { scavengeLock } from '../game/scavenge'
@@ -80,6 +81,10 @@ const HOLD_RESULTS = true
 /** The held screen's Continue: one fixed id, never shared with a scene choice. */
 export const HELD_CONTINUE_KEY = 'held-continue'
 
+/** The masked figure's portrait, for a held result that is his. */
+const MASKED_ART = `${import.meta.env.BASE_URL}covers/${playCoverFile('masked_figure')}?v=82`
+const MASKED_BAND = { '--band-top': coverBand('masked_figure')[0], '--band-bot': coverBand('masked_figure')[1] } as CSSProperties
+
 function heldStamp(s: GameState): string {
   return `${s.sceneId}|${s.updatedAt ?? 0}|${s.ticks}`
 }
@@ -114,6 +119,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     scene.kind !== 'ending' &&
     !state.flags.encounterHere &&
     !state.flags.strayHunterHere &&
+    !state.flags.maskedHere &&
     !state.flags.downed &&
     state.health > 0 &&
     !(CRUCIBLE_SCENES as readonly string[]).includes(scene.id)
@@ -127,7 +133,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
   const roam = canScavenge(state)
   const skimOn = canSkim(state)
   const downed = !!state.flags.downed || state.health <= 0
-  const overlay = !held && (!!state.flags.encounterHere || !!state.flags.strayHunterHere || isPressureOverlay(state) || downed)
+  const overlay = !held && (!!state.flags.encounterHere || !!state.flags.strayHunterHere || !!state.flags.maskedHere || isPressureOverlay(state) || downed)
   const face = downed
     ? null
     : (state.flags.encounterHere ? encounterSpeaker(state) : null) ??
@@ -157,8 +163,9 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
         meta: hub ? hub.name : scene.id === 'ch1:storm' ? 'Camp-04' : scene.chapterId === 'cache-run' ? cap(ROADS[state.door].name) : null,
         face,
         body: shownText(state, bodyOf(state)),
-        art: artSrc,
-        band: artBand,
+        // His lines carry his portrait, even on the held screen of the ground you just left.
+        art: isMaskedFlash(next.flash) ? MASKED_ART : artSrc,
+        band: isMaskedFlash(next.flash) ? MASKED_BAND : artBand,
         result: shownText(next, next.flash),
         stamp: heldStamp(next),
       }

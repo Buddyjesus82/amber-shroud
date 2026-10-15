@@ -2730,7 +2730,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v132'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v133'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -6724,4 +6724,123 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   assert(!!stop(5, 1).flags.encounterHere, 'v132: ambush ignores Health')
   void R8
   console.log('v132 checks OK')
+}
+
+// v133: the masked figure
+{
+  const M = await import('../src/game/masked.ts')
+  const A9 = await import('../src/game/art.ts')
+  const E9 = await import('../src/game/encounter.ts')
+  const mawBase = () => {
+    let s = GE.applyEffect(newGame('prisoner'), { goto: 'maw:rim', enterHub: 'redmaw', flag: { chapter1Done: true } })
+    return { ...s, health: 6, sap: 6, items: { ...s.items, scrap: 3 } }
+  }
+  const arrive = (t: number, over: Record<string, unknown> = {}, from = 'maw:rim', to = 'maw:market', hot = false) => {
+    let s = mawBase()
+    s = { ...s, heat: hot ? { ...s.heat, cartel: 6, seekers: 6 } : s.heat, sceneId: from, ticks: t, flags: { ...s.flags, sceneSteps: t, huntQuiet: 0, encounterAt: t, maskedStep: -99, sybellaShadowStep: t, ...over } }
+    return { s, n: rawApplyEffect(s, { goto: to, ticks: 1 }) }
+  }
+  const find = (pred: (n: ReturnType<typeof mawBase>, s: ReturnType<typeof mawBase>) => boolean, over: Record<string, unknown> = {}) => {
+    for (let t = 0; t < 1200; t++) {
+      const { s, n } = arrive(t, over)
+      if (pred(n, s)) return { s, n, t }
+    }
+    throw new Error('v133: no arrival matched')
+  }
+  // Lines are exact.
+  const L = M as unknown as Record<string, string>
+  assert(L.MASKED_GLIMPSE_LINE === 'A masked figure stands on the ridge. By the time you look back, the ridge is empty.', 'v133: glimpse line')
+  assert(L.MASKED_BOOTS_LINE === 'Someone has been standing here. The sand still holds the shape of his boots.', 'v133: boots line')
+  assert(L.MASKED_FLAKE_LINE === 'A rust-colored flake lies on the stone, the size of a thumbnail. Metal, not rock.', 'v133: flake line')
+  assert(L.MASKED_BLOCK_LINE === "Across the wash, the hood turns toward you. The mask doesn't move.", 'v133: block line')
+  assert(L.MASKED_INTERRUPT_LINE === 'Whatever was hunting you stopped. Up the slope, a hooded shape stands where it was.', 'v133: interrupt line')
+  assert(L.MASKED_TOLL_LINE === 'He takes one scrap from your pack and leaves a Drop in its place. You never felt it.', 'v133: toll line')
+  assert(L.MASKED_STRIKE_LINE === "You swing. He catches your wrist, looks at you through the eyeholes, and lets go. Then he's gone.", 'v133: strike line')
+  assert(L.MASKED_WALKS_OFF_LINE === 'He steps back into the storm. Not a scratch on him.', 'v133: walks-off line')
+
+  // Odds near 1 in 6, never two scenes in a row, only on the later maps.
+  let sights = 0, tries = 0
+  for (let t = 0; t < 600; t++) {
+    const { n } = arrive(t)
+    tries++
+    if (Number(n.flags.maskedSeen ?? 0) > 0) sights++
+  }
+  assert(sights > tries * 0.1 && sights < tries * 0.22, `v133: about 1 in 6 arrivals (${sights}/${tries})`)
+  assert(!arrive(5, { maskedStep: 4 }).n.flags.maskedSeen, 'v133: never in two consecutive scenes')
+  let early = 0
+  for (let t = 0; t < 300; t++) {
+    let s = newGame('outcast')
+    s = { ...s, ticks: t, flags: { ...s.flags, sceneSteps: t } }
+    const n = rawApplyEffect(GE.applyEffect(s, { goto: 'spine:well', enterHub: 'spine' }), { goto: 'spine:ridge', ticks: 1 })
+    if (n.flags.maskedSeen) early++
+  }
+  assert(early === 0, 'v133: not before Chapter One is finished')
+
+  // Glimpse: one line, no button, no cost; the cover is his.
+  const g = find((n, s) => !!n.flags.maskedSeen && !n.flags.maskedHere && !n.flags.maskedDrop && (n.items.vial_drop ?? 0) === (s.items.vial_drop ?? 0) && M.isMaskedFlash(n.flash))
+  assert(g.n.items.scrap === g.s.items.scrap && g.n.health === g.s.health, 'v133: a glimpse costs nothing')
+  assert(GE.visibleChoices(g.n).every((c) => !c.id.startsWith('masked-')), 'v133: a glimpse adds no button')
+  assert(A9.playCoverKey(g.n, getScene(g.n.sceneId)) === 'masked_figure', 'v133: his lines carry his cover')
+  assert(A9.COVER_BAND.masked_figure[0] === 0 && A9.COVER_BAND.masked_figure[1] >= 0.85, 'v133: hood to chin stay in frame on a phone')
+  // Sign with a Drop he leaves: pick it up; walking off loses it.
+  const d = find((n) => !!n.flags.maskedDrop)
+  const take = GE.visibleChoices(d.n).find((c) => c.id === 'masked-drop')
+  assert(!!take, 'v133: the Drop can be picked up')
+  const took = rawApplyEffect(d.n, take!.effects)
+  assert((took.items.vial_drop ?? 0) === (d.n.items.vial_drop ?? 0) + 1 && !GE.visibleChoices(took).some((c) => c.id === 'masked-drop'), 'v133: Drop +1, once')
+  const left = rawApplyEffect(d.n, { goto: 'maw:lip', ticks: 1 })
+  assert(!left.flags.maskedDrop, 'v133: walk off and the Drop is gone')
+  // Threat, toll: one scrap for one Drop.
+  const toll = find((n, s) => (n.items.vial_drop ?? 0) > (s.items.vial_drop ?? 0) && n.items.scrap === s.items.scrap - 1)
+  assert(M.isMaskedFlash(toll.n.flash), 'v133: toll line')
+  // Threat, block: three exits, none a softlock.
+  const blk = find((n) => !!n.flags.maskedHere)
+  const rows = GE.visibleChoices(blk.n)
+  assert(rows.map((r) => r.id).join() === 'masked-strike,masked-chase,masked-wait', 'v133: block rows')
+  assert(rows.some((r) => GE.isChoiceOn(blk.n, r.enable)), 'v133: the block always has an open row')
+  const waited = rawApplyEffect(blk.n, rows[2].effects)
+  assert(!waited.flags.maskedHere && waited.sceneId === blk.n.sceneId && GE.visibleChoices(waited).length > 0, 'v133: wait clears the block')
+  const chased = rawApplyEffect(blk.n, rows[1].effects)
+  assert(chased.health === blk.n.health - 1 && !chased.flags.maskedHere && !chased.flags.downed, 'v133: chase costs 1 Health, no more')
+  const weak = { ...blk.n, health: 1 }
+  assert(!GE.isChoiceOn(weak, GE.visibleChoices(weak)[1].enable) && GE.isChoiceOn(weak, GE.visibleChoices(weak)[2].enable), 'v133: at Health 1 chasing is locked, waiting is open')
+  // The fight: Strike/Shell rows, never killed, never loot or Heat, never puts you down, always ends.
+  for (const hp of [6, 3, 1]) {
+    for (const move of ['enc-fight', 'enc-guard']) {
+      let f = rawApplyEffect({ ...blk.n, health: hp }, rows[0].effects)
+      assert(f.flags.encounterKind === 'masked' && f.flags.encounterNoSkip, 'v133: strike opens a masked fight')
+      const card = GE.bodyOf(f)
+      assert(/STRIKE|Strike \d/.test(card) && /MASKED ♥ \d ⚔ Strike 1 🛡 Shell 3/.test(card), 'v133: clean Strike/Shell stat rows')
+      const items0 = JSON.stringify(f.items)
+      const heat0 = JSON.stringify(f.heat)
+      let n = 0
+      while (!f.flags.encounterDone && n++ < 8) {
+        const r = GE.visibleChoices(f).find((c) => c.id === move)!
+        assert(!!r && GE.isChoiceOn(f, r.enable), 'v133: fight rows stay open')
+        f = rawApplyEffect(f, r.effects)
+        assert(!f.flags.downed && f.health >= 1, 'v133: he never puts you down')
+      }
+      assert(f.flags.encounterDone && n <= M.MASKED_ROUNDS, `v133: the fight always ends (${move}, ${n} rounds)`)
+      assert(JSON.stringify(f.items) === items0 && JSON.stringify(f.heat) === heat0, 'v133: no loot, no Heat change')
+      assert(/Not a scratch on him|catches your wrist/.test(String(f.flags.encounterClash)), 'v133: he walks off')
+      const out = rawApplyEffect(f, GE.visibleChoices(f).find((c) => c.id === 'enc-continue')!.effects)
+      assert(!out.flags.encounterHere && GE.visibleChoices(out).length > 0, 'v133: the fight clears')
+    }
+  }
+  assert(A9.playCoverKey(rawApplyEffect(blk.n, rows[0].effects), getScene(blk.n.sceneId)) === 'masked_figure', 'v133: fight cover is his')
+  // Interruption: a hunt that fires can be stopped, once in about four.
+  let stopped = 0, hunts = 0
+  for (let t = 0; t < 900; t++) {
+    const { s, n } = arrive(t, { huntQuiet: 40, sybellaShadowStep: -99, encounterAt: -99 }, 'maw:lip', 'maw:hold', true)
+    if (n.flags.hunterHere) hunts++
+    else if (n.flash === M.MASKED_INTERRUPT_LINE) {
+      stopped++
+      assert(!n.flags.hunterHere && !n.flags.encounterHere && GE.visibleChoices(n).length > 0 && s.health === n.health, 'v133: the stopped hunt leaves a clean screen')
+    }
+  }
+  assert(stopped > 0 && hunts > 0 && stopped < hunts, `v133: interruptions happen (${stopped} stopped, ${hunts} hunts)`)
+  // Art: file, precache, size.
+  const sw9 = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
+  assert(sw9.includes('covers/masked-figure.jpg') && existsSync(new URL('../public/covers/masked-figure.jpg', import.meta.url)), 'v133: masked cover precached')
+  console.log('v133 checks OK')
 }

@@ -59,6 +59,7 @@ export function pressureFace(state: Pick<GameState, 'flags' | 'sceneId' | 'hubId
   const hot = (state.heat?.cartel ?? 0) >= 7
   if (isSybellaOverlay(state)) return 'Sybella'
   if (state.flags.strayHunterHere && !state.flags.encounterHere) return 'Stray Hunter'
+  if (state.flags.maskedHere && !state.flags.encounterHere && !state.flags.downed) return 'Masked figure'
   if (isCampHunt(state)) return hot ? 'Valerius' : 'Hound-handler'
   if (isSpineHunt(state)) return spineHunterFor(state).face
   if (isThreshHunt(state)) return 'Court Guard'

@@ -1,3 +1,4 @@
+import { isMaskedBlock, MASKED_BLOCK_LINE, maskedBody, maskedChoices, maskedPass, maskedPickup } from './masked'
 import { isStrayHunt, STRAY_ARRIVAL_LINE, STRAY_CUT_FAIL_LINE, STRAY_CUT_LINE, STRAY_CUT_ODDS, STRAY_HOUND_HEAT, STRAY_HOUND_LINE, STRAY_KILL_LINE, strayHuntBody, strayHuntChoices, strayHunterArrives } from './strayHunter'
 import { HUB_MAPS } from './content/maps'
 import { DOORS, HUBS, ITEMS, getScene, hasScene, resolveBody } from './content'
@@ -192,6 +193,7 @@ export function bodyOf(state: GameState): string {
   if (state.flags.encounterHere) {
     return encounterCard(state)
   }
+  if (isMaskedBlock(state)) return maskedBody()
   if (isStrayHunt(state)) return strayHuntBody(state)
   const knock = pressureAppend(state)
   if (knock) return knock
@@ -423,7 +425,7 @@ export const RESCUE_GLINT_LINE = 'The rescue is not free. A Glint is gone.'
 export const RESCUE_SCRAP_LINE = 'The rescue is not free. Scrap -1.'
 
 /** Flags that only last while you stay on one screen. */
-const VISIT_FLAGS = ['restedHere', 'kaelenDropsHere']
+const VISIT_FLAGS = ['restedHere', 'kaelenDropsHere', 'maskedDrop']
 
 export const DOWN_SCRAP_LINE = (n: number) => `You wake lighter. Scrap -${n}.`
 export const DOWN_DROP_LINE = 'You wake lighter. A Drop is gone.'
@@ -1001,6 +1003,8 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     for (const k of VISIT_FLAGS) delete flags[k]
     next.flags = flags
   }
+  // The masked figure: a sighting on a new scene, or a hunt he stops.
+  next = maskedPass(state, next, fx)
   next = fitBag(state, next)
 
   next.updatedAt = Date.now()
@@ -1827,6 +1831,7 @@ export function visibleChoices(state: GameState): Choice[] {
   if (state.flags.encounterHere) {
     return encounterChoices(state)
   }
+  if (isMaskedBlock(state)) return maskedChoices({ ambush: { kind: 'masked', line: MASKED_BLOCK_LINE }, still: true, ticks: 1 })
   if (isStrayHunt(state)) {
     const kind: EncounterKind = state.flags.strayHunterHound ? 'strayhound' : 'strayhunter'
     return strayHuntChoices(state, { ambush: { kind, line: state.flags.strayHunterHound ? STRAY_HOUND_LINE : STRAY_ARRIVAL_LINE }, still: true, ticks: 1 })
@@ -1840,7 +1845,7 @@ export function visibleChoices(state: GameState): Choice[] {
     : isRumorCounter(state.sceneId)
       ? rumorChoices(state, authored).filter((c) => check(c.show, state))
       : authored
-  return [...bag, ...withRest(state, withKaelenPass(state, hymnSapLocks(state, mawToll(state, rows))))]
+  return [...bag, ...maskedPickup(state), ...withRest(state, withKaelenPass(state, hymnSapLocks(state, mawToll(state, rows))))]
 }
 
 /** The Maw toll: diggers hold the rope down to the Fossil Ribs. Pay (more at higher Cartel Heat), slip past, or fight. Once a Maw visit. */

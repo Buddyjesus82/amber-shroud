@@ -1,3 +1,4 @@
+import { isMaskedFlash } from './masked'
 import { STRAY_HUNTER_COVER } from './strayHunter'
 import { bayLookout } from './campJob'
 import { isCampHunt, isSpineHunt, isSybellaOverlay, isThreshHunt } from './hunter'
@@ -64,6 +65,7 @@ export type CoverKey =
   | 'valued_thing'
   | 'ch1_end'
   | 'under_jaw'
+  | 'masked_figure'
   | 'rim_pilgrims_scar'
   | 'courtguard'
   | 'down'
@@ -123,6 +125,7 @@ const FILES: Record<CoverKey, string> = {
   valued_thing: 'valued-thing.jpg',
   ch1_end: 'ch1-end.jpg',
   under_jaw: 'under-jaw.jpg',
+  masked_figure: 'masked-figure.jpg',
   rim_pilgrims_scar: 'rim-pilgrims-scar.jpg',
   courtguard: 'courtguard.jpg',
   down: 'down.jpg',
@@ -216,6 +219,8 @@ export const COVER_BAND: Record<CoverKey, [number, number]> = {
   valued_thing: [0.2, 0.9],
   ch1_end: [0.2, 0.9],
   under_jaw: [0.2, 0.9],
+  // The masked figure: hood, both eyeholes and the whole mask down to the beard stay in frame (hood at the top edge, chin near 0.88).
+  masked_figure: [0.0, 0.88],
   rim_pilgrims_scar: [0.15, 0.9],
   // Court Guard: face, coat, and the curved blade.
   courtguard: [0.05, 0.85],
@@ -294,6 +299,7 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   if (state.flags.downed || (state.health ?? 1) <= 0) return 'down'
   if (state.flags.encounterHere) {
     const kind = state.flags.encounterKind
+    if (kind === 'masked') return 'masked_figure'
     // The pup has no handler, so it gets the ground you are on (like jackals and ticks), not the handler portrait.
     if (kind === 'handler') return 'handler'
     if (kind === 'hound') return 'hound'
@@ -312,6 +318,8 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
     // No enemy art yet (husk, scavenger, cutter, jackal, tick, pup): the neutral ground cover, never a face from the scene.
     return fightGround(state, scene)
   }
+  // The masked figure: his block screen, and any result line that is his.
+  if (state.flags.maskedHere || isMaskedFlash(state.flash)) return 'masked_figure'
   // Stray Hunter: its cover slot, neutral fight ground until the art lands.
   if (state.flags.strayHunterHere) return (STRAY_HUNTER_COVER as CoverKey | null) ?? fightGround(state, scene)
   if (isSybellaOverlay(state) || id.startsWith('maw:sybella')) return 'sybella'
