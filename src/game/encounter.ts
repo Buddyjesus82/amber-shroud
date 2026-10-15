@@ -183,7 +183,10 @@ export function turfFaction(state: GameState): 'cartel' | 'seekers' | 'strays' {
 /** 0 safe (Skiff Bay), 3 common (Red Maw Approach and the first long road). */
 export function hubDanger(state: GameState): number {
   const id = state.sceneId
-  if (id.startsWith('camp:bay') || id === 'thresh:court' || id === 'spine:shade' || id === 'thresh:cell') return 0
+  if (id.startsWith('camp:bay') || id === 'thresh:court' || id === 'thresh:cell') return 0
+  if (id === 'spine:shade') return 1
+  // Seeker ground at the Threshold: the Paddock, the guard post and Cup-Shadow field Seeker-pool fights.
+  if (id === 'thresh:paddock' || id === 'thresh:guard' || id === 'thresh:sift') return 2
   if (id === 'ch1:p-pipe' || id === 'ch1:o-noon' || id === 'ch1:v-hymn' || id === 'maw:rim' || id === 'maw:lip') return 3
   if (state.hubId === 'redmaw' || id.startsWith('maw:')) return 2
   if (id === 'camp:wire' || id === 'camp:guard' || id === 'spine:hound' || state.hubId === 'spine') return 2
@@ -224,7 +227,7 @@ const HOME = new Set([
 
 export function encounterGround(state: GameState): boolean {
   if (state.sceneId.startsWith('open:') || state.sceneId.startsWith('crisis:')) return false
-  if (HOME.has(state.sceneId)) return false
+  if (HOME.has(state.sceneId) && !(state.sceneId === 'spine:ridge' && Number(state.flags.ridgeVisits ?? 0) >= 2)) return false
   const scene = getScene(state.sceneId)
   if (scene.kind === 'talk' || scene.kind === 'crisis' || scene.kind === 'ending') return false
   if (scene.kind === 'place') return true

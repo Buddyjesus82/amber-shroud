@@ -44,7 +44,9 @@ function clearRoadFight(st: GameState): GameState {
 // v120 road hunters are checked in their own block; older walks step the road as before.
 let keepRoadHunt = false
 function applyEffect(state: Parameters<typeof rawApplyEffect>[0], fx: Parameters<typeof rawApplyEffect>[1]) {
-  let next = rawApplyEffect(state, fx)
+  // v132: older walks leave talk scenes without a road fight; the v132 block tests the roll with the raw engine.
+  let next = rawApplyEffect({ ...state, flags: { ...state.flags, noTalkExitFight: true } }, fx)
+  if (!state.flags.noTalkExitFight) { const f = { ...next.flags }; delete f.noTalkExitFight; next = { ...next, flags: f } }
   if (!keepRoadHunt && !state.flags.roadHuntDone && next.flags.roadHuntDone) next = rawApplyEffect({ ...state, flags: { ...state.flags, roadHuntDone: 'smoke' } }, fx)
   // v127: older walks predate Stray Hunters; the v127 block tests them with the raw engine.
   if (next.flags.strayHunterHere && !state.flags.strayHunterHere) next = rawApplyEffect({ ...state, flags: { ...state.flags, strayHuntStep: 1e9 } }, fx)
@@ -2041,8 +2043,8 @@ assert(s.sceneId === 'thresh:kaelen-rumors', 'Oram false-route rumor stays at th
 assert(canTravelTo(s, 'thresh:paddock'), 'Cup-Shadow is connected to the paddock')
 assert(!canTravelTo(s, 'thresh:guard'), 'Cup-Shadow cannot teleport to the Guard Post')
 s = applyEffect(s, { goto: 'thresh:paddock' })
-s = interpret(s, 'talk')
-assert(/animals|hymn|joints|cup/i.test(s.flash ?? ''), 'Do talk at the paddock still hits Oram')
+s = interpret({ ...s, flags: { ...s.flags, encounterAt: s.ticks } }, 'talk') // v132: the Paddock is danger 2 now; the gap guard keeps this talk check clean
+assert(/animals|hymn|joints|cup/i.test(s.flash ?? ''), 'Do talk at the paddock still hits Oram: ' + s.sceneId + ' ' + s.flash + ' ' + JSON.stringify(s.flags.encounterHere))
 
 s = applyEffect(s, { goto: 'ch1:v-zafir', startChapter: 'cache-run' })
 assert(!ids(s).includes('shop-buy') && !ids(s).includes('shop-sell'), 'Gullet cairn Zafir is not a shop')
@@ -2728,7 +2730,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v131'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v132'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -6678,4 +6680,48 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   assert(jb[0] <= 0.05 && jb[1] >= 0.6, 'v131: Jodi band keeps face, python and vultures in view')
   assert(readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8').includes('covers/jodi.jpg'), 'v131: jodi.jpg precached')
   console.log('v131 checks OK')
+}
+
+// v132: more fights
+{
+  const E8 = await import('../src/game/encounter.ts')
+  const R8 = await import('../src/game/roadHunt.ts')
+  const base = (door: 'prisoner' | 'outcast' | 'vessel', at: string, hub: string) => {
+    const s = GE.applyEffect(newGame(door), { goto: at, enterHub: hub as never })
+    return { ...s, sap: 8, health: 6, flags: { ...s.flags, encounterHere: false, hunterHere: false, noTalkExitFight: false } }
+  }
+  const dangerAt = (id: string, hub: string) => E8.hubDanger({ ...newGame('vessel'), sceneId: id, hubId: hub as never })
+  assert(dangerAt('spine:shade', 'spine') === 1 && ['thresh:paddock', 'thresh:guard', 'thresh:sift'].every((id) => dangerAt(id, 'threshold') === 2), 'v132: danger table')
+  // Talk exit: about one in two exits can roll; hunts never fire on the exit.
+  let fights = 0, tries = 0, hunts = 0
+  for (let t = 0; t < 80; t++) {
+    let s = base('outcast', 'spine:mira', 'spine')
+    s = { ...s, ticks: t, heat: { ...s.heat, strays: 6 }, flags: { ...s.flags, huntQuiet: 30, fightQuiet: 0 } }
+    const n = rawApplyEffect(s, { goto: 'spine:well', ticks: 1 })
+    tries++
+    if (n.flags.encounterHere) fights++
+    if (n.flags.hunterHere) hunts++
+  }
+  assert(fights > 5 && fights < tries && hunts === 0, `v132: talk exits roll some fights, never a hunt (${fights}/${tries}, ${hunts} hunts)`)
+  // Ridge: home on the first visit, fight ground from the second.
+  let rd = base('outcast', 'spine:ridge', 'spine')
+  const v1 = Number(rd.flags.ridgeVisits ?? 0)
+  rd = GE.applyEffect(rd, { goto: 'spine:well' })
+  rd = GE.applyEffect(rd, { goto: 'spine:ridge' })
+  assert(Number(rd.flags.ridgeVisits ?? 0) >= 1 && v1 <= 1, 'v132: ridge visits count')
+  const ridgeAt = (n: number) => E8.encounterGround({ ...base('outcast', 'spine:ridge', 'spine'), flags: { ridgeVisits: n } as never })
+  assert(!ridgeAt(1) && ridgeAt(2), 'v132: ridge leaves the home list from the second visit')
+  // Vessel second road stop: one runner at Seeker Heat 4+, once, Health ignored.
+  const stop = (seekers: number, health: number, extra: Record<string, unknown> = {}) => {
+    let s = GE.applyEffect(newGame('vessel'), { startChapter: 'cache-run', goto: 'ch1:v-hymn', flag: { roadHuntDone: 'smoke' } })
+    s = { ...s, health, heat: { ...s.heat, seekers }, flags: { ...s.flags, encounterHere: false, hunterHere: false, roadHuntDone: 'smoke', ...extra } }
+    return rawApplyEffect({ ...s, flags: { ...s.flags, noTalkExitFight: true } }, { goto: 'ch1:v-runners', ticks: 1 })
+  }
+  const f = stop(4, 6)
+  assert(f.flags.encounterHere && f.flags.encounterKind === 'runner' && f.flags.encounterNoSkip && f.flags.secondStopDone, 'v132: second stop runner at Seekers 4')
+  assert(!stop(3, 6).flags.encounterHere, 'v132: none under Seekers 4')
+  assert(!stop(6, 6, { secondStopDone: true }).flags.encounterHere, 'v132: once per run')
+  assert(!!stop(5, 1).flags.encounterHere, 'v132: ambush ignores Health')
+  void R8
+  console.log('v132 checks OK')
 }

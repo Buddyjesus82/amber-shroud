@@ -41,3 +41,12 @@ export function roadHunterKind(before: GameState, next: GameState): { kind: Enco
   const k: EncounterKind = f === 'cartel' ? 'scavenger' : f === 'strays' ? 'collector' : heat >= ROAD_HUSK_HEAT ? 'husk' : 'runner'
   return { kind: k, line: ROAD_HUNT_LINES[f] }
 }
+
+/** Vessel: one fixed runner waits at the second road stop at Seeker Heat 4+, once per run. */
+export const SECOND_STOP = 'ch1:v-runners'
+export function secondStopRunner(before: GameState, next: GameState): { kind: EncounterKind; line: string } | null {
+  if (next.door !== 'vessel' || next.chapterId !== 'cache-run' || next.sceneId !== SECOND_STOP || before.sceneId === SECOND_STOP) return null
+  if (next.flags.secondStopDone || next.flags.encounterHere || next.flags.hunterHere || next.flags.downed) return null
+  if (next.heat.seekers < ROAD_HUNT_HEAT) return null
+  return { kind: 'runner', line: ROAD_HUNT_LINES.seekers }
+}
