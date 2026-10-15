@@ -1,5 +1,6 @@
 import type { Choice, GameState } from './types'
 import { getScene } from './content'
+import { firstDropPending } from './firstDrop'
 
 /**
  * The masked figure: unnamed, no lore, recurring. He only walks the later maps (after Chapter One).
@@ -33,6 +34,8 @@ export function isMaskedFlash(flash: string | undefined | null): boolean {
 
 /** He walks the later maps: Chapter One finished, or the Maw. Never the road, never a chapter-end screen. */
 export function maskedActive(state: GameState): boolean {
+  // Test hook: older walkthroughs predate him.
+  if (state.flags.noMasked) return false
   const later = !!(state.flags.chapter1Done || state.hubId === 'redmaw')
   if (MASKED_WALKS === 'later-maps' && !later) return false
   const id = state.sceneId
@@ -135,7 +138,7 @@ function stamp(next: GameState, how: MaskedSighting): GameState {
  * Called once at the end of every effect. A new scene may carry a sighting; a hunt or ambush that just
  * fired may be stopped by him. Never on a fight, a hunt, a Down, or a crisis; never two scenes in a row.
  */
-export function maskedPass(state: GameState, next: GameState, fx: { ambush?: unknown; sneak?: unknown; ruse?: unknown; resolveEncounter?: unknown }): GameState {
+export function maskedPass(state: GameState, next: GameState, fx: { ambush?: unknown; sneak?: unknown; ruse?: unknown; resolveEncounter?: unknown; flag?: Record<string, unknown> }): GameState {
   // A block never follows you to the next scene.
   if (state.flags.maskedHere && next.sceneId !== state.sceneId && next.flags.maskedHere) {
     const flags = { ...next.flags }
@@ -157,6 +160,7 @@ export function maskedPass(state: GameState, next: GameState, fx: { ambush?: unk
       !!next.flags.encounterNoSkip &&
       next.flags.encounterKind !== 'masked' &&
       !fx.ambush &&
+      !fx.flag?.strayCut &&
       !fx.sneak &&
       !fx.ruse &&
       !fx.resolveEncounter)
@@ -185,17 +189,18 @@ export function maskedPass(state: GameState, next: GameState, fx: { ambush?: unk
   }
   if (r < 15) {
     const v = roll(next, 'sign', 3)
-    if (v === 2) {
+    // The Outcast's first Drop is his own first goal: nothing the masked figure leaves may hand it over.
+    if (v === 2 && !firstDropPending(next)) {
       next.flags = { ...next.flags, maskedDrop: next.sceneId }
       next.flash = appendFlash(next, MASKED_DROP_LINE)
       return stamp(next, 'drop')
     }
-    next.flash = appendFlash(next, v === 0 ? MASKED_BOOTS_LINE : MASKED_FLAKE_LINE)
+    next.flash = appendFlash(next, v === 1 ? MASKED_FLAKE_LINE : MASKED_BOOTS_LINE)
     return stamp(next, 'sign')
   }
   // Threat: he takes a scrap and leaves a Drop, or he blocks the way for one scene.
   const scrap = next.items.scrap ?? 0
-  if (scrap > 0 && roll(next, 'threat', 2) === 0) {
+  if (scrap > 0 && roll(next, 'threat', 2) === 0 && !firstDropPending(next)) {
     next.items = { ...next.items, scrap: scrap - 1, vial_drop: (next.items.vial_drop ?? 0) + 1 }
     next.flash = appendFlash(next, MASKED_TOLL_LINE)
     return stamp(next, 'toll')
