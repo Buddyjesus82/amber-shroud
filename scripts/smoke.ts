@@ -2339,7 +2339,7 @@ assert(html.includes('icon-192.png?v=14') && html.includes('icon-512.png?v=14'),
 assert(html.includes('apple-touch.png?v=14'), 'apple-touch-icon is cache-busted cover crop')
 {
   const p = newGame('prisoner')
-  assert(playCoverKey(p, sceneOf(p)) === 'camp04', 'Prisoner opening uses Camp-04 art')
+  assert(playCoverKey(p, sceneOf(p)) === 'holding_cells', 'Prisoner opening uses the holding-cells art')
   assert(playCoverKey(p, { id: 'camp:cages' }) === 'oiltooth', 'Holding Pens keep Jaxson on the first-meet cover')
   assert(playCoverKey(p, { id: 'camp:jaxson' }) === 'oiltooth', 'Jaxson talk uses his cover')
   const o = newGame('outcast')
@@ -2735,7 +2735,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v136'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v137'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -6902,5 +6902,13 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
     const ps = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
     assert(ps.includes('face: isMaskedFlash(next.flash) ? null : face'), "v135: his held cover never wears a speaker's name")
   }
-  console.log('v136 checks OK')
+  // v137: the first Prisoner scene and the Holding Pens wear the holding-cells cover; the gate and forced-camp scenes keep the old one.
+  {
+    const p0: any = rawNewGame('prisoner')
+    assert(A9.playCoverKey({ ...p0, sceneId: 'open:prisoner' }, getScene('open:prisoner')) === 'holding_cells', 'v137: first scene uses holding cells')
+    assert(A9.playCoverKey({ ...p0, sceneId: 'camp:cages' }, getScene('camp:cages')) === 'oiltooth', 'v137: the Pens shop keeps its speaker portrait')
+    assert(A9.playCoverKey({ ...p0, sceneId: 'camp:gate' }, getScene('camp:gate')) === 'camp04', 'v137: gate keeps the old cover')
+    assert(readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8').includes('covers/holding-cells.jpg') && existsSync(new URL('../public/covers/holding-cells.jpg', import.meta.url)), 'v137: holding cells precached')
+  }
+  console.log('v137 checks OK')
 }

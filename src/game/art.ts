@@ -66,6 +66,7 @@ export type CoverKey =
   | 'ch1_end'
   | 'under_jaw'
   | 'masked_figure'
+  | 'holding_cells'
   | 'rim_pilgrims_scar'
   | 'courtguard'
   | 'down'
@@ -126,6 +127,7 @@ const FILES: Record<CoverKey, string> = {
   ch1_end: 'ch1-end.jpg',
   under_jaw: 'under-jaw.jpg',
   masked_figure: 'masked-figure.jpg',
+  holding_cells: 'holding-cells.jpg',
   rim_pilgrims_scar: 'rim-pilgrims-scar.jpg',
   courtguard: 'courtguard.jpg',
   down: 'down.jpg',
@@ -221,6 +223,8 @@ export const COVER_BAND: Record<CoverKey, [number, number]> = {
   under_jaw: [0.2, 0.9],
   // The masked figure: hood, both eyeholes and the whole mask down to the beard stay in frame (hood at the top edge, chin near 0.88).
   masked_figure: [0.0, 0.88],
+  // The prisoner's face and both hands on the bar, the amber gap, and the wrench on the floor all sit between these two lines.
+  holding_cells: [0.1, 0.92],
   rim_pilgrims_scar: [0.15, 0.9],
   // Court Guard: face, coat, and the curved blade.
   courtguard: [0.05, 0.85],
@@ -341,6 +345,8 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   if (id === 'camp:bay') return bayLookout(state) ? 'hotwire' : 'skiff_bay_docks'
   if (id === 'camp:bay-pike') return 'bay_pike'
   if (id === 'camp:relic') return 'hoard'
+  // The first Prisoner scene: the cage bar, the amber gap, the wrench. (camp:cages is Jaxson's shop and keeps his portrait.)
+  if (id === 'open:prisoner') return 'holding_cells'
   if (id === 'crisis:maw') return 'down'
   // The Cache Run collapse is a Down screen too.
   if (id === 'crisis:dunes') return 'down'
