@@ -2735,7 +2735,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v134'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v135'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -6761,7 +6761,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
     let s = GE.applyEffect(rawNewGame('prisoner'), { goto: 'maw:rim', enterHub: 'redmaw', flag: { chapter1Done: true } })
     return { ...s, health: 6, sap: 6, items: { ...s.items, scrap: 3 } }
   }
-  const arrive = (t: number, over: Record<string, unknown> = {}, from = 'maw:rim', to = 'maw:market', hot = false) => {
+  const arrive = (t: number, over: Record<string, unknown> = {}, from = 'maw:rim', to = 'maw:lip', hot = false) => {
     let s = mawBase()
     s = { ...s, heat: hot ? { ...s.heat, cartel: 6, seekers: 6 } : s.heat, sceneId: from, ticks: t, flags: { ...s.flags, sceneSteps: t, huntQuiet: 0, encounterAt: t, maskedStep: -99, sybellaShadowStep: t, ...over } }
     return { s, n: rawApplyEffect(s, { goto: to, ticks: 1 }) }
@@ -6820,7 +6820,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   assert(!!take, 'v133: the Drop can be picked up')
   const took = rawApplyEffect(d.n, take!.effects)
   assert((took.items.vial_drop ?? 0) === (d.n.items.vial_drop ?? 0) + 1 && !GE.visibleChoices(took).some((c) => c.id === 'masked-drop'), 'v133: Drop +1, once')
-  const left = rawApplyEffect(d.n, { goto: 'maw:lip', ticks: 1 })
+  const left = rawApplyEffect(d.n, { goto: 'maw:rim', ticks: 1 })
   assert(!left.flags.maskedDrop, 'v133: walk off and the Drop is gone')
   // Threat, toll: one scrap for one Drop.
   const toll = find((n, s) => (n.items.vial_drop ?? 0) > (s.items.vial_drop ?? 0) && n.items.scrap === s.items.scrap - 1)
@@ -6874,5 +6874,33 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   // Art: file, precache, size.
   const sw9 = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
   assert(sw9.includes('covers/masked-figure.jpg') && existsSync(new URL('../public/covers/masked-figure.jpg', import.meta.url)), 'v133: masked cover precached')
-  console.log('v134 checks OK')
+  // v135: he never fires on a speaker, offer, job or shop scene, or on the result of an action taken in one.
+  {
+    let hits = 0, runs = 0, jobs = 0
+    for (const door of ['prisoner'] as const) {
+      for (let t = 0; t < 120; t++) {
+        let s: any = rawNewGame(door)
+        s = rawApplyEffect({ ...s, flags: { ...s.flags, noMasked: false, noTalkExitFight: true } }, { goto: 'camp:jaxson', enterHub: 'camp04', flag: { planHeard: true, metJaxson: true } })
+        s = { ...s, ticks: t, flags: { ...s.flags, sceneSteps: t, maskedStep: -99, huntQuiet: 0, encounterAt: t } }
+        s = rawApplyEffect(s, GE.visibleChoices(s).find((c: any) => c.id === 'plan')!.effects)
+        s = { ...s, ticks: t, flags: { ...s.flags, sceneSteps: t, maskedStep: -99, huntQuiet: 0, encounterAt: t } }
+        const row = GE.visibleChoices(s).find((c: any) => c.id === 'inside')
+        if (!row) continue
+        runs++
+        const n: any = rawApplyEffect(s, row.effects)
+        if (M.isMaskedFlash(n.flash) || n.flags.maskedSeen || n.flags.maskedHere || n.flags.maskedDrop || A9.playCoverKey(n, getScene(n.sceneId)) === 'masked_figure') hits++
+        if (n.sceneId === 'camp:lean') jobs++
+      }
+    }
+    assert(runs > 100 && hits === 0 && jobs === runs, `v135: Jaxson's inside job never rolls him over any roll (${runs} runs, ${hits} hits, ${jobs} moved on)`)
+    for (const id of ['camp:jaxson', 'camp:guard', 'camp:yard', 'camp:vents', 'camp:bay', 'maw:tuner', 'thresh:guard']) {
+      assert(M.maskedQuietScene(id), `v135: ${id} is a quiet scene`)
+    }
+    assert(!M.maskedQuietScene('maw:lip') && !M.maskedQuietScene('maw:rim'), 'v135: plain road ground can still roll him')
+    const held = rawApplyEffect({ ...rawNewGame('prisoner'), flags: { maskedHere: true } } as any, {})
+    assert(!repairLoadedState({ ...held, flags: { ...held.flags, maskedHere: true } }).flags.maskedHere, 'v135: a reload never re-shows his block')
+    const ps = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
+    assert(ps.includes('face: isMaskedFlash(next.flash) ? null : face'), "v135: his held cover never wears a speaker's name")
+  }
+  console.log('v135 checks OK')
 }
