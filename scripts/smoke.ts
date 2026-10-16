@@ -2735,7 +2735,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v135'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v136'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -6791,7 +6791,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
     tries++
     if (Number(n.flags.maskedSeen ?? 0) > 0) sights++
   }
-  assert(sights > tries * 0.12 && sights < tries * 0.26, `v134: about 1 in 5 arrivals (${sights}/${tries})`)
+  assert(sights > tries * 0.4 && sights < tries * 0.6, `v136: about 1 in 2 arrivals (${sights}/${tries})`)
   assert(!arrive(5, { maskedStep: 4 }).n.flags.maskedSeen, 'v133: never in two consecutive scenes')
   // v134: he walks the whole run, so Camp, the roads and the hubs carry him too (never the open scenes, a crisis, or the Chapter One end screen).
   let early = 0, earlyKinds = 0
@@ -6803,9 +6803,9 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
     // The Outcast's first Drop stays his own: nothing he leaves is a Drop before it is marked.
     if (!n.flags.firstDropMarked && ((n.items.vial_drop ?? 0) > 0 || n.flags.maskedDrop)) earlyKinds++
   }
-  assert(early > 0 && early < 400 * 0.5, `v134: he appears before Chapter One (${early}/400)`)
+  assert(early > 0 && early < 400 * 0.8, `v134: he appears before Chapter One (${early}/400)`)
   assert(earlyKinds === 0, 'v134: nothing he leaves hands the Outcast his first Drop')
-  assert(M.MASKED_WALKS === 'whole-run' && M.MASKED_ODDS === 5, 'v134: whole run, about 1 in 5')
+  assert(M.MASKED_WALKS === 'whole-run' && M.MASKED_ODDS === 2, 'v136: whole run, about 1 in 2 arrivals')
   assert(!M.maskedActive({ ...rawNewGame('prisoner'), sceneId: 'open:prisoner' }) && !M.maskedActive({ ...rawNewGame('prisoner'), sceneId: 'ch1:end' }), 'v134: never on open scenes or the Chapter One end screen')
 
   // Glimpse: one line, no button, no cost; the cover is his.
@@ -6902,5 +6902,5 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
     const ps = readFileSync(new URL('../src/components/PlayScreen.tsx', import.meta.url), 'utf8')
     assert(ps.includes('face: isMaskedFlash(next.flash) ? null : face'), "v135: his held cover never wears a speaker's name")
   }
-  console.log('v135 checks OK')
+  console.log('v136 checks OK')
 }

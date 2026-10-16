@@ -1,7 +1,7 @@
 /** The masked figure's numbers and lines. No imports, so the fight code can use them without a cycle. */
 /** Where he walks. 'later-maps': Chapter One finished, the Maw on. 'whole-run': every hub and road scene too (not built into the ship; one word to flip). */
 export const MASKED_WALKS: 'later-maps' | 'whole-run' = 'whole-run'
-export const MASKED_ODDS = 5 // a sighting is 1 in this many arrivals
+export const MASKED_ODDS = 2 // a sighting is 1 in this many arrivals
 export const MASKED_GAP = 2 // scene steps between sightings: never two scenes in a row
 export const MASKED_INTERRUPT_ODDS = 4 // when a hunt or ambush fires, 1 in this many he steps in
 export const MASKED_ROUNDS = 3 // a fight with him ends by this round, whatever you do
