@@ -161,7 +161,8 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
       const heldNext: HeldScreen = {
         title: placeTitle,
         meta: hub ? hub.name : scene.id === 'ch1:storm' ? 'Camp-04' : scene.chapterId === 'cache-run' ? cap(ROADS[state.door].name) : null,
-        face,
+        // His cover never wears a speaker's name.
+        face: isMaskedFlash(next.flash) ? null : face,
         body: shownText(state, bodyOf(state)),
         // His lines carry his portrait, even on the held screen of the ground you just left.
         art: isMaskedFlash(next.flash) ? MASKED_ART : artSrc,

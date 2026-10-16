@@ -119,8 +119,16 @@ export function migrateNimFlags(state: GameState): GameState {
   return { ...state, flags }
 }
 
+/** A reload never re-shows his road block: the sighting was that scene's, and the roll is not re-made. */
+function clearMaskedBlock(state: GameState): GameState {
+  if (!state.flags.maskedHere) return state
+  const flags = { ...state.flags }
+  delete flags.maskedHere
+  return { ...state, flags }
+}
+
 export function repairLoadedState(state: GameState): GameState {
-  const base = markOldFirstDrop(migrateNimFlags(migrateEquipped(state)))
+  const base = clearMaskedBlock(markOldFirstDrop(migrateNimFlags(migrateEquipped(state))))
   const sceneId = repairSceneId(base)
   if (sceneId === base.sceneId && hasScene(sceneId) && sceneFitsDoor(sceneId, base.door)) {
     const scene = getScene(sceneId, base.door)

@@ -1,6 +1,9 @@
 import type { Choice, GameState } from './types'
 import { getScene } from './content'
 import { firstDropPending } from './firstDrop'
+import { personAtScene } from './people'
+import { isRumorCounter } from './rumors'
+import { vendorFor } from './trade'
 
 /**
  * The masked figure: unnamed, no lore, recurring. He only walks the later maps (after Chapter One).
@@ -32,10 +35,29 @@ export function isMaskedFlash(flash: string | undefined | null): boolean {
   return !!flash && ALL_LINES.some((l) => flash.includes(l))
 }
 
+/**
+ * Scenes he never touches, arriving or leaving: anyone speaking (a talk scene, a speaker, a person's scene), any shop or rumor
+ * counter, any trader or Kaelen stop, and the job and offer screens that live in those scenes. The result of an action taken in one
+ * of them (a held result on the scene you just left) counts too, so his art never swaps over a speaker card.
+ */
+const OFFER_IDS = new Set(['job', 'inside', 'station', 'sabotage', 'accept'])
+/** Talk-like scenes that are not marked as talk in the data: the skiff bay's three crews and the two guard stops. */
+const MASKED_QUIET_EXTRA = new Set(['camp:bay', 'thresh:guard', 'thresh:court-guard'])
+
+export function maskedQuietScene(id: string): boolean {
+  if (id.includes('kaelen')) return true
+  const sc = getScene(id)
+  if (sc.kind === 'talk' || sc.speaker) return true
+  if (MASKED_QUIET_EXTRA.has(id)) return true
+  if (sc.choices?.some((c) => OFFER_IDS.has(c.id))) return true
+  return !!personAtScene(id) || !!vendorFor(id) || isRumorCounter(id)
+}
+
 /** He walks the later maps: Chapter One finished, or the Maw. Never the road, never a chapter-end screen. */
 export function maskedActive(state: GameState): boolean {
   // Test hook: older walkthroughs predate him.
   if (state.flags.noMasked) return false
+  if (maskedQuietScene(state.sceneId)) return false
   const later = !!(state.flags.chapter1Done || state.hubId === 'redmaw')
   if (MASKED_WALKS === 'later-maps' && !later) return false
   const id = state.sceneId
@@ -147,7 +169,7 @@ export function maskedPass(state: GameState, next: GameState, fx: { ambush?: unk
   }
   const arrived = next.sceneId !== state.sceneId
   if (next.flags.downed || (next.health ?? 1) <= 0) return next
-  if (!maskedActive(next)) return next
+  if (!maskedActive(next) || maskedQuietScene(state.sceneId)) return next
   const steps = Number(next.flags.sceneSteps ?? 0)
   if (steps - Number(next.flags.maskedStep ?? -99) < MASKED_GAP) return next
 
@@ -179,10 +201,8 @@ export function maskedPass(state: GameState, next: GameState, fx: { ambush?: unk
 
   if (roll(next, 'sight', MASKED_ODDS) !== 0) return next
   const r = roll(next, 'kind', 20)
-  const kind = getScene(next.sceneId).kind
-  const lone = kind === 'talk' || !!getScene(next.sceneId).speaker
-  // 0-8 glimpse, 9-14 sign, 15-19 threat. Threats never land on a talk scene.
-  if (r < 9 || (r >= 15 && lone)) {
+  // 0-8 glimpse, 9-14 sign, 15-19 threat.
+  if (r < 9) {
     const lines = [MASKED_GLIMPSE_LINE, ...MASKED_GLIMPSE_LINES_EXTRA]
     next.flash = appendFlash(next, lines[roll(next, 'line', lines.length)])
     return stamp(next, 'glimpse')
