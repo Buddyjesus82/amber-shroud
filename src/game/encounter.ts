@@ -277,6 +277,9 @@ export function oddsWord(percent: number): string {
   return 'Long odds'
 }
 
+/** v141: the line added to a win that also took you to 0 Health. */
+export const MUTUAL_WIN_LINE = ' You are at 1 Health.'
+
 export const HANDLER_BEATEN = 'He goes down hard, then limps off toward the yard. Valerius will hear about this.'
 
 export function enemyHealth(kind: EncounterKind): number {
@@ -1124,8 +1127,8 @@ export function resolveEncounter(
   if (sapLoss) notes.push('The tick drinks. Sap -1.')
 
   let theirHp = Math.max(0, c.theirHp - dmgOut)
-  const yourHp = Math.max(0, c.yourHp - dmgIn)
-  const healthDelta = yourHp - c.yourHp
+  let yourHp = Math.max(0, c.yourHp - dmgIn)
+  let healthDelta = yourHp - c.yourHp
   if (dmgOut > 0) pinned = false
   if (f.encounterPair && c.theirHp >= 2 && theirHp === 1) notes.push('One jackal drops. The other keeps coming.')
   // Seeker extractor: once per fight, re-charge the husk unless the Seeker is already down.
@@ -1159,6 +1162,13 @@ export function resolveEncounter(
         ? `Critical Strike! ${cap(who)} hits you for ${dmgIn}.`
         : `${cap(who)} hits back for ${dmgIn}.`
   const bonusLines = [...(attacking ? outTags : outTags.filter((t) => !/your hit/.test(t))), ...inTags]
+  // v141: you kill them and drop to 0 in the same exchange: a win, not a Down. You stand at 1 Health, loot kept.
+  // (The masked figure never dies, so his own rule, a hit that cannot take you below 1, is untouched.)
+  const mutualWin = theirHp <= 0 && yourHp <= 0 && spec.kind !== 'masked'
+  if (mutualWin) {
+    yourHp = 1
+    healthDelta = 1 - c.yourHp
+  }
   const top = statRows(yourHp, c.strike, c.shell, spec, theirHp)
   const hitCard = [top, youLine, themLine, ...bonusLines, ...(notes.length ? [notes.join(' ')] : [])].join('\n\n')
   const sap = sapLoss ? -sapLoss : undefined
@@ -1171,14 +1181,11 @@ export function resolveEncounter(
   }
 
   if (theirHp <= 0 && spec.kind === 'patrol') {
-    const stagger = yourHp <= 0
-    const outcome = stagger
-      ? `The clerk drops. You drop with them. Scrap. Shock Baton. Health 0/${max}. The bolt is still yours.`
-      : 'The clerk drops. Scrap. Shock Baton. The bolt is open.'
+    const outcome = `The clerk drops. Scrap. Shock Baton. The bolt is open.${mutualWin ? MUTUAL_WIN_LINE : ''}`
     const salve = carriesSalve(state, 'patrol')
     const said = salve ? `${outcome} A Resin Salve in his belt pouch.` : outcome
     return holdCard(state, spec, `${hitCard}\n\n${said}`, said, {
-      health: stagger ? -c.yourHp : healthDelta,
+      health: healthDelta,
       add: salve ? { scrap: 1, salve: 1 } : { scrap: 1 },
       heat: { cartel: 1 },
       pressure: 1,
@@ -1192,28 +1199,24 @@ export function resolveEncounter(
     if (snatched) add[snatched] = (add[snatched] ?? 0) + 1
     const loot = lootLine(add, spec.kind === 'handler')
     const back = snatched ? ` You take back your ${ITEMS[snatched]?.name ?? snatched}.` : ''
-    const stagger = yourHp <= 0
     const huskWin = spec.kind === 'husk'
     // The Hound-handler is never killed: he is beaten and limps off.
     const handlerWin = spec.kind === 'handler'
+    const won = mutualWin ? MUTUAL_WIN_LINE : ''
     const outcome = handlerWin
-      ? `${stagger ? 'You drop with him. ' : ''}${HANDLER_BEATEN} ${loot}.${stagger ? ` Health 0/${max}.` : ''}${back}`
-      : stagger
-      ? huskWin
-        ? `The amber heart shatters. You drop with it. ${loot}. Health 0/${max}.${back}`
-        : `They drop. You drop with them. ${loot}. Health 0/${max}.${back}`
+      ? `${HANDLER_BEATEN} ${loot}.${back}${won}`
       : huskWin
-        ? `The amber heart shatters. The husk falls still. ${loot}.${back}`
-        : `They drop. ${loot}.${back}`
+        ? `The amber heart shatters. The husk falls still. ${loot}.${back}${won}`
+        : `They drop. ${loot}.${back}${won}`
     return holdCard(state, spec, `${hitCard}\n\n${outcome}`, outcome, {
-      health: stagger ? -c.yourHp : healthDelta,
+      health: healthDelta,
       add,
       sap,
       // Cartel property: killing the hound is on the ledger.
       // Beating the handler: Cartel +2.
       heat: spec.kind === 'hound' ? { cartel: 1 } : handlerWin ? { cartel: 2 } : undefined,
       pressure: dmgIn > 0 ? 1 : undefined,
-      flag: { encounterGrip: grip, ...(stagger ? { downedWon: true } : {}), ...(handlerWin ? { handlerInjured: true } : {}), ...(state.sceneId === 'thresh:court-guard' && spec.kind === 'courtguard' ? { crucibleGuardBeaten: true } : {}) },
+      flag: { encounterGrip: grip, ...(handlerWin ? { handlerInjured: true } : {}), ...(state.sceneId === 'thresh:court-guard' && spec.kind === 'courtguard' ? { crucibleGuardBeaten: true } : {}) },
     })
   }
 
