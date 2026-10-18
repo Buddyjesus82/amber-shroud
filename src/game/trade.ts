@@ -639,7 +639,7 @@ function sellRows(state: GameState, vendor: Vendor): Choice[] {
       effects: {
         remove: { [id]: 1 },
         add: payRemove(pay),
-        flag: knownFlag(vendor, state.sceneId),
+        flag: { ...(knownFlag(vendor, state.sceneId) ?? {}), ...(id === 'wrench' ? { wrenchSold: true } : {}) },
         ticks: 1,
         flash: vendor.sellFlash,
       },
@@ -717,7 +717,18 @@ export function matchShopText(state: GameState, text: string): { effects: Effect
       return { effects: { flag: { shopShelf: 'sell' }, flash: vendor.openSellFlash }, verb: 'sell' }
     }
     const rows = sellRows(state, vendor)
-    const hit = rows.find((c) => c.id.startsWith('sell-') && c.id !== 'sell-empty' && ITEMS[c.id.slice(5) as ItemId] && word(hay, ITEMS[c.id.slice(5) as ItemId].name.split(' ')[0] ?? ''))
+    const named = (id: ItemId): boolean => {
+      const def = ITEMS[id]
+      if (!def) return false
+      const parts = [def.name.split(' ')[0] ?? '', ...id.split('_').filter((w) => w.length > 3 && w !== 'scrap')]
+      return parts.some((w) => w && word(hay, w))
+    }
+    const hit = rows.find((c) => c.id.startsWith('sell-') && c.id !== 'sell-empty' && ITEMS[c.id.slice(5) as ItemId] && named(c.id.slice(5) as ItemId))
+    // v143: naming a piece you are wearing never sells it.
+    if (!hit) {
+      const worn = (Object.keys(state.items) as ItemId[]).find((id) => saleableCount(state, id) === 0 && wornCount(state, id) > 0 && sellPay(id) && named(id))
+      if (worn) return { effects: { flag: { shopShelf: 'sell' }, flash: 'Unequip it in Gear first.' }, verb: 'sell' }
+    }
     if (hit && (!hit.enable || true)) {
       const itemId = hit.id.replace(/^sell-/, '') as ItemId
       if (itemId === 'scrap' || itemId === 'scrip' || saleableCount(state, itemId) > 0) return { effects: hit.effects, verb: 'sell' }

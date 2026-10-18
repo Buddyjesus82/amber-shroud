@@ -493,6 +493,8 @@ Ride the last mile and I drop you with Ossa. Walk, and the Cartel keeps your tra
         label: 'Leave the wrench as a clamp',
         sub: 'The steel stays in the lash.',
         show: { item: 'wrench' },
+        enable: { not: { equipped: 'wrench' } },
+        locked: 'Unequip it in Gear first.',
         effects: {
           remove: { wrench: 1 },
           flag: { ossaMet: true, ossaAlive: true, ossaAlly: true, wrenchLash: true, wrenchClamped: true, ossaEscape: true, ossaFixed: true },
