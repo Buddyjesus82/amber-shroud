@@ -1,7 +1,8 @@
 import { useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { HUBS } from '../game/content/catalog'
 import { travelTo } from '../game/engine'
-import { adjacency, currentNode, edgeSap, hubMapOf, nodeById } from '../game/map'
+import { adjacency, currentNode, edgeSap as rawEdgeSap, hubMapOf, nodeById } from '../game/map'
+import { ROAD_SAP } from '../game/returnRoad'
 import { estimateLabel, layoutLabels, type Box } from '../game/mapLabels'
 import type { GameState, HubMapDef, HubMapNode } from '../game/types'
 
@@ -11,6 +12,14 @@ const GUESS_W = 340
 const LABEL_MAX_W = 118
 
 type Size = { w: number; h: number }
+
+/** After Chapter One the Bone Wash node is the road back to the Maw: it costs the road's Sap, not a walk's. */
+function edgeSap(map: HubMapDef, a: string, b: string, state: GameState): number | null {
+  const sap = rawEdgeSap(map, a, b)
+  if (sap == null) return sap
+  const to = nodeById(map, b)
+  return to?.sceneId === 'ch1:leave' && state.flags.chapter1Done ? ROAD_SAP : sap
+}
 
 function subFor(mine: boolean, sap: number | null): string {
   return mine ? 'you' : sap ? `−${sap} sap` : 'far'
@@ -141,7 +150,7 @@ function HubMapView({
       const m = measured?.sizes[n.id]
       if (m && m.w && m.h) return m
       const mine = here?.id === n.id
-      const sap = here && adjIds.has(n.id) ? edgeSap(map, here.id, n.id) : null
+      const sap = here && adjIds.has(n.id) ? edgeSap(map, here.id, n.id, state) : null
       return estimateLabel(n.short ?? n.name, subFor(mine, sap), LABEL_MAX_W)
     }
     const ex = measured?.exit && measured.exit.w ? measured.exit : estimateLabel(map.maw.label, null, 150)
@@ -187,7 +196,7 @@ function HubMapView({
       onHint(`You are at ${node.name}.`)
       return
     }
-    const sap = here ? edgeSap(map, here.id, node.id) : null
+    const sap = here ? edgeSap(map, here.id, node.id, state) : null
     if (sap == null) {
       onHint(
         `No road from ${here?.name ?? 'here'} to ${node.name}. Walk the connected routes.`,
@@ -244,7 +253,7 @@ function HubMapView({
           {map.nodes.map((n, i) => {
             const mine = here?.id === n.id
             const next = adjIds.has(n.id)
-            const sap = here && next ? edgeSap(map, here.id, n.id) : null
+            const sap = here && next ? edgeSap(map, here.id, n.id, state) : null
             const cls = mine ? 'map-node here' : next ? 'map-node next' : 'map-node far'
             const place = layout.placements[i]
             const ax = (n.x / map.width) * layout.W

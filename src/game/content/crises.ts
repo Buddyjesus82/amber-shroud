@@ -10,6 +10,16 @@ export const crisisScenes: Scene[] = [
     body: `Sap hits zero like a light going out.
 
 You go to your knees in resin-slick dust. Jaxson is suddenly there — burly, grease-stained, brass jaw, a skimmed Drop of Oasis Sap forced against your lip. "I don't collect corpses. Corpses don't hotwire. Get up. Guard station. Runner. I am the inside man. If you want rumors, that is Kaelen — and he still charges."`,
+    variants: [
+      {
+        // Chapter One is behind you: the sabotage pitch is old. Same scene, same lines, minus the pitch.
+        if: { flag: 'chapter1Done' },
+        mode: 'replace',
+        body: `Sap hits zero like a light going out.
+
+You go to your knees in resin-slick dust. Jaxson is suddenly there — burly, grease-stained, brass jaw, a skimmed Drop of Oasis Sap forced against your lip. "I don't collect corpses. Corpses don't hotwire. Get up."`,
+      },
+    ],
     choices: [
       {
         id: 'up',

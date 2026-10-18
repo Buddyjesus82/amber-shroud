@@ -24,12 +24,12 @@ Down-slope: a tent the color of old teeth. Silas Vane sells shade by the minute.
         body: `Your vial is full. It sits warm against your ribs.`,
       },
       {
-        if: { all: [{ sapMax: 2 }, { not: { item: 'vial_drop' } }, { flagUnset: 'firstDropMarked' }] },
+        if: { all: [{ sapMax: 2 }, { not: { item: 'vial_drop' } }, { flagUnset: 'firstDropMarked' }, { flagUnset: 'chapter1Done' }] },
         mode: 'append',
         body: `Your vision frays at the edges. You need a Drop before noon.`,
       },
       {
-        if: { all: [{ sapMax: 2 }, { item: 'vial_drop' }] },
+        if: { all: [{ sapMax: 2 }, { item: 'vial_drop' }, { flagUnset: 'chapter1Done' }] },
         mode: 'append',
         body: `Your vision frays at the edges. Drink the Drop in your vial before noon.`,
       },
@@ -576,6 +576,7 @@ You can run south, or get back under Silas's canvas.`,
         sub: 'Whoever made them is still there.',
         effects: { goto: 'spine:corvin', ticks: 1 },
       },
+      { id: 'back', label: 'Back to the Hound prints', tone: 'quiet', effects: { goto: 'spine:hound' } },
     ],
   },
   {

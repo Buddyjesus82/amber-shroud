@@ -1360,7 +1360,7 @@ Walking in is a fight, or a collar.`,
         label: 'Stay outside',
         tone: 'quiet',
         // The road here already cost its Sap: turning back at the gate gives it back.
-        effects: { flag: { leaveGate: true }, sap: 2, ticks: 1, flash: 'You stay off the count. The gate keeps its teeth.' },
+        effects: { flag: { leaveGate: true }, flash: 'You stay off the count. The gate keeps its teeth.' },
       },
     ],
   },

@@ -161,7 +161,7 @@ function stamp(next: GameState, how: MaskedSighting): GameState {
  * Called once at the end of every effect. A new scene may carry a sighting; a hunt or ambush that just
  * fired may be stopped by him. Never on a fight, a hunt, a Down, or a crisis; never two scenes in a row.
  */
-export function maskedPass(state: GameState, next: GameState, fx: { ambush?: unknown; sneak?: unknown; ruse?: unknown; resolveEncounter?: unknown; homeRoad?: unknown; flag?: Record<string, unknown> }): GameState {
+export function maskedPass(state: GameState, next: GameState, fx: { ambush?: unknown; sneak?: unknown; ruse?: unknown; resolveEncounter?: unknown; homeRoad?: unknown; mapWalk?: unknown; flag?: Record<string, unknown> }): GameState {
   // A block never follows you to the next scene.
   if (state.flags.maskedHere && next.sceneId !== state.sceneId && next.flags.maskedHere) {
     const flags = { ...next.flags }
@@ -222,6 +222,12 @@ export function maskedPass(state: GameState, next: GameState, fx: { ambush?: unk
     }
     next.flash = appendFlash(next, v === 1 ? MASKED_FLAKE_LINE : MASKED_BOOTS_LINE)
     return stamp(next, 'sign')
+  }
+  // A walk on the map never lands the Strike / Chase / Wait block: a threat roll on foot is only a glimpse.
+  if (fx.mapWalk) {
+    const lines = [MASKED_GLIMPSE_LINE, ...MASKED_GLIMPSE_LINES_EXTRA]
+    next.flash = appendFlash(next, lines[roll(next, 'line', lines.length)])
+    return stamp(next, 'glimpse')
   }
   // Threat: he takes a scrap and leaves a Drop, or he blocks the way for one scene.
   const scrap = next.items.scrap ?? 0
