@@ -2735,7 +2735,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v140'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v141'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -3732,6 +3732,7 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(SPINE_HUNTER.encounter.strike === 3 && SPINE_HUNTER.encounter.shell === 1 && SPINE_HUNTER.encounter.hp === 2, 'collector stays Strike 3, Shell 1, Health 2')
   assert(playCoverKey(fight, sceneOf(fight)) === 'carapace', 'his portrait shows in the fight')
   let wins = 0
+  let hurtEnd = 0
   for (let t = 0; t < 30; t++) {
     let f = pick(spineAt(4, t), 'spine-fight')
     f = { ...f, health: f.healthMax ?? f.health, items: { ...f.items, needle_knife: 1, scav_wrap: 1 }, equipped: { weapon: 'needle_knife', armor: 'scav_wrap' } }
@@ -3741,9 +3742,11 @@ function assertHelpResolves(s: GameState, where: string) {
       rounds++
     }
     if (f.flags.encounterDone && /They drop/.test(String(f.flags.encounterClash))) wins++
+    if (f.health <= 2) hurtEnd++
   }
   assert(wins > 0, `needle knife and scav wrap can beat him (${wins}/30)`)
-  assert(wins < 30, `he is a real fight (${wins}/30 wins)`)
+  // v141: a win at mutual 0 is a win now, so "real fight" means he leaves you hurt, not that some fights are lost.
+  assert(wins < 30 || hurtEnd > 0, `he is a real fight (${wins}/30 wins, ${hurtEnd} ended at 2 Health or less)`)
   const card = interpret(offered, 'who is the carapace hunter').flash ?? ''
   assert(/Carapace hunter/.test(card), `who-is works after meeting him: ${card.slice(0, 80)}`)
   const copy = JSON.stringify(CARAPACE_HUNTER) + JSON.stringify(PEOPLE.carapace)
