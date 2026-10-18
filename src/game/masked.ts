@@ -4,6 +4,7 @@ import { firstDropPending } from './firstDrop'
 import { personAtScene } from './people'
 import { isRumorCounter } from './rumors'
 import { vendorFor } from './trade'
+import { closingNow } from './closing'
 
 /**
  * The masked figure: unnamed, no lore, recurring. He only walks the later maps (after Chapter One).
@@ -42,7 +43,7 @@ export function isMaskedFlash(flash: string | undefined | null): boolean {
  */
 const OFFER_IDS = new Set(['job', 'inside', 'station', 'sabotage', 'accept'])
 /** Talk-like scenes that are not marked as talk in the data: the skiff bay's three crews and the two guard stops. */
-const MASKED_QUIET_EXTRA = new Set(['camp:bay', 'thresh:guard', 'thresh:court-guard'])
+const MASKED_QUIET_EXTRA = new Set(['camp:bay', 'thresh:guard', 'thresh:court-guard', 'camp:forced', 'spine:hunter', 'thresh:hunter'])
 
 export function maskedQuietScene(id: string): boolean {
   if (id.includes('kaelen')) return true
@@ -189,6 +190,8 @@ export function maskedPass(state: GameState, next: GameState, fx: { ambush?: unk
       !fx.ruse &&
       !fx.resolveEncounter)
   if (hunted) {
+    // The home camp closing in (pressure 10+): nobody steps in to save you from that hunt.
+    if (closingNow(next)) return next
     if (roll(next, 'interrupt', MASKED_INTERRUPT_ODDS) !== 0) return next
     const flags = { ...next.flags }
     for (const k of ['hunterHere', 'hunterFrom', 'strayHunterHere', 'strayHunterHound', ...ENCOUNTER_KEYS]) delete flags[k]
