@@ -23,6 +23,7 @@ import {
 import { heatFactions, heatRiseLine } from '../game/heat'
 import { effectPills, listedKit } from '../game/kit'
 import { isMawExit } from '../game/map'
+import { roadChoice } from '../game/returnRoad'
 import { encounterSpeaker, isEncounterResult } from '../game/encounter'
 import { coverBand, playCoverFile, playCoverKey } from '../game/art'
 import { bayLookout } from '../game/campJob'
@@ -124,7 +125,8 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     state.health > 0 &&
     !(CRUCIBLE_SCENES as readonly string[]).includes(scene.id)
   const hook = hub?.hungerHook
-  const hookOn = hook && isChoiceOn(state, hook.show) && isMawExit(state)
+  const hookOn = hook && isChoiceOn(state, hook.show) && isMawExit(state) && !(state.flags.chapter1Done && hub?.id !== 'redmaw')
+  const road = roadChoice(state)
   const closing = !state.flags.chapter1Done && state.pressure >= 10 && !state.chapterId
   const chips = listedKit(state.items)
   const sapThin = state.sap <= 2
@@ -238,6 +240,18 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
             ticks: 1,
           }),
         ),
+    })
+  }
+  if (road && !overlay && !shopOpen && showNav) {
+    const on = isChoiceOn(state, road.enable)
+    optionRows.push({
+      key: road.id,
+      tone: `quiet${on ? '' : ' locked'}`,
+      label: road.label,
+      sub: road.sub,
+      locked: !on,
+      lockedNote: on ? undefined : road.locked,
+      onClick: () => on && act(applyEffect(state, road.effects)),
     })
   }
   if (closeRow) {

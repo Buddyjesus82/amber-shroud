@@ -52,7 +52,9 @@ export function hungerCommandEffect(state: GameState, choices: Choice[]): Effect
   }
 
   const hook = state.hubId ? HUBS[state.hubId]?.hungerHook : undefined
-  if (hook && check(hook.show, state)) {
+  // After Chapter One a home camp has no Gullet to take: its way out is the road back to the Maw.
+  const homeAfterOne = !!state.flags.chapter1Done && state.hubId !== 'redmaw'
+  if (hook && !homeAfterOne && check(hook.show, state)) {
     return {
       goto: hook.sceneId,
       ticks: 1,

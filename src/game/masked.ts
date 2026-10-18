@@ -160,7 +160,7 @@ function stamp(next: GameState, how: MaskedSighting): GameState {
  * Called once at the end of every effect. A new scene may carry a sighting; a hunt or ambush that just
  * fired may be stopped by him. Never on a fight, a hunt, a Down, or a crisis; never two scenes in a row.
  */
-export function maskedPass(state: GameState, next: GameState, fx: { ambush?: unknown; sneak?: unknown; ruse?: unknown; resolveEncounter?: unknown; flag?: Record<string, unknown> }): GameState {
+export function maskedPass(state: GameState, next: GameState, fx: { ambush?: unknown; sneak?: unknown; ruse?: unknown; resolveEncounter?: unknown; homeRoad?: unknown; flag?: Record<string, unknown> }): GameState {
   // A block never follows you to the next scene.
   if (state.flags.maskedHere && next.sceneId !== state.sceneId && next.flags.maskedHere) {
     const flags = { ...next.flags }
@@ -170,6 +170,8 @@ export function maskedPass(state: GameState, next: GameState, fx: { ambush?: unk
   const arrived = next.sceneId !== state.sceneId
   if (next.flags.downed || (next.health ?? 1) <= 0) return next
   if (!maskedActive(next) || maskedQuietScene(state.sceneId)) return next
+  // The road between a home camp and the Maw is a transition: he stays out of it.
+  if (fx.homeRoad) return next
   const steps = Number(next.flags.sceneSteps ?? 0)
   if (steps - Number(next.flags.maskedStep ?? -99) < MASKED_GAP) return next
 
