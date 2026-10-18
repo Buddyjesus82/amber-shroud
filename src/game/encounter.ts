@@ -30,7 +30,7 @@ const SPECS: Spec[] = [
   {
     kind: 'jackal',
     name: 'Dust-jackal',
-    strike: 2,
+    strike: 3,
     shell: 1,
     hp: 1,
     line: 'A dust-jackal blocks the grit — ribs like wire, eyes like spent Glints. It will take a hand or a skip.',
@@ -38,7 +38,7 @@ const SPECS: Spec[] = [
   {
     kind: 'cutter',
     name: 'Rim cutter',
-    strike: 2,
+    strike: 3,
     shell: 2,
     hp: 2,
     line: 'A rim-cutter stands up out of scrap-shade. Half a person, half a stolen knife. Knife-smile. Saleable pockets. Optional throat.',
@@ -47,7 +47,7 @@ const SPECS: Spec[] = [
     // The Vessel's Court Guard hunt. Same weight as a rim cutter, his own name.
     kind: 'courtguard',
     name: 'Court Guard',
-    strike: 2,
+    strike: 3,
     shell: 2,
     hp: 3,
     line: 'The court guard raises his curved falchion. Sunburn and belief. He was told to keep Vessels inside.',
@@ -56,7 +56,7 @@ const SPECS: Spec[] = [
     // Vessel Cache Run: a hymn-road runner who caught you. Early weight, his own name.
     kind: 'runner',
     name: 'Seeker runner',
-    strike: 2,
+    strike: 3,
     shell: 0,
     hp: 2,
     line: 'A Seeker runner cuts across the rib, hymn on his breath. He means to walk the Vessel back on a leash.',
@@ -64,7 +64,7 @@ const SPECS: Spec[] = [
   {
     kind: 'tick',
     name: 'Amber-tick',
-    strike: 1,
+    strike: 2,
     shell: 3,
     hp: 1,
     line: "An amber-tick clings to a rib of rock, fat with somebody else's Drop. You can crack it or leave it humming.",
@@ -72,7 +72,7 @@ const SPECS: Spec[] = [
   {
     kind: 'pup',
     name: 'Shard-pup',
-    strike: 1,
+    strike: 2,
     shell: 1,
     hp: 2,
     line: 'A Shard-pup, already a jaw. Cartel leftovers. Fight or give the road.',
@@ -80,7 +80,7 @@ const SPECS: Spec[] = [
   {
     kind: 'scavenger',
     name: 'Waste scavenger',
-    strike: 2,
+    strike: 3,
     shell: 1,
     hp: 2,
     line: 'A waste scavenger blocks the grit. A person who robs travelers who look alone. Stolen knife. Empty pockets. Optional throat.',
@@ -88,7 +88,7 @@ const SPECS: Spec[] = [
   {
     kind: 'patrol',
     name: 'Vent patrol',
-    strike: 2,
+    strike: 3,
     shell: 0,
     hp: 1,
     line: 'Vent patrol. One clerk, shock baton, standing on the bolt. A short scrap. Then the vent, or not.',
@@ -96,7 +96,7 @@ const SPECS: Spec[] = [
   {
     kind: 'handler',
     name: 'Hound-handler',
-    strike: 2,
+    strike: 3,
     shell: 1,
     hp: 2,
     line: 'The Hound-handler. Lean kit, shock-leash, an amber-eyed shard-hound at his heel with its eyes open. He is the fight. The hound stays on the leash.',
@@ -123,7 +123,7 @@ const SPECS: Spec[] = [
   {
     kind: 'husk',
     name: 'Amber Husk',
-    strike: 2,
+    strike: 3,
     shell: 3,
     hp: 3,
     line: 'An Amber Husk. Calcified resin and bone, man-height and hunched, amber core under the rib cage. It keeps coming until the heart is shattered.',
@@ -136,7 +136,7 @@ const TEACH_NO_SKIP = 'Fight, or try to run. The rules: help fight.'
 
 /** Every exchange that lands deals at least this much, both ways. */
 export const DAMAGE_FLOOR = 1
-/** Each side's swing is 0..SWING_MAX added to Strike, per exchange. */
+/** Your swing is 0..SWING_MAX added to your Strike, per exchange. Enemy hits are rolled 1..their Strike instead (see enemyHit). */
 export const SWING_MAX = 2
 /** Rounds in a row with no damage either way before the enemy breaks off. */
 export const STALL_ROUNDS = 3
@@ -160,6 +160,21 @@ export function swingOf(state: GameState, side: 'you' | 'them'): number {
   h = Math.imul(h, 3266489917) >>> 0
   h ^= h >>> 13
   return (h >>> 0) % (SWING_MAX + 1)
+}
+
+/**
+ * v142: an enemy hit is a uniform roll from 1 up to its own Strike, less your Shell, never under the floor.
+ * (Your own hit still adds your 0..SWING_MAX swing.) Seeded like the swing, so a save replays the same fight.
+ */
+export function enemyHit(state: GameState, strike: number, shell: number, floor = DAMAGE_FLOOR, ground = 0): number {
+  const round = Number(state.flags.encounterRound ?? 0)
+  let h = (seed(state) * 2654435761 + round * 40503 + 91) >>> 0
+  for (const ch of String(state.flags.encounterKind ?? '')) h = (Math.imul(h ^ ch.charCodeAt(0), 2246822519) >>> 0)
+  h ^= h >>> 15
+  h = Math.imul(h, 3266489917) >>> 0
+  h ^= h >>> 13
+  const rolled = 1 + ((h >>> 0) % Math.max(1, strike))
+  return Math.max(floor, rolled + ground - shell)
 }
 
 /** Damage one side deals in an exchange. A landed exchange never rounds down to nothing. */
@@ -371,7 +386,8 @@ export function clashOf(state: GameState, floor = DAMAGE_FLOOR): Clash {
   const swingOut = swingOf(state, 'you')
   const swingIn = swingOf(state, 'them')
   const dmgOut = exchangeDamage(strike, swingOut, spec.shell, floor)
-  const dmgIn = exchangeDamage(spec.strike, swingIn, shell, floor)
+  // The most an enemy hit can be before crits; the real hit is rolled in resolveEncounter.
+  const dmgIn = Math.max(floor, spec.strike - shell)
   const theirNow = Number(state.flags.encounterHp ?? spec.hp)
   const healthMax = state.healthMax ?? HEALTH_MAX
   const yours = state.health ?? healthMax
@@ -934,9 +950,8 @@ export function resolveEncounter(
     move === 'core' ||
     (move === 'pull' && !!f.encounterLatched && state.equipped?.hands === 'hide_gloves')
 
-  // Swings after ground, feint, and a numb arm. Named extras go in brackets on the hit lines (no maths).
+  // Your swing after ground, feint, and a numb arm. Their hit is a roll from 1 to their Strike (v142): no swing.
   let swingOut = c.swingOut
-  let swingIn = c.swingIn
   const outTags: string[] = []
   const inTags: string[] = []
   if (attacking && f.encounterShocked) {
@@ -947,34 +962,29 @@ export function resolveEncounter(
     outTags.push('Feint: +2 to your hit.')
   }
   const outRaw = swingOut
-  const inRaw = swingIn
   swingOut = Math.max(0, swingOut + ground.you)
-  swingIn = Math.max(0, swingIn + ground.them)
   if (attacking && swingOut > outRaw) outTags.push(`High ground: +${swingOut - outRaw} to your hit.`)
   if (attacking && swingOut < outRaw) outTags.push(`Loose sand: −${outRaw - swingOut} to your hit.`)
-  if (swingIn < inRaw) inTags.push(`Sun in their eyes: you take ${inRaw - swingIn} less damage.`)
   if (ground.cap != null) {
     const o = swingOut
-    const i = swingIn
     swingOut = Math.min(ground.cap, swingOut)
-    swingIn = Math.min(ground.cap, swingIn)
     if (attacking && swingOut < o) outTags.push('Blowing sand: your big swing falls short.')
-    if (swingIn < i) inTags.push('Blowing sand: their big swing falls short.')
   }
   let theirStrike = Math.max(0, spec.strike + ground.strike)
   if (theirStrike < spec.strike) inTags.push(`Steam vent: you take ${spec.strike - theirStrike} less damage.`)
   let pinned = !!f.encounterPinned
+  let harpoon = 0
   if (spec.kind === 'carapace' && round === 1) {
-    theirStrike += 1
+    harpoon = 1
     pinned = true
     inTags.push('Harpoon: they hit for 1 more.')
     notes.push('The harpoon line pins you. No running until you land a hit.')
   }
 
   let dmgOut = attacking ? exchangeDamage(c.strike, swingOut, spec.shell, floor) : 0
-  let dmgIn = exchangeDamage(theirStrike, swingIn, c.shell, floor)
-  // Every hit reads plainly: a big swing says what it added.
-  if (swingIn > 0 && !f.encounterStun) inTags.push(`Hard swing: they hit for ${swingIn} more.`)
+  const hitBare = enemyHit(state, theirStrike, c.shell, floor, harpoon)
+  let dmgIn = enemyHit(state, theirStrike, c.shell, floor, harpoon + ground.them)
+  if (dmgIn < hitBare) inTags.push(`Sun in their eyes: you take ${hitBare - dmgIn} less damage.`)
 
   let critOut = false
   if (attacking && dmgOut > 0 && roll(state, 'critYou', 10) < CRIT_IN_10) {
@@ -1000,6 +1010,7 @@ export function resolveEncounter(
   // Blowing sand: both hits top out at the stated cap, crits included.
   if (ground.cap != null) {
     dmgOut = Math.min(ground.cap, dmgOut)
+    if (dmgIn > ground.cap) inTags.push('Blowing sand: their big swing falls short.')
     dmgIn = Math.min(ground.cap, dmgIn)
     dmgInPlain = Math.min(ground.cap, dmgInPlain)
     critIn = critIn && dmgIn > dmgInPlain
@@ -1077,9 +1088,8 @@ export function resolveEncounter(
     inTags.push(`Guard: you take ${cut} less damage.`)
     notes.push('You guard.')
   } else if (move === 'feint') {
-    // Feint: you slip the swing. Their hit loses its extra force, then 1 lighter.
-    const slipped = Math.max(0, exchangeDamage(theirStrike, 0, c.shell, floor) - 1)
-    hitIn((d) => Math.min(d, slipped))
+    // Feint: you slip the swing. Their hit is 1 lighter.
+    hitIn((d) => Math.max(0, d - 1))
     feintNext = true
     inTags.push('Feint: you take 1 less damage.')
     notes.push('You feint and slip back. Your next hit gets +2.')

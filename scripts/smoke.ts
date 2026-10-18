@@ -72,7 +72,7 @@ import type { Cond, Scene } from '../src/game/types.ts'
 import { rollScavenge, SCAVENGE_SALVE_PCT, scavengeSalve } from '../src/game/scavenge.ts'
 import { buyFits, kaelenOffers } from '../src/game/trade.ts'
 import { FIGHT_HELP_LINES, fightHelpAuto, fightHelpText, fightTopicMidFight, HELP_TOPICS, helpRoute, topicLines, isFightHelpAsk, markFightHelpSeen, topicListText, topicText } from '../src/game/helpTopics.ts'
-import { encounterSpeaker as encounterSpeakerOf, BEAST_KINDS, carriesSalve, EXTRACTOR_DROP_IN, EXTRACTOR_DUPE_IN, extractorDrop, HUMAN_KINDS, HUMAN_SALVE_PCT, beginEncounter, DAMAGE_FLOOR, encounterCard, encounterChoices, exchangeDamage, fightStartFlags, huskGround, pickEncounterKind, resolveEncounter, runChance, STALL_ROUNDS, swingOf } from '../src/game/encounter.ts'
+import { encounterSpeaker as encounterSpeakerOf, BEAST_KINDS, carriesSalve, EXTRACTOR_DROP_IN, EXTRACTOR_DUPE_IN, extractorDrop, HUMAN_KINDS, HUMAN_SALVE_PCT, beginEncounter, DAMAGE_FLOOR, encounterCard, encounterChoices, enemyHit, exchangeDamage, fightStartFlags, huskGround, pickEncounterKind, resolveEncounter, runChance, STALL_ROUNDS, swingOf } from '../src/game/encounter.ts'
 import {
   IDLE_DOOR,
   tapDoor,
@@ -1568,17 +1568,17 @@ s = {
   health: 6,
   healthMax: 6,
 }
-assert(/^YOU ♥ \d+ ⚔ Strike 2 🛡 Shell \d+$/m.test(bodyOf(s)) && /^SHARD-PUP ♥ \d+ ⚔ Strike 1 🛡 Shell 1$/m.test(bodyOf(s)), 'Vessel dagger and pup stats are on the card')
+assert(/^YOU ♥ \d+ ⚔ Strike 2 🛡 Shell \d+$/m.test(bodyOf(s)) && /^SHARD-PUP ♥ \d+ ⚔ Strike 2 🛡 Shell 1$/m.test(bodyOf(s)), 'Vessel dagger and pup stats are on the card')
 {
-  // Pup Strike 3 vs bare Shell 0 hits for 3+swing. Your 2 vs its Shell 2 still lands 1+.
-  const inSwing = swingOf(s, 'them')
+  // v142: the pup (Strike 2) hits for a roll of 1..2 vs bare Shell 0. Your 2 vs its Shell 1 still lands 1+.
+  const inHit = enemyHit(s, 2, 0)
   const outSwing = swingOf(s, 'you')
   const loss = pick(s, 'enc-fight')
   assert((loss.items.glints ?? 0) === beforeGlints, 'lose compare does not pay Glints')
-  assert(loss.health === Math.max(0, 6 - (1 + inSwing)), `Shard-pup Strike 1+${inSwing} vs Shell 0 takes ${1 + inSwing} Health; cloth is not armor (v115: pup softened 3→1)`)
+  assert(loss.health === Math.max(0, 6 - inHit), `Shard-pup Strike 2 rolls ${inHit} vs Shell 0 and takes ${inHit} Health; cloth is not armor`)
   if (!loss.flags.downed) {
-    assert(new RegExp(`You hit [^\\n]+ for ${Math.max(1, 1 + outSwing)}[ .]`).test(bodyOf(loss)), `Fight body says what you hit for (out ${outSwing} in ${inSwing}): ${bodyOf(loss).slice(0, 200)}`)
-    assert(new RegExp(`(?:hits back|hits you) for ${1 + inSwing}[ .]`).test(bodyOf(loss)), 'Fight body says what they hit you for')
+    assert(new RegExp(`You hit [^\\n]+ for ${Math.max(1, 1 + outSwing)}[ .]`).test(bodyOf(loss)), `Fight body says what you hit for (out ${outSwing} in ${inHit}): ${bodyOf(loss).slice(0, 200)}`)
+    assert(new RegExp(`(?:hits back|hits you) for ${inHit}[ .]`).test(bodyOf(loss)), 'Fight body says what they hit you for')
   }
   let drop = loss
   for (let i = 0; i < 12 && drop.flags.encounterHere && !drop.flags.encounterDone && !drop.flags.downed; i++) drop = pick(drop, 'enc-fight')
@@ -1653,7 +1653,7 @@ for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
   assert(/waste scavenger/i.test(bodyOf(card)), `${door} scavenger card names the robber`)
   assert(/a person who robs/i.test(bodyOf(card)), `${door} scavenger card is a person`)
   assert(/The rules: help fight/i.test(bodyOf(card)), `${door} first scavenger still teaches`)
-  assert(/^SCAVENGER ♥ \d+ ⚔ Strike 2 🛡 Shell 1$/m.test(bodyOf(card)), `${door} scavenger stats are on the card`)
+  assert(/^SCAVENGER ♥ \d+ ⚔ Strike 3 🛡 Shell 1$/m.test(bodyOf(card)), `${door} scavenger stats are on the card`)
   assert(/^YOU ♥ \d+ ⚔ Strike \d+ 🛡 Shell \d+$/m.test(bodyOf(card)), `${door} your stats are on the card`)
   const fightRow = visibleChoices(card).find((c) => c.id === 'enc-fight')
   assert(fightRow?.label === 'Fight the Waste scavenger', `${door} fight label names the scavenger`)
@@ -2366,7 +2366,7 @@ assert(html.includes('apple-touch.png?v=14'), 'apple-touch-icon is cache-busted 
   assert(playCoverKey(knock, sceneOf(knock)) === 'handler', 'Camp pressure interrupt uses the Hound-handler')
   assert(pressureFace(knock) === 'Hound-handler', 'Camp knock speaker is the handler')
   const hound = applyEffect(o, { goto: 'spine:hound' })
-  assert(playCoverKey(hound, sceneOf(hound)) === 'hound', 'Spine hunt uses Shard-Hound art')
+  assert(playCoverKey(hound, sceneOf(hound)) === 'handler', 'Hound Sign uses the Hound-handler portrait (v142: the old hound art is retired)')
   const sy = { ...v, flags: { ...v.flags, hunterHere: true }, hubId: 'redmaw', sceneId: 'maw:lip', chapterId: 'cache-run' }
   assert(playCoverKey(sy, { id: 'maw:lip', art: 'hunger' }) === 'sybella', 'Sybella overlay uses Sybella art')
   const maw = applyEffect(p, { goto: 'maw:market', enterHub: 'redmaw' })
@@ -2735,7 +2735,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v141'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v142'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -3298,7 +3298,7 @@ function assertHelpResolves(s: GameState, where: string) {
   for (let t = 0; t < 40; t++) {
     const base = primedFight('outcast', 10 + t, 'cutter', { hp: 2, arm: false })
     let f: GameState = { ...base, items: { ...base.items, dust_cloak: 1, head_wrap: 1 }, equipped: { ...base.equipped, weapon: undefined, cloak: 'dust_cloak', head: 'head_wrap' } }
-    assert(/^YOU ♥ \d+ ⚔ Strike 1 🛡 Shell 3$/m.test(bodyOf(f)) && /^CUTTER ♥ 2 ⚔ Strike 2 🛡 Shell 2$/m.test(bodyOf(f)), 'stalemate stats are on the card')
+    assert(/^YOU ♥ \d+ ⚔ Strike 1 🛡 Shell 3$/m.test(bodyOf(f)) && /^CUTTER ♥ 2 ⚔ Strike 3 🛡 Shell 2$/m.test(bodyOf(f)), 'stalemate stats are on the card')
     const swings = [swingOf(f, 'you'), swingOf(f, 'them')]
     assert(swings.every((n) => n >= 0 && n <= 2) && swingOf(f, 'you') === swings[0], 'swing is 0-2 and the same state gives the same swing')
     let rounds = 0
@@ -4607,7 +4607,7 @@ function assertHelpResolves(s: GameState, where: string) {
     }
   }
   assert(guardWins >= 1, `Guard/Feint can beat a husk (${guardWins}/25)`)
-  assert(rushLosses >= 5, `naked rush often loses to a husk (${rushLosses}/25)`)
+  assert(rushLosses >= 3, `naked rush still loses to a husk (${rushLosses}/25)`)
 }
 
 // Seeker Extractor: rare drop from a Seeker walking a husk; Draw resin perk.
@@ -5164,7 +5164,7 @@ function assertHelpResolves(s: GameState, where: string) {
     }
   }
   const pup = GE.applyEffect(newGame('prisoner'), { goto: 'camp:guard', flag: { encounterHere: true, encounterKind: 'pup', encounterHp: 2 } })
-  assert(GA.playCoverKey(pup, GE.sceneOf(pup)) !== 'hound', 'Shard-pup fight does not use the handler portrait')
+  assert(GA.playCoverKey(pup, GE.sceneOf(pup)) !== 'handler' && GA.playCoverKey(pup, GE.sceneOf(pup)) !== 'hound', 'Shard-pup fight does not use the handler portrait')
 }
 
 console.log('OK', {
@@ -5937,11 +5937,11 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
       assert(!/\bThey still stand\b|\bthem\b/.test(pronounText('courtguard', 'They still stand. Hit them.')), 'v115: he/him for the Court Guard')
     }
   }
-  // 6. Feint: the husk's slipped hit cannot take you from 2 to 0.
+  // 6. Feint: the husk's slipped hit (v142: Strike 3, so at most 2) cannot take you from 3 to 0.
   for (let t = 0; t < 40; t++) {
     const v = newGame('vessel')
-    const s = { ...v, ticks: t, health: 2, sceneId: 'maw:rim', flags: { ...v.flags, encounterHere: true, encounterKind: 'husk' as const, encounterHp: 3 } }
-    assert(GE.applyEffect(s, { resolveEncounter: 'feint' }).health >= 1, 'v115: Feint vs the husk at Health 2 leaves you standing')
+    const s = { ...v, ticks: t, health: 3, sceneId: 'maw:rim', flags: { ...v.flags, encounterHere: true, encounterKind: 'husk' as const, encounterHp: 3 } }
+    assert(GE.applyEffect(s, { resolveEncounter: 'feint' }).health >= 1, 'v115: Feint vs the husk at Health 3 leaves you standing')
   }
   // 8. Down mid-fight resolves: the fight is closed with a line, and you wake where you fell.
   {
@@ -6161,7 +6161,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   assert(typed.flags.encounterHere && !typed.flags.encounterDone && typed.flash === NO_SKIP_LINE, 'v118: typed skip is refused on an ambush')
   assert(playCoverKey(road, getScene('ch1:v-hymn')!) === 'brin', 'v118: runner fights use the Seeker runner art')
   // Runner is an early fight: hits capped at 3; card rows clean.
-  assert(/^RUNNER ♥ \d+ ⚔ Strike 2 🛡 Shell 0$/m.test(GE.bodyOf(road)) && GE.bodyOf(road).includes('Fight, or try to run.'), 'v118: runner Strike/Shell row')
+  assert(/^RUNNER ♥ \d+ ⚔ Strike 3 🛡 Shell 0$/m.test(GE.bodyOf(road)) && GE.bodyOf(road).includes('Fight, or try to run.'), 'v118: runner Strike/Shell row')
   for (let t = 0; t < 30; t++) {
     const f: GameState = { ...road, ticks: t, health: 6 }
     assert(6 - GE.applyEffect(f, GE.visibleChoices(f).find((c) => c.id === 'enc-fight')!.effects).health <= 3, 'v118: runner hits capped at 3')

@@ -167,7 +167,8 @@ export const COVER_BAND: Record<CoverKey, [number, number]> = {
   oram: [0.1, 0.9],
   brin: [0.05, 0.72],
   rell: [0.1, 0.85],
-  handler: [0, 0.75],
+  // The handler's face and chains sit up top; keep the hound's head too (lower right), so the hound fight card still shows it.
+  handler: [0, 0.88],
   // Skiff Bay: the four bays, the people, and Vetch's torch.
   skiffbay: [0.2, 0.84],
   // The Cartel barge, the tarp Strider, and the white skiff's amber crane.
@@ -306,7 +307,8 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
     if (kind === 'masked') return 'masked_figure'
     // The pup has no handler, so it gets the ground you are on (like jackals and ticks), not the handler portrait.
     if (kind === 'handler') return 'handler'
-    if (kind === 'hound') return 'hound'
+    // v142: the hound fight shows the Hound-handler portrait (his hound is in it), not the old hound art.
+    if (kind === 'hound') return 'handler'
     if (kind === 'overseer') return 'valerius'
     if (kind === 'patrol') return 'rell'
     if (kind === 'courtguard') return 'courtguard'
@@ -333,7 +335,7 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   // The Court Guard hunt shows the guard, not Thalia's portrait.
   if (isThreshHunt(state)) return 'courtguard'
   if (id === 'spine:valerius') return 'valerius'
-  if (id === 'spine:hunter' || id === 'spine:hound') return 'hound'
+  if (id === 'spine:hunter' || id === 'spine:hound') return 'handler'
   // Cup-Shadow is Kaelen's pack-shade, never Thalia's.
   if (id === 'thresh:sift') return 'kaelen'
   if (id === 'thresh:thalia' || id.startsWith('thresh:thalia')) return 'thalia'
