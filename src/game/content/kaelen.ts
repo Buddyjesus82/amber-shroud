@@ -303,6 +303,7 @@ Kaelen the Sifter is here when the road says he is here. He will pay for a way o
         sub: 'Buy. Sell. Rumors.',
         effects: { goto: 'thresh:kaelen', ticks: 1, flag: { kaelenKnown: true } },
       },
+      { id: 'back', label: 'Back to the Court', tone: 'quiet', effects: { goto: 'thresh:court' } },
     ],
     intents: [
       {

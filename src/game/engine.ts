@@ -22,7 +22,7 @@ import { helpRoute, HELP_HINT, HELP_TOPICS, topicText } from './helpTopics'
 import { isBayScene } from './content/bayHands'
 import { classifyLook, directedLookFlash, pressureLookFlash, roomLookEffect } from './look'
 import { matchCompass, travelGate } from './map'
-import { roadChoice, roadFromText } from './returnRoad'
+import { ROAD_NOT_NOW, roadChoice, isTravelText, roadPhrase, roadToMaw, roadHome } from './returnRoad'
 import { CLOSING_PRESSURE, FORCED_PRESSURE, closingNow, homeFaction, restCoolLine, restCools } from './closing'
 import {
   atGuardStation,
@@ -672,7 +672,15 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
       !state.flags.quietFence
     ) {
       next.sceneId = 'camp:gate'
-      next.flags = { ...next.flags, gateFrom: state.sceneId }
+      next.flags = {
+        ...next.flags,
+        gateFrom: state.sceneId,
+        // What the walk to the gate cost, and the scene's clock, so staying outside can put both back.
+        gatePaid: Math.max(0, state.sap - next.sap),
+        gateTicks: state.ticks,
+        gateSteps: Number(state.flags.sceneSteps ?? 0),
+        gateRested: !!state.flags.restedHere,
+      }
       next.flash =
         'Lockdown. The gates are counted and the sabotage is still in their teeth. Walking in is a fight or a collar.'
     }
@@ -688,6 +696,8 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
       next.sceneId = 'maw:rim'
       next.hubId = 'redmaw'
     }
+    // Stay outside: you get back only what the walk cost, and nothing here counts as a new visit.
+    next.sap = next.sap + Number(state.flags.gatePaid ?? 0)
     const flags = { ...next.flags }
     delete flags.leaveGate
     next.flags = flags
@@ -750,7 +760,8 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     next.sceneId = pickCrisis(next)
     const c = getScene(next.sceneId)
     if (c.hubId) next.hubId = c.hubId
-    if (RESCUE_CRISES.has(next.sceneId)) {
+    // The Spine's first rescue is the free First Drop. Every later one costs a Glint or a scrap, like the other rescues.
+    if (RESCUE_CRISES.has(next.sceneId) || (next.sceneId === 'crisis:spine' && next.flags.crisisSpine)) {
       const pay = (next.items.glints ?? 0) > 0 ? 'glints' : (next.items.scrap ?? 0) > 0 ? 'scrap' : null
       if (pay) {
         next.items = { ...next.items, [pay]: (next.items[pay] ?? 0) - 1 }
@@ -1048,6 +1059,17 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     for (const k of VISIT_FLAGS) delete flags[k]
     next.flags = flags
   }
+  // Walking off the Lockdown Gate to where you came from is not a new scene: rest, search, and the scene count stay as they were.
+  if (state.sceneId === 'camp:gate' && 'gateTicks' in state.flags && next.sceneId !== 'camp:gate') {
+    const flags = { ...next.flags }
+    if (next.sceneId === state.flags.gateFrom) {
+      flags.sceneSteps = Number(state.flags.gateSteps ?? flags.sceneSteps ?? 0)
+      if (state.flags.gateRested) flags.restedHere = true
+      next.ticks = Number(state.flags.gateTicks)
+    }
+    for (const k of ['gatePaid', 'gateTicks', 'gateSteps', 'gateRested']) delete flags[k]
+    next.flags = flags
+  }
   next = closingBeats(next, fx, !!dest)
   // The masked figure: a sighting on a new scene, or a hunt he stops.
   next = maskedPass(state, next, fx)
@@ -1118,8 +1140,15 @@ export function canCraftScavPack(state: GameState): boolean {
 
 export const TOO_DRY_TO_WALK = 'You are too dry to walk that far. Drink a Drop, rest, or scavenge first.'
 
+/** v140: in a fight, a hunt, a masked block or a Down you cannot walk, change gear, or read Rumors. The backpack and Help stay open. */
+export function fightLocked(state: GameState): boolean {
+  const f = state.flags
+  return !!(f.encounterHere || f.hunterHere || f.strayHunterHere || f.maskedHere || f.downed || (state.health ?? 1) <= 0 || isPressureOverlay(state))
+}
+
 export function travelTo(state: GameState, sceneId: string): GameState {
   if (state.sceneId === sceneId) return state
+  if (fightLocked(state)) return persist({ ...state, flash: ROAD_NOT_NOW })
   // The Bone Wash node on the Spine map is the road out: same as typing the road.
   if (sceneId === 'ch1:leave' && state.hubId && !state.chapterId && state.flags.chapter1Done) {
     // Chapter One is done: the Wash is the road back to the Maw, from the Hound Sign only.
@@ -1138,7 +1167,7 @@ export function travelTo(state: GameState, sceneId: string): GameState {
     return persist({ ...state, flash: gate.reason })
   }
   if (gate.sap <= 0) {
-    return applyEffect(state, { goto: sceneId })
+    return applyEffect(state, { goto: sceneId, mapWalk: true })
   }
   // After one rescue on the Approach, a walk will not drain you into another.
   if (state.hubId === 'redmaw' && state.flags.mawRescued && state.sap <= gate.sap) {
@@ -1146,6 +1175,7 @@ export function travelTo(state: GameState, sceneId: string): GameState {
   }
   return applyEffect(state, {
     goto: sceneId,
+    mapWalk: true,
     sap: -gate.sap,
     ticks: 1,
     pressure: 1,
@@ -1237,6 +1267,8 @@ function scavengeNotice(before: GameState, next: GameState): GameState {
 export function noticeHunt(state: GameState): GameState {
   if (state.flags.encounterHere || state.flags.hunterHere || state.flags.downed) return state
   if (getScene(state.sceneId).kind === 'crisis') return state
+  // The Lockdown Gate is its own checkpoint scene: the Heat lands, but no hunt screen replaces it.
+  if (state.sceneId === 'camp:gate') return state
   const maw = state.hubId === 'redmaw' || state.sceneId.startsWith('maw:')
   if (maw && Number(state.flags.sceneSteps ?? 0) - Number(state.flags.sybellaShadowStep ?? -99) < SYBELLA_GAP) return state
   const flags = {
@@ -1276,6 +1308,11 @@ export function timingNotice(state: GameState, kind: 'rush' | 'stall'): GameStat
 export function scavenge(state: GameState): GameState {
   // applyDelta only — never applyEffect, never goto, never hunter/crisis relocate.
   const pinned = { sceneId: state.sceneId, hubId: state.hubId, chapterId: state.chapterId }
+  // A hunt that cuts the search short: the search did not resolve. No loot, and the patch is not marked picked clean.
+  const noticed = scavengeNotice(state, state)
+  if (noticed.flags.hunterHere && !state.flags.hunterHere) {
+    return withVerb(persist({ ...noticed, ...pinned, updatedAt: Date.now() }), 'scavenge')
+  }
   let next = fitBag(state, applyScavenge(state))
   const warm = amberFindSign(state, (next.items.glints ?? 0) > (state.items.glints ?? 0))
   if (warm) next = { ...next, flash: `${next.flash ?? ''} ${warm}`.trim(), flags: { ...next.flags, amberWarmSeen: true, sandSignAt: next.ticks } }
@@ -1426,6 +1463,17 @@ export function interpret(state: GameState, raw: string): GameState {
   const scene = sceneOf(state)
   const bare = text.trim().toLowerCase()
   const said = bare === 'l' || /^l\s/.test(bare) ? bare.replace(/^l\b/, 'look') : bare
+  // v140: a typed travel phrase is read first, before any skip / run / ride guess. Locked (fight, hunt, Down, crisis, dry): it only answers.
+  {
+    const phrase = roadPhrase(state, text)
+    if (phrase) {
+      const road = phrase === 'maw' ? roadToMaw(state) : roadHome(state)
+      if (!road) return withVerb(persist({ ...state, flash: ROAD_NOT_NOW, updatedAt: Date.now() }), 'road')
+      if (!isChoiceOn(state, road.enable)) return withVerb(persist({ ...state, flash: road.locked, updatedAt: Date.now() }), 'road')
+      return withVerb(applyEffect(state, road.effects), 'road')
+    }
+  }
+  if (fightLocked(state) && isTravelText(state, text)) return withVerb(persist({ ...state, flash: ROAD_NOT_NOW, updatedAt: Date.now() }), 'road')
   // Sybella's shadow is not a body: a bare typed fight does not swing at it. The button does.
   if (isSybellaOverlay(state) && BARE_FIGHT.test(said)) {
     return withVerb(persist({ ...state, flash: SHADOW_NO_FIGHT, updatedAt: Date.now() }), 'fight')
@@ -1731,14 +1779,6 @@ export function interpret(state: GameState, raw: string): GameState {
 
   const shown = visibleChoices(state)
   const enabled = shown.filter((c) => isChoiceOn(state, c.enable))
-
-  {
-    const road = roadFromText(state, text)
-    if (road) {
-      if (!isChoiceOn(state, road.enable)) return withVerb(persist({ ...state, flash: road.locked, updatedAt: Date.now() }), 'road')
-      return withVerb(applyEffect(state, road.effects), 'road')
-    }
-  }
 
   if (isHungerCommand(text, state.door)) {
     const fx = hungerCommandEffect(state, enabled)
@@ -2169,6 +2209,7 @@ const SLOT_OFF: Record<EquipSlot, string> = {
 
 /** Why a piece cannot go in a slot right now, or null if it can. */
 export function equipBlock(state: GameState, id: ItemId, slot: EquipSlot): string | null {
+  if (fightLocked(state)) return ROAD_NOT_NOW
   const def = ITEMS[id]
   if (!def?.slot) return 'That does not wear. Carry it.'
   if (!(state.items[id] ?? 0)) return 'You do not have it to equip.'
@@ -2197,6 +2238,7 @@ export function equipItem(state: GameState, id: ItemId, slot?: EquipSlot): GameS
 }
 
 export function unequipSlot(state: GameState, slot: EquipSlot): GameState {
+  if (fightLocked(state)) return persist({ ...state, flash: ROAD_NOT_NOW })
   const equipped = { ...(state.equipped ?? {}) }
   delete equipped[slot]
   return persist({

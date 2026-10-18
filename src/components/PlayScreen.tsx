@@ -33,7 +33,7 @@ import { DISGUISE_SOFTEN_NOTE } from '../game/disguise'
 import { ROADS, shownText } from '../game/roads'
 import { scavengeLock } from '../game/scavenge'
 import { RUSH_CHANCE, RUSH_MOVES, RUSH_WINDOW_MS, STALL_BASE, STALL_MAX_S, STALL_MIN_S, STALL_STEP, STALL_TICK_S } from '../game/noticeHeat'
-import { noticeOn, timingNotice } from '../game/engine'
+import { fightLocked, noticeOn, timingNotice } from '../game/engine'
 import { isShopOpen } from '../game/trade'
 import type { Choice, Faction, GameState } from '../game/types'
 import { helpEntries } from '../game/help'
@@ -122,6 +122,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     !state.flags.strayHunterHere &&
     !state.flags.maskedHere &&
     !state.flags.downed &&
+    !isPressureOverlay(state) &&
     state.health > 0 &&
     !(CRUCIBLE_SCENES as readonly string[]).includes(scene.id)
   const hook = hub?.hungerHook
@@ -446,7 +447,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
           </button>
         </div>
         <div className="heat-row">
-          <button type="button" className="map-btn journal-btn" onClick={() => setJournalOpen(true)}>
+          <button type="button" className="map-btn journal-btn" disabled={fightLocked(state)} onClick={() => setJournalOpen(true)}>
             Rumors
           </button>
           {(['cartel', 'seekers', 'strays'] as const).map((f) => (

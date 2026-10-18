@@ -57,7 +57,10 @@ function fx(home: Home | null, state: GameState): Effect {
 export function roadToMaw(state: GameState): Choice | null {
   if (!roadsOpen(state) || !state.hubId || !HOME_HUBS.has(state.hubId)) return null
   const map = hubMapOf(state)
-  if (!map?.ready || !currentNode(state)?.mawExit) return null
+  // Kaelen passing through the Hound Sign (or the gate, or the Paddock): the road is still the road you stand on.
+  const from = state.sceneId === 'roam:kaelen' ? state.flags.kaelenFrom : null
+  const here = typeof from === 'string' && from ? { ...state, sceneId: from } : state
+  if (!map?.ready || !currentNode(here)?.mawExit) return null
   return {
     id: 'road-maw',
     label: 'Walk back to Red Maw',
@@ -101,16 +104,38 @@ const HOME_WORDS: Record<DoorId, string> = {
   vessel: '(?:threshold|outer threshold|court|home)',
 }
 
-/** Typed road: "walk back to red maw", "go home", "return to camp". Only when that road is a button right now. */
-export function roadFromText(state: GameState, text: string): Choice | null {
+export type RoadPhrase = 'maw' | 'home'
+
+export const ROAD_NOT_NOW = 'Not now.'
+
+/**
+ * A typed travel phrase, whether or not the road is open right now. After Chapter One only:
+ * "walk back to red maw" from a home camp, "go home" / "return to camp" / "head to the spine" from the Maw.
+ * Read before any skip/run/ride guess so a travel line is never a fight verb.
+ */
+export function roadPhrase(state: GameState, text: string): RoadPhrase | null {
+  if (!state.flags.chapter1Done || !state.hubId) return null
   const hay = norm(text)
   if (!hay) return null
-  const toMaw = roadToMaw(state)
-  if (toMaw && TO_MAW.test(hay)) return toMaw
-  const home = roadHome(state)
-  if (home) {
-    const words = HOME_WORDS[state.door]
-    if (new RegExp(`^${GO} ${BACK}${words}$`).test(hay) || /^(?:go|head|walk|return) home$/.test(hay)) return home
-  }
+  if (state.hubId !== 'redmaw') return TO_MAW.test(hay) ? 'maw' : null
+  const words = HOME_WORDS[state.door]
+  if (new RegExp(`^${GO} ${BACK}${words}$`).test(hay) || /^(?:go|head|walk|return|travel) home$/.test(hay)) return 'home'
   return null
+}
+
+/** The road button a typed travel phrase means, when it is open. */
+export function roadFromText(state: GameState, text: string): Choice | null {
+  const phrase = roadPhrase(state, text)
+  if (phrase === 'maw') return roadToMaw(state)
+  if (phrase === 'home') return roadHome(state)
+  return null
+}
+
+/** Any typed walk-home or walk-to-the-Maw line, after Chapter One, wherever you stand. Used only to answer "Not now." while locked. */
+export function isTravelText(state: GameState, text: string): boolean {
+  if (!state.flags.chapter1Done) return false
+  const hay = norm(text)
+  if (!hay) return false
+  if (TO_MAW.test(hay) || /^(?:go|head|walk|return|travel) (?:back )?home$/.test(hay)) return true
+  return Object.values(HOME_WORDS).some((w) => new RegExp(`^${GO} ${BACK}${w}$`).test(hay))
 }

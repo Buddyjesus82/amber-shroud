@@ -124,6 +124,8 @@ export type Effect = {
   enterHub?: string
   /** The road between a home camp and the Red Maw (after Chapter One). The masked figure never meets you on it. */
   homeRoad?: boolean
+  /** v140: a walk on the hub map. The masked figure may glimpse you but never blocks the way. */
+  mapWalk?: boolean
   pressure?: number
   ticks?: number
   flash?: string
