@@ -23,6 +23,7 @@ import { isBayScene } from './content/bayHands'
 import { classifyLook, directedLookFlash, pressureLookFlash, roomLookEffect } from './look'
 import { matchCompass, travelGate } from './map'
 import { roadChoice, roadFromText } from './returnRoad'
+import { CLOSING_PRESSURE, FORCED_PRESSURE, closingNow, homeFaction, restCoolLine, restCools } from './closing'
 import {
   atGuardStation,
   atKaelenInvoice,
@@ -321,7 +322,9 @@ function hunterScene(state: GameState, walked = true): string | null {
   if (state.sceneId.startsWith('open:') || state.sceneId.startsWith('crisis:') || state.sceneId.startsWith('ch1:')) return null
   if (state.chapterId && state.hubId !== 'redmaw') return null
   const quiet = Number(state.flags.huntQuiet ?? 0)
-  const heat = huntHeat(state)
+  // Pressure 10+ at a home camp: the home hunter can find you at any Heat (a floor of 1), notice or not.
+  const closing = closingNow(state)
+  const heat = closing ? Math.max(1, huntHeat(state)) : huntHeat(state)
   let gap = huntGap(heat)
   // Vessel ground answers sooner: from Seeker Heat 2 the Threshold hunts at the 4-5 Heat pace.
   if (gap != null && heat >= 2 && seekerHuntGround(state)) gap = Math.min(gap, 6)
@@ -349,7 +352,7 @@ function hunterScene(state: GameState, walked = true): string | null {
   }
   const id = state.hubId ? map[state.hubId] : null
   if (!id || state.sceneId === id) return null
-  if (id === 'camp:hunter' && !campHeard(state)) return null
+  if (id === 'camp:hunter' && !campHeard(state) && !closing) return null
   // Spine wakes when the Strays have a reason to look (theft, debt, a run past Drennick), or a long linger.
   if (id === 'spine:hunter' && !straysHeard(state) && state.pressure < 6) return null
   return id
@@ -436,6 +439,40 @@ function downLoss(state: GameState): { item: ItemId; n: number; line: string } |
   if (half > 0) return { item: 'scrap', n: half, line: DOWN_SCRAP_LINE(half) }
   if ((state.items.vial_drop ?? 0) > 0) return { item: 'vial_drop', n: 1, line: DOWN_DROP_LINE }
   return null
+}
+
+/**
+ * v139: lingering at a home camp. Pressure 10, once: the home faction's Heat +1 (cap 8).
+ * Pressure 12, Camp-04 only, once: The Camp Closes card, on the next ordinary place screen.
+ */
+function closingBeats(next: GameState, fx: Effect, moved: boolean): GameState {
+  if (fx.startChapter || fx.enterHub || next.flags.downed || (next.health ?? 1) <= 0) return next
+  if (!closingNow(next)) return next
+  const f = homeFaction(next.hubId)
+  if (f && next.pressure >= CLOSING_PRESSURE && !next.flags.closingHeat) {
+    next.heat = { ...next.heat, [f]: Math.min(8, (next.heat[f] ?? 0) + 1) }
+    next.flags = { ...next.flags, closingHeat: true }
+  }
+  if (
+    next.hubId === 'camp04' &&
+    next.pressure >= FORCED_PRESSURE &&
+    !next.flags.campForcedSeen &&
+    (moved || (fx.ticks ?? 0) > 0 || (fx.pressure ?? 0) > 0) &&
+    !next.flags.encounterHere &&
+    !next.flags.hunterHere &&
+    !next.flags.strayHunterHere &&
+    !next.flags.maskedHere &&
+    !fx.still &&
+    !next.flags.shopShelf &&
+    !next.flags.rumorShelf &&
+    !next.sceneId.includes('kaelen') &&
+    getScene(next.sceneId).kind === 'place'
+  ) {
+    next.flags = { ...next.flags, campForcedSeen: true }
+    next.sceneId = 'camp:forced'
+    next.flash = undefined
+  }
+  return next
 }
 
 export function applyEffect(state: GameState, fx: Effect): GameState {
@@ -1011,6 +1048,7 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     for (const k of VISIT_FLAGS) delete flags[k]
     next.flags = flags
   }
+  next = closingBeats(next, fx, !!dest)
   // The masked figure: a sighting on a new scene, or a hunt he stops.
   next = maskedPass(state, next, fx)
   next = fitBag(state, next)
@@ -1631,6 +1669,13 @@ export function interpret(state: GameState, raw: string): GameState {
     )
   }
 
+  if (/^(?:rest|sleep|lie low)$/.test(bare) && restCools(state)) {
+    const row = visibleChoices(state).find((c) => c.id === 'rest')
+    if (row) {
+      if (!isChoiceOn(state, row.enable)) return withVerb(persist({ ...state, flash: row.locked, updatedAt: Date.now() }), 'rest')
+      return withVerb(applyEffect(state, row.effects), 'rest')
+    }
+  }
   if (/\b(rest|sleep|bind|bandage|heal)\b/.test(bare) && (REST_SCENES.has(state.sceneId) || (state.items.salve ?? 0) > 0)) {
     if ((state.items.salve ?? 0) > 0 && /\b(bind|bandage|salve|heal)\b/.test(bare)) {
       return withVerb(bindSalve(state), 'heal')
@@ -2010,7 +2055,33 @@ function withRest(state: GameState, rows: Choice[]): Choice[] {
     })
   }
   if (!restAllowed(state)) return rows
-  if ((state.health ?? HEALTH_MAX) >= (state.healthMax ?? HEALTH_MAX)) return rows
+  const hurt = (state.health ?? HEALTH_MAX) < (state.healthMax ?? HEALTH_MAX)
+  // v139: at a home camp, resting also lowers the home faction's Heat by 1, once every few scenes.
+  const cool = restCools(state)
+  if (!hurt && !cool) return rows
+  if (cool) {
+    const line = restCoolLine(state, cool)
+    return [
+      ...rows,
+      {
+        id: 'rest',
+        label: 'Rest',
+        sub: hurt ? '+2 Health, Heat -1. Costs 1 Sap. Heat drops once every 4 scenes.' : 'Heat -1. Costs 1 Sap. Heat drops once every 4 scenes.',
+        tone: 'quiet',
+        enable: state.flags.restedHere ? { flag: '__never__' } : { sapMin: 2 },
+        locked: state.flags.restedHere ? REST_DONE_LOCK : 'Needs: 2 Sap',
+        effects: {
+          health: hurt ? 2 : undefined,
+          sap: -1,
+          still: true,
+          pressure: 1,
+          heat: { [cool]: -1 },
+          flag: { restedHere: true, restHeatStep: Number(state.flags.sceneSteps ?? 0) },
+          flash: hurt ? `${REST_LINE}\n\n${line}` : line,
+        },
+      },
+    ]
+  }
   return [
     ...rows,
     {

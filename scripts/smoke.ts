@@ -2735,7 +2735,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v138'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v139'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -5952,7 +5952,8 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   // Rest.
   {
     const v = newGame('vessel')
-    const at = (o: Partial<GameState>) => ({ ...v, sceneId: 'thresh:court', hubId: 'threshold' as const, ...o }) as GameState
+    // v139: at Heat 0 a home Rest is the plain Rest; the Heat-cooling Rest is tested in scripts/closing.ts.
+    const at = (o: Partial<GameState>) => ({ ...v, heat: { cartel: 0, strays: 0, seekers: 0 }, sceneId: 'thresh:court', hubId: 'threshold' as const, ...o }) as GameState
     const row = (s: GameState) => GE.visibleChoices(s).find((c) => c.id === 'rest')
     let s = at({ health: 3, sap: 4 })
     s = GE.applyEffect(s, row(s)!.effects)
@@ -5965,7 +5966,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
     assert(!row(at({ sceneId: 'thresh:kaelen', health: 3, sap: 4 })) && !row(at({ sceneId: 'camp:kaelen', hubId: 'camp04', health: 3, sap: 4 })), 'v115: no Rest at Kaelen')
     assert(!GE.restAllowed(at({ health: 3, flags: { ...v.flags, encounterHere: true, encounterKind: 'husk' } })), 'v115: no Rest mid-fight')
     assert(!!row({ ...v, chapterId: 'cache-run', sceneId: 'ch1:v-hymn', health: 3, sap: 4 }), 'v115: Rest on the road')
-    assert(JSON.stringify(GE.applyEffect(at({ health: 3, sap: 4 }), row(at({ health: 3, sap: 4 }))!.effects).heat) === JSON.stringify(v.heat), 'v115: Rest leaves Heat alone')
+    assert(JSON.stringify(GE.applyEffect(at({ health: 3, sap: 4 }), row(at({ health: 3, sap: 4 }))!.effects).heat) === JSON.stringify({ cartel: 0, strays: 0, seekers: 0 }), 'v115: Rest leaves Heat alone')
   }
   // Prisoner/Outcast retest.
   {
