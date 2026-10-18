@@ -50,6 +50,10 @@ const underHull: Cond = { all: [{ flag: 'jaxsonInside' }, { flag: 'guardDown' },
 const hasWrench: Cond = { item: 'wrench' }
 const noWrench: Cond = { not: { item: 'wrench' } }
 const wrenchFree: Cond = { all: [hasWrench, { flagUnset: 'wrenchBayTrade' }] }
+/** v143: a wrench on your body is not for trade. Unequip it in Gear first. */
+export const WRENCH_WORN = 'Unequip it in Gear first.'
+const wrenchOn: Cond = { equipped: 'wrench' }
+const wrenchOff: Cond = { not: wrenchOn }
 
 // ── Shared lines and effects. Hub typed intents and the bay screens use the same ones. ──
 
@@ -134,22 +138,24 @@ const vialTags = ['steal vial', 'steal the vial', 'steal drop', 'steal the drop'
 
 const tradePike: IntentRule = {
   tags: ['trade wrench to pike', 'trade the wrench to pike', 'trade wrench pike', 'give wrench to pike'],
-  show: { all: [wrenchFree, { flagUnset: 'lashCord' }] },
+  show: { all: [wrenchFree, wrenchOff, { flagUnset: 'lashCord' }] },
   reply: TRADE_PIKE_REPLY,
   effects: TRADE_PIKE_FX,
 }
 const tradeSarn: IntentRule = {
   tags: ['trade wrench to sarn', 'trade the wrench to sarn', 'trade wrench sarn', 'give wrench to sarn'],
-  show: wrenchFree,
+  show: { all: [wrenchFree, wrenchOff] },
   reply: TRADE_SARN_REPLY,
   effects: TRADE_SARN_FX,
 }
 const tradeVetch: IntentRule = {
   tags: ['trade wrench to vetch', 'trade the wrench to vetch', 'trade wrench vetch', 'give wrench to vetch'],
-  show: wrenchFree,
+  show: { all: [wrenchFree, wrenchOff] },
   reply: TRADE_VETCH_REPLY,
   effects: TRADE_VETCH_FX,
 }
+
+const wornTrade = (tags: string[], extra: Cond[] = []): IntentRule => ({ tags, show: { all: [wrenchFree, wrenchOn, ...extra] }, reply: WRENCH_WORN, effects: {} })
 
 const pikeRules: IntentRule[] = [
   { tags: phrases(MOUTH, pike), reply: PIKE_TALK, effects: { ticks: 1 } },
@@ -159,6 +165,7 @@ const pikeRules: IntentRule[] = [
   { tags: cordTags, show: { flagUnset: 'lashCord' }, reply: CORD_REPLY, effects: CORD_FX },
   { tags: cordTags, show: { flag: 'lashCord' }, reply: 'The lash cord is already in your hand.', effects: {} },
   tradePike,
+  wornTrade(tradePike.tags, [{ flagUnset: 'lashCord' }]),
 ]
 
 const sarnRules: IntentRule[] = [
@@ -166,6 +173,7 @@ const sarnRules: IntentRule[] = [
   { tags: sarnTakeTags, show: { flagUnset: 'baySarnTook' }, reply: SARN_REPLY, effects: SARN_FX },
   { tags: phrases(TAKE, sarn), show: { flag: 'baySarnTook' }, reply: SARN_AGAIN, effects: SARN_AGAIN_FX },
   tradeSarn,
+  wornTrade(tradeSarn.tags),
 ]
 
 const vetchRules: IntentRule[] = [
@@ -173,6 +181,7 @@ const vetchRules: IntentRule[] = [
   { tags: vetchTakeTags, show: { flagUnset: 'bayVetchTook' }, reply: VETCH_REPLY, effects: VETCH_FX },
   { tags: phrases(TAKE, vetch), show: { flag: 'bayVetchTook' }, reply: VETCH_AGAIN, effects: VETCH_AGAIN_FX },
   tradeVetch,
+  wornTrade(tradeVetch.tags),
 ]
 
 const fightRule: IntentRule = {
@@ -372,6 +381,8 @@ export const pikeBayChoices: Choice[] = [
     label: 'Trade the wrench to Pike for lash cord',
     sub: 'He keeps the steel. You get the cord. He does not call the Cartel.',
     show: { all: [wrenchFree, { flagUnset: 'lashCord' }] },
+    enable: wrenchOff,
+    locked: WRENCH_WORN,
     effects: { ...TRADE_PIKE_FX, flash: TRADE_PIKE_REPLY },
   },
   back,
@@ -390,6 +401,8 @@ export const sarnBayChoices: Choice[] = [
     label: 'Trade the wrench to Sarn for scrap',
     sub: 'One scrap. A quiet trade, not a theft.',
     show: wrenchFree,
+    enable: wrenchOff,
+    locked: WRENCH_WORN,
     effects: { ...TRADE_SARN_FX, flash: TRADE_SARN_REPLY },
   },
   back,
@@ -408,6 +421,8 @@ export const vetchBayChoices: Choice[] = [
     label: 'Trade the wrench to Vetch for a Drop',
     sub: 'The vial under her skiff. She keeps the steel.',
     show: wrenchFree,
+    enable: wrenchOff,
+    locked: WRENCH_WORN,
     effects: { ...TRADE_VETCH_FX, flash: TRADE_VETCH_REPLY },
   },
   back,

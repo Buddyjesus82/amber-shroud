@@ -129,8 +129,20 @@ function clearMaskedBlock(state: GameState): GameState {
   return { ...state, flags }
 }
 
+/**
+ * v143: a Prisoner who took Jaxson's wrench and no longer has it, with no trade, clamp, sale or crisis on record, lost it to the
+ * old equipped-trade bug. Hand it back once, in the pack (not equipped). No flag is read as a deliberate loss.
+ */
+export function restoreLostWrench(state: GameState): GameState {
+  const f = state.flags
+  if (state.door !== 'prisoner' || !f.jaxsonInside || f.wrenchRestored) return state
+  if ((state.items.wrench ?? 0) > 0) return state
+  if (f.wrenchBayTrade || f.wrenchClamped || f.wrenchSold || f.buriedItem === 'wrench' || f.falseSpent === 'wrench') return state
+  return { ...state, items: { ...state.items, wrench: 1 }, flags: { ...f, wrenchRestored: true } }
+}
+
 export function repairLoadedState(state: GameState): GameState {
-  const base = clearMaskedBlock(markOldFirstDrop(migrateNimFlags(migrateEquipped(state))))
+  const base = clearMaskedBlock(markOldFirstDrop(restoreLostWrench(migrateNimFlags(migrateEquipped(state)))))
   const sceneId = repairSceneId(base)
   if (sceneId === base.sceneId && hasScene(sceneId) && sceneFitsDoor(sceneId, base.door)) {
     const scene = getScene(sceneId, base.door)

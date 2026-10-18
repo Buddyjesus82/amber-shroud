@@ -88,7 +88,7 @@ import { bagCap, bagCount, bagFree, bagLoad, bagStacks, bagUnits, disguiseActive
 import { DISGUISE_SOFTEN_NOTE, disguiseArrival, softenCartel } from './disguise'
 import { repairSceneId } from './repair'
 import { isRumorCounter, matchRumorText, rumorChoices } from './rumors'
-import { matchShopText, moneyLabel, pickPay, shopChoices, vendorFor } from './trade'
+import { matchShopText, moneyLabel, pickPay, saleableCount, shopChoices, vendorFor } from './trade'
 import type { Choice, DoorId, Effect, EquipSlot, FlagMap, GameState, ItemId, Scene } from './types'
 
 /**
@@ -219,7 +219,9 @@ function pickCrisis(state: GameState): string {
 }
 
 function spendFirst(state: GameState, order: ItemId[], flagKey: string): GameState {
-  for (const id of order) {
+  // v143: a piece on your body goes last, only if nothing spare is left to take.
+  const spare = order.filter((id) => saleableCount(state, id) > 0)
+  for (const id of [...spare, ...order.filter((x) => !spare.includes(x))]) {
     if ((state.items[id] ?? 0) > 0) {
       let next = applyDelta(state, { remove: { [id]: 1 } })
       if (id === 'vial_drop') next = applyDelta(next, { add: { vial_empty: 1 } })
