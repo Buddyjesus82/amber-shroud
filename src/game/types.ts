@@ -122,6 +122,8 @@ export type Effect = {
   travel?: string
   startChapter?: string
   enterHub?: string
+  /** The road between a home camp and the Red Maw (after Chapter One). The masked figure never meets you on it. */
+  homeRoad?: boolean
   pressure?: number
   ticks?: number
   flash?: string

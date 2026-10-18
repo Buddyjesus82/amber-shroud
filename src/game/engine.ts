@@ -22,6 +22,7 @@ import { helpRoute, HELP_HINT, HELP_TOPICS, topicText } from './helpTopics'
 import { isBayScene } from './content/bayHands'
 import { classifyLook, directedLookFlash, pressureLookFlash, roomLookEffect } from './look'
 import { matchCompass, travelGate } from './map'
+import { roadChoice, roadFromText } from './returnRoad'
 import {
   atGuardStation,
   atKaelenInvoice,
@@ -438,6 +439,10 @@ function downLoss(state: GameState): { item: ItemId; n: number; line: string } |
 }
 
 export function applyEffect(state: GameState, fx: Effect): GameState {
+  // Chapter One is done: no escape route (and no storm) can start the Cache Run again.
+  if (fx.startChapter && state.flags.chapter1Done) {
+    return persist({ ...state, flash: HUNGER_BLOCKED })
+  }
   if (fx.pay) {
     const spent = pickPay(state, fx.pay)
     if (!spent) {
@@ -622,6 +627,9 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     if (
       dest.startsWith('camp:') &&
       dest !== 'camp:gate' &&
+      // Already inside the wire (you forced the gate or were dragged in): walking the camp is not the gate again.
+      !state.sceneId.startsWith('camp:') &&
+      state.hubId !== 'camp04' &&
       state.flags.leftCamp &&
       state.flags.campLockdown &&
       !state.flags.quietFence
@@ -1075,6 +1083,12 @@ export const TOO_DRY_TO_WALK = 'You are too dry to walk that far. Drink a Drop, 
 export function travelTo(state: GameState, sceneId: string): GameState {
   if (state.sceneId === sceneId) return state
   // The Bone Wash node on the Spine map is the road out: same as typing the road.
+  if (sceneId === 'ch1:leave' && state.hubId && !state.chapterId && state.flags.chapter1Done) {
+    // Chapter One is done: the Wash is the road back to the Maw, from the Hound Sign only.
+    const road = roadChoice(state)
+    if (road && isChoiceOn(state, road.enable)) return applyEffect(state, road.effects)
+    return persist({ ...state, flash: road?.locked ?? HUNGER_BLOCKED })
+  }
   if (sceneId === 'ch1:leave' && state.hubId && !state.chapterId) {
     const enabled = visibleChoices(state).filter((c) => isChoiceOn(state, c.enable))
     const fx = hungerCommandEffect(state, enabled)
@@ -1673,6 +1687,14 @@ export function interpret(state: GameState, raw: string): GameState {
   const shown = visibleChoices(state)
   const enabled = shown.filter((c) => isChoiceOn(state, c.enable))
 
+  {
+    const road = roadFromText(state, text)
+    if (road) {
+      if (!isChoiceOn(state, road.enable)) return withVerb(persist({ ...state, flash: road.locked, updatedAt: Date.now() }), 'road')
+      return withVerb(applyEffect(state, road.effects), 'road')
+    }
+  }
+
   if (isHungerCommand(text, state.door)) {
     const fx = hungerCommandEffect(state, enabled)
     if (fx) return withVerb(applyEffect(state, fx), 'hunger')
@@ -1808,7 +1830,18 @@ function fightLostWake(state: GameState): Effect {
   return { ...fx, unsetFlag: [...(fx.unsetFlag ?? []), 'downLost'], flash: cost ? `${base}\n\n${cost}` : base }
 }
 
+/** After Chapter One the escape routes are closed: nothing at home can start the Cache Run or its storm again. */
+function noEscapeAfterChapterOne(state: GameState, rows: Choice[]): Choice[] {
+  if (!state.flags.chapter1Done) return rows
+  const kept = rows.filter((c) => !c.effects.startChapter)
+  return kept.length ? kept : rows
+}
+
 export function visibleChoices(state: GameState): Choice[] {
+  return noEscapeAfterChapterOne(state, visibleChoicesRaw(state))
+}
+
+function visibleChoicesRaw(state: GameState): Choice[] {
   if (state.flags.downed || (state.health ?? 1) <= 0) {
     return [
       {

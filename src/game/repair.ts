@@ -74,6 +74,8 @@ function inHunger(state: GameState): boolean {
 }
 
 function landed(state: GameState): boolean {
+  // Back home after Chapter One: a repair keeps you at your own camp, not at the Maw.
+  if (state.flags.chapter1Done && (state.hubId === 'camp04' || state.hubId === 'spine' || state.hubId === 'threshold')) return false
   return !!state.flags.chapter1Done || state.hubId === 'redmaw' || state.sceneId.startsWith('maw:')
 }
 
