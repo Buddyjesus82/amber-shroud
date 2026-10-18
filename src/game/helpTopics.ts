@@ -23,8 +23,8 @@ const FIGHT_SECTIONS: HelpSection[] = [
     rows: [
       { key: 'STRIKE', text: 'How hard you hit. Your Main hand weapon sets it, plus 1 for a blade or club in the Off hand. Bare hands are 1.' },
       { key: 'SHELL', text: 'How much a hit is blunted. Your worn armor pieces and a shield add up to it, up to 5. No armor is 0.' },
-      { key: 'LUCK', text: 'Every exchange adds a little luck to both sides.' },
-      { key: 'DAMAGE', text: 'Your Strike against their Shell decides how hard you hit. Their Strike against your Shell decides how hard they hit back. A landed hit always does some damage. You both hit in the same exchange.' },
+      { key: 'LUCK', text: 'Every exchange adds a little luck to your hit. Their hit is a roll from 1 up to their Strike.' },
+      { key: 'DAMAGE', text: 'Your Strike against their Shell decides how hard you hit. Their hit is a roll from 1 up to their Strike, less your Shell. A landed hit always does some damage. You both hit in the same exchange.' },
       { key: 'HEALTH', text: 'Hits take Health. You start at 6. Sap is for thirst and walking.' },
       { key: 'LOG', text: 'After each exchange the log says it plainly: "You hit the jackal for 3." and "The jackal hits you for 1." Anything that changed a hit gets its own short line, like "Feint: +2 to your hit." or "High ground: +1 to your hit."' },
       { key: 'GEAR', text: 'Main hand sets Strike; a short blade or club in the Off hand adds 1. Body, Cloak, Head, Legs, Hands, and a shield add to Shell, up to 5. A garment adds nothing in a fight.' },
@@ -71,7 +71,7 @@ const FIGHT_SECTIONS: HelpSection[] = [
       { key: 'Valerius', text: 'Guard only takes 1 off his baton.' },
       { key: 'Stray collector', text: 'Hurt, he offers to call it square: Stray Heat -1, no loot.' },
       { key: 'Nim', text: 'The Carapace hunter, at Stray Heat 4 or more on the Spine. Opens with the harpoon: +1 and you are pinned. No Run until you land a hit.' },
-      { key: 'Amber Husk', text: 'Seeker Spire construct. Strike 2, Shell 3, Health 3. No pain or fear: empty rounds do not make it leave. Guard only takes 1 off. Sand almost never works. Shatter the amber core to drop it. A Seeker with an extractor can re-charge it once unless you cut the Seeker down first. Rarely, defeating a Seeker who walked a husk drops a Seeker Extractor.' },
+      { key: 'Amber Husk', text: 'Seeker Spire construct. Strike 3, Shell 3, Health 3. No pain or fear: empty rounds do not make it leave. Guard only takes 1 off. Sand almost never works. Shatter the amber core to drop it. A Seeker with an extractor can re-charge it once unless you cut the Seeker down first. Rarely, defeating a Seeker who walked a husk drops a Seeker Extractor.' },
     ],
   },
   {
