@@ -114,7 +114,8 @@ const SPECS: Spec[] = [
     name: 'Overseer Valerius',
     strike: 4,
     shell: 3,
-    hp: 3,
+    // v145: Health 6. He is beatable, never killed: at 0 he escapes.
+    hp: 6,
     line: 'Overseer Valerius. Bald, scarred, steam baton in the fist. He came himself.',
   },
   // Spine hunter fight. Copy and stats live in content/spineHunter.ts.
@@ -295,6 +296,8 @@ export function oddsWord(percent: number): string {
 /** v141: the line added to a win that also took you to 0 Health. */
 export const MUTUAL_WIN_LINE = ' You are at 1 Health.'
 
+/** v145: Valerius at 0 Health gets away. No body, no loot. */
+export const VALERIUS_ESCAPES = 'He staggers back and is gone.'
 export const HANDLER_BEATEN = 'He goes down hard, then limps off toward the yard. Valerius will hear about this.'
 
 export function enemyHealth(kind: EncounterKind): number {
@@ -1221,6 +1224,17 @@ export function resolveEncounter(
       pressure: 1,
       sap,
       flag: { guardDown: true, ventLoot: true, encounterGrip: grip },
+    })
+  }
+
+  if (theirHp <= 0 && spec.kind === 'overseer') {
+    const outcome = `${VALERIUS_ESCAPES} Cartel Heat +2.${mutualWin ? MUTUAL_WIN_LINE : ''}`
+    return holdCard(state, spec, `${hitCard}\n\n${outcome}`, outcome, {
+      health: healthDelta,
+      sap,
+      heat: { cartel: 2 },
+      pressure: dmgIn > 0 ? 1 : undefined,
+      flag: { encounterGrip: grip, valeriusBeaten: true, valeriusCool: true, huntQuiet: 0 },
     })
   }
 
