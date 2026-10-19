@@ -71,7 +71,7 @@ import {
   wantsEncounterTrick,
   wantsEncounterHide,
   wantsEncounterSkip,
-  foeName,
+  foeWho,
   sneakSpotted,
   beginEncounter,
   ruseSeen,
@@ -1081,6 +1081,14 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   return persist(next)
 }
 
+/** v144: Gear asks once before a discard. */
+export const DISCARD_KEEP = 'Keep it'
+export function discardAsk(state: GameState, id: ItemId, all = false): string {
+  const def = ITEMS[id]
+  const n = bagCount(state, id)
+  return all && n > 1 ? `Discard the ${def?.name ?? id} ×${n}? They are gone for good.` : `Discard the ${def?.name ?? id}? It is gone for good.`
+}
+
 /** Drop one of something from the bag. Worn pieces come off in Gear first. */
 export function dropItem(state: GameState, id: ItemId): GameState {
   const def = ITEMS[id]
@@ -1088,7 +1096,9 @@ export function dropItem(state: GameState, id: ItemId): GameState {
   if ((state.items[id] ?? 0) <= wornCount(state, id)) {
     return persist({ ...state, flash: `${def.name} is on your body. Unequip it before you drop it.` })
   }
-  return applyEffect(state, { remove: { [id]: 1 }, bagRetry: !!state.flags.bagHeld, flash: `You drop the ${def.name}.` })
+  // v144: a discarded wrench is a choice, not the old bug: no free one back on the next load.
+  const mark = id === 'wrench' && (state.items.wrench ?? 0) <= 1 ? { flag: { wrenchDiscarded: true } } : {}
+  return applyEffect(state, { remove: { [id]: 1 }, ...mark, bagRetry: !!state.flags.bagHeld, flash: `You drop the ${def.name}.` })
 }
 
 /** Drop a whole stack (it frees its one bag slot). Worn pieces never stack. */
@@ -1909,12 +1919,11 @@ function fightLostWake(state: GameState): Effect {
   if (state.sceneId === 'thresh:court-guard' && (state.flags.downedKind === 'courtguard' || state.flags.crucibleGuardBeaten) && !fx.goto) {
     fx = { ...fx, goto: 'thresh:court', flag: { ...(fx.flag ?? {}), courtGuardGone: true }, flash: fx.flash ? `${fx.flash} ${DAIS_CLEAR}` : DAIS_CLEAR }
   }
-  const name = foeName(state.flags.downedKind)
-  if (!name || state.flags.downedWon) return fx
-  const lost = `Fight lost. The ${name} has moved on.`
-  const base = fx.flash ? `${lost} ${fx.flash}` : lost
-  const cost = typeof state.flags.downLost === 'string' && state.flags.downLost ? state.flags.downLost : ''
-  return { ...fx, unsetFlag: [...(fx.unsetFlag ?? []), 'downLost'], flash: cost ? `${base}\n\n${cost}` : base }
+  const who = foeWho(state.flags.downedKind)
+  if (!who || state.flags.downedWon) return { ...fx, unsetFlag: [...(fx.unsetFlag ?? []), 'downLost'] }
+  const lost = `Fight lost. ${who} has moved on.`
+  // v144: the Down screen already named what left the bag. Waking does not repeat it (it read as a second loss).
+  return { ...fx, unsetFlag: [...(fx.unsetFlag ?? []), 'downLost'], flash: fx.flash ? `${lost} ${fx.flash}` : lost }
 }
 
 /** After Chapter One the escape routes are closed: nothing at home can start the Cache Run or its storm again. */

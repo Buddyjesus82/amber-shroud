@@ -135,10 +135,11 @@ function clearMaskedBlock(state: GameState): GameState {
  */
 export function restoreLostWrench(state: GameState): GameState {
   const f = state.flags
-  if (state.door !== 'prisoner' || !f.jaxsonInside || f.wrenchRestored) return state
+  // v144: one more pass for saves that lost it to Gear's old no-confirm Discard (it left no record before v144).
+  if (state.door !== 'prisoner' || !f.jaxsonInside || f.wrenchRestoredV144) return state
   if ((state.items.wrench ?? 0) > 0) return state
-  if (f.wrenchBayTrade || f.wrenchClamped || f.wrenchSold || f.buriedItem === 'wrench' || f.falseSpent === 'wrench') return state
-  return { ...state, items: { ...state.items, wrench: 1 }, flags: { ...f, wrenchRestored: true } }
+  if (f.wrenchBayTrade || f.wrenchClamped || f.wrenchSold || f.wrenchDiscarded || f.buriedItem === 'wrench' || f.falseSpent === 'wrench') return state
+  return { ...state, items: { ...state.items, wrench: 1 }, flags: { ...f, wrenchRestored: true, wrenchRestoredV144: true } }
 }
 
 export function repairLoadedState(state: GameState): GameState {
