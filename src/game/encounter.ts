@@ -959,12 +959,14 @@ export function resolveEncounter(
     outTags.push('Numb arm: no extra force on your hit.')
   } else if (attacking && f.encounterFeint) {
     swingOut += 2
-    outTags.push('Feint: +2 to your hit.')
   }
+  const feintAdd = attacking && !f.encounterShocked && f.encounterFeint ? 2 : 0
   const outRaw = swingOut
   swingOut = Math.max(0, swingOut + ground.you)
-  if (attacking && swingOut > outRaw) outTags.push(`High ground: +${swingOut - outRaw} to your hit.`)
-  if (attacking && swingOut < outRaw) outTags.push(`Loose sand: −${outRaw - swingOut} to your hit.`)
+  // v144: a ground line names what it did to the hit you see, not to a swing the damage floor swallowed.
+  const groundDelta = exchangeDamage(c.strike, swingOut, spec.shell, floor) - exchangeDamage(c.strike, outRaw, spec.shell, floor)
+  if (attacking && groundDelta > 0) outTags.push(`High ground: +${groundDelta} to your hit.`)
+  if (attacking && groundDelta < 0) outTags.push(`Loose sand: −${-groundDelta} to your hit.`)
   if (ground.cap != null) {
     const o = swingOut
     swingOut = Math.min(ground.cap, swingOut)
@@ -982,6 +984,18 @@ export function resolveEncounter(
   }
 
   let dmgOut = attacking ? exchangeDamage(c.strike, swingOut, spec.shell, floor) : 0
+  // v144: your own 0-2 swing is a bonus like any other, so it gets its own line when it adds to the hit.
+  // Each bonus claims the points it adds, in order (swing, feint, ground), so the lines add up to the hit you see.
+  if (attacking) {
+    const own = f.encounterShocked ? 0 : c.swingOut
+    const base0 = exchangeDamage(c.strike, 0, spec.shell, floor)
+    const withSwing = exchangeDamage(c.strike, own, spec.shell, floor)
+    const withFeint = exchangeDamage(c.strike, own + feintAdd, spec.shell, floor)
+    const lead: string[] = []
+    if (withSwing > base0) lead.push(`Extra force: +${withSwing - base0} to your hit.`)
+    if (feintAdd) lead.push(withFeint > withSwing ? `Feint: +${withFeint - withSwing} to your hit.` : 'Feint: no extra on this hit.')
+    outTags.unshift(...lead)
+  }
   const hitBare = enemyHit(state, theirStrike, c.shell, floor, harpoon)
   let dmgIn = enemyHit(state, theirStrike, c.shell, floor, harpoon + ground.them)
   if (dmgIn < hitBare) inTags.push(`Sun in their eyes: you take ${hitBare - dmgIn} less damage.`)
@@ -1009,6 +1023,12 @@ export function resolveEncounter(
   }
   // Blowing sand: both hits top out at the stated cap, crits included.
   if (ground.cap != null) {
+    if (attacking && dmgOut > ground.cap) {
+      // v144: the cap is what you see, so it is the only line about your hit: no "+N" that the sand took back.
+      for (let i = outTags.length - 1; i >= 0; i--) if (/ to your hit\.$|^Feint: no extra/.test(outTags[i]) || /^Blowing sand: your/.test(outTags[i])) outTags.splice(i, 1)
+      outTags.push('Blowing sand: your big swing falls short.')
+      critOut = critOut && ground.cap > 1
+    }
     dmgOut = Math.min(ground.cap, dmgOut)
     if (dmgIn > ground.cap) inTags.push('Blowing sand: their big swing falls short.')
     dmgIn = Math.min(ground.cap, dmgIn)
@@ -1445,6 +1465,13 @@ export function healthLabel(n: number): string {
 }
 
 /** Display name of a foe kind, for lines spoken after its fight card is gone. */
+/** "The Rim cutter" / "Overseer Valerius": a named foe takes no article. */
+export function foeWho(kind: unknown): string | undefined {
+  const spec = SPECS.find((x) => x.kind === kind)
+  if (!spec) return undefined
+  return PROPER_KINDS.includes(spec.kind) ? pronounText(spec.kind, spec.name) : `The ${pronounText(spec.kind, spec.name)}`
+}
+
 export function foeName(kind: unknown): string | undefined {
   const spec = SPECS.find((x) => x.kind === kind)
   return spec ? pronounText(spec.kind, spec.name) : undefined

@@ -84,6 +84,12 @@ export function applyDelta(s: GameState, fx: Effect): GameState {
     const id = next.equipped[slot]
     if (id && !(next.items[id] ?? 0)) delete next.equipped[slot]
   }
+  // v144: a shield is off hand only. One found in the main hand moves over (or comes off if the off hand is full).
+  const main = next.equipped.weapon
+  if (main && ITEMS[main]?.offhand === 'shield') {
+    delete next.equipped.weapon
+    if (!next.equipped.offhand) next.equipped.offhand = main
+  }
   // The same piece in both hands needs two of it.
   if (next.equipped.weapon && next.equipped.weapon === next.equipped.offhand && (next.items[next.equipped.weapon] ?? 0) < 2) {
     delete next.equipped.offhand

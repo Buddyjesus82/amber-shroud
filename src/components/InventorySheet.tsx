@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { bindSalve, canCraftScavPack, canTieKnot, craftScavPack, tieKnot, drinkDrop, dropItem, dropStack, equipBlock, equipItem, sapLabel, unequipSlot } from '../game/engine'
+import { bindSalve, canCraftScavPack, canTieKnot, craftScavPack, tieKnot, discardAsk, DISCARD_KEEP, drinkDrop, dropItem, dropStack, equipBlock, equipItem, sapLabel, unequipSlot } from '../game/engine'
 import { heatFactions } from '../game/heat'
 import {
   bagCap,
@@ -314,15 +314,38 @@ function slotNote(state: GameState, id: ItemId): string {
 }
 
 function DropBtn({ state, id, onChange }: { state: GameState; id: ItemId; onChange: (s: GameState) => void }) {
+  // v144: a discard is for good, so it asks once first. In-card, no window.confirm (that no-ops on some phones).
+  const [asking, setAsking] = useState<'one' | 'all' | null>(null)
   if (bagFree(id) || bagUnits(state, id) <= 0) return null
   const stack = bagStacks(id) ? bagCount(state, id) : 0
+  if (asking) {
+    return (
+      <span className="discard-ask" data-discard-ask={id}>
+        <span className="kit-lock">{discardAsk(state, id, asking === 'all')}</span>
+        <button
+          type="button"
+          className="btn btn-tiny btn-ghost"
+          data-discard-yes={id}
+          onClick={() => {
+            setAsking(null)
+            onChange(asking === 'all' ? dropStack(state, id) : dropItem(state, id))
+          }}
+        >
+          Discard
+        </button>
+        <button type="button" className="btn btn-tiny btn-gold" data-discard-no={id} onClick={() => setAsking(null)}>
+          {DISCARD_KEEP}
+        </button>
+      </span>
+    )
+  }
   return (
     <>
-      <button type="button" className="btn btn-tiny btn-ghost" onClick={() => onChange(dropItem(state, id))}>
+      <button type="button" className="btn btn-tiny btn-ghost" data-discard={id} onClick={() => setAsking('one')}>
         Discard
       </button>
       {stack > 1 ? (
-        <button type="button" className="btn btn-tiny btn-ghost" onClick={() => onChange(dropStack(state, id))}>
+        <button type="button" className="btn btn-tiny btn-ghost" onClick={() => setAsking('all')}>
           Discard all
         </button>
       ) : null}

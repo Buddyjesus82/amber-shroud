@@ -2274,3 +2274,11 @@ h2 {
   bottom: max(8px, env(safe-area-inset-bottom));
   z-index: 3;
 }
+
+/* v144: Gear asks once before a discard. */
+.discard-ask {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
