@@ -65,7 +65,7 @@ function on(state: GameState, flag: string): boolean {
 }
 
 function proseOf(state: GameState, scene: Scene): string {
-  const person = personAtScene(scene.id)
+  const person = personAtScene(scene.id, state)
   const base = person && state.flags[person.metFlag] && person.later[scene.id] ? person.later[scene.id] : scene.body
   return resolveBody(scene, (c) => check(c, state), base)
 }

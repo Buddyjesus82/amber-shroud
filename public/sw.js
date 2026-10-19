@@ -1,4 +1,4 @@
-const CACHE = 'amber-shroud-v145'
+const CACHE = 'amber-shroud-v146'
 const SCOPE = self.location.pathname.replace(/sw\.js$/, '')
 
 self.addEventListener('install', (event) => {

@@ -83,7 +83,7 @@ export function readLateAsk(text: string): LateAsk | null {
 export function speakerOnScreen(state: GameState, scene: Scene): string | null {
   if (scene.id === 'maw:tuner' && state.door === 'prisoner') return 'Jaxson'
   if (scene.speaker) return scene.speaker
-  const p = personAtScene(scene.id)
+  const p = personAtScene(scene.id, state)
   if (p) return p.name
   // Openings and story beats name who is standing over you in the prose (Silas at First Drop).
   if (!scene.id.startsWith('open:')) return null
@@ -95,7 +95,7 @@ export function voiceOnScreen(state: GameState, scene: Scene): Voice | null {
   const name = speakerOnScreen(state, scene)
   const key = voiceKeyForSpeaker(name)
   if (key) return VOICES[key]
-  const p = personAtScene(scene.id)
+  const p = personAtScene(scene.id, state)
   if (p) return VOICES[PERSON_VOICE[p.id] ?? p.id] ?? null
   return null
 }
