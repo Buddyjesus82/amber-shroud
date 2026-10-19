@@ -355,6 +355,8 @@ function hunterScene(state: GameState, walked = true): string | null {
   const id = state.hubId ? map[state.hubId] : null
   if (!id || state.sceneId === id) return null
   if (id === 'camp:hunter' && !campHeard(state) && !closing) return null
+  // v145: beating Valerius buys VALERIUS_COOLDOWN quiet scenes with no Camp-04 hunt, at any Heat.
+  if (id === 'camp:hunter' && valeriusCooling(state)) return null
   // Spine wakes when the Strays have a reason to look (theft, debt, a run past Drennick), or a long linger.
   if (id === 'spine:hunter' && !straysHeard(state) && state.pressure < 6) return null
   return id
@@ -848,6 +850,7 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
       sybellaShadowed: from.startsWith('maw:') || next.hubId === 'redmaw' ? true : next.flags.sybellaShadowed,
       sybellaShadowStep: interrupt === 'maw:sybella-shadow' ? Number(next.flags.sceneSteps ?? 0) + (next.sceneId !== state.sceneId ? 1 : 0) : next.flags.sybellaShadowStep,
       metHandler: interrupt === 'camp:hunter' ? true : next.flags.metHandler,
+      valeriusCool: interrupt === 'camp:hunter' ? false : next.flags.valeriusCool,
       ...(interrupt === 'spine:hunter'
         ? {
             spineHunterKind: spineHunterKindAt(next.heat.strays),
@@ -1276,6 +1279,12 @@ function scavengeNotice(before: GameState, next: GameState): GameState {
 }
 
 /** Noticed with that faction's Heat already at 8: this ground's hunt comes now, talk scene or not. Ignores Health. */
+/** v145: after you beat Valerius, the Camp-04 hunt waits this many quiet scenes, whatever the Heat. */
+export const VALERIUS_COOLDOWN = 10
+export function valeriusCooling(state: Pick<GameState, 'flags'>): boolean {
+  return !!state.flags.valeriusCool && Number(state.flags.huntQuiet ?? 0) < VALERIUS_COOLDOWN
+}
+
 export function noticeHunt(state: GameState): GameState {
   if (state.flags.encounterHere || state.flags.hunterHere || state.flags.downed) return state
   if (getScene(state.sceneId).kind === 'crisis') return state
@@ -1283,6 +1292,7 @@ export function noticeHunt(state: GameState): GameState {
   if (state.sceneId === 'camp:gate') return state
   const maw = state.hubId === 'redmaw' || state.sceneId.startsWith('maw:')
   if (maw && Number(state.flags.sceneSteps ?? 0) - Number(state.flags.sybellaShadowStep ?? -99) < SYBELLA_GAP) return state
+  if ((state.hubId === 'camp04' || state.sceneId.startsWith('camp:')) && valeriusCooling(state)) return state
   const flags = {
     ...state.flags,
     hunterHere: true,

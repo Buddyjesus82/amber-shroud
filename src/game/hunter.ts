@@ -87,6 +87,8 @@ export const CAMP_HUNT_APPEND = `A muzzle knocks this ground. The Hound-handler,
 
 export const SPINE_HUNT_APPEND = SPINE_HUNTER.append
 
+/** v145: he got away from you once. The handler's grudge line, his now. */
+export const VALERIUS_GRUDGE = 'He looks at you like a bill that came due.'
 export const VALERIUS_HUNT_APPEND = `He came himself. Cartel Heat dragged Overseer Valerius out of the tower. The skiff-woman wants the other end of you. That is a lever, later, if you live.
 
 "Escape already spent a Hound. This one is my feet." You are still on this ground.`
@@ -545,7 +547,7 @@ export function sybellaShadowChoices(state: GameState): Choice[] {
 export function pressureAppend(state: GameState): string | null {
   if (isSybellaOverlay(state)) return SYBELLA_SHADOW_APPEND
   if (isCampHunt(state)) {
-    if (state.heat.cartel >= 7) return VALERIUS_HUNT_APPEND
+    if (state.heat.cartel >= 7) return state.flags.valeriusBeaten ? `${VALERIUS_HUNT_APPEND}\n\n${VALERIUS_GRUDGE}` : VALERIUS_HUNT_APPEND
     return state.flags.handlerInjured ? `${CAMP_HUNT_APPEND}\n\n${HANDLER_GRUDGE}` : CAMP_HUNT_APPEND
   }
   if (isSpineHunt(state)) return spineHunterFor(state).append
