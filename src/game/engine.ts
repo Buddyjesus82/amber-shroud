@@ -40,7 +40,7 @@ import {
   wantsCampSabotage,
   wantsDoSabotage,
 } from './campJob'
-import { markMetOnLeave, matchPersonQuery, personAtScene } from './people'
+import { jaxsonAway, markMetOnLeave, matchPersonQuery, personAtScene } from './people'
 import { downedNote, wakeEffect } from './downed'
 import { markFirstDrop } from './firstDrop'
 import { amberFindSign, downedSign, lowHealthSign, sandTouchReply } from './sandSign'
@@ -177,12 +177,15 @@ export function persist(state: GameState): GameState {
 }
 
 export function sceneOf(state: GameState): Scene {
-  return getScene(state.sceneId, state.door)
+  const scene = getScene(state.sceneId, state.door)
+  // v146: Jaxson has left Camp-04 after Chapter One; his stall has no voice.
+  if (scene.speaker === 'Jaxson Vance' && jaxsonAway(state, scene.id)) return { ...scene, speaker: undefined }
+  return scene
 }
 
 export function sceneProse(state: GameState): string {
   const scene = sceneOf(state)
-  const person = personAtScene(scene.id)
+  const person = personAtScene(scene.id, state)
   const base = person && state.flags[person.metFlag] && person.later[scene.id] ? person.later[scene.id] : scene.body
   return resolveBody(scene, (c) => check(c, state), base)
 }
@@ -209,11 +212,11 @@ import { KAELEN_INTRO, ROADS } from './roads'
 
 function pickCrisis(state: GameState): string {
   if (state.chapterId === 'cache-run') return 'crisis:dunes'
-  if (state.hubId === 'camp04') return 'crisis:camp'
+  if (state.hubId === 'camp04') return state.flags.chapter1Done ? 'crisis:camp-alone' : 'crisis:camp'
   if (state.hubId === 'spine') return 'crisis:spine'
   if (state.hubId === 'threshold') return 'crisis:thresh'
   if (state.hubId === 'redmaw') return 'crisis:maw'
-  if (state.door === 'prisoner') return 'crisis:camp'
+  if (state.door === 'prisoner') return state.flags.chapter1Done ? 'crisis:camp-alone' : 'crisis:camp'
   if (state.door === 'outcast') return 'crisis:spine'
   return 'crisis:thresh'
 }
@@ -427,7 +430,7 @@ function resolveDest(state: GameState, fx: Effect): string | undefined {
 }
 
 /** Road and Rim rescues: they only come for an empty bag, and they are not free. */
-const RESCUE_CRISES = new Set(['crisis:dunes', 'crisis:maw', 'crisis:camp', 'crisis:thresh'])
+const RESCUE_CRISES = new Set(['crisis:dunes', 'crisis:maw', 'crisis:camp', 'crisis:camp-alone', 'crisis:thresh'])
 export const AUTO_DRINK_LINE = 'The glass runs dry. Your hand finds a Drop before your knees go. Sap +3.'
 export const RESCUE_GLINT_LINE = 'The rescue is not free. A Glint is gone.'
 export const RESCUE_SCRAP_LINE = 'The rescue is not free. Scrap -1.'
@@ -1833,7 +1836,7 @@ export function interpret(state: GameState, raw: string): GameState {
     if (look) return withVerb(applyEffect(state, look.effects), look.verb)
   }
 
-  const local = matchIntent(text, [...(scene.intents ?? []), ...talkIntentsFor(scene.id)], state)
+  const local = matchIntent(text, [...(scene.intents ?? []), ...talkIntentsFor(scene.id, state)], state)
   if (local) {
     return withVerb(applyEffect(state, { ...local.effects, flash: local.reply }), verbLabel(local.tags[0]))
   }

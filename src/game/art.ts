@@ -3,7 +3,7 @@ import { STRAY_HUNTER_COVER } from './strayHunter'
 import { bayLookout } from './campJob'
 import { isCampHunt, isSpineHunt, isSybellaOverlay, isThreshHunt } from './hunter'
 import { CARAPACE_HUNTER, SPINE_HUNTER, spineHunterFor } from './content/spineHunter'
-import { PEOPLE, type PersonId } from './people'
+import { personAtScene, type PersonId } from './people'
 import type { GameState, Scene } from './types'
 
 export type CoverKey =
@@ -275,11 +275,10 @@ const PERSON_COVER: Record<PersonId, CoverKey> = {
   carapace: 'carapace',
 }
 
-function npcCover(sceneId: string): CoverKey | null {
-  for (const p of Object.values(PEOPLE)) {
-    if (p.scenes.includes(sceneId)) return PERSON_COVER[p.id]
-  }
-  return null
+function npcCover(sceneId: string, state?: GameState): CoverKey | null {
+  // v146: personAtScene drops Jaxson from Camp-04 once Chapter One is done.
+  const p = personAtScene(sceneId, state)
+  return p ? PERSON_COVER[p.id] : null
 }
 
 export function playCoverFile(key: CoverKey): string {
@@ -340,7 +339,7 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   if (id === 'thresh:sift') return 'kaelen'
   if (id === 'thresh:thalia' || id.startsWith('thresh:thalia')) return 'thalia'
 
-  const who = npcCover(id)
+  const who = npcCover(id, state)
   if (who) return who
 
   // The hotwire art is the one-time lookout beat: station down, Jaxson under his skiff.

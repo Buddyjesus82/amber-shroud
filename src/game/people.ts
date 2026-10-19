@@ -331,8 +331,15 @@ export function personById(id: PersonId): Person {
   return PEOPLE[id]
 }
 
-export function personAtScene(sceneId: string): Person | undefined {
-  return Object.values(PEOPLE).find((p) => p.scenes.includes(sceneId))
+/** v146: after Chapter One, Jaxson has left Camp-04. Nobody answers for him there. */
+export function jaxsonAway(state: Pick<GameState, 'flags'> | undefined, sceneId: string): boolean {
+  return !!state?.flags.chapter1Done && (sceneId.startsWith('camp:') || sceneId === 'crisis:camp')
+}
+
+export function personAtScene(sceneId: string, state?: Pick<GameState, 'flags'>): Person | undefined {
+  const p = Object.values(PEOPLE).find((p) => p.scenes.includes(sceneId))
+  if (p?.id === 'oiltooth' && jaxsonAway(state, sceneId)) return undefined
+  return p
 }
 
 function normalize(text: string): string {
@@ -352,7 +359,7 @@ export function isWhoWatching(text: string): boolean {
 export function personKnown(state: GameState, person: Person): boolean {
   if (state.flags[person.metFlag]) return true
   if (state.flags[`asked:${person.id}`]) return true
-  const here = personAtScene(state.sceneId)
+  const here = personAtScene(state.sceneId, state)
   if (here?.id === person.id) return true
   // The Outcast wakes at Silas's feet; he is known from the opening on.
   if (person.id === 'silas' && state.door === 'outcast') return true

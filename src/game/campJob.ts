@@ -66,7 +66,7 @@ export function atGuardStation(state: GameState): boolean {
 
 /** Accepted the inside job, station is down, Strider not hot yet. Skiff Bay is the lookout. */
 export function bayLookout(state: GameState): boolean {
-  return !!(state.flags.jaxsonInside && state.flags.guardDown && !state.flags.striderHot)
+  return !!(state.flags.jaxsonInside && state.flags.guardDown && !state.flags.striderHot && !state.flags.chapter1Done)
 }
 
 /** Cartel has a reason to look. Roam pressure alone is not one. */

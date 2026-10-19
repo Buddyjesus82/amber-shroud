@@ -14,6 +14,8 @@ function nearOssa(state: GameState): boolean {
 function nearOil(state: GameState): boolean {
   const id = state.sceneId
   const friend = !!state.flags.jaxsonInside || !!state.flags.oilRoad || !!state.flags.oilMended
+  // v146: after Chapter One he is gone from Camp-04; he only finds you on the road and at the Maw.
+  if (state.flags.chapter1Done && id.startsWith('camp:')) return false
   return friend && (id.startsWith('maw:tuner') || id.startsWith('camp:bay') || id.startsWith('camp:lean') || id === 'ch1:p-oil')
 }
 

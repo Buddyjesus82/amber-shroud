@@ -84,7 +84,7 @@ function mentioned(prose: string, person: Person): boolean {
 /** The mouth already on this beat. Help should not reintroduce them. */
 function partnerId(state: GameState, scene: Scene): string | null {
   if (scene.kind === 'talk') {
-    const who = personAtScene(scene.id)
+    const who = personAtScene(scene.id, state)
     if (who) return who.id
   }
   if (scene.speaker) {
@@ -117,7 +117,7 @@ function cardWhy(card: string): string {
 
 /** Scene talk already answers "fight", so a road-fight line would describe the wrong result. */
 function sceneSwallowsFight(scene: Scene, state: GameState): boolean {
-  const rules = [...(scene.intents ?? []), ...talkIntentsFor(scene.id)]
+  const rules = [...(scene.intents ?? []), ...talkIntentsFor(scene.id, state)]
   return rules.some((rule) => {
     if (!check(rule.show, state)) return false
     return rule.tags.some((tag) => /\b(fight|attack|stab|bite|strike)\b/i.test(tag))

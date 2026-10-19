@@ -1,5 +1,8 @@
 import { FENCE_HOLE_BACK, HEAR_PLAN, PLAN_HEARD, PLAN_UNHEARD, TAKE_INSIDE_JOB } from '../campJob'
-import type { Scene } from '../types'
+import type { Cond, Scene } from '../types'
+
+/** v146: after Chapter One, Jaxson has left Camp-04 (he rode west; you meet him again at the Maw). */
+const JAX_HERE: Cond = { flagUnset: 'chapter1Done' }
 import {
   bayHandIntents,
   pikeBayChoices,
@@ -94,7 +97,7 @@ Overseer Valerius is the shadow over the Yard. Getting out from under him is the
         id: 'job',
         label: "Jaxson's inside job is still open",
         sub: 'Go to his stall. The job is the wrench and the west steam-vent.',
-        show: { flagUnset: 'jaxsonInside' },
+        show: { all: [{ flagUnset: 'jaxsonInside' }, JAX_HERE] },
         effects: { goto: 'camp:lean', ticks: 1 },
       },
       {
@@ -102,7 +105,7 @@ Overseer Valerius is the shadow over the Yard. Getting out from under him is the
         label: 'West steam-vent. Sabotage the guard station.',
         sub: 'Jaxson named the bolt. Walk to the Guard Station and sabotage it.',
         tone: 'hunger',
-        show: { all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] },
+        show: { all: [{ all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] }, JAX_HERE] },
         effects: { goto: 'camp:guard', ticks: 1 },
       },
     ],
@@ -138,13 +141,13 @@ Overseer Valerius is the shadow over the Yard. Getting out from under him is the
       },
       {
         tags: ['sabotage', 'inside', 'wrench', 'job'],
-        show: { all: [{ flagUnset: 'jaxsonInside' }, PLAN_HEARD] },
+        show: { all: [{ all: [{ flagUnset: 'jaxsonInside' }, PLAN_HEARD] }, JAX_HERE] },
         reply: TAKE_INSIDE_JOB.flash ?? '',
         effects: { ...TAKE_INSIDE_JOB, goto: 'camp:lean' },
       },
       {
         tags: ['sabotage', 'guard', 'station', 'vent', 'bolt'],
-        show: { all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] },
+        show: { all: [{ all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] }, JAX_HERE] },
         reply: 'The job is the west steam-vent on the guard station. You walk it.',
         effects: { goto: 'camp:guard', ticks: 1 },
       },
@@ -263,7 +266,7 @@ Jaxson named a west bolt at the Guard Station. That is a different pipe. This co
         id: 'job',
         label: "Jaxson's inside job is still open",
         sub: 'This scream is weather. The west bolt is at the station.',
-        show: { flagUnset: 'jaxsonInside' },
+        show: { all: [{ flagUnset: 'jaxsonInside' }, JAX_HERE] },
         effects: { goto: 'camp:lean', ticks: 1 },
       },
       {
@@ -271,7 +274,7 @@ Jaxson named a west bolt at the Guard Station. That is a different pipe. This co
         label: 'The west bolt. Guard station.',
         sub: 'That is the job throat, not this weather.',
         tone: 'hunger',
-        show: { all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] },
+        show: { all: [{ all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] }, JAX_HERE] },
         effects: { goto: 'camp:guard', ticks: 1 },
       },
     ],
@@ -294,13 +297,13 @@ Jaxson named a west bolt at the Guard Station. That is a different pipe. This co
       },
       {
         tags: ['sabotage', 'inside', 'wrench', 'job'],
-        show: { all: [{ flagUnset: 'jaxsonInside' }, PLAN_HEARD] },
+        show: { all: [{ all: [{ flagUnset: 'jaxsonInside' }, PLAN_HEARD] }, JAX_HERE] },
         reply: TAKE_INSIDE_JOB.flash ?? '',
         effects: { ...TAKE_INSIDE_JOB, goto: 'camp:lean' },
       },
       {
         tags: ['sabotage', 'guard', 'station', 'bolt'],
-        show: { all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] },
+        show: { all: [{ all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] }, JAX_HERE] },
         reply: 'The west bolt lives on the guard station, not in this corridor.',
         effects: { goto: 'camp:guard', ticks: 1 },
       },
@@ -318,18 +321,27 @@ The bunk next to you is Jaxson Vance. He is burly and grease-stained, with a per
 People call him Oil-Tooth because of that brass jaw. He got it saving an apprentice.
 
 He is the one who can break you out. He hotwires Ironclad Skiff-Striders, and he has skimmed Oasis Sap for as long as he has repaired them. The jokes are a shield. He watches the guards more closely than he lets on.`,
+    variants: [
+      {
+        // v146: Chapter One is behind you. Jaxson left Camp-04 with it.
+        if: { flag: 'chapter1Done' },
+        mode: 'replace',
+        body: `Holding pens. Each cage is a ribcage for a laborer with no money. Yours still smells like the last storm.`,
+      },
+    ],
     choices: [
       {
         id: 'jaxson',
         label: 'Talk to Jaxson in the next bunk',
         sub: 'He hotwires Cartel runners. Ask him about Valerius — and who deals goods.',
+        show: { all: [{ flagUnset: 'guardDown' }, JAX_HERE] },
         effects: { goto: 'camp:jaxson', ticks: 1 },
       },
       {
         id: 'inside',
         label: 'Take the inside job. Take the oversized wrench.',
         sub: 'Sabotage the west steam-vent. He hotwires. Traders at the Wire sell the rest.',
-        show: { all: [{ flagUnset: 'jaxsonInside' }, PLAN_HEARD] },
+        show: { all: [{ all: [{ flagUnset: 'jaxsonInside' }, PLAN_HEARD] }, JAX_HERE] },
         effects: { ...TAKE_INSIDE_JOB, goto: 'camp:cages' },
       },
       {
@@ -371,20 +383,21 @@ He is the one who can break you out. He hotwires Ironclad Skiff-Striders, and he
         label: 'Take the wrench to the guard station',
         sub: 'West steam-vent. That was the job.',
         tone: 'hunger',
-        show: { all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] },
+        show: { all: [{ all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] }, JAX_HERE] },
         effects: { goto: 'camp:guard', ticks: 1 },
       },
       {
         id: 'bay',
         label: 'Skiff Bay. He is under a hull.',
         sub: 'The station is down. Jaxson is working a runner at the bay.',
-        show: { flag: 'guardDown' },
+        show: { all: [{ flag: 'guardDown' }, JAX_HERE] },
         effects: { goto: 'camp:bay', ticks: 1 },
       },
     ],
     intents: [
       {
         tags: ['jaxson', 'oil-tooth', 'oiltooth', 'vance', 'talk', 'hotwire'],
+        show: { all: [{ flagUnset: 'guardDown' }, JAX_HERE] },
         reply: 'The brass jaw turns. Humor as a shield. He has been waiting for the storm.',
         effects: { goto: 'camp:jaxson', ticks: 1 },
       },
@@ -401,13 +414,13 @@ He is the one who can break you out. He hotwires Ironclad Skiff-Striders, and he
       },
       {
         tags: ['sabotage', 'inside', 'wrench', 'job'],
-        show: { all: [{ flagUnset: 'jaxsonInside' }, PLAN_HEARD] },
+        show: { all: [{ all: [{ flagUnset: 'jaxsonInside' }, PLAN_HEARD] }, JAX_HERE] },
         reply: TAKE_INSIDE_JOB.flash ?? '',
         effects: { ...TAKE_INSIDE_JOB, goto: 'camp:cages' },
       },
       {
         tags: ['sabotage', 'guard', 'station', 'vent', 'bolt'],
-        show: { all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] },
+        show: { all: [{ all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] }, JAX_HERE] },
         reply: 'West steam-vent. The wrench knows the walk.',
         effects: { goto: 'camp:guard', ticks: 1 },
       },
@@ -468,48 +481,61 @@ He is the one who can break you out. He hotwires Ironclad Skiff-Striders, and he
 "Blood-Cut," he says. "A storm is coming. You sabotage the Guard Station. I hotwire a Cartel runner in Skiff Bay."`,
     variants: [
       {
-        if: PLAN_UNHEARD,
+        if: { all: [PLAN_UNHEARD, JAX_HERE] },
         mode: 'replace',
         body: `The stall is hot metal and skimmed sap. The oversized wrench sits in his fist.
 
 "Blood-Cut," he says. "A storm is coming. I have a plan to get out of here."`,
       },
       {
-        if: { flag: 'striderHot' },
+        if: { all: [{ flag: 'striderHot' }, JAX_HERE] },
         mode: 'replace',
         body: `The smirk holds. The runner is live. "Valerius can eat the dust-cloaks. We ride, or you linger like a fool. Kaelen's rumors still cost if you have not paid for a heading."`,
       },
       {
-        if: { flag: 'jaxsonInside' },
+        if: { all: [{ flag: 'jaxsonInside' }, JAX_HERE] },
         mode: 'append',
         body: `The wrench is yours now. Guard station. Then the bay. He will be under the hull.`,
       },
       {
         // He is under the hull in Skiff Bay now. One place at a time.
-        if: { all: [{ flag: 'jaxsonInside' }, { flag: 'guardDown' }, { flagUnset: 'striderHot' }] },
+        if: { all: [{ all: [{ flag: 'jaxsonInside' }, { flag: 'guardDown' }, { flagUnset: 'striderHot' }] }, JAX_HERE] },
         mode: 'replace',
         body: `The stall is cold metal now. The wrench is gone, and so is Jaxson. He is in Skiff Bay, under the hull.`,
+      },
+      {
+        // v146: Chapter One is behind you. Jaxson left Camp-04 with it.
+        if: { flag: 'chapter1Done' },
+        mode: 'replace',
+        body: `The stall is cold metal now. The wrench is gone, and so is Jaxson.`,
       },
     ],
     choices: [
       {
+        // v146: the stall is empty after Chapter One. Same exit line as the camp's return road.
+        id: 'pens',
+        label: 'Back to the pens',
+        show: { flag: 'chapter1Done' },
+        effects: { goto: 'camp:cages', ticks: 1 },
+      },
+      {
         id: 'inside',
         label: 'Take the inside job. Take the oversized wrench.',
         sub: 'Sabotage the guard station. He hotwires. A trader at the Wire sells the rest.',
-        show: { all: [{ flagUnset: 'jaxsonInside' }, PLAN_HEARD] },
+        show: { all: [{ all: [{ flagUnset: 'jaxsonInside' }, PLAN_HEARD] }, JAX_HERE] },
         effects: { ...TAKE_INSIDE_JOB, goto: 'camp:lean' },
       },
       {
         id: 'plan',
         label: 'Ask about his plan',
-        show: PLAN_UNHEARD,
+        show: { all: [PLAN_UNHEARD, JAX_HERE] },
         effects: { ...HEAR_PLAN },
       },
       {
         id: 'talk',
         label: 'Talk to Jaxson',
         sub: 'Valerius. The way out.',
-        show: { not: { all: [{ flag: 'jaxsonInside' }, { flag: 'guardDown' }, { flagUnset: 'striderHot' }] } },
+        show: { all: [{ not: { all: [{ flag: 'jaxsonInside' }, { flag: 'guardDown' }, { flagUnset: 'striderHot' }] } }, JAX_HERE] },
         effects: { goto: 'camp:jaxson', ticks: 1, pressure: 1 },
       },
       {
@@ -517,20 +543,20 @@ He is the one who can break you out. He hotwires Ironclad Skiff-Striders, and he
         label: 'West steam-vent. Sabotage the station.',
         sub: 'Jaxson named the bolt. The wrench knows it.',
         tone: 'hunger',
-        show: { all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] },
+        show: { all: [{ all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] }, JAX_HERE] },
         effects: { goto: 'camp:guard', ticks: 1 },
       },
       {
         id: 'bay',
         label: 'The bay. He is under the hull.',
-        show: { all: [{ flag: 'guardDown' }, { flagUnset: 'striderHot' }] },
+        show: { all: [{ all: [{ flag: 'guardDown' }, { flagUnset: 'striderHot' }] }, JAX_HERE] },
         effects: { goto: 'camp:bay', ticks: 1 },
       },
       {
         id: 'ride',
         label: 'Ride the hotwired runner into the dunes',
         tone: 'hunger',
-        show: { all: [{ flag: 'striderHot' }, { flag: 'hungerKnown' }] },
+        show: { all: [{ all: [{ flag: 'striderHot' }, { flag: 'hungerKnown' }] }, JAX_HERE] },
         effects: {
           startChapter: 'cache-run',
           goto: 'ch1:leave',
@@ -542,7 +568,7 @@ He is the one who can break you out. He hotwires Ironclad Skiff-Striders, and he
         id: 'ride-blind',
         label: 'Ride anyway — no heading',
         tone: 'danger',
-        show: { all: [{ flag: 'striderHot' }, { flagUnset: 'hungerKnown' }] },
+        show: { all: [{ all: [{ flag: 'striderHot' }, { flagUnset: 'hungerKnown' }] }, JAX_HERE] },
         effects: {
           flag: { hungerKnown: true, cacheBlind: true },
           startChapter: 'cache-run',
@@ -555,40 +581,43 @@ He is the one who can break you out. He hotwires Ironclad Skiff-Striders, and he
     intents: [
       {
         tags: ['hotwire', 'strider', 'runner', 'inside', 'wrench', 'job'],
-        show: { all: [{ flagUnset: 'jaxsonInside' }, PLAN_HEARD] },
+        show: { all: [{ all: [{ flagUnset: 'jaxsonInside' }, PLAN_HEARD] }, JAX_HERE] },
         reply: TAKE_INSIDE_JOB.flash ?? '',
         effects: { ...TAKE_INSIDE_JOB, goto: 'camp:lean' },
       },
       {
         tags: ['sabotage', 'guard', 'station', 'vent', 'bolt', 'escape', 'break'],
-        show: { all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] },
+        show: { all: [{ all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] }, JAX_HERE] },
         reply: 'The brass jaw grins. West steam-vent. Then the bay.',
         effects: { goto: 'camp:guard', ticks: 1 },
       },
       {
         tags: ['hotwire', 'strider', 'runner', 'talk'],
-        show: { flag: 'jaxsonInside' },
+        show: { all: [{ flag: 'jaxsonInside' }, JAX_HERE] },
         reply: 'The brass jaw grins. He has been waiting to spend this job.',
         effects: { goto: 'camp:jaxson', ticks: 1 },
       },
       {
         tags: ['plan', 'what plan', 'ask about plan', 'his plan', 'your plan', 'the plan', 'way out', 'get out'],
-        show: PLAN_UNHEARD,
+        show: { all: [PLAN_UNHEARD, JAX_HERE] },
         reply: 'He grins around the brass. "Glad you asked."',
         effects: { ...HEAR_PLAN },
       },
       {
         tags: ['cache', 'kallik', 'maw', 'hunger', 'rumor', 'news'],
+        show: JAX_HERE,
         reply: '"That is Kaelen the Sifter. The Wire. Rumors for Glints. I hotwire. Do not mix the jobs."',
         effects: { flag: { kaelenKnown: true }, goto: 'camp:wire' },
       },
       {
         tags: ['valerius', 'overseer', 'tower', 'hound'],
+        show: JAX_HERE,
         reply: 'You sit. The name Valerius does something ugly to the air.',
         effects: { goto: 'camp:jaxson', ticks: 1 },
       },
       {
         tags: ['ask', 'speak'],
+        show: JAX_HERE,
         reply: 'He makes a space that is not quite hospitality.',
         effects: { goto: 'camp:jaxson', ticks: 1 },
       },
@@ -606,7 +635,7 @@ He is the one who can break you out. He hotwires Ironclad Skiff-Striders, and he
 He leans in, brass ticking. "I have a plan to get out of here."`,
     variants: [
       {
-        if: PLAN_HEARD,
+        if: { all: [PLAN_HEARD, JAX_HERE] },
         mode: 'replace',
         body: `Jaxson drops his voice under the steam. "When the storm hits, you sabotage the guard station. I hotwire a Cartel runner in Skiff Bay. We leave the pens."
 
@@ -617,20 +646,20 @@ He taps the brass. "If you need supplies, see Kaelen the Sifter at the Wire. Jit
       {
         id: 'plan',
         label: 'Ask about his plan',
-        show: PLAN_UNHEARD,
+        show: { all: [PLAN_UNHEARD, JAX_HERE] },
         effects: { ...HEAR_PLAN },
       },
       {
         id: 'inside',
         label: 'Take the inside job. Take the oversized wrench.',
         sub: 'Sabotage the guard station. He hotwires. A trader at the Wire sells the rest.',
-        show: { all: [{ flagUnset: 'jaxsonInside' }, PLAN_HEARD] },
+        show: { all: [{ all: [{ flagUnset: 'jaxsonInside' }, PLAN_HEARD] }, JAX_HERE] },
         effects: { ...TAKE_INSIDE_JOB, goto: 'camp:lean' },
       },
       {
         id: 'ask-guard',
         label: "Ask where the guard station is",
-        show: { all: [PLAN_HEARD, { flagUnset: 'jaxAskGuard' }] },
+        show: { all: [{ all: [PLAN_HEARD, { flagUnset: 'jaxAskGuard' }] }, JAX_HERE] },
         effects: {
           flag: { jaxAskGuard: true },
           ticks: 1,
@@ -640,7 +669,7 @@ He taps the brass. "If you need supplies, see Kaelen the Sifter at the Wire. Jit
       {
         id: 'ask-bay',
         label: 'Ask where Skiff Bay is',
-        show: { all: [PLAN_HEARD, { flagUnset: 'jaxAskBay' }] },
+        show: { all: [{ all: [PLAN_HEARD, { flagUnset: 'jaxAskBay' }] }, JAX_HERE] },
         effects: {
           flag: { jaxAskBay: true },
           ticks: 1,
@@ -650,7 +679,7 @@ He taps the brass. "If you need supplies, see Kaelen the Sifter at the Wire. Jit
       {
         id: 'ask-trust',
         label: 'Ask why he trusts you',
-        show: { all: [PLAN_HEARD, { flagUnset: 'jaxAskTrust' }] },
+        show: { all: [{ all: [PLAN_HEARD, { flagUnset: 'jaxAskTrust' }] }, JAX_HERE] },
         effects: {
           flag: { jaxAskTrust: true },
           ticks: 1,
@@ -660,7 +689,8 @@ He taps the brass. "If you need supplies, see Kaelen the Sifter at the Wire. Jit
       {
         id: 'have',
         label: 'Confirm the job',
-        show: { flag: 'jaxsonInside' },
+        // v146: the job is done once the station is down.
+        show: { all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }, JAX_HERE] },
         effects: {
           ticks: 1,
           pressure: 1,
@@ -673,20 +703,20 @@ He taps the brass. "If you need supplies, see Kaelen the Sifter at the Wire. Jit
         label: 'West steam-vent. Sabotage now.',
         sub: 'Guard station. That was the job.',
         tone: 'hunger',
-        show: { all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] },
+        show: { all: [{ all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] }, JAX_HERE] },
         effects: { goto: 'camp:guard', ticks: 1 },
       },
       {
         id: 'hull',
         label: 'The bay. He is under the hull.',
-        show: { all: [{ flag: 'guardDown' }, { flagUnset: 'striderHot' }] },
+        show: { all: [{ all: [{ flag: 'guardDown' }, { flagUnset: 'striderHot' }] }, JAX_HERE] },
         effects: { goto: 'camp:bay', ticks: 1 },
       },
       {
         id: 'ride',
         label: 'Ride the runner. Leave Valerius behind.',
         tone: 'hunger',
-        show: { all: [{ flag: 'striderHot' }, { flag: 'hungerKnown' }] },
+        show: { all: [{ all: [{ flag: 'striderHot' }, { flag: 'hungerKnown' }] }, JAX_HERE] },
         effects: {
           startChapter: 'cache-run',
           goto: 'ch1:leave',
@@ -698,7 +728,7 @@ He taps the brass. "If you need supplies, see Kaelen the Sifter at the Wire. Jit
         id: 'ride-blind',
         label: 'Ride anyway — no heading',
         tone: 'danger',
-        show: { all: [{ flag: 'striderHot' }, { flagUnset: 'hungerKnown' }] },
+        show: { all: [{ all: [{ flag: 'striderHot' }, { flagUnset: 'hungerKnown' }] }, JAX_HERE] },
         effects: {
           flag: { hungerKnown: true, cacheBlind: true },
           startChapter: 'cache-run',
@@ -722,38 +752,38 @@ He taps the brass. "If you need supplies, see Kaelen the Sifter at the Wire. Jit
     intents: [
       {
         tags: ['plan', 'what plan', 'ask about plan', 'his plan', 'your plan', 'the plan', 'way out', 'get out', 'escape'],
-        show: PLAN_UNHEARD,
+        show: { all: [PLAN_UNHEARD, JAX_HERE] },
         reply: 'He grins around the brass. "Glad you asked."',
         effects: { ...HEAR_PLAN },
       },
       {
         tags: ['plan', 'what plan', 'his plan', 'your plan', 'the plan'],
-        show: PLAN_HEARD,
+        show: { all: [PLAN_HEARD, JAX_HERE] },
         reply: '"Storm hits. You sabotage the guard station. I hotwire a Cartel runner in Skiff Bay. We leave the pens. Supplies are Kaelen\'s, at the Wire."',
         effects: { ticks: 1 },
       },
       {
         tags: ['beat valerius', 'beat him', 'how to beat', 'overseer'],
-        show: PLAN_UNHEARD,
+        show: { all: [PLAN_UNHEARD, JAX_HERE] },
         reply: '"You do not beat him in a conversation. You get out from under him. I have a plan for that. Ask."',
         effects: { ticks: 1 },
       },
       {
         tags: ['beat valerius', 'beat him', 'how to beat', 'overseer'],
-        show: PLAN_HEARD,
+        show: { all: [PLAN_HEARD, JAX_HERE] },
         reply:
           '"You do not beat him in a conversation. You sabotage his station, you steal his runner, you put dunes between his shock baton and your back. First major victory. After that he is still a shadow. Shadows follow."',
         effects: { ticks: 1 },
       },
       {
         tags: ['hotwire', 'strider', 'runner', 'inside', 'wrench', 'job'],
-        show: { all: [{ flagUnset: 'jaxsonInside' }, PLAN_HEARD] },
+        show: { all: [{ all: [{ flagUnset: 'jaxsonInside' }, PLAN_HEARD] }, JAX_HERE] },
         reply: TAKE_INSIDE_JOB.flash ?? '',
         effects: { ...TAKE_INSIDE_JOB, goto: 'camp:lean' },
       },
       {
         tags: ['sabotage', 'guard', 'station', 'vent', 'bolt'],
-        show: { all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] },
+        show: { all: [{ all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] }, JAX_HERE] },
         reply: 'The brass jaw grins. Guard station. Then the bay.',
         effects: { goto: 'camp:guard', ticks: 1 },
       },
@@ -805,7 +835,7 @@ He taps the brass. "If you need supplies, see Kaelen the Sifter at the Wire. Jit
     body: `"I skim Oasis Sap. Lifetime habit. I look like a charity?" The brass jaw ticks. "Sabotage the station first. I hotwire second. Then this Drop might change pockets. Kaelen will sell you one for scrap if you are impatient. That is a different job."`,
     variants: [
       {
-        if: PLAN_UNHEARD,
+        if: { all: [PLAN_UNHEARD, JAX_HERE] },
         mode: 'replace',
         body: `"I skim Oasis Sap. Lifetime habit. I look like a charity?" The brass jaw ticks. "Hear my plan first. Help me with it, and this Drop might change pockets."`,
       },
@@ -814,25 +844,25 @@ He taps the brass. "If you need supplies, see Kaelen the Sifter at the Wire. Jit
       {
         id: 'plan',
         label: 'Ask about his plan',
-        show: PLAN_UNHEARD,
+        show: { all: [PLAN_UNHEARD, JAX_HERE] },
         effects: { ...HEAR_PLAN },
       },
       {
         id: 'agree',
         label: 'Take the inside job first',
-        show: { all: [{ flagUnset: 'jaxsonInside' }, PLAN_HEARD] },
+        show: { all: [{ all: [{ flagUnset: 'jaxsonInside' }, PLAN_HEARD] }, JAX_HERE] },
         effects: { ...TAKE_INSIDE_JOB, goto: 'camp:lean' },
       },
       {
         id: 'station',
         label: 'Fine. The station first.',
-        show: { all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] },
+        show: { all: [{ all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] }, JAX_HERE] },
         effects: { goto: 'camp:guard', ticks: 1 },
       },
       {
         id: 'paid',
         label: 'The station is down. The runner is live. Pay up.',
-        show: { all: [{ flag: 'striderHot' }, { flagUnset: 'jaxsonDropGiven' }] },
+        show: { all: [{ all: [{ flag: 'striderHot' }, { flagUnset: 'jaxsonDropGiven' }] }, JAX_HERE] },
         effects: {
           add: { vial_drop: 1 },
           goto: 'camp:lean',
@@ -1022,7 +1052,7 @@ Ironclad Skiff-Striders patrol the far side of this line. Red Maw is past it. So
       {
         id: 'bay',
         label: 'The bay. He is under the hull.',
-        show: { all: [{ flag: 'guardDown' }, { flagUnset: 'striderHot' }] },
+        show: { all: [{ all: [{ flag: 'guardDown' }, { flagUnset: 'striderHot' }] }, JAX_HERE] },
         effects: { goto: 'camp:bay', ticks: 1 },
       },
       {
@@ -1071,33 +1101,33 @@ The storm is a clock. You sabotage the west steam-vent here. Jaxson hotwires a C
         id: 'inside',
         label: 'Take Jaxson\'s inside job',
         sub: 'Take the wrench. You crack the west steam-vent. He still hotwires the runner.',
-        show: { flagUnset: 'jaxsonInside' },
+        show: { all: [{ flagUnset: 'jaxsonInside' }, JAX_HERE] },
         effects: { ...TAKE_INSIDE_JOB, goto: 'camp:guard' },
       },
       {
         id: 'sabotage',
         label: 'Sabotage the west steam-vent',
         sub: 'The job Jaxson gave you. The wrench on a bolt Valerius cares about. Costs sap.',
-        show: { all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] },
+        show: { all: [{ all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] }, JAX_HERE] },
         effects: { goto: 'camp:sabotage', ticks: 1, sap: -1 },
       },
     ],
     intents: [
       {
         tags: ['study', 'weakness', 'weaknesses', 'inspect'],
-        show: { flagUnset: 'jaxsonInside' },
+        show: { all: [{ flagUnset: 'jaxsonInside' }, JAX_HERE] },
         reply: "Security weaknesses are Jaxson's religion. Take the job — here, or back at the stall — and the west bolt opens.",
         effects: { ticks: 1 },
       },
       {
         tags: ['inside', 'wrench', 'job', 'jaxson'],
-        show: { flagUnset: 'jaxsonInside' },
+        show: { all: [{ flagUnset: 'jaxsonInside' }, JAX_HERE] },
         reply: TAKE_INSIDE_JOB.flash ?? '',
         effects: { ...TAKE_INSIDE_JOB, goto: 'camp:guard' },
       },
       {
         tags: ['sabotage', 'vent', 'bolt', 'crack', 'bleed'],
-        show: { all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] },
+        show: { all: [{ all: [{ flag: 'jaxsonInside' }, { flagUnset: 'guardDown' }] }, JAX_HERE] },
         reply: 'West steam-vent. The wrench knows the bolt.',
         effects: { goto: 'camp:sabotage', ticks: 1, sap: -1 },
       },
@@ -1187,7 +1217,7 @@ A vent patrol is in place: one clerk, shock baton, eyes on the joint. Unwatched 
 Pike works the north bay on your left, Sarn counts bolts in the east bay ahead, and Vetch welds in the south bay on your right. Jaxson's skiff sits in the center bay with nobody at it. Ask nicely and you get a short answer. Reach for their stuff and you get a bolt or a shout.`,
     variants: [
       {
-        if: { flag: 'striderHot' },
+        if: { all: [{ flag: 'striderHot' }, JAX_HERE] },
         mode: 'append',
         body: `Jaxson's skiff in the center bay is hotwired and ticking. The dunes are open if you ride it.`,
       },
@@ -1197,7 +1227,7 @@ Pike works the north bay on your left, Sarn counts bolts in the east bay ahead, 
         body: `Black smoke is still coming off the guard station behind you. Patrol is late.`,
       },
       {
-        if: { all: [{ flag: 'jaxsonInside' }, { flag: 'guardDown' }, { flagUnset: 'striderHot' }] },
+        if: { all: [{ all: [{ flag: 'jaxsonInside' }, { flag: 'guardDown' }, { flagUnset: 'striderHot' }] }, JAX_HERE] },
         mode: 'replace',
         body: `Black smoke is coming off the guard station behind you. Patrol is late.
 
@@ -1206,6 +1236,14 @@ Jaxson Vance is on his back under his skiff in the center bay, wrench in the joi
 You are the lookout. "Cover me," he says. "Valerius eats dust if we are fast."
 
 Pike, Sarn, and Vetch keep their heads down in their own bays.`,
+      },
+      {
+        // v146: Chapter One is behind you. Jaxson left Camp-04 with it.
+        if: { flag: 'chapter1Done' },
+        mode: 'replace',
+        body: `Skiff Bay stinks of diesel and hot sand. Cartel barges sit low on their runners, harpoon turrets turned to face the dunes, their stacks coughing black smoke and blue sparks. A Stray Skiff-Strider idles under a patched tarp with its crew pretending not to watch you. At the far end of the dock, apart from everything else, sits a skiff painted bone-white. Something hangs from its crane, wrapped in amber.
+
+Pike works the north bay on your left, Sarn counts bolts in the east bay ahead, and Vetch welds in the south bay on your right. Ask nicely and you get a short answer. Reach for their stuff and you get a bolt or a shout.`,
       },
     ],
     choices: [
@@ -1247,7 +1285,7 @@ Pike, Sarn, and Vetch keep their heads down in their own bays.`,
         id: 'hotwire',
         label: 'Cover Jaxson while he hotwires',
         sub: 'He is the inside man. You are the extra pair of hands.',
-        show: { all: [{ flag: 'jaxsonInside' }, { flag: 'guardDown' }, { flagUnset: 'striderHot' }] },
+        show: { all: [{ all: [{ flag: 'jaxsonInside' }, { flag: 'guardDown' }, { flagUnset: 'striderHot' }] }, JAX_HERE] },
         effects: {
           flag: { striderHot: true },
           heat: { cartel: 1 },
@@ -1261,7 +1299,7 @@ Pike, Sarn, and Vetch keep their heads down in their own bays.`,
         id: 'ride',
         label: 'Ride the runner into the dunes',
         tone: 'hunger',
-        show: { all: [{ flag: 'striderHot' }, { flag: 'hungerKnown' }] },
+        show: { all: [{ all: [{ flag: 'striderHot' }, { flag: 'hungerKnown' }] }, JAX_HERE] },
         effects: {
           startChapter: 'cache-run',
           goto: 'ch1:leave',
@@ -1273,7 +1311,7 @@ Pike, Sarn, and Vetch keep their heads down in their own bays.`,
         id: 'ride-blind',
         label: 'Ride anyway — no heading',
         tone: 'danger',
-        show: { all: [{ flag: 'striderHot' }, { flagUnset: 'hungerKnown' }] },
+        show: { all: [{ all: [{ flag: 'striderHot' }, { flagUnset: 'hungerKnown' }] }, JAX_HERE] },
         effects: {
           flag: { hungerKnown: true, cacheBlind: true },
           startChapter: 'cache-run',
@@ -1379,7 +1417,7 @@ He hunts Sap thieves and unpermitted relic hoarders. You look like both. First m
       {
         id: 'ride',
         label: 'Run for Jaxson\'s hotwired runner',
-        show: { flag: 'striderHot' },
+        show: { all: [{ flag: 'striderHot' }, JAX_HERE] },
         tone: 'hunger',
         effects: {
           startChapter: 'cache-run',

@@ -46,7 +46,7 @@ export function isBayScene(id: string): boolean {
   return BAY_SCENES.includes(id)
 }
 
-const underHull: Cond = { all: [{ flag: 'jaxsonInside' }, { flag: 'guardDown' }, { flagUnset: 'striderHot' }] }
+const underHull: Cond = { all: [{ flag: 'jaxsonInside' }, { flag: 'guardDown' }, { flagUnset: 'striderHot' }, { flagUnset: 'chapter1Done' }] }
 const hasWrench: Cond = { item: 'wrench' }
 const noWrench: Cond = { not: { item: 'wrench' } }
 const wrenchFree: Cond = { all: [hasWrench, { flagUnset: 'wrenchBayTrade' }] }
@@ -199,7 +199,7 @@ const oilRules: IntentRule[] = [
   },
   {
     tags: phrases(MOUTH, oil).concat(oil),
-    show: { not: underHull },
+    show: { all: [{ not: underHull }, { flagUnset: 'chapter1Done' }] },
     reply: 'The brass jaw is at the stall, or the next bunk.',
     effects: { ticks: 1 },
   },
@@ -215,7 +215,7 @@ export const bayWalkIntents: IntentRule[] = [
   },
   {
     tags: walkPhrases(['center bay', 'centre bay', "jaxson's skiff", 'middle bay']),
-    show: { not: underHull },
+    show: { all: [{ not: underHull }, { flagUnset: 'chapter1Done' }] },
     reply: "Jaxson's skiff stands in the center bay with nobody at it.",
     effects: {},
   },

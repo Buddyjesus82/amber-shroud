@@ -1,7 +1,7 @@
 import { PERSON_VOICE, pickLine, VOICES, voiceForSpeaker } from './voices'
 import { HEAR_PLAN, PLAN_HEARD, PLAN_UNHEARD } from './campJob'
-import { personAtScene, type PersonId } from './people'
-import type { IntentRule } from './types'
+import { jaxsonAway, personAtScene, type PersonId } from './people'
+import type { GameState, IntentRule } from './types'
 
 const TALK = ['ask', 'talk', 'hello', 'hi', 'hey', 'say', 'tell', 'speak', 'greet']
 const HELP = ['help', 'aid', 'favor']
@@ -595,7 +595,8 @@ const BY_PERSON: Record<PersonId, IntentRule[]> = {
   ],
 }
 
-export function talkIntentsFor(sceneId: string): IntentRule[] {
+export function talkIntentsFor(sceneId: string, state?: Pick<GameState, 'flags'>): IntentRule[] {
+  if (jaxsonAway(state, sceneId) && match(sceneId, ['camp:jaxson', 'camp:lean', 'camp:cages'])) return []
   if (sceneId === 'ch1:p-oil') return oiltoothRoad
   if (sceneId === 'ch1:v-zafir') return zafirCup
   const here = personAtScene(sceneId)

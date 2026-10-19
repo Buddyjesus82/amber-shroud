@@ -36,6 +36,30 @@ You go to your knees in resin-slick dust. Jaxson is suddenly there — burly, gr
     ],
   },
   {
+    // v146: after Chapter One Jaxson is gone from Camp-04. Nobody is named; the lines are the Spine's.
+    id: 'crisis:camp-alone',
+    hubId: 'camp04',
+    kind: 'crisis',
+    title: 'Empty',
+    body: `Sap hits zero like a light going out.
+
+You wake with sand in your teeth and a Drop in your vial you did not earn. Whoever poured it did not stay to be thanked.`,
+    choices: [
+      {
+        id: 'up',
+        label: 'Swallow. Get up.',
+        effects: {
+          sap: 3,
+          flag: { crisisCamp: true },
+          pressure: 2,
+          returnCrisisFrom: true,
+          goto: 'camp:cages',
+          flash: 'Noon returns. So does thirst, on a delay.',
+        },
+      },
+    ],
+  },
+  {
     id: 'crisis:spine',
     hubId: 'spine',
     kind: 'crisis',
