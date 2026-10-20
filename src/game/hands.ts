@@ -29,14 +29,24 @@ export function snapshot(state: GameState): GameState {
   return { ...rest, flags, hands: HANDS_MAX }
 }
 
+/** v149: flags that mark a finished chapter, in order. Add a chapter's flag here and it gets a checkpoint and a refill. */
+export const CHAPTER_DONE_FLAGS = ['chapter1Done'] as const
+
+/** 0 = Chapter One, 1 = Chapter Two, ... */
+export function chapterIndex(state: Pick<GameState, 'flags'>): number {
+  let n = 0
+  for (const f of CHAPTER_DONE_FLAGS) if (state.flags[f]) n++
+  return n
+}
+
 /**
- * Keep the checkpoint current: Chapter One starts at the door's opening; Chapter Two starts the first
- * time Chapter One is done. Old saves get one the first time they are written.
+ * Keep the checkpoint current: Chapter One starts at the door's opening; each later chapter starts the first
+ * time the chapter before it is done. A new chapter refills the hands (v149). Old saves get one on first write.
  */
 export function withCheckpoint(state: GameState, opening: () => GameState): GameState {
   const cp = state.checkpoint
-  if (state.flags.chapter1Done && !state.flags.runOver && (!cp || !cp.flags.chapter1Done)) {
-    return { ...state, checkpoint: snapshot(state) }
+  if (!state.flags.runOver && chapterIndex(state) > 0 && (!cp || chapterIndex(cp) < chapterIndex(state))) {
+    return { ...state, hands: HANDS_MAX, checkpoint: snapshot(state) }
   }
   if (!cp) return { ...state, checkpoint: snapshot(opening()) }
   return state
