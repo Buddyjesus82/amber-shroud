@@ -83,8 +83,8 @@ const HOLD_RESULTS = true
 /** The held screen's Continue: one fixed id, never shared with a scene choice. */
 export const HELD_CONTINUE_KEY = 'held-continue'
 
-/** v147: a cover that fails to load (flaky network, cache miss) falls back once to the hub cover, never a broken icon. */
-const COVER_FALLBACK = `${import.meta.env.BASE_URL}covers/${playCoverFile('camp04')}`
+/** v147: a cover that fails to load (flaky network, cache miss) falls back once to the Blood Yard cover, never a broken icon. */
+const COVER_FALLBACK = `${import.meta.env.BASE_URL}covers/${playCoverFile('yard')}`
 function coverFallback(e: { currentTarget: HTMLImageElement }) {
   const img = e.currentTarget
   if (img.dataset.fallback) return
