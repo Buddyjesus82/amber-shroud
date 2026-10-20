@@ -2282,3 +2282,10 @@ h2 {
   align-items: center;
   gap: 0.35rem;
 }
+
+/* v148: Hands — get-ups left this chapter. */
+.hands-pips {
+  letter-spacing: 0.15em;
+  font-size: 0.8rem;
+  line-height: 1;
+}

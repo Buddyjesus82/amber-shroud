@@ -2,7 +2,7 @@ import { knotWorn } from './kit'
 import type { Effect, GameState } from './types'
 
 /** Ossa's Knot worn: she finds you once, the way she said she would. */
-function knotRescue(state: GameState): boolean {
+export function knotRescue(state: GameState): boolean {
   return knotWorn(state) && !state.flags.knotRescued
 }
 
