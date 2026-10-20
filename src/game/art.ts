@@ -9,7 +9,6 @@ import type { GameState, Scene } from './types'
 export type CoverKey =
   | 'world'
   | 'hunger'
-  | 'camp04'
   | 'spine'
   | 'threshold'
   | 'valerius'
@@ -77,7 +76,6 @@ export type CoverKey =
 const FILES: Record<CoverKey, string> = {
   world: 'world.jpg',
   hunger: 'hunger.png',
-  camp04: 'camp04.jpg',
   spine: 'spine.jpg',
   threshold: 'threshold.jpg',
   valerius: 'valerius.jpg',
@@ -153,7 +151,6 @@ const FILES: Record<CoverKey, string> = {
 export const COVER_BAND: Record<CoverKey, [number, number]> = {
   world: [0.05, 0.75],
   hunger: [0.05, 0.75],
-  camp04: [0.1, 0.8],
   spine: [0.15, 0.85],
   threshold: [0.1, 0.85],
   valerius: [0.05, 0.7],
@@ -287,14 +284,14 @@ function npcCover(sceneId: string, state?: GameState): CoverKey | null {
 }
 
 export function playCoverFile(key: CoverKey): string {
-  // v147: never an empty src. An unknown key gets the camp cover.
-  return FILES[key] ?? FILES.camp04
+  // v147: never an empty src. v151: an unknown key gets the Blood Yard, not the old fence cover.
+  return FILES[key] ?? FILES.yard
 }
 
 /** Neutral fight cover: the hub's land, or the door's road on the Cache Run and at the Maw. */
 function fightGround(state: GameState, scene: Pick<Scene, 'id' | 'chapterId' | 'hubId'>): CoverKey {
   const hub = scene.chapterId === 'cache-run' || state.chapterId === 'cache-run' ? undefined : (scene.hubId ?? state.hubId)
-  if (hub === 'camp04') return 'camp04'
+  if (hub === 'camp04') return 'yard'
   if (hub === 'spine') return 'spine'
   if (hub === 'threshold') return 'threshold'
   if (state.door === 'outcast') return 'rim_bonewash'
@@ -347,6 +344,13 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
 
   // v150: the empty stall has its own art, never the camp fence cover.
   if (id === 'camp:lean' && state.flags.chapter1Done) return 'stall_empty'
+  // v151: no scene uses the fence cover (camp04.jpg) any more.
+  if (state.flags.chapter1Done && id === 'camp:cages') return 'holding_cells'
+  if (state.flags.chapter1Done && id.startsWith('camp:jaxson')) return 'stall_empty'
+  if (state.flags.chapter1Done && id === 'crisis:camp') return 'down'
+  if (state.door === 'prisoner' && (id === 'crisis:spine' || id === 'crisis:thresh')) return 'down'
+  if (id === 'camp:gate') return 'guard'
+  if (id === 'camp:forced') return 'storm'
   const who = npcCover(id, state)
   if (who) return who
 
@@ -402,10 +406,10 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   if (scene.art === 'hunger' || scene.chapterId === 'cache-run' || state.chapterId === 'cache-run' || state.hubId === 'redmaw' || id.startsWith('maw:') || id.startsWith('ch1:') || id.startsWith('ch2:')) {
     return 'hunger'
   }
-  if (state.hubId === 'camp04' || id.startsWith('camp:') || id.startsWith('open:prisoner')) return 'camp04'
+  if (state.hubId === 'camp04' || id.startsWith('camp:') || id.startsWith('open:prisoner')) return 'yard'
   if (state.hubId === 'spine' || id.startsWith('spine:') || id.startsWith('open:outcast')) return 'spine'
   if (state.hubId === 'threshold' || id.startsWith('thresh:') || id.startsWith('open:vessel')) return 'threshold'
-  if (state.door === 'prisoner') return 'camp04'
+  if (state.door === 'prisoner') return 'yard'
   if (state.door === 'outcast') return 'spine'
   if (state.door === 'vessel') return 'threshold'
   return scene.art === 'world' ? 'world' : 'world'
