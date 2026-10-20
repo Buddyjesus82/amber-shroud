@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "smoke": "npx tsx scripts/smoke.ts && npx tsx scripts/scene-exits.ts && npx tsx scripts/return-road.ts && npx tsx scripts/closing.ts && npx tsx scripts/v140.ts && npx tsx scripts/v141.ts && npx tsx scripts/v142.ts && npx tsx scripts/v143.ts && npx tsx scripts/v144.ts && npx tsx scripts/v145.ts && npx tsx scripts/v146.ts && npx tsx scripts/v147.ts && npx tsx scripts/v148.ts && npx tsx scripts/v149.ts",
+    "smoke": "npx tsx scripts/smoke.ts && npx tsx scripts/scene-exits.ts && npx tsx scripts/return-road.ts && npx tsx scripts/closing.ts && npx tsx scripts/v140.ts && npx tsx scripts/v141.ts && npx tsx scripts/v142.ts && npx tsx scripts/v143.ts && npx tsx scripts/v144.ts && npx tsx scripts/v145.ts && npx tsx scripts/v146.ts && npx tsx scripts/v147.ts && npx tsx scripts/v148.ts && npx tsx scripts/v149.ts && npx tsx scripts/v150.ts",
     "exits": "npx tsx scripts/scene-exits.ts",
     "preview": "vite preview --host --port 43177"
   },

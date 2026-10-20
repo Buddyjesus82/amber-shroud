@@ -16,7 +16,7 @@ function ok(cond: unknown, msg: string) {
   }
 }
 const sw = readFileSync('public/sw.js', 'utf8')
-ok(sw.includes("CACHE = 'amber-shroud-v149'"), 'SW cache v147')
+ok(sw.includes("CACHE = 'amber-shroud-v150'"), 'SW cache v147')
 ok(sw.includes('ignoreSearch: true') && sw.includes("req.destination === 'image' ? Response.error()"), 'SW: covers match without ?v=, images never answered with the page')
 const FLAGS: Record<string, unknown>[] = [
   {},
@@ -45,7 +45,7 @@ for (const door of ['prisoner', 'outcast', 'vessel'] as DoorId[]) {
   }
 }
 // After Chapter One, the stripped Jaxson scenes use non-Jaxson art.
-for (const [id, want] of [['camp:lean', 'camp04.jpg'], ['camp:cages', 'camp04.jpg'], ['camp:jaxson', 'camp04.jpg'], ['camp:bay', 'skiff-bay-docks.jpg'], ['crisis:camp-alone', 'down.jpg']]) {
+for (const [id, want] of [['camp:lean', 'stall-empty.jpg'], ['camp:cages', 'camp04.jpg'], ['camp:jaxson', 'camp04.jpg'], ['camp:bay', 'skiff-bay-docks.jpg'], ['crisis:camp-alone', 'down.jpg']]) {
   const g = newGame('prisoner')
   const s = { ...g, hubId: 'camp04', sceneId: id, flags: { ...g.flags, chapter1Done: true, metOiltooth: true, jaxsonInside: true, guardDown: true } } as GameState
   const file = playCoverFile(playCoverKey(s, sceneOf(s)))
