@@ -26,6 +26,7 @@ import { isMawExit } from '../game/map'
 import { roadChoice } from '../game/returnRoad'
 import { encounterSpeaker, isEncounterResult } from '../game/encounter'
 import { coverBand, playCoverFile, playCoverKey } from '../game/art'
+import { HANDS_MAX, handsLeft, handsPips } from '../game/hands'
 import { bayLookout } from '../game/campJob'
 import { isPressureOverlay, pressureFace } from '../game/hunter'
 import { isMaskedFlash } from '../game/masked'
@@ -448,6 +449,10 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
                 ))}
               </div>
               <em>{healthLabel(state.health)}</em>
+            </div>
+            <div className={`sap hands ${handsLeft(state) <= 1 ? 'thin' : ''}`} title="Hands — get-ups left this chapter">
+              <span className="sap-label">Hands</span>
+              <span className="hands-pips" aria-label={`${handsLeft(state)} of ${HANDS_MAX} hands`}>{handsPips(state)}</span>
             </div>
           </div>
           <button type="button" className="kit-btn" onClick={() => setKit(true)}>

@@ -74,6 +74,10 @@ export type GameState = {
   updatedAt: number
   equipped: Partial<Record<EquipSlot, ItemId>>
   recentVerbs?: string[]
+  /** v148: get-ups left this attempt (missing = full). */
+  hands?: number
+  /** v148: the state at the start of the current chapter. Run over restores it. */
+  checkpoint?: GameState
 }
 
 export type Cond = {
@@ -98,6 +102,8 @@ export type Cond = {
 }
 
 export type Effect = {
+  /** v148: run over. Back to the chapter checkpoint. */
+  restoreCheckpoint?: boolean
   /** Self-care in place (drink, bind). Time passes, but no road fight or hunt rolls. */
   still?: boolean
   /** A sneak that can fail: on a spotted roll (odds in 10) a real fight opens on the ground you reach. */

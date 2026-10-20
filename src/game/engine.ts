@@ -41,7 +41,8 @@ import {
   wantsDoSabotage,
 } from './campJob'
 import { jaxsonAway, markMetOnLeave, matchPersonQuery, personAtScene } from './people'
-import { downedNote, wakeEffect } from './downed'
+import { downedNote, knotRescue, wakeEffect } from './downed'
+import { HANDS_LEFT_SUB, KNOT_FREE_SUB, RUN_OVER_LABEL, RUN_OVER_NOTE, RUN_OVER_SAP_NOTE, RUN_OVER_SUB, handsLeft, restoreCheckpoint, withCheckpoint } from './hands'
 import { markFirstDrop } from './firstDrop'
 import { amberFindSign, downedSign, lowHealthSign, sandTouchReply } from './sandSign'
 import { isPressureOverlay, isSybellaOverlay, pressureAppend, pressureChoices, pressureVerb, spineGround, spineHunterKindAt, straysHeard } from './hunter'
@@ -145,6 +146,10 @@ export function kaelenHeld(sceneId: string): boolean {
 }
 
 export function newGame(door: DoorId): GameState {
+  return persist(openingState(door))
+}
+
+function openingState(door: DoorId): GameState {
   const d = DOORS[door]
   const state: GameState = {
     version: 1,
@@ -167,11 +172,11 @@ export function newGame(door: DoorId): GameState {
     startedAt: Date.now(),
     updatedAt: Date.now(),
   }
-  return persist(state)
+  return state
 }
 
 export function persist(state: GameState): GameState {
-  const next = markFirstDrop(state)
+  const next = withCheckpoint(markFirstDrop(state), () => openingState(state.door))
   writeSave(next)
   return next
 }
@@ -483,6 +488,10 @@ function closingBeats(next: GameState, fx: Effect, moved: boolean): GameState {
 }
 
 export function applyEffect(state: GameState, fx: Effect): GameState {
+  if (fx.restoreCheckpoint) {
+    const back = restoreCheckpoint(state)
+    if (back) return persist(back)
+  }
   // Chapter One is done: no escape route (and no storm) can start the Cache Run again.
   if (fx.startChapter && state.flags.chapter1Done) {
     return persist({ ...state, flash: HUNGER_BLOCKED })
@@ -759,7 +768,14 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     next.items = { ...next.items, vial_drop: (next.items.vial_drop ?? 0) - 1, vial_empty: (next.items.vial_empty ?? 0) + 1 }
     next.sap = 3
     next.flash = AUTO_DRINK_LINE
+  } else if (sapCollapsed && !skipCrisis && arrived.kind !== 'crisis' && handsLeft(next) <= 0) {
+    // v148: no hand left for a rescue. The attempt ends here.
+    next.sap = 0
+    next.health = 0
+    next.flash = undefined
+    next.flags = { ...next.flags, downed: true, runOver: true, downedNote: RUN_OVER_SAP_NOTE }
   } else if (sapCollapsed && !skipCrisis && arrived.kind !== 'crisis') {
+    next.hands = handsLeft(next) - 1
     next.sap = 0
     next.flags = { ...next.flags, crisisFrom: state.sceneId }
     // The rescue tells it now. A result line from the act that emptied you (a skim, a walk) does not ride along.
@@ -1007,6 +1023,15 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     // The fight card is cleared below; the wake still needs to know who put you down.
     if (typeof kind === 'string' && kind) flags.downedKind = kind
     for (const k of ENCOUNTER_FLAGS) delete flags[k]
+    // v148: the hand is spent when you fall, so the save already counts it. Ossa's Knot is free.
+    if (flags.runOver && typeof next.flags.downedNote === 'string') flags.downedNote = next.flags.downedNote
+    if (!flags.runOver && !knotRescue({ ...next, flags })) {
+      if (handsLeft(next) > 0) next.hands = handsLeft(next) - 1
+      else {
+        flags.runOver = true
+        flags.downedNote = RUN_OVER_NOTE
+      }
+    }
     next.flags = flags
     next.health = 0
     next.flash = undefined
@@ -1571,6 +1596,11 @@ export function interpret(state: GameState, raw: string): GameState {
       'down',
     )
   }
+  // v148: a typed get-up takes the same row as the button (a run over restores the chapter, never a free wake).
+  if (state.flags.downed || (state.health ?? 1) <= 0) {
+    const row = visibleChoices(state).find((c) => c.id === 'wake')
+    if (row) return withVerb(applyEffect(state, row.effects), 'wake')
+  }
   // Polite asks and plain questions: read the meaning before any verb guess can drink, buy, or steal.
   if (!state.flags.encounterHere && !isPressureOverlay(state)) {
     const ask = readAsk(text)
@@ -1951,12 +1981,15 @@ export function visibleChoices(state: GameState): Choice[] {
 }
 
 function visibleChoicesRaw(state: GameState): Choice[] {
+  if (state.flags.runOver) {
+    return [{ id: 'wake', label: RUN_OVER_LABEL, sub: RUN_OVER_SUB, tone: 'quiet', effects: { restoreCheckpoint: true } }]
+  }
   if (state.flags.downed || (state.health ?? 1) <= 0) {
     return [
       {
         id: 'wake',
         label: 'Take the hand. Get up.',
-        sub: 'Too hurt to fight.',
+        sub: knotRescue(state) ? KNOT_FREE_SUB : HANDS_LEFT_SUB(handsLeft(state)),
         tone: 'quiet',
         effects: fightLostWake(state),
       },
