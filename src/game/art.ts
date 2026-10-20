@@ -51,6 +51,7 @@ export type CoverKey =
   | 'carapace'
   | 'jodi'
   | 'hoard'
+  | 'stall_empty'
   | 'rim_gullet'
   | 'rim_bonewash'
   | 'maw_lip'
@@ -94,6 +95,8 @@ const FILES: Record<CoverKey, string> = {
   rell: 'rell.jpg',
   handler: 'handler.jpg',
   skiffbay: 'skiffbay.jpg',
+  // v150: Jaxson's Stall after he has gone. Iron lean-to, wrench cut-out, cold sap.
+  stall_empty: 'stall-empty.jpg',
   skiff_bay_docks: 'skiff-bay-docks.jpg',
   stray_collector: 'stray-collector.jpg',
   bay_pike: 'bay_pike.jpg',
@@ -247,6 +250,8 @@ export const COVER_BAND: Record<CoverKey, [number, number]> = {
   amber_tick: [0.05, 0.75],
   // Crystal spines to paws.
   shard_pup: [0.0, 0.65],
+  // Pegs, the wrench cut-out, and the bench.
+  stall_empty: [0.05, 0.65],
 }
 
 export function coverBand(key: CoverKey): [number, number] {
@@ -340,6 +345,8 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   if (id === 'thresh:sift') return 'kaelen'
   if (id === 'thresh:thalia' || id.startsWith('thresh:thalia')) return 'thalia'
 
+  // v150: the empty stall has its own art, never the camp fence cover.
+  if (id === 'camp:lean' && state.flags.chapter1Done) return 'stall_empty'
   const who = npcCover(id, state)
   if (who) return who
 
