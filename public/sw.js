@@ -1,4 +1,4 @@
-const CACHE = 'amber-shroud-v146'
+const CACHE = 'amber-shroud-v147'
 const SCOPE = self.location.pathname.replace(/sw\.js$/, '')
 
 self.addEventListener('install', (event) => {
@@ -129,6 +129,9 @@ self.addEventListener('fetch', (event) => {
         caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {})
         return res
       })
-      .catch(() => caches.match(req).then((hit) => hit || caches.match(SCOPE))),
+      .catch(() =>
+        // v147: covers are requested with ?v=; the precache has them without it. Never answer an image with the page.
+        caches.match(req, { ignoreSearch: true }).then((hit) => hit || (req.destination === 'image' ? Response.error() : caches.match(SCOPE))),
+      ),
   )
 })

@@ -28,6 +28,10 @@ const all: Scene[] = [
 ]
 
 const byId = new Map(all.map((s) => [s.id, s]))
+/** Every scene id (v147 art check). */
+export function allSceneIds(): string[] {
+  return all.map((s) => s.id)
+}
 
 export function hasScene(id: string): boolean {
   return byId.has(id)
