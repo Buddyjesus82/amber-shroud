@@ -82,6 +82,15 @@ const HOLD_RESULTS = true
 /** The held screen's Continue: one fixed id, never shared with a scene choice. */
 export const HELD_CONTINUE_KEY = 'held-continue'
 
+/** v147: a cover that fails to load (flaky network, cache miss) falls back once to the hub cover, never a broken icon. */
+const COVER_FALLBACK = `${import.meta.env.BASE_URL}covers/${playCoverFile('camp04')}`
+function coverFallback(e: { currentTarget: HTMLImageElement }) {
+  const img = e.currentTarget
+  if (img.dataset.fallback) return
+  img.dataset.fallback = '1'
+  img.src = COVER_FALLBACK
+}
+
 /** The masked figure's portrait, for a held result that is his. */
 const MASKED_ART = `${import.meta.env.BASE_URL}covers/${playCoverFile('masked_figure')}?v=82`
 const MASKED_BAND = { '--band-top': coverBand('masked_figure')[0], '--band-bot': coverBand('masked_figure')[1] } as CSSProperties
@@ -481,8 +490,8 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
 
       <div className="scene-stage" style={held ? held.band : artBand}>
         <div className="scene-art" aria-hidden="true">
-          <img key={held ? held.art : artSrc} className="scene-fill" src={held ? held.art : artSrc} alt="" />
-          <img key={held ? held.art : artSrc} className="scene-img" src={held ? held.art : artSrc} alt="" />
+          <img key={`fill:${held ? held.art : artSrc}`} className="scene-fill" src={held ? held.art : artSrc} alt="" onError={coverFallback} />
+          <img key={`img:${held ? held.art : artSrc}`} className="scene-img" src={held ? held.art : artSrc} alt="" onError={coverFallback} />
         </div>
 
         <div className="story" ref={storyRef}>

@@ -282,7 +282,8 @@ function npcCover(sceneId: string, state?: GameState): CoverKey | null {
 }
 
 export function playCoverFile(key: CoverKey): string {
-  return FILES[key]
+  // v147: never an empty src. An unknown key gets the camp cover.
+  return FILES[key] ?? FILES.camp04
 }
 
 /** Neutral fight cover: the hub's land, or the door's road on the Cache Run and at the Maw. */
@@ -351,6 +352,8 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   if (id === 'crisis:maw') return 'down'
   // The Cache Run collapse is a Down screen too.
   if (id === 'crisis:dunes') return 'down'
+  // v147: the camp Sap-0 rescue after Chapter One has nobody in it: the Down art.
+  if (id === 'crisis:camp-alone') return 'down'
   if (id === 'ch1:ossa-fix') return 'lash_holds'
   if (id === 'ch1:hollow') return 'valued_thing'
   if (id === 'ch1:end') return 'ch1_end'

@@ -2735,7 +2735,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v146'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v147'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(sw.includes('covers/camp04.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -5924,7 +5924,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   assert(cover('vessel', 'ch1:leave', { downed: true }) === 'down', 'v115: Down on the road uses down.jpg')
   assert(cover('vessel', 'ch1:south-wind') === 'rim_pilgrims_scar', 'v115→v116: South Wind shows the road, not her face')
   assert(cover('vessel', 'thresh:sift') === 'kaelen', 'v115: Cup-Shadow shows Kaelen')
-  assert(ps.includes('<img key={held ? held.art : artSrc} className="scene-img"'), 'v115: the cover remounts per scene (no stale flash)')
+  assert(ps.includes('<img key={`img:${held ? held.art : artSrc}`} className="scene-img"'), 'v115: the cover remounts per scene (no stale flash)')
   // 4/5. Court Guard: blowing sand caps his hit; he/him.
   {
     const v = newGame('vessel')
