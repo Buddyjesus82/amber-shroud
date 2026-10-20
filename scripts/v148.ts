@@ -53,7 +53,7 @@ ok(s.sceneId === g.sceneId && !s.flags.guardDown && handsLeft(s) === HANDS_MAX &
   let d: GameState = persist({ ...g, sceneId: 'camp:yard', hubId: 'camp04', sap: 1, items: { vial_drop: 1 }, flags: { ...g.flags, noMasked: true } })
   d = applyEffect(d, { sap: -1, goto: 'camp:vents' })
   ok(handsLeft(d) === 3 && d.sap === 3, 'own Drop: no hand spent')
-  let z: GameState = persist({ ...g, sceneId: 'camp:yard', hubId: 'camp04', sap: 1, hands: 0, items: {}, flags: { ...g.flags, noMasked: true, chapter1Done: true } })
+  let z: GameState = persist({ ...g, sceneId: 'camp:yard', hubId: 'camp04', sap: 1, hands: 0, items: {}, checkpoint: { ...g, flags: { ...g.flags, chapter1Done: true } }, flags: { ...g.flags, noMasked: true, chapter1Done: true } })
   z = applyEffect(z, { sap: -1, goto: 'camp:vents' })
   ok(z.flags.runOver && bodyOf(z) === RUN_OVER_SAP_NOTE && !z.sceneId.startsWith('crisis:'), 'Sap zero with no hands (incl. the anonymous camp rescue): run over')
 }
