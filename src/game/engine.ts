@@ -1,3 +1,5 @@
+import { STAIRS, STAIRS_CLEARED } from './content/crucible'
+import { hash as hashRoll } from './fightTricks'
 import { isMaskedBlock, MASKED_BLOCK_LINE, maskedBody, maskedChoices, maskedPass, maskedPickup } from './masked'
 import { isStrayHunt, STRAY_ARRIVAL_LINE, STRAY_CUT_FAIL_LINE, STRAY_CUT_LINE, STRAY_CUT_ODDS, STRAY_HOUND_HEAT, STRAY_HOUND_LINE, STRAY_KILL_LINE, strayHuntBody, strayHuntChoices, strayHunterArrives } from './strayHunter'
 import { HUB_MAPS } from './content/maps'
@@ -120,6 +122,7 @@ export const KAELEN_HELD_SCENES = [
   'open:outcast',
   'open:vessel',
   'thresh:crucible-rig',
+  'thresh:stairs',
   'thresh:crucible-stairs',
   'thresh:court-guard',
   'thresh:cell',
@@ -512,6 +515,13 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     delete rest.payGlintRemove
     fx = { ...rest, remove }
   }
+  // v155: once the rubble stair is cleared, the way goes straight to Thalia.
+  if (fx.goto === STAIRS && state.flags[STAIRS_CLEARED]) fx = { ...fx, goto: 'thresh:crucible-stairs' }
+  if (fx.risk) {
+    const { risk, ...rest } = fx
+    const hit = hashRoll(state, 'risk') % risk.oneIn === 0
+    fx = hit ? { ...rest, health: (rest.health ?? 0) - risk.health, flash: `${rest.flash ?? ''}\n\nHealth -${risk.health}.`.trimStart() } : rest
+  }
   if (fx.travel) {
     const rest = { ...fx }
     delete rest.travel
@@ -840,7 +850,7 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   }
 
   // The Crucible wake and rig are one beat before the Court: they do not count toward the first hunt.
-  const crucibleBeat = (state.sceneId === 'open:vessel' && next.sceneId === 'thresh:crucible-rig') || (state.sceneId === 'thresh:crucible-rig' && next.sceneId === 'thresh:crucible-stairs') || (state.sceneId === 'thresh:court-guard' && next.sceneId === 'thresh:court')
+  const crucibleBeat = (state.sceneId === 'open:vessel' && next.sceneId === 'thresh:crucible-rig') || (state.sceneId === 'thresh:crucible-rig' && (next.sceneId === 'thresh:crucible-stairs' || next.sceneId === STAIRS)) || (state.sceneId === STAIRS && next.sceneId === 'thresh:crucible-stairs') || (state.sceneId === 'thresh:court-guard' && next.sceneId === 'thresh:court')
   const lingered = !fx.still && !vendorBeat && !crucibleBeat && ((fx.ticks ?? 0) > 0 || (fx.pressure ?? 0) > 0 || !!dest)
   const clearingHunt = !!state.flags.hunterHere && (!next.flags.hunterHere || !!fx.unsetFlag?.includes('hunterHere'))
   // Sybella's intercept scenes are their own beat: they never count toward a hunt or Heat coming due.

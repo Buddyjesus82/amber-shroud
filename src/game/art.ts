@@ -384,6 +384,7 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   if (id === 'ch1:o-noon') return 'noon_country'
   if (id === 'open:vessel') return 'resin_vault'
   if (id === 'thresh:crucible-rig') return 'extraction_rig'
+  if (id === 'thresh:stairs') return 'threshold'
   if (id === 'thresh:crucible-stairs') return 'thalia'
   if (id === 'thresh:court-guard') return 'courtguard'
   // The Maw arrival shows the road each door came in by.
