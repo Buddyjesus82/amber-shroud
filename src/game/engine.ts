@@ -1,4 +1,4 @@
-import { STAIRS, STAIRS_CLEARED } from './content/crucible'
+import { STAIRS, STAIRS_CLEARED, STAIRS_TO } from './content/crucible'
 import { hash as hashRoll } from './fightTricks'
 import { isMaskedBlock, MASKED_BLOCK_LINE, maskedBody, maskedChoices, maskedPass, maskedPickup } from './masked'
 import { isStrayHunt, STRAY_ARRIVAL_LINE, STRAY_CUT_FAIL_LINE, STRAY_CUT_LINE, STRAY_CUT_ODDS, STRAY_HOUND_HEAT, STRAY_HOUND_LINE, STRAY_KILL_LINE, strayHuntBody, strayHuntChoices, strayHunterArrives } from './strayHunter'
@@ -517,6 +517,15 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   }
   // v155: once the rubble stair is cleared, the way goes straight to Thalia.
   if (fx.goto === STAIRS && state.flags[STAIRS_CLEARED]) fx = { ...fx, goto: 'thresh:crucible-stairs' }
+  // v156: the Court's 'Climb the dais' takes the same rubble stair first, then her dais scene.
+  if (state.sceneId === 'thresh:court' && fx.goto === 'thresh:thalia' && !state.flags[STAIRS_CLEARED]) {
+    fx = { ...fx, goto: STAIRS, flag: { ...fx.flag, [STAIRS_TO]: 'thresh:thalia' } }
+  }
+  // After the Stairs, go to whichever Thalia the player was headed to (opening by default).
+  if (state.sceneId === STAIRS && fx.goto === 'thresh:crucible-stairs') {
+    const to = state.flags[STAIRS_TO]
+    fx = { ...fx, goto: typeof to === 'string' && to ? to : fx.goto, unsetFlag: [...(fx.unsetFlag ?? []), STAIRS_TO] }
+  }
   if (fx.risk) {
     const { risk, ...rest } = fx
     const hit = hashRoll(state, 'risk') % risk.oneIn === 0

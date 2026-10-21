@@ -168,7 +168,7 @@ function pick(s: GameState, id: string) {
   // Older Vessel walks predate the Crucible wake; step through it (slip past) when they pick 'keep'.
   if (s.sceneId === 'open:vessel' && id === 'keep') s = applyEffect(applyEffect(s, visibleChoices(s)[0].effects), visibleChoices(applyEffect(s, visibleChoices(s)[0].effects)).find((x) => x.id === 'slip')!.effects)
   // v155: older Vessel walks predate the rubble stair; step through it free, keeping the rig's line.
-  if (s.sceneId === 'thresh:stairs' && id !== 'clear' && id !== 'climb') s = { ...s, sceneId: 'thresh:crucible-stairs', flags: { ...s.flags, stairsCleared: true } }
+  if (s.sceneId === 'thresh:stairs' && id !== 'clear' && id !== 'climb') s = { ...s, sceneId: typeof s.flags.stairsTo === 'string' ? s.flags.stairsTo : 'thresh:crucible-stairs', flags: { ...s.flags, stairsCleared: true, stairsTo: undefined } }
   if (s.sceneId === 'ch1:storm' && id !== 'continue') s = applyEffect(s, visibleChoices(s)[0].effects)
   const c = visibleChoices(s).find((x) => x.id === id)
   if (!c) {
@@ -2737,7 +2737,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v155'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v156'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(!sw.includes('covers/camp04.jpg') && sw.includes('covers/yard.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -5714,7 +5714,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
 // v108: the Court Guard at the dais steps after the alarm, and the drain tunnel.
 {
   const step = (s: GameState, id: string) => {
-    if (s.sceneId === 'thresh:stairs' && id !== 'clear' && id !== 'climb') s = { ...s, sceneId: 'thresh:crucible-stairs', flags: { ...s.flags, stairsCleared: true } }
+    if (s.sceneId === 'thresh:stairs' && id !== 'clear' && id !== 'climb') s = { ...s, sceneId: typeof s.flags.stairsTo === 'string' ? s.flags.stairsTo : 'thresh:crucible-stairs', flags: { ...s.flags, stairsCleared: true, stairsTo: undefined } }
     const c = GE.visibleChoices(s).find((x) => x.id === id)
     assert(c, `v108: ${s.sceneId} offers ${id} (have ${GE.visibleChoices(s).map((x) => x.id).join(',')})`)
     return GE.applyEffect(s, c!.effects)
