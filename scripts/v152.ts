@@ -19,7 +19,7 @@ function ok(cond: unknown, msg: string) {
     console.log('FAIL', msg)
   }
 }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v152'"), 'SW cache v152')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v153'"), 'SW cache v152')
 // 1. Hound Sign describes the handler.
 {
   const b = getScene('spine:hound').body
@@ -33,7 +33,7 @@ ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v152'"),
 {
   const src = readFileSync('src/game/encounter.ts', 'utf8')
   ok(src.includes('Cartel Heat -1.${mutualWin') && src.includes('heat: { cartel: -1 }'), 'Valerius win: Cartel Heat -1')
-  ok(/handlerWin \|\| spec\.kind === 'hound' \? \{ valeriusCool: true, huntQuiet: 0 \}/.test(src), 'hound and handler wins start the cooldown')
+  ok(src.includes("valeriusRest: true, valeriusQuiet: 0"), 'v153: hound and handler wins start the Valerius-only rest')
   ok(valeriusCooling({ flags: { valeriusCool: true, huntQuiet: 0 } }) && !valeriusCooling({ flags: { valeriusCool: true, huntQuiet: 10 } }), 'cooldown is 10 quiet scenes')
 }
 // 3. Named hunters: bargain, a Health-cost run, Nim's Drop stay open.

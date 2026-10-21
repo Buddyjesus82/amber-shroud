@@ -1,3 +1,4 @@
+import { campHuntIsValerius } from './valeriusRest'
 import { isMaskedFlash } from './masked'
 import { STRAY_HUNTER_COVER } from './strayHunter'
 import { bayLookout } from './campJob'
@@ -331,7 +332,7 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   // Stray Hunter: its cover slot, neutral fight ground until the art lands.
   if (state.flags.strayHunterHere) return (STRAY_HUNTER_COVER as CoverKey | null) ?? fightGround(state, scene)
   if (isSybellaOverlay(state) || id.startsWith('maw:sybella')) return 'sybella'
-  if (isCampHunt(state)) return (state.heat?.cartel ?? 0) >= 7 ? 'valerius' : 'handler'
+  if (isCampHunt(state)) return campHuntIsValerius(state) ? 'valerius' : 'handler'
   if (id === 'camp:hunter' || id === 'camp:valerius' || id === 'camp:tower') return 'valerius'
   if (isSpineHunt(state)) return spineHunterFor(state).art
   // The Court Guard hunt shows the guard, not Thalia's portrait.

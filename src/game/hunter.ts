@@ -1,3 +1,4 @@
+import { campHuntIsValerius } from './valeriusRest'
 import { CARAPACE_HUNTER_HEAT, SPINE_HUNTER, spineHunterFor } from './content/spineHunter'
 import { areaKey, beginEncounter, CLOAK_SKIP_SUB, CLOAK_USED_LOCK } from './encounter'
 import { check } from './logic'
@@ -56,7 +57,7 @@ export function isPressureOverlay(state: Pick<GameState, 'flags' | 'sceneId' | '
 }
 
 export function pressureFace(state: Pick<GameState, 'flags' | 'sceneId' | 'hubId' | 'heat'>): string | null {
-  const hot = (state.heat?.cartel ?? 0) >= 7
+  const hot = campHuntIsValerius(state)
   if (isSybellaOverlay(state)) return 'Sybella'
   if (state.flags.strayHunterHere && !state.flags.encounterHere) return 'Stray Hunter'
   if (state.flags.maskedHere && !state.flags.encounterHere && !state.flags.downed) return 'Masked figure'
@@ -254,7 +255,7 @@ function campHuntChoices(state: GameState): Choice[] {
     }),
   })
   rows.push(...hungerOuts({ cartel: 2 }))
-  return (state.heat?.cartel ?? 0) >= 7 ? rows.map((c) => valeriusRow(state, c)) : rows
+  return campHuntIsValerius(state) ? rows.map((c) => valeriusRow(state, c)) : rows
 }
 
 /** Cartel 7+: Valerius came himself, so the rows name him, not the handler. */
@@ -547,7 +548,7 @@ export function sybellaShadowChoices(state: GameState): Choice[] {
 export function pressureAppend(state: GameState): string | null {
   if (isSybellaOverlay(state)) return SYBELLA_SHADOW_APPEND
   if (isCampHunt(state)) {
-    if (state.heat.cartel >= 7) return state.flags.valeriusBeaten ? `${VALERIUS_HUNT_APPEND}\n\n${VALERIUS_GRUDGE}` : VALERIUS_HUNT_APPEND
+    if (campHuntIsValerius(state)) return state.flags.valeriusBeaten ? `${VALERIUS_HUNT_APPEND}\n\n${VALERIUS_GRUDGE}` : VALERIUS_HUNT_APPEND
     return state.flags.handlerInjured ? `${CAMP_HUNT_APPEND}\n\n${HANDLER_GRUDGE}` : CAMP_HUNT_APPEND
   }
   if (isSpineHunt(state)) return spineHunterFor(state).append
@@ -637,7 +638,7 @@ function payOnce(state: GameState, c: Choice, canFight: boolean): Choice {
 /** v152: the named hunters: Valerius (camp hunt at Cartel 7+) and Nim (the carapace hunter on the Spine). */
 export function namedHunter(state: GameState): boolean {
   if (isSybellaOverlay(state)) return false
-  if (isCampHunt(state)) return (state.heat?.cartel ?? 0) >= 7
+  if (isCampHunt(state)) return campHuntIsValerius(state)
   if (isSpineHunt(state)) return spineHunterFor(state).kind === 'carapace'
   return false
 }

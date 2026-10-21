@@ -1262,8 +1262,8 @@ export function resolveEncounter(
       // Beating the handler: Cartel +2.
       heat: spec.kind === 'hound' ? { cartel: 1 } : handlerWin ? { cartel: 2 } : undefined,
       pressure: dmgIn > 0 ? 1 : undefined,
-      // v152: beating the hound or the handler also buys the Valerius cooldown (no camp hunt for 10 quiet scenes).
-      flag: { encounterGrip: grip, ...(handlerWin ? { handlerInjured: true } : {}), ...(handlerWin || spec.kind === 'hound' ? { valeriusCool: true, huntQuiet: 0 } : {}), ...(state.sceneId === 'thresh:court-guard' && spec.kind === 'courtguard' ? { crucibleGuardBeaten: true } : {}) },
+      // v153: beating the hound or the handler keeps Valerius himself away for 10 quiet scenes (hunts still come).
+      flag: { encounterGrip: grip, ...(handlerWin ? { handlerInjured: true } : {}), ...(handlerWin || spec.kind === 'hound' ? { valeriusRest: true, valeriusQuiet: 0 } : {}), ...(state.sceneId === 'thresh:court-guard' && spec.kind === 'courtguard' ? { crucibleGuardBeaten: true } : {}) },
     })
   }
 
