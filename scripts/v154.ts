@@ -14,9 +14,9 @@ function ok(cond: unknown, msg: string) {
     console.log('FAIL', msg)
   }
 }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v155'"), 'SW cache v154')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v156'"), 'SW cache v154')
 const g = newGame('vessel')
-const at = (id: string, flags: Record<string, unknown> = {}) => ({ ...g, sceneId: id, hubId: 'threshold', flags: { ...g.flags, noMasked: true, ...flags } }) as GameState
+const at = (id: string, flags: Record<string, unknown> = {}) => ({ ...g, sceneId: id, hubId: 'threshold', flags: { ...g.flags, noMasked: true, stairsCleared: true, ...flags } }) as GameState
 const art = (s: GameState) => playCoverFile(playCoverKey(s, sceneOf(s)))
 for (const f of [{}, { metThalia: true }, { chapter1Done: true }]) {
   ok(art(at('thresh:court', f)) === 'threshold.jpg', `Court shows the hall ${JSON.stringify(f)}`)

@@ -9,6 +9,8 @@ export const COURT_GUARD = 'thresh:court-guard'
 /** v155: the rubble stair between the rig and Thalia. Cleared once; after that the way goes straight to her. */
 export const STAIRS = 'thresh:stairs'
 export const STAIRS_CLEARED = 'stairsCleared'
+/** v156: which Thalia scene the Stairs lead to (unset: the opening one). */
+export const STAIRS_TO = 'stairsTo'
 const THALIA_TOP = 'thresh:crucible-stairs'
 const NEXT = STAIRS
 
