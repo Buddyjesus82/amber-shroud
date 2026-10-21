@@ -150,7 +150,7 @@ He watched the shade go quiet when you walked in, and he knows what that quiet m
         flag: { korvanHoundRumor: true },
         ticks: 1,
         flash:
-          '"Hound prints on the east wash. Overseer Valerius walks behind them. He hunts sap thieves. He also hunts a deserter who hides in that wash, a man named Corvin. If you find Corvin first, be kind to him. He is kinder than the rest of us."',
+          '"Hound prints on the east wash. A Hound-handler walks behind them. Valerius sent him. He hunts sap thieves. He also hunts a deserter who hides in that wash, a man named Corvin. If you find Corvin first, be kind to him. He is kinder than the rest of us."',
       },
     },
     {

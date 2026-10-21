@@ -699,6 +699,12 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
       }
       next.flash =
         'Lockdown. The gates are counted and the sabotage is still in their teeth. Walking in is a fight or a collar.'
+      // v152: the gate can zap you on the way in: 1 in 3, and always at Health 3 or less. A Down, plus Cartel Heat +1.
+      if (gateZaps(next)) {
+        next.health = 0
+        next.heat = { ...next.heat, cartel: Math.min(8, (next.heat.cartel ?? 0) + 1) }
+        next.flags = { ...next.flags, gateZap: true }
+      }
     }
   }
 
@@ -1308,6 +1314,13 @@ function scavengeNotice(before: GameState, next: GameState): GameState {
 
 /** Noticed with that faction's Heat already at 8: this ground's hunt comes now, talk scene or not. Ignores Health. */
 /** v145: after you beat Valerius, the Camp-04 hunt waits this many quiet scenes, whatever the Heat. */
+/** v152: the Lockdown Gate's shock-rail. Seeded like the road fights: 1 in 3, sure at Health 3 or less. */
+export const GATE_ZAP_HEALTH = 3
+export function gateZaps(state: Pick<GameState, 'health' | 'ticks' | 'sap' | 'pressure'>): boolean {
+  if ((state.health ?? 0) <= GATE_ZAP_HEALTH) return true
+  return Math.abs(state.ticks * 7 + state.sap * 3 + state.pressure * 5) % 3 === 0
+}
+
 export const VALERIUS_COOLDOWN = 10
 export function valeriusCooling(state: Pick<GameState, 'flags'>): boolean {
   return !!state.flags.valeriusCool && Number(state.flags.huntQuiet ?? 0) < VALERIUS_COOLDOWN

@@ -400,7 +400,7 @@ You can lower a hope into it. There is no bucket here that still believes in wat
     title: 'Hound Sign',
     body: `Prints in the dust. Shard-Hounds are made by the Cartel, with resin jaws, and they stay loyal to whoever holds the chip.
 
-Overseer Valerius has come out from Ironwood in a dust coat. He walks behind the Hound, following its prints. He is looking for a Cartel deserter who hides somewhere in this wash. When he sees you, he looks at you the way he looks at loose property.`,
+A Hound-handler walks behind it in resin gloves, the chip-lead slack in his fist. Valerius sent him out from Ironwood after a Cartel deserter who hides somewhere in this wash. When he sees you, he looks at you the way the Overseer would: loose property.`,
     choices: [
       {
         id: 'talk',

@@ -183,7 +183,7 @@ He is the immediate antagonist. The looming shadow. First major victory: get out
 Valerius arrives. He does not run. "The penniless laborer is upright. How optimistic." Behind him a Hound-handler checks a muzzle.`,
       'spine:hound': `Prints. Shard-Hounds — Cartel-made, resin-jawed.
 
-Overseer Valerius walks behind the Hound in a dust coat, hunting a deserter. He looks at you like loose property.`,
+A Hound-handler walks behind the Hound in resin gloves, hunting a deserter for Valerius. He looks at you like loose property.`,
       'spine:valerius': `"Outcast," he says, almost kind. "Ironwood still pays for returned property. You are a loose Drop. I can cork you or I can point you at the woman on the skiff."`,
     },
   },

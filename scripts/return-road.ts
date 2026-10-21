@@ -172,7 +172,15 @@ for (const sc of ALL_SCENES) {
 
 // Camp lockdown: the road in meets the gate; inside the wire you walk freely; turning back refunds the Sap.
 {
-  const lock = atRim('prisoner', { campLockdown: true, quietFence: false })
+  // v152: the gate can zap you on the way in (own test in v152). Pick a clock that walks up to the gate standing.
+  let lock = atRim('prisoner', { campLockdown: true, quietFence: false })
+  for (let t = lock.ticks; t < lock.ticks + 12; t++) {
+    const tryA = applyEffect({ ...lock, ticks: t }, roadHome({ ...lock, ticks: t })!.effects)
+    if (!tryA.flags.downed) {
+      lock = { ...lock, ticks: t }
+      break
+    }
+  }
   const a = applyEffect(lock, roadHome(lock)!.effects)
   ok(a.sceneId === 'camp:gate', `lockdown: road home meets the gate (${a.sceneId})`)
   const back = applyEffect(a, getScene('camp:gate').choices.find((c) => c.id === 'back')!.effects)
