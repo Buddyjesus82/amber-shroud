@@ -1,12 +1,16 @@
 import type { Scene } from '../types'
 
 /** The Vessel's new opening: the Crucible Chambers under the Threshold Court. */
-export const CRUCIBLE_SCENES = ['open:vessel', 'thresh:crucible-rig', 'thresh:crucible-stairs', 'thresh:court-guard'] as const
+export const CRUCIBLE_SCENES = ['open:vessel', 'thresh:crucible-rig', 'thresh:stairs', 'thresh:crucible-stairs', 'thresh:court-guard'] as const
 
 /** Only after the release-clamps alarm: the Court Guard waits at the dais steps. */
 export const COURT_GUARD = 'thresh:court-guard'
 
-const NEXT = 'thresh:crucible-stairs'
+/** v155: the rubble stair between the rig and Thalia. Cleared once; after that the way goes straight to her. */
+export const STAIRS = 'thresh:stairs'
+export const STAIRS_CLEARED = 'stairsCleared'
+const THALIA_TOP = 'thresh:crucible-stairs'
+const NEXT = STAIRS
 
 export const crucibleScenes: Scene[] = [
   {
@@ -56,9 +60,41 @@ export const crucibleScenes: Scene[] = [
     ],
   },
   {
-    id: NEXT,
+    id: STAIRS,
     kind: 'story',
     title: 'The Stairs',
+    body: `Rubble chokes the stairs to the dais. Broken sand-brick and old offering bowls, half-buried. Someone above is waiting.`,
+    choices: [
+      {
+        id: 'clear',
+        label: 'Clear the debris',
+        sub: 'Costs 1 Sap.',
+        enable: { sapMin: 1 },
+        locked: 'Needs 1 Sap.',
+        effects: {
+          goto: THALIA_TOP,
+          sap: -1,
+          flag: { [STAIRS_CLEARED]: true },
+          flash: 'You haul brick aside until the steps show. Your arms ache.',
+        },
+      },
+      {
+        id: 'climb',
+        label: 'Climb over it',
+        tone: 'danger',
+        effects: {
+          goto: THALIA_TOP,
+          flag: { [STAIRS_CLEARED]: true },
+          risk: { oneIn: 3, health: 1 },
+          flash: 'You scramble up the loose pile. A brick shifts under your foot.',
+        },
+      },
+    ],
+  },
+  {
+    id: THALIA_TOP,
+    kind: 'story',
+    title: 'Thalia',
     speaker: 'Thalia',
     body: `Thalia waits at the top of the stairs.
 

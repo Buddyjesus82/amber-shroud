@@ -35,7 +35,7 @@ const SAFE_SCENES = new Set([
   // Rest ground and safe shade.
   'camp:bay', 'camp:lean', 'camp:cages', 'maw:tuner', 'maw:stilt', 'spine:shade', 'thresh:cell', 'thresh:court',
   // Cutscene beats.
-  'ch1:storm', 'ch1:end', 'ch1:land', 'thresh:crucible-rig', 'thresh:crucible-stairs',
+  'ch1:storm', 'ch1:end', 'ch1:land', 'thresh:crucible-rig', 'thresh:stairs', 'thresh:crucible-stairs',
 ])
 
 /** Danger ground only: never trade, Kaelen, rest shade, cutscenes, crises, endings, Down, or a fight or hunt already running. */

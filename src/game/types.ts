@@ -112,6 +112,8 @@ export type Effect = {
   ruse?: boolean
   /** An ambush that opens on arrival and cannot be skipped (Run still can). Ignores Health. */
   ambush?: { kind: string; line: string }
+  /** v155: a 1-in-oneIn seeded chance of losing `health`. The loss shows on its own line. */
+  risk?: { oneIn: number; health: number }
   sap?: number
   health?: number
   heat?: Partial<Heat>
