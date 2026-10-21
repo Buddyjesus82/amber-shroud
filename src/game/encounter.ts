@@ -262,14 +262,15 @@ export function pickEncounterKind(state: GameState): EncounterKind {
     const pool: EncounterKind[] = ['pup', 'pup', 'cutter', 'jackal', 'tick']
     return pool[n % pool.length]
   }
+  // v152: the Shard-pup also wanders Seeker and Stray ground.
   if (turf === 'seekers') {
     const pool: EncounterKind[] =
       state.heat.seekers >= 2
-        ? ['husk', 'husk', 'cutter', 'jackal', 'tick', 'scavenger']
-        : ['cutter', 'cutter', 'jackal', 'tick', 'scavenger']
+        ? ['husk', 'husk', 'cutter', 'jackal', 'tick', 'scavenger', 'pup']
+        : ['cutter', 'cutter', 'jackal', 'tick', 'scavenger', 'pup']
     return pool[n % pool.length]
   }
-  const pool: EncounterKind[] = ['scavenger', 'scavenger', 'jackal', 'jackal', 'tick']
+  const pool: EncounterKind[] = ['scavenger', 'scavenger', 'jackal', 'jackal', 'tick', 'pup']
   return pool[n % pool.length]
 }
 
@@ -1228,11 +1229,12 @@ export function resolveEncounter(
   }
 
   if (theirHp <= 0 && spec.kind === 'overseer') {
-    const outcome = `${VALERIUS_ESCAPES} Cartel Heat +2.${mutualWin ? MUTUAL_WIN_LINE : ''}`
+    const outcome = `${VALERIUS_ESCAPES} Cartel Heat -1.${mutualWin ? MUTUAL_WIN_LINE : ''}`
     return holdCard(state, spec, `${hitCard}\n\n${outcome}`, outcome, {
       health: healthDelta,
       sap,
-      heat: { cartel: 2 },
+      // v152: beating him is a reward. Cartel -1 (was +2 in v145).
+      heat: { cartel: -1 },
       pressure: dmgIn > 0 ? 1 : undefined,
       flag: { encounterGrip: grip, valeriusBeaten: true, valeriusCool: true, huntQuiet: 0 },
     })
@@ -1260,7 +1262,8 @@ export function resolveEncounter(
       // Beating the handler: Cartel +2.
       heat: spec.kind === 'hound' ? { cartel: 1 } : handlerWin ? { cartel: 2 } : undefined,
       pressure: dmgIn > 0 ? 1 : undefined,
-      flag: { encounterGrip: grip, ...(handlerWin ? { handlerInjured: true } : {}), ...(state.sceneId === 'thresh:court-guard' && spec.kind === 'courtguard' ? { crucibleGuardBeaten: true } : {}) },
+      // v152: beating the hound or the handler also buys the Valerius cooldown (no camp hunt for 10 quiet scenes).
+      flag: { encounterGrip: grip, ...(handlerWin ? { handlerInjured: true } : {}), ...(handlerWin || spec.kind === 'hound' ? { valeriusCool: true, huntQuiet: 0 } : {}), ...(state.sceneId === 'thresh:court-guard' && spec.kind === 'courtguard' ? { crucibleGuardBeaten: true } : {}) },
     })
   }
 

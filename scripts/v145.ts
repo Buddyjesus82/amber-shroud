@@ -1,5 +1,5 @@
 /**
- * v145: Valerius has Health 6, never dies (escapes at 0), Cartel +2, and a 10-quiet-scene hunt cooldown.
+ * v145: Valerius has Health 6, never dies (escapes at 0), Cartel +2 (v152: -1), and a 10-quiet-scene hunt cooldown.
  *   npx tsx scripts/v145.ts
  */
 import { applyEffect, bodyOf, newGame, visibleChoices, VALERIUS_COOLDOWN, travelTo } from '../src/game/engine.ts'
@@ -53,7 +53,7 @@ for (let t = 0; t < 300; t++) {
   ok(!/They drop\.|On the body:|Scrap \+|Salve \+/.test(card), `no body, no loot (${t})`)
   ok(/VALERIUS ♥ 0 ⚔ Strike 4 🛡 Shell 3/.test(card), 'stat row clean at 0')
   const on = applyEffect(end, visibleChoices(end).find((c) => c.id === 'enc-continue')!.effects)
-  ok(on.heat.cartel === Math.min(8, 7 + 2) && on.health > 0 && !on.flags.downed, `Cartel +2 (cap 8), standing (${on.heat.cartel}, ${on.health})`)
+  ok(on.heat.cartel === 7 - 1 && on.health > 0 && !on.flags.downed, `v152: Cartel -1, standing (${on.heat.cartel}, ${on.health})`)
   ok(on.flags.valeriusBeaten && on.flags.valeriusCool && !on.flags.hunterHere && !on.flags.encounterHere, 'hunt cleared, cooldown on')
   if (wins === 1) {
     // Cooldown: walk the yard at Heat 8 for 9 quiet scenes: no hunt. Then he can come again, with the grudge line.

@@ -616,14 +616,35 @@ function cloakCost(state: GameState, c: Choice): Choice {
 
 function payOnce(state: GameState, c: Choice, canFight: boolean): Choice {
   const f = huntFaction(state)
-  if (!f || isFightRow(c) || c.effects.startChapter) return c
-  if (canFight && ((state.flags[huntDodgedFlag(f)] && state.heat[f] >= HUNT_CORNERED_HEAT) || state.heat[f] >= HUNT_CORNERED_FIRST)) return { ...c, enable: { flag: '__never__' }, locked: HUNT_CORNERED_LOCK }
+  if (!f || isFightRow(c)) return c
+  const cornered = canFight && ((state.flags[huntDodgedFlag(f)] && state.heat[f] >= HUNT_CORNERED_HEAT) || state.heat[f] >= HUNT_CORNERED_FIRST)
+  if (c.effects.startChapter && !(cornered && namedHunter(state) && NAMED_RUNS.has(c.id))) return c
+  if (cornered) {
+    // v152: Valerius and Nim never fully corner you. The bargain, Nim's Drop, and a run that costs Health stay open.
+    if (namedHunter(state) && NAMED_OPEN.has(c.id)) {
+      if (!NAMED_RUNS.has(c.id)) return c
+      return { ...c, sub: `${c.sub ? `${c.sub} ` : ''}${NAMED_RUN_COST}`, enable: { healthMin: 2 }, locked: NAMED_RUN_LOCK, effects: { ...c.effects, health: (c.effects.health ?? 0) - 1 } }
+    }
+    return { ...c, enable: { flag: '__never__' }, locked: HUNT_CORNERED_LOCK }
+  }
   const pay = PAY_ROWS.has(c.id)
   if (pay && state.flags[huntPaidFlag(f)]) return { ...c, enable: { flag: '__never__' }, locked: HUNT_PAID_LOCK }
   const mark: Record<string, boolean> = { [huntDodgedFlag(f)]: true }
   if (pay) mark[huntPaidFlag(f)] = true
   return { ...c, effects: { ...c.effects, flag: { ...(c.effects.flag ?? {}), ...mark } } }
 }
+
+/** v152: the named hunters: Valerius (camp hunt at Cartel 7+) and Nim (the carapace hunter on the Spine). */
+export function namedHunter(state: GameState): boolean {
+  if (isSybellaOverlay(state)) return false
+  if (isCampHunt(state)) return (state.heat?.cartel ?? 0) >= 7
+  if (isSpineHunt(state)) return spineHunterFor(state).kind === 'carapace'
+  return false
+}
+const NAMED_OPEN = new Set(['hunter-bargain', 'spine-bargain', 'spine-offer', 'hunter-run', 'hunter-blind', 'hunter-ride', 'spine-shade'])
+const NAMED_RUNS = new Set(['hunter-run', 'hunter-blind', 'hunter-ride', 'spine-shade'])
+export const NAMED_RUN_COST = 'Costs 1 Health.'
+export const NAMED_RUN_LOCK = 'Too hurt to run.'
 
 function findId(rows: Choice[], id: string): Choice | null {
   return rows.find((c) => c.id === id) ?? null

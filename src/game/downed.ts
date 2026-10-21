@@ -26,7 +26,11 @@ export function nearCorvin(state: GameState): boolean {
 
 export const DOWN_WON_NOTE = 'You won, and you collapse anyway. Too hurt to stand yet. The ground keeps you a minute.'
 
+/** v152: the Lockdown Gate zaps you on the way in. */
+export const GATE_ZAP_LINE = 'The gate rail bites before your hand finds the bars. Blue light, then dust. The handler does not even look up. Cartel Heat +1.'
+
 export function downedNote(state: GameState): string {
+  if (state.flags.gateZap && !knotRescue(state)) return GATE_ZAP_LINE
   if (knotRescue(state)) {
     return `You collapse. Too hurt to fight. The Knot at your brow pulls tight, and then Ossa's stilts are beside your head. "I said I could find you." Once. She will not make it a habit.`
   }
@@ -64,7 +68,7 @@ export function wakeEffect(state: GameState): Effect {
   if (knotRescue(state)) {
     return {
       health: 3,
-      unsetFlag: ['downed', 'downedNote', 'downedKind', 'downedWon', 'hunterHere', 'hunterFrom'],
+      unsetFlag: ['downed', 'downedNote', 'downedKind', 'downedWon', 'gateZap', 'hunterHere', 'hunterFrom'],
       flag: { knotRescued: true, ossaPulled: true },
       flash: "Ossa binds the cut with her own resin and hauls you into rib-shade. Health returns. \"That was the one. Wear the Knot anyway.\"",
     }
@@ -76,7 +80,7 @@ export function wakeEffect(state: GameState): Effect {
       health: 2,
       sap: paySalve ? undefined : -1,
       remove: paySalve ? { salve: 1 } : undefined,
-      unsetFlag: ['downed', 'downedNote', 'downedKind', 'downedWon'],
+      unsetFlag: ['downed', 'downedNote', 'downedKind', 'downedWon', 'gateZap'],
       flag: { ossaPulled: true },
       flash: paySalve
         ? 'Ossa takes your Resin Salve and binds the cut. Health returns. The tin is lighter.'
@@ -87,7 +91,7 @@ export function wakeEffect(state: GameState): Effect {
     return {
       health: 2,
       sap: state.sap > 0 ? -1 : undefined,
-      unsetFlag: ['downed', 'downedNote', 'downedKind', 'downedWon', 'hunterHere', 'hunterFrom'],
+      unsetFlag: ['downed', 'downedNote', 'downedKind', 'downedWon', 'gateZap', 'hunterHere', 'hunterFrom'],
       flag: { corvinPulled: true },
       flash: 'Corvin gets you upright behind the rock. Health returns. The minute on the ground cost sap. "Walk soft," he says.',
     }
@@ -98,7 +102,7 @@ export function wakeEffect(state: GameState): Effect {
       health: 2,
       sap: scrap ? undefined : -1,
       remove: scrap ? { scrap: 1 } : undefined,
-      unsetFlag: ['downed', 'downedNote', 'downedKind', 'downedWon'],
+      unsetFlag: ['downed', 'downedNote', 'downedKind', 'downedWon', 'gateZap'],
       flag: { oilPulled: true },
       flash: scrap
         ? 'He takes a twist of scrap for the resin he wastes on you. Health returns. "Do not make a habit."'
@@ -111,7 +115,7 @@ export function wakeEffect(state: GameState): Effect {
     return {
       health: 1,
       heat: { cartel: 2 },
-      unsetFlag: ['downed', 'downedNote', 'downedKind', 'downedWon', 'hunterHere', 'hunterFrom'],
+      unsetFlag: ['downed', 'downedNote', 'downedKind', 'downedWon', 'gateZap', 'hunterHere', 'hunterFrom'],
       goto: 'camp:yard',
       flash: 'You wake in the Yard. Feet raw. Cartel Heat climbed while you were down. Health is a thread. Too hurt to swing until it holds.',
     }
@@ -119,7 +123,7 @@ export function wakeEffect(state: GameState): Effect {
   return {
     health: 1,
     sap: state.sap > 0 ? -1 : undefined,
-    unsetFlag: ['downed', 'downedNote', 'downedKind', 'downedWon', 'hunterHere', 'hunterFrom'],
+    unsetFlag: ['downed', 'downedNote', 'downedKind', 'downedWon', 'gateZap', 'hunterHere', 'hunterFrom'],
     flash: 'You get up. Health is a thread. The minute on the ground cost sap. Too hurt to fight until it holds.',
   }
 }
