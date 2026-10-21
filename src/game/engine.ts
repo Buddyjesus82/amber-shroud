@@ -42,6 +42,7 @@ import {
 } from './campJob'
 import { jaxsonAway, markMetOnLeave, matchPersonQuery, personAtScene } from './people'
 import { downedNote, knotRescue, wakeEffect } from './downed'
+import { valeriusResting } from './valeriusRest'
 import { HANDS_LEFT_SUB, KNOT_FREE_SUB, RUN_OVER_LABEL, RUN_OVER_NOTE, RUN_OVER_SAP_NOTE, RUN_OVER_SUB, handsLeft, restoreCheckpoint, withCheckpoint } from './hands'
 import { markFirstDrop } from './firstDrop'
 import { amberFindSign, downedSign, lowHealthSign, sandTouchReply } from './sandSign'
@@ -853,6 +854,7 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     const restart = HUNT_GROUND.has(state.sceneId) && next.sceneId !== state.sceneId
     const carried = restart ? 0 : Number(next.flags.huntQuiet ?? 0)
     next.flags = { ...next.flags, huntQuiet: carried + 1 }
+    if (next.flags.valeriusRest) next.flags = { ...next.flags, valeriusQuiet: Number(next.flags.valeriusQuiet ?? 0) + 1 }
   }
   // A word or a deal with the person in front of you resolves before anything hunts you: a talk beat never
   // opens an interrupting hunt or road fight. The next beat on the new ground can.
@@ -875,6 +877,7 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
       sybellaShadowed: from.startsWith('maw:') || next.hubId === 'redmaw' ? true : next.flags.sybellaShadowed,
       sybellaShadowStep: interrupt === 'maw:sybella-shadow' ? Number(next.flags.sceneSteps ?? 0) + (next.sceneId !== state.sceneId ? 1 : 0) : next.flags.sybellaShadowStep,
       metHandler: interrupt === 'camp:hunter' ? true : next.flags.metHandler,
+      huntNoValerius: interrupt === 'camp:hunter' ? valeriusResting(next) : next.flags.huntNoValerius,
       valeriusCool: interrupt === 'camp:hunter' ? false : next.flags.valeriusCool,
       ...(interrupt === 'spine:hunter'
         ? {
@@ -1342,7 +1345,7 @@ export function noticeHunt(state: GameState): GameState {
     huntQuiet: 0,
     fightQuiet: 0,
     ...(maw ? { sybellaShadowed: true, sybellaShadowStep: Number(state.flags.sceneSteps ?? 0) } : {}),
-    ...(state.hubId === 'camp04' ? { metHandler: true } : {}),
+    ...(state.hubId === 'camp04' ? { metHandler: true, huntNoValerius: valeriusResting(state) } : {}),
     ...(state.hubId === 'spine' ? { spineHunterKind: spineHunterKindAt(state.heat.strays), metCarapace: spineHunterKindAt(state.heat.strays) === 'carapace' ? true : state.flags.metCarapace } : {}),
   }
   const hunted = { ...state, flags }
