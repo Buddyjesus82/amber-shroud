@@ -352,6 +352,8 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   if (state.door === 'prisoner' && (id === 'crisis:spine' || id === 'crisis:thresh')) return 'down'
   if (id === 'camp:gate') return 'guard'
   if (id === 'camp:forced') return 'storm'
+  // v154: the Court is the hall, not Thalia's portrait. Her portrait stays on her scene and the Stairs, so the three no longer look like one screen.
+  if (id === 'thresh:court') return 'threshold'
   const who = npcCover(id, state)
   if (who) return who
 
