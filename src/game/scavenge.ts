@@ -31,6 +31,8 @@ export function hubRoam(state: GameState): boolean {
 export function canScavenge(state: GameState): boolean {
   if (!hubRoam(state)) return false
   const id = sceneOf(state)
+  // v157: no Scavenge on The Stairs, from the Court or the opening.
+  if (id === 'thresh:stairs') return false
   if (id.startsWith('crisis:') || id.startsWith('open:') || id.startsWith('ch1:') || id.startsWith('ch2:')) {
     return false
   }

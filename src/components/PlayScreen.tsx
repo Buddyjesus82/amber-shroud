@@ -1,4 +1,4 @@
-import { CRUCIBLE_SCENES } from '../game/content/crucible'
+import { CRUCIBLE_SCENES, STAIRS } from '../game/content/crucible'
 import { typedHints } from '../game/politeAsk'
 import { Fragment, useEffect, useRef, useState, type CSSProperties } from 'react'
 import { HUBS } from '../game/content/catalog'
@@ -74,6 +74,8 @@ type HeldScreen = {
   art: string
   band: CSSProperties
   result: string
+  /** v157: the screen it was made on had no Map (The Stairs, the Crucible): keep it hidden while held. */
+  noNav?: boolean
   /** The state the result belongs to. Any other move (Map, Gear, typed) drops the hold. */
   stamp: string
 }
@@ -103,6 +105,9 @@ function heldStamp(s: GameState): string {
 function cap(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1)
 }
+
+/** v157: The Stairs read the same from the Court as in the opening: no hub sub-label. */
+const NO_HUB_LABEL = new Set<string>([STAIRS])
 
 export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Props) {
   const scene = sceneOf(state)
@@ -173,7 +178,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     if (HOLD_RESULTS && moved && next.flash && !fightResult && !noteOnly && !newChapter && scene.kind !== 'crisis') {
       const heldNext: HeldScreen = {
         title: placeTitle,
-        meta: hub ? hub.name : scene.id === 'ch1:storm' ? 'Camp-04' : scene.chapterId === 'cache-run' ? cap(ROADS[state.door].name) : null,
+        meta: hub && !NO_HUB_LABEL.has(scene.id) ? hub.name : scene.id === 'ch1:storm' ? 'Camp-04' : scene.chapterId === 'cache-run' ? cap(ROADS[state.door].name) : null,
         // His cover never wears a speaker's name.
         face: isMaskedFlash(next.flash) ? null : face,
         body: shownText(state, bodyOf(state)),
@@ -181,6 +186,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
         art: isMaskedFlash(next.flash) ? MASKED_ART : artSrc,
         band: isMaskedFlash(next.flash) ? MASKED_BAND : artBand,
         result: shownText(next, next.flash),
+        noNav: !showNav,
         stamp: heldStamp(next),
       }
       // Anything missing and the hold is skipped: the result shows on the new screen, as before.
@@ -475,7 +481,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
               {f} {state.heat[f]}
             </button>
           ))}
-          {showNav ? (
+          {showNav && !held?.noNav ? (
             <button type="button" className="map-btn" onClick={() => setMapOpen(true)}>
               Map
             </button>
@@ -484,7 +490,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
         <div className="place-line">
           <strong>{held ? held.title : placeTitle}</strong>
           <span className="place-meta">
-            {held ? held.meta : hub ? hub.name : scene.id === 'ch1:storm' ? 'Camp-04' : scene.chapterId === 'cache-run' ? cap(ROADS[state.door].name) : null}
+            {held ? held.meta : hub && !NO_HUB_LABEL.has(scene.id) ? hub.name : scene.id === 'ch1:storm' ? 'Camp-04' : scene.chapterId === 'cache-run' ? cap(ROADS[state.door].name) : null}
             {savedCue ? <em className="saved-cue">Saved</em> : null}
           </span>
         </div>
