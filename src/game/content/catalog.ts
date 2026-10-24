@@ -243,7 +243,7 @@ export const ITEMS: Record<ItemId, ItemDef> = {
     id: 'maw_plate',
     name: 'Maw Plate',
     kind: 'gear',
-    desc: "A curved plate pried from a rib-worm's mouth. A crafting material. Varro the Bonewright works it.",
+    desc: "A curved plate pried from a rib-worm's mouth. A crafting material.",
   },
   plated_buckler: {
     id: 'plated_buckler',

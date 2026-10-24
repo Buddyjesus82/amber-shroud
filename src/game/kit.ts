@@ -308,7 +308,14 @@ export function gearLookLine(state: GameState): string {
 export const SCAV_PACK_RECIPE = { scrap: 3, sinew_cord: 1 } as const
 export const SCAV_PACK_LOCKED = 'Needs 3 scrap and 1 Sinew Cord'
 
-export function listedKit(items: Partial<Record<ItemId, number>>): KitChip[] {
+/** v162: the Maw Plate names Varro as its crafter only after he has said so himself (plateHinted). */
+export const MAW_PLATE_VARRO = ' Varro the Bonewright works it.'
+export function itemDesc(id: ItemId, state: Pick<GameState, 'flags'>): string {
+  const d = ITEMS[id].desc
+  return id === 'maw_plate' && state.flags.plateHinted ? d + MAW_PLATE_VARRO : d
+}
+
+export function listedKit(items: Partial<Record<ItemId, number>>, hinted = false): KitChip[] {
   return (Object.keys(items) as ItemId[])
     .filter((id) => (items[id] ?? 0) > 0 && ITEMS[id])
     .map((id) => ({
@@ -316,7 +323,7 @@ export function listedKit(items: Partial<Record<ItemId, number>>): KitChip[] {
       name: ITEMS[id].name,
       n: items[id] ?? 0,
       kind: ITEMS[id].kind,
-      desc: ITEMS[id].desc,
+      desc: id === 'maw_plate' && hinted ? ITEMS[id].desc + MAW_PLATE_VARRO : ITEMS[id].desc,
       slot: ITEMS[id].slot,
       strike: ITEMS[id].strike,
       shell: ITEMS[id].shell,

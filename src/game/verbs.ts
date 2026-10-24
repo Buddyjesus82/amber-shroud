@@ -3,6 +3,7 @@ import { ITEMS } from './content/catalog'
 import { beginEncounter, roadPressureScene } from './encounter'
 import { sceneSearch } from './help'
 import { classifyLook, directedLookFlash, roomLookEffect } from './look'
+import { itemDesc } from './kit'
 import { personAtScene, type Person } from './people'
 import { talkIntentsFor } from './talk'
 import { vendorFor } from './trade'
@@ -87,7 +88,7 @@ function lookHit(state: GameState, scene: Scene, hay: string, labels: string[]):
   const item = itemHit(target, state)
   if (item) {
     const def = ITEMS[item]
-    return { effects: { flash: clip(`${def.name}. ${def.desc}`, 200) }, verb: 'look' }
+    return { effects: { flash: clip(`${def.name}. ${itemDesc(item, state)}`, 200) }, verb: 'look' }
   }
   const button = labels.find((label) => label.toLowerCase().includes(target) || target.includes(label.toLowerCase()))
   if (button) {
