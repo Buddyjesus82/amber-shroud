@@ -45,12 +45,19 @@ const OFFER_IDS = new Set(['job', 'inside', 'station', 'sabotage', 'accept'])
 /** Talk-like scenes that are not marked as talk in the data: the skiff bay's three crews and the two guard stops. */
 const MASKED_QUIET_EXTRA = new Set(['camp:bay', 'thresh:guard', 'thresh:court-guard', 'camp:forced', 'spine:hunter', 'thresh:hunter'])
 
+/** A choice that only walks you to another scene (it may spend a tick). Not an offer on this scene. */
+function isHintButton(c: Choice): boolean {
+  const fx = c.effects
+  return !!fx.goto && Object.keys(fx).every((k) => k === 'goto' || k === 'ticks')
+}
+
 export function maskedQuietScene(id: string): boolean {
   if (id.includes('kaelen')) return true
   const sc = getScene(id)
   if (sc.kind === 'talk' || sc.speaker) return true
   if (MASKED_QUIET_EXTRA.has(id)) return true
-  if (sc.choices?.some((c) => OFFER_IDS.has(c.id))) return true
+  // v159: a goto-only button ("go back to Jaxson") is a hint, not an offer. Only a real offer silences him.
+  if (sc.choices?.some((c) => OFFER_IDS.has(c.id) && !isHintButton(c))) return true
   return !!personAtScene(id) || !!vendorFor(id) || isRumorCounter(id)
 }
 
@@ -157,6 +164,18 @@ function stamp(next: GameState, how: MaskedSighting): GameState {
   return next
 }
 
+const GLIMPSES = [MASKED_GLIMPSE_LINE, ...MASKED_GLIMPSE_LINES_EXTRA]
+/** Where the Prisoner's guaranteed first glimpse can land: the three camp scenes the job walks through. */
+export const FORCED_GLIMPSE_SCENES: readonly string[] = ['camp:vents', 'camp:yard', 'camp:guard']
+
+function forcedCampGlimpse(state: GameState, next: GameState, fx: { homeRoad?: unknown }): boolean {
+  const f = next.flags
+  if (state.door !== 'prisoner' || f.noMasked || fx.homeRoad) return false
+  if (!f.jaxsonInside || Number(f.maskedSeen ?? 0) > 0) return false
+  if (!FORCED_GLIMPSE_SCENES.includes(next.sceneId)) return false
+  return !f.encounterHere && !f.hunterHere && !f.strayHunterHere && !f.maskedHere && !f.downed
+}
+
 /**
  * Called once at the end of every effect. A new scene may carry a sighting; a hunt or ambush that just
  * fired may be stopped by him. Never on a fight, a hunt, a Down, or a crisis; never two scenes in a row.
@@ -170,6 +189,11 @@ export function maskedPass(state: GameState, next: GameState, fx: { ambush?: unk
   }
   const arrived = next.sceneId !== state.sceneId
   if (next.flags.downed || (next.health ?? 1) <= 0) return next
+  // v159: the Prisoner's first sighting is guaranteed in the home camp, once Jaxson's job is taken.
+  if (arrived && forcedCampGlimpse(state, next, fx)) {
+    next.flash = appendFlash(next, GLIMPSES[roll(next, 'line', GLIMPSES.length)])
+    return stamp(next, 'glimpse')
+  }
   if (!maskedActive(next) || maskedQuietScene(state.sceneId)) return next
   // The road between a home camp and the Maw is a transition: he stays out of it.
   if (fx.homeRoad) return next
@@ -205,7 +229,8 @@ export function maskedPass(state: GameState, next: GameState, fx: { ambush?: unk
   if (!arrived || next.flags.encounterHere || next.flags.hunterHere || next.flags.strayHunterHere) return next
 
   if (roll(next, 'sight', MASKED_ODDS) !== 0) return next
-  const r = roll(next, 'kind', 20)
+  // v159: the first sighting after the opening is always a glimpse (it used to be a fixed block for the Outcast). The block stays a normal roll later.
+  const r = state.sceneId.startsWith('open:') ? 0 : roll(next, 'kind', 20)
   // 0-8 glimpse, 9-14 sign, 15-19 threat.
   if (r < 9) {
     const lines = [MASKED_GLIMPSE_LINE, ...MASKED_GLIMPSE_LINES_EXTRA]
