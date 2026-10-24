@@ -1,26 +1,28 @@
 import { ROADS } from '../roads'
 import type { Choice, Cond, ItemId, Scene } from '../types'
-import { PLATE_BASES, PLATE_LOCKED, PLATE_RECIPE } from '../kit'
-import { ITEMS } from './catalog'
 
 // v160: Varro and the Maw Plate.
 export const PLATE_HINT = `"You lived. How rude. If a rib-worm ever leaves you its mouth-plate, don't pawn it. Bring it here with cord and scrap, and I will put it where it hurts them."`
-const HAS_PLATE: Cond = { itemMin: ['maw_plate', 1] }
-const PLATE_MATS: Cond[] = [
-  HAS_PLATE,
-  { itemMin: ['scrap', PLATE_RECIPE.scrap] },
-  { itemMin: ['sinew_cord', PLATE_RECIPE.sinew_cord] },
-  { itemMin: ['vial_drop', PLATE_RECIPE.vial_drop] },
+// Literals on purpose: kit.ts and catalog.ts import the content graph, so reading them while this module loads breaks the bundle's load order.
+// scripts/v160.ts checks these match PLATE_LOCKED, PLATE_RECIPE and PLATING.
+const PLATE_LOCKED_LINE = 'Needs a Maw Plate, the piece, 3 scrap, 1 Sinew Cord and 3 Drops.'
+const PLATE_PIECES: [ItemId, string][] = [
+  ['scrap_buckler', 'Scrap Buckler'],
+  ['scav_wrap', 'Scav Wrap'],
+  ['dust_cloak', 'Dust Cloak'],
+  ['head_wrap', 'Head Wrap'],
+  ['shin_wraps', 'Shin Wraps'],
 ]
-const plateChoices: Choice[] = PLATE_BASES.map((base: ItemId) => {
-  const name = ITEMS[base].name
+const HAS_PLATE: Cond = { itemMin: ['maw_plate', 1] }
+const PLATE_MATS: Cond[] = [HAS_PLATE, { itemMin: ['scrap', 3] }, { itemMin: ['sinew_cord', 1] }, { itemMin: ['vial_drop', 3] }]
+const plateChoices: Choice[] = PLATE_PIECES.map(([base, name]) => {
   return {
     id: `plate-${base}`,
     label: `Plate the ${name}`,
     sub: `Maw Plate, ${name}, 3 scrap, 1 Sinew Cord, 3 Drops`,
     show: { all: [HAS_PLATE, { itemMin: [base, 1] }] },
     enable: { all: [...PLATE_MATS, { itemMin: [base, 1] }] },
-    locked: PLATE_LOCKED,
+    locked: PLATE_LOCKED_LINE,
     effects: { plate: base, ticks: 1 },
   }
 })
@@ -190,7 +192,7 @@ Varro is at his stall. He has watched buyers fail and kept the tray anyway. On i
       {
         tags: ['plate', 'maw plate', 'worm', 'rib-worm', 'rib worm', 'ribworm', 'mouth-plate', 'bone', 'bones'],
         show: HAS_PLATE,
-        reply: PLATE_LOCKED,
+        reply: PLATE_LOCKED_LINE,
         effects: { ticks: 1 },
       },
       {
