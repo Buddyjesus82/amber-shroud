@@ -36,6 +36,12 @@ export type ItemId =
   | 'scav_pack'
   | 'hauler_pack'
   | 'seeker_extractor'
+  | 'maw_plate'
+  | 'plated_buckler'
+  | 'plated_scav_wrap'
+  | 'plated_dust_cloak'
+  | 'plated_head_wrap'
+  | 'plated_shin_wraps'
 
 export type ItemKind = 'gear' | 'currency' | 'key' | 'weapon' | 'armor' | 'garment'
 /**
@@ -142,6 +148,8 @@ export type Effect = {
   returnCrisisFrom?: boolean
   /** Optional roam fight. Strike + 0-2 swing vs Shell, min 1 damage. */
   resolveEncounter?: 'fight' | 'skip' | 'guard' | 'feint' | 'trick' | 'run' | 'pull' | 'deal' | 'disguise' | 'core' | 'seeker' | 'resin'
+  /** v160: Varro plates this piece with a Maw Plate (see kit.ts PLATING). Worn stays worn. */
+  plate?: ItemId
   /** Bag full: take held finds back up to the free room. */
   bagRetry?: boolean
   /** Bag full: leave the held finds behind. */

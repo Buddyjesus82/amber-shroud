@@ -1,5 +1,29 @@
 import { ROADS } from '../roads'
-import type { Choice, Scene } from '../types'
+import type { Choice, Cond, ItemId, Scene } from '../types'
+import { PLATE_BASES, PLATE_LOCKED, PLATE_RECIPE } from '../kit'
+import { ITEMS } from './catalog'
+
+// v160: Varro and the Maw Plate.
+export const PLATE_HINT = `"You lived. How rude. If a rib-worm ever leaves you its mouth-plate, don't pawn it. Bring it here with cord and scrap, and I will put it where it hurts them."`
+const HAS_PLATE: Cond = { itemMin: ['maw_plate', 1] }
+const PLATE_MATS: Cond[] = [
+  HAS_PLATE,
+  { itemMin: ['scrap', PLATE_RECIPE.scrap] },
+  { itemMin: ['sinew_cord', PLATE_RECIPE.sinew_cord] },
+  { itemMin: ['vial_drop', PLATE_RECIPE.vial_drop] },
+]
+const plateChoices: Choice[] = PLATE_BASES.map((base: ItemId) => {
+  const name = ITEMS[base].name
+  return {
+    id: `plate-${base}`,
+    label: `Plate the ${name}`,
+    sub: `Maw Plate, ${name}, 3 scrap, 1 Sinew Cord, 3 Drops`,
+    show: { all: [HAS_PLATE, { itemMin: [base, 1] }] },
+    enable: { all: [...PLATE_MATS, { itemMin: [base, 1] }] },
+    locked: PLATE_LOCKED,
+    effects: { plate: base, ticks: 1 },
+  }
+})
 
 export const SMOKE_NO_MARK = 'Her eyes go to your bare brow. "You talked. The sand remembers talk."'
 export const RIM_NO_MARK = 'No mark on your brow. She listened anyway. She will come.'
@@ -146,11 +170,29 @@ Varro is at his stall. He has watched buyers fail and kept the tray anyway. On i
         mode: 'append',
         body: `He remembers the crowding. He will not forget it for free.`,
       },
+      {
+        if: { all: [{ flagUnset: 'plateHinted' }, { not: HAS_PLATE }] },
+        mode: 'append',
+        body: PLATE_HINT,
+      },
     ],
     choices: [
-      { id: 'back', label: 'Leave his stall', tone: 'quiet', effects: { goto: 'maw:market' } },
+      ...plateChoices,
+      { id: 'back', label: 'Leave his stall', tone: 'quiet', effects: { goto: 'maw:market', flag: { plateHinted: true } } },
     ],
     intents: [
+      {
+        tags: ['plate', 'maw plate', 'worm', 'rib-worm', 'rib worm', 'ribworm', 'mouth-plate', 'bone', 'bones'],
+        show: { not: HAS_PLATE },
+        reply: PLATE_HINT,
+        effects: { ticks: 1, flag: { plateHinted: true } },
+      },
+      {
+        tags: ['plate', 'maw plate', 'worm', 'rib-worm', 'rib worm', 'ribworm', 'mouth-plate', 'bone', 'bones'],
+        show: HAS_PLATE,
+        reply: PLATE_LOCKED,
+        effects: { ticks: 1 },
+      },
       {
         tags: ['walking amber', 'walking'],
         show: { flag: 'heardWalkingAmber' },

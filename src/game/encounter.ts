@@ -8,7 +8,14 @@ import { CARAPACE_HUNTER, SPINE_HUNTER } from './content/spineHunter'
 import type { Choice, Effect, FlagMap, GameState, ItemId } from './types'
 import { hash, OPENERS, sandAnswers, PAIR_LINE, HUSK_CONTROLLER_LINE, sandGripLine, TERRAINS, terrainPool, type Terrain, type TerrainId } from './fightTricks'
 
-export type EncounterKind = 'jackal' | 'cutter' | 'courtguard' | 'tick' | 'pup' | 'scavenger' | 'patrol' | 'handler' | 'hound' | 'overseer' | 'collector' | 'carapace' | 'husk' | 'runner' | 'strayhunter' | 'strayhound' | 'masked'
+export type EncounterKind = 'jackal' | 'cutter' | 'courtguard' | 'tick' | 'pup' | 'scavenger' | 'patrol' | 'handler' | 'hound' | 'overseer' | 'collector' | 'carapace' | 'husk' | 'runner' | 'strayhunter' | 'strayhound' | 'masked' | 'ribworm'
+
+export const RIBWORM_LINE = 'The dune breathes. A rib-worm noses up through the sand, ringed like an old spine, mouth all grit and grinding plates.'
+export const RIBWORM_WIN = 'It sinks and does not come back up. The sand settles over it.'
+/** v160: round 1, your first swing hits half as hard: it is still under the sand. */
+export const RIBWORM_BURROW_LINE = 'Burrowed: your first hit does half damage.'
+/** Stray ground: odds in 7 that a stray-pool fight is a rib-worm (weight 1 beside the six others). */
+export const RIBWORM_IN_7 = 1
 
 /** Fight hits. Sap stays thirst/travel. */
 export const HEALTH_MAX = 6
@@ -25,6 +32,8 @@ type Spec = {
 const SPECS: Spec[] = [
   // The masked figure: he cannot be killed. A fight with him always ends with him walking off.
   { kind: 'masked', name: 'Masked Figure', strike: 1, shell: 3, hp: 3, line: MASKED_BLOCK_LINE },
+  // v160: the rib-worm. Spine and Cache Run stray ground. A mini-boss: it burrows (your first swing is halved) and always leaves its mouth-plate.
+  { kind: 'ribworm', name: 'Rib-worm', strike: 4, shell: 2, hp: 5, line: RIBWORM_LINE },
   { kind: 'strayhunter', ...STRAY_HUNTER_ENCOUNTERS.strayhunter },
   { kind: 'strayhound', ...STRAY_HUNTER_ENCOUNTERS.strayhound },
   {
@@ -253,6 +262,13 @@ export function encounterGround(state: GameState): boolean {
   return ROAD_BEATS.has(state.sceneId)
 }
 
+function ribwormRoll(state: GameState): number {
+  let h = (Math.imul(seed(state) + 0x1b3d, 374761393) + 668265263) >>> 0
+  for (const ch of 'ribworm') h = Math.imul(h ^ ch.charCodeAt(0), 2246822519) >>> 0
+  h ^= h >>> 15
+  return (h >>> 0) % 7
+}
+
 export function pickEncounterKind(state: GameState): EncounterKind {
   const n = seed(state)
   const turf = turfFaction(state)
@@ -271,6 +287,8 @@ export function pickEncounterKind(state: GameState): EncounterKind {
     return pool[n % pool.length]
   }
   const pool: EncounterKind[] = ['scavenger', 'scavenger', 'jackal', 'jackal', 'tick', 'pup']
+  // v160: weight 1 in 7 on stray ground (Spine and the Outcast Cache Run). Its own bucket so the rest of the pool does not shift.
+  if (ribwormRoll(state) < RIBWORM_IN_7) return 'ribworm'
   return pool[n % pool.length]
 }
 
@@ -661,7 +679,7 @@ export function runChance(state: GameState): number {
   let p = 60 + terrainOf(state).run
   if (spec.kind === 'handler') p -= 20
   if (state.flags.encounterPair && Number(state.flags.encounterHp ?? 0) >= 2) p -= 10
-  if (state.equipped?.legs === 'shin_wraps') p += 10
+  if ((state.equipped?.legs === 'shin_wraps' || state.equipped?.legs === 'plated_shin_wraps')) p += 10
   return Math.max(10, Math.min(90, p))
 }
 
@@ -680,7 +698,7 @@ function pocket(state: GameState): number {
  */
 /** People carry salve sometimes. Beasts never do. */
 export const HUMAN_KINDS: readonly EncounterKind[] = ['cutter', 'courtguard', 'scavenger', 'patrol', 'handler', 'overseer', 'collector', 'carapace', 'strayhunter', 'strayhound']
-export const BEAST_KINDS: readonly EncounterKind[] = ['jackal', 'tick', 'pup', 'hound']
+export const BEAST_KINDS: readonly EncounterKind[] = ['jackal', 'tick', 'pup', 'hound', 'ribworm']
 /** Percent chance a downed human also carries a Resin Salve. */
 export const HUMAN_SALVE_PCT = 18
 
@@ -723,6 +741,8 @@ function pocketLoot(state: GameState, kind: EncounterKind): Partial<Record<ItemI
   if (kind === 'pup') return { glints: 1, scrap: 1 }
   // Grown Shard-Hound: the pup's pocket, plus the resin off its jaw.
   if (kind === 'hound') return { glints: 1, scrap: 2 }
+  // v160: the rib-worm always leaves its mouth-plate.
+  if (kind === 'ribworm') return { glints: 1, scrap: 2, maw_plate: 1 }
   if (kind === 'husk') {
     const roll = pocket(state)
     // Resin scrap from the plates; sometimes a Drop from the core. Never salve, never gear.
@@ -1006,6 +1026,11 @@ export function resolveEncounter(
   let dmgIn = enemyHit(state, theirStrike, c.shell, floor, harpoon + ground.them)
   if (dmgIn < hitBare) inTags.push(`Sun in their eyes: you take ${hitBare - dmgIn} less damage.`)
 
+  // v160: the rib-worm is still under the sand in round 1. Your first swing does half damage (never below 1).
+  if (spec.kind === 'ribworm' && round === 1 && attacking && dmgOut > 1) {
+    dmgOut = Math.max(1, Math.floor(dmgOut / 2))
+    outTags.push(RIBWORM_BURROW_LINE)
+  }
   let critOut = false
   if (attacking && dmgOut > 0 && roll(state, 'critYou', 10) < CRIT_IN_10) {
     dmgOut *= 2
@@ -1245,15 +1270,23 @@ export function resolveEncounter(
   if (theirHp <= 0) {
     const add = lootFor(state, spec.kind)
     if (snatched) add[snatched] = (add[snatched] ?? 0) + 1
-    const loot = lootLine(add, spec.kind === 'handler')
+    // v160: the rib-worm's Maw Plate is a guaranteed drop with its own plain line under the pocket loot.
+    const plateAdd: Partial<Record<ItemId, number>> = {}
+    if (spec.kind === 'ribworm' && add.maw_plate) plateAdd.maw_plate = add.maw_plate
+    const lootAdd = { ...add }
+    if (plateAdd.maw_plate) delete lootAdd.maw_plate
+    const loot = lootLine(lootAdd, spec.kind === 'handler')
     const back = snatched ? ` You take back your ${ITEMS[snatched]?.name ?? snatched}.` : ''
     const huskWin = spec.kind === 'husk'
+    const wormWin = spec.kind === 'ribworm'
     // The Hound-handler is never killed: he is beaten and limps off.
     const handlerWin = spec.kind === 'handler'
     const won = mutualWin ? MUTUAL_WIN_LINE : ''
     const outcome = handlerWin
       ? `${HANDLER_BEATEN} ${loot}.${back}${won}`
-      : huskWin
+      : wormWin
+        ? `${RIBWORM_WIN}\n\n${loot}.${back}${won}\n\n${lootLine(plateAdd)}.`
+        : huskWin
         ? `The amber heart shatters. The husk falls still. ${loot}.${back}${won}`
         : `They drop. ${loot}.${back}${won}`
     return holdCard(state, spec, `${hitCard}\n\n${outcome}`, outcome, {

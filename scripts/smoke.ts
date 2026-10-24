@@ -2737,7 +2737,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v159'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v160'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(!sw.includes('covers/camp04.jpg') && sw.includes('covers/yard.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -4285,7 +4285,7 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(GK.bagLoad(withItems({ shiv: 2 }, { weapon: 'shiv' } as GameState['equipped'])) === 1, 'a spare of a worn weapon takes a slot')
   assert(GK.bagLoad(withItems({ vial_drop: 3, salve: 4, scrap: 9, sinew_cord: 2 })) === 4, 'Drops, salves, scrap, and cord each stack into one slot')
   assert(GK.bagLoad(withItems({ glints: 12, scrip: 3, cache_map: 1, vial_empty: 4, scav_pack: 1, hauler_pack: 1, ossa_token: 1 })) === 0, 'coin, key items, empty vials, and bags ride free')
-  const STACKS: ItemId[] = ['vial_drop', 'salve', 'scrap', 'sinew_cord']
+  const STACKS: ItemId[] = ['vial_drop', 'salve', 'scrap', 'sinew_cord', 'maw_plate']
   for (const id of Object.keys(ITEMS) as ItemId[]) {
     if (GK.bagFree(id)) continue
     assert(GK.bagStacks(id) === STACKS.includes(id), `${id} stacks only if it is a small good`)
