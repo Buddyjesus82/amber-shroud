@@ -14,7 +14,7 @@ function ok(cond: unknown, msg: string) {
     console.log('FAIL', msg)
   }
 }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v160'"), 'SW cache v154')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v161'"), 'SW cache v154')
 const g = newGame('vessel')
 const at = (id: string, flags: Record<string, unknown> = {}) => ({ ...g, sceneId: id, hubId: 'threshold', flags: { ...g.flags, noMasked: true, stairsCleared: true, ...flags } }) as GameState
 const art = (s: GameState) => playCoverFile(playCoverKey(s, sceneOf(s)))

@@ -13,8 +13,17 @@ import type { GameState, ItemId } from '../src/game/types.ts'
 
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v160'"), 'SW cache v160')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v160'"), 'Build label v160')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v161'"), 'SW cache v161')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v161'"), 'Build label v161')
+
+// The Varro scene keeps its own literals (module load order); they must match the kit.
+{
+  const src = readFileSync('src/game/content/redMaw.ts', 'utf8')
+  ok(src.includes(`'${PLATE_LOCKED}'`), 'redMaw locked line matches PLATE_LOCKED')
+  ok(!/from '\.\.\/kit'|from '\.\/catalog'/.test(src), 'redMaw imports neither kit nor catalog at load')
+  const sc = visibleChoices({ ...newGame('outcast'), sceneId: 'maw:zafir', hubId: 'redmaw', items: { ...newGame('outcast').items, maw_plate: 1, scrap: 3, sinew_cord: 1, vial_drop: 3, ...Object.fromEntries(PLATE_BASES.map((b) => [b, 1])) } } as GameState)
+  for (const b of PLATE_BASES) ok(sc.some((c) => c.label === `Plate the ${ITEMS[b].name}` && c.effects.plate === b), `Varro row for ${b} matches the catalog name`)
+}
 
 // 1. The creature.
 const outcast = newGame('outcast')
