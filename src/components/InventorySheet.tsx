@@ -47,7 +47,7 @@ const LAYOUT: (EquipSlot | null)[] = ['cloak', 'head', 'garment', 'weapon', 'arm
 
 export function InventorySheet({ state, onClose, onChange }: Props) {
   const [tab, setTab] = useState<GearTab>('worn')
-  const chips = listedKit(state.items)
+  const chips = listedKit(state.items, !!state.flags.plateHinted)
   const held = heldOf(state.flags)
   const heldText = Object.keys(held).length ? heldNames(held) : ''
   const load = bagLoad(state)

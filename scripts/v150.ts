@@ -15,7 +15,7 @@ function ok(cond: unknown, msg: string) {
   }
 }
 const sw = readFileSync('public/sw.js', 'utf8')
-ok(sw.includes("CACHE = 'amber-shroud-v161'"), 'SW cache v150')
+ok(sw.includes("CACHE = 'amber-shroud-v162'"), 'SW cache v150')
 ok(sw.includes('covers/stall-empty.jpg`'), 'stall-empty.jpg precached')
 ok(existsSync('public/covers/stall-empty.jpg') && statSync('public/covers/stall-empty.jpg').size < 160_000, 'stall-empty.jpg in the repo, cover-sized')
 const at = (door: DoorId, flags: Record<string, unknown>) => {

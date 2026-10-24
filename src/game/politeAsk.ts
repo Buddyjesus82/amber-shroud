@@ -6,6 +6,7 @@
  */
 import { ITEMS } from './content/catalog'
 import { HUB_MAPS } from './content/maps'
+import { itemDesc } from './kit'
 import { PEOPLE, personAtScene, personKnown } from './people'
 import { moneyLabel, offersFor, vendorFor } from './trade'
 import type { Choice, GameState, Scene } from './types'
@@ -278,7 +279,7 @@ export function answerLate(state: GameState, scene: Scene, ask: LateAsk, said = 
   const item = itemWord(ask.obj)
   if (item) {
     const def = Object.values(ITEMS).find((d) => item.words.some((w) => d.name.toLowerCase().includes(w)))
-    if (def) return { flash: `${def.name}. ${def.desc}`, verb: 'look' }
+    if (def) return { flash: `${def.name}. ${itemDesc(def.id, state)}`, verb: 'look' }
   }
   return null
 }

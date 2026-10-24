@@ -13,8 +13,8 @@ import type { GameState, ItemId } from '../src/game/types.ts'
 
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v161'"), 'SW cache v161')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v161'"), 'Build label v161')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v162'"), 'SW cache v162')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v162'"), 'Build label v162')
 
 // The Varro scene keeps its own literals (module load order); they must match the kit.
 {
@@ -110,7 +110,7 @@ const spine = (extra: Partial<GameState> = {}, flags: Record<string, unknown> = 
 
 // 4. The Maw Plate and plated pieces.
 {
-  ok(ITEMS.maw_plate.kind === 'gear' && !ITEMS.maw_plate.slot && ITEMS.maw_plate.desc.includes('Varro'), 'Maw Plate is stacking gear and names Varro')
+  ok(ITEMS.maw_plate.kind === 'gear' && !ITEMS.maw_plate.slot && ITEMS.maw_plate.desc.includes('crafting material'), 'Maw Plate is stacking gear and is a plain crafting material')
   const shells: Record<string, number> = { plated_buckler: 2, plated_scav_wrap: 3, plated_dust_cloak: 3, plated_head_wrap: 2, plated_shin_wraps: 2 }
   for (const [id, n] of Object.entries(shells)) ok(ITEMS[id as ItemId].shell === n, `${id} Shell ${n}`)
   ok(!PLATING.hide_wrap && !PLATING.hide_gloves, 'Hound Hide and Hide Gloves are not plated')

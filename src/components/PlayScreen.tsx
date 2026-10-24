@@ -144,7 +144,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
   const hookOn = hook && isChoiceOn(state, hook.show) && isMawExit(state) && !(state.flags.chapter1Done && hub?.id !== 'redmaw')
   const road = roadChoice(state)
   const closing = !state.flags.chapter1Done && state.pressure >= 10 && !state.chapterId
-  const chips = listedKit(state.items)
+  const chips = listedKit(state.items, !!state.flags.plateHinted)
   const sapThin = state.sap <= 2
   const hpHurt = state.health <= 2
   const choices = held ? [] : visibleChoices(state)
