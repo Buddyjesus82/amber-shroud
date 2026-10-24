@@ -389,3 +389,18 @@ export function knotCarried(state: Pick<GameState, 'items'>): boolean {
 }
 export const KNOT_TIE_LOCKED = "Needs Ossa's Knot and a Head Wrap"
 export const KNOT_STRAYS_NOTE = 'The Knot at your brow: Strays who know Ossa let some of that go.'
+
+// ── v160: Maw Plate work (Varro, Red Maw only) ──
+
+/** Base piece -> its plated piece. Hound Hide and Hide Gloves are left out on purpose. */
+export const PLATING: Partial<Record<ItemId, ItemId>> = {
+  scrap_buckler: 'plated_buckler',
+  scav_wrap: 'plated_scav_wrap',
+  dust_cloak: 'plated_dust_cloak',
+  head_wrap: 'plated_head_wrap',
+  shin_wraps: 'plated_shin_wraps',
+}
+export const PLATE_BASES = Object.keys(PLATING) as ItemId[]
+/** One Maw Plate, the piece, 3 scrap, 1 Sinew Cord and 3 Drops. */
+export const PLATE_RECIPE = { maw_plate: 1, scrap: 3, sinew_cord: 1, vial_drop: 3 } as const
+export const PLATE_LOCKED = 'Needs a Maw Plate, the piece, 3 scrap, 1 Sinew Cord and 3 Drops.'

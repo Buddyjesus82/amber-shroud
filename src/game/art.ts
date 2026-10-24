@@ -20,6 +20,7 @@ export type CoverKey =
   | 'waste_scavenger'
   | 'amber_husk'
   | 'dust_jackal'
+  | 'rib_worm'
   | 'amber_tick'
   | 'shard_pup'
   | 'zafir'
@@ -139,6 +140,7 @@ const FILES: Record<CoverKey, string> = {
   waste_scavenger: 'waste-scavenger.jpg',
   amber_husk: 'amber-husk.jpg',
   dust_jackal: 'dust-jackal.jpg',
+  rib_worm: 'rib-worm.jpg',
   amber_tick: 'amber-tick.jpg',
   shard_pup: 'shard-pup.jpg',
 }
@@ -244,6 +246,8 @@ export const COVER_BAND: Record<CoverKey, [number, number]> = {
   amber_husk: [0.05, 0.95],
   // Ears to paws.
   dust_jackal: [0.1, 0.65],
+  // The breaching worm and its ringed maw, above the footprints.
+  rib_worm: [0.1, 0.9],
   // Legs, glowing sac, and the rock it clings to.
   amber_tick: [0.05, 0.75],
   // Crystal spines to paws.
@@ -322,6 +326,7 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
     if (kind === 'scavenger') return 'waste_scavenger'
     if (kind === 'husk') return 'amber_husk'
     if (kind === 'jackal') return 'dust_jackal'
+    if (kind === 'ribworm') return 'rib_worm'
     if (kind === 'tick') return 'amber_tick'
     if (kind === 'pup') return 'shard_pup'
     // No enemy art yet (husk, scavenger, cutter, jackal, tick, pup): the neutral ground cover, never a face from the scene.

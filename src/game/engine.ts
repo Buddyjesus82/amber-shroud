@@ -88,7 +88,7 @@ import { answerAsk, answerLate, hintLine, readAsk, readLateAsk, sceneVoice, voic
 import { pickLine } from './voices'
 import { applyScavenge, canScavenge, canSkim, skimHeat, skimLocked } from './scavenge'
 import { writeSave } from './save'
-import { bagCap, bagCount, bagFree, bagLoad, bagStacks, bagUnits, disguiseActive, fitBag, gearLookLine, heldNames, heldOf, KNOT_STRAYS_NOTE, KNOT_TIE_LOCKED, knotWorn, SCAV_PACK_LOCKED, SCAV_PACK_RECIPE, SLOT_LABEL, slotsFor, takeHeld, wornCount } from './kit'
+import { bagCap, bagCount, EQUIP_SLOTS, PLATE_LOCKED, PLATE_RECIPE, PLATING, bagFree, bagLoad, bagStacks, bagUnits, disguiseActive, fitBag, gearLookLine, heldNames, heldOf, KNOT_STRAYS_NOTE, KNOT_TIE_LOCKED, knotWorn, SCAV_PACK_LOCKED, SCAV_PACK_RECIPE, SLOT_LABEL, slotsFor, takeHeld, wornCount } from './kit'
 import { DISGUISE_SOFTEN_NOTE, disguiseArrival, softenCartel } from './disguise'
 import { repairSceneId } from './repair'
 import { isRumorCounter, matchRumorText, rumorChoices } from './rumors'
@@ -492,6 +492,7 @@ function closingBeats(next: GameState, fx: Effect, moved: boolean): GameState {
 }
 
 export function applyEffect(state: GameState, fx: Effect): GameState {
+  if (fx.plate) return platePiece(state, fx.plate)
   if (fx.restoreCheckpoint) {
     const back = restoreCheckpoint(state)
     if (back) return persist(back)
@@ -1203,6 +1204,30 @@ export function tieKnot(state: GameState): GameState {
   )
   if (!wasWorn) return next
   return persist({ ...next, equipped: { ...next.equipped, head: 'knotted_wrap' } })
+}
+
+/** v160: can Varro plate this piece right now? Needs the piece, a Maw Plate, 3 scrap, 1 Sinew Cord and 3 Drops. */
+export function canPlate(state: GameState, base: ItemId): boolean {
+  if (!PLATING[base] || (state.items[base] ?? 0) < 1) return false
+  return (Object.keys(PLATE_RECIPE) as (keyof typeof PLATE_RECIPE)[]).every((id) => (state.items[id] ?? 0) >= PLATE_RECIPE[id])
+}
+
+export const PLATE_DONE =
+  '"Hold still. Hold the plate." Varro rivets it with a bone punch and the cord. "That is bone doing a job. Not a rude one."'
+
+/** v160: one-to-one. The plate, the piece and the materials are spent; a worn piece stays worn as its plated self. */
+export function platePiece(state: GameState, base: ItemId): GameState {
+  const plated = PLATING[base]
+  if (!plated || !canPlate(state, base)) return persist({ ...state, flash: PLATE_LOCKED })
+  const slot = EQUIP_SLOTS.find((s) => state.equipped?.[s] === base)
+  const equipped = { ...state.equipped }
+  if (slot) delete equipped[slot]
+  const next = applyEffect(
+    { ...state, equipped },
+    { remove: { ...PLATE_RECIPE, [base]: 1 }, add: { [plated]: 1 }, ticks: 1, flash: PLATE_DONE },
+  )
+  if (!slot) return next
+  return persist({ ...next, equipped: { ...next.equipped, [slot]: plated } })
 }
 
 export function canCraftScavPack(state: GameState): boolean {
