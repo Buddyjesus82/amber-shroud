@@ -29,7 +29,7 @@ import { coverBand, playCoverFile, playCoverKey } from '../game/art'
 import { HANDS_MAX, handsLeft, handsPips } from '../game/hands'
 import { bayLookout } from '../game/campJob'
 import { isPressureOverlay, pressureFace } from '../game/hunter'
-import { isMaskedFlash } from '../game/masked'
+import { isMaskedFlash, maskedQuietScene } from '../game/masked'
 import { DISGUISE_SOFTEN_NOTE } from '../game/disguise'
 import { ROADS, shownText } from '../game/roads'
 import { scavengeLock } from '../game/scavenge'
@@ -169,13 +169,15 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     const fightResult = isEncounterResult(state) || !!next.flags.encounterHere
     // A note that only rides along (the Vessel cloth line) shows on the next screen; it is not a result to hold.
     const noteOnly = next.flash === DISGUISE_SOFTEN_NOTE
+    // v159: his line never holds over a talk or offer card; it shows on the ground you arrive at, in plain text.
+    const maskedOnQuiet = isMaskedFlash(next.flash) && maskedQuietScene(state.sceneId)
     // Leaving a crisis (Empty, Approach Dry) shows its result on the new ground, so the dry title does not linger.
     // Starting a new chapter (leaving for the road) is not held: the result shows on the road screen, with its buttons.
     const newChapter = next.chapterId !== state.chapterId
     // v114 hotfix: holding a result on the old screen left players on iOS with no buttons, Map, or Do box.
     // Results now show on the new screen, which always has its own actions.
     try {
-    if (HOLD_RESULTS && moved && next.flash && !fightResult && !noteOnly && !newChapter && scene.kind !== 'crisis') {
+    if (HOLD_RESULTS && moved && next.flash && !fightResult && !noteOnly && !maskedOnQuiet && !newChapter && scene.kind !== 'crisis') {
       const heldNext: HeldScreen = {
         title: placeTitle,
         meta: hub && !NO_HUB_LABEL.has(scene.id) ? hub.name : scene.id === 'ch1:storm' ? 'Camp-04' : scene.chapterId === 'cache-run' ? cap(ROADS[state.door].name) : null,

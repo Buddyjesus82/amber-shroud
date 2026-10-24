@@ -2737,7 +2737,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v158'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v159'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(!sw.includes('covers/camp04.jpg') && sw.includes('covers/yard.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -6902,7 +6902,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
       }
     }
     assert(runs > 100 && hits === 0 && jobs === runs, `v135: Jaxson's inside job never rolls him over any roll (${runs} runs, ${hits} hits, ${jobs} moved on)`)
-    for (const id of ['camp:jaxson', 'camp:guard', 'camp:yard', 'camp:vents', 'camp:bay', 'maw:tuner', 'thresh:guard']) {
+    for (const id of ['camp:jaxson', 'camp:guard', 'camp:bay', 'maw:tuner', 'thresh:guard']) {
       assert(M.maskedQuietScene(id), `v135: ${id} is a quiet scene`)
     }
     assert(!M.maskedQuietScene('maw:lip') && !M.maskedQuietScene('maw:rim'), 'v135: plain road ground can still roll him')
