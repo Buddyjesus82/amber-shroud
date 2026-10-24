@@ -651,10 +651,27 @@ function findId(rows: Choice[], id: string): Choice | null {
   return rows.find((c) => c.id === id) ?? null
 }
 
+const FIGHT_WORDS = /\b(fight|attack|bite|kill|stab|swing|hit|punch|strike|slug|smash)\b/
+const HOUND_WORDS = /\b(shard[- ]?hound|hound|dog|beast)\b/
+const HANDLER_WORDS = /\b(handler|hound[- ]handler|leash|man|valerius|overseer|baton)\b/
+
+/** v158: a typed fight in a camp hunt starts the fight with whoever is actually here (Valerius or the handler), never a mismatch. */
+export function campFightVerb(state: GameState, text: string): Choice | null {
+  if (!isCampHunt(state)) return null
+  const hay = text.toLowerCase()
+  if (!FIGHT_WORDS.test(hay)) return null
+  const rows = pressureChoices(state)
+  const houndOnly = HOUND_WORDS.test(hay) && !HANDLER_WORDS.test(hay.replace(/hound[- ]handler/g, 'handler'))
+  const row = findId(rows, houndOnly ? 'hunter-hound' : 'hunter-fight')
+  return row
+}
+
 /** Short Do verbs for a pressure card. Full button labels still match on their own. */
 export function pressureVerb(state: GameState, text: string): Choice | null {
   const rows = pressureChoices(state)
   if (!rows.length) return null
+  const fightRow = campFightVerb(state, text)
+  if (fightRow) return fightRow
   const hay = text.toLowerCase()
   if (/\bglint/.test(hay)) return rows.find((c) => /glint|evidence/.test(c.id)) ?? null
   if (/\bscrap/.test(hay)) return rows.find((c) => c.id.endsWith('scrap')) ?? null

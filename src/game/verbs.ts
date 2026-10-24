@@ -1,4 +1,4 @@
-import { isCampHunt } from './hunter'
+import { campFightVerb } from './hunter'
 import { ITEMS } from './content/catalog'
 import { beginEncounter, roadPressureScene } from './encounter'
 import { sceneSearch } from './help'
@@ -113,18 +113,9 @@ function wantsHide(hay: string): boolean {
 }
 
 function combatHit(state: GameState, scene: Scene, hay: string): DoHit | null {
-  if (wantsFight(hay) && isCampHunt(state) && /\b(shard[- ]?hound|hound|dog)\b/.test(hay) && !/\bhandler\b/.test(hay)) {
-    return {
-      effects: beginEncounter(state, 'hound', 'You go for the hound. The handler grins and unclips the lead.'),
-      verb: 'fight',
-    }
-  }
-  if (wantsFight(hay) && isCampHunt(state) && /\b(hound[- ]handler|handler)\b/.test(hay)) {
-    return {
-      effects: beginEncounter(state, 'handler', 'You go for the man with the leash. The hound stays on it.'),
-      verb: 'fight',
-    }
-  }
+  // v158: in a camp hunt the typed fight follows the real row (Valerius or the handler), never a fixed handler/hound.
+  const campFight = wantsFight(hay) ? campFightVerb(state, hay) : null
+  if (campFight) return { effects: campFight.effects, verb: 'fight' }
   if (wantsFight(hay)) {
     if (mouthHere(scene)) return null
     if (roadPressureScene(scene.id) && scene.kind !== 'talk' && scene.kind !== 'crisis' && scene.kind !== 'ending') {

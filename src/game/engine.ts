@@ -48,7 +48,7 @@ import { valeriusResting } from './valeriusRest'
 import { HANDS_LEFT_SUB, KNOT_FREE_SUB, RUN_OVER_LABEL, RUN_OVER_NOTE, RUN_OVER_SAP_NOTE, RUN_OVER_SUB, handsLeft, restoreCheckpoint, withCheckpoint } from './hands'
 import { markFirstDrop } from './firstDrop'
 import { amberFindSign, downedSign, lowHealthSign, sandTouchReply } from './sandSign'
-import { isPressureOverlay, isSybellaOverlay, pressureAppend, pressureChoices, pressureVerb, spineGround, spineHunterKindAt, straysHeard } from './hunter'
+import { campFightVerb, isPressureOverlay, isSybellaOverlay, pressureAppend, pressureChoices, pressureVerb, spineGround, spineHunterKindAt, straysHeard } from './hunter'
 import { bareFightIsRoad, offButton } from './verbs'
 import { roadHunterKind, secondStopRunner } from './roadHunt'
 import { noticeFaction, noticeGround, noticeLine, SCAVENGE_NOTICE_MAX, SCAVENGE_NOTICE_STEP } from './noticeHeat'
@@ -1774,6 +1774,9 @@ export function interpret(state: GameState, raw: string): GameState {
 
   if (isPressureOverlay(state)) {
     const shown = visibleChoices(state).filter((c) => isChoiceOn(state, c.enable))
+    // v158: a typed fight names the hunter who is actually here, before any fuzzy button match.
+    const fightRow = campFightVerb(state, text)
+    if (fightRow && isChoiceOn(state, fightRow.enable)) return withVerb(applyEffect(state, fightRow.effects), fightRow.id)
     const button = matchChoiceText(text, shown)
     if (button) return withVerb(applyEffect(state, button.effects), button.id)
     const pressed = pressureVerb(state, text)

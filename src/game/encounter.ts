@@ -853,6 +853,8 @@ function holdCard(state: GameState, spec: Spec, card: string, short: string, ext
         encounterFlash: short,
         fightTaught: true,
         encounterAt: state.ticks,
+        // v158: the fight just ended here: the next quick-tap rush (or stall) notice in this scene is spent, so a win's Heat cut is not undone at once.
+        timingNoticeAt: state.sceneId,
       },
     },
     flash: '',

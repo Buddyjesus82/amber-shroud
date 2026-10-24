@@ -33,7 +33,7 @@ export const STALL_STEP = 0.1
 
 const SAFE_SCENES = new Set([
   // Rest ground and safe shade.
-  'camp:bay', 'camp:lean', 'camp:cages', 'maw:tuner', 'maw:stilt', 'spine:shade', 'thresh:cell', 'thresh:court',
+  'camp:bay', 'camp:lean', 'camp:cages', 'camp:jaxson', 'camp:jaxson-cache', 'camp:jaxson-drop', 'maw:tuner', 'maw:stilt', 'spine:shade', 'thresh:cell', 'thresh:court',
   // Cutscene beats.
   'ch1:storm', 'ch1:end', 'ch1:land', 'thresh:crucible-rig', 'thresh:stairs', 'thresh:crucible-stairs',
 ])
