@@ -320,7 +320,7 @@ function authored(state: GameState, scene: Scene): string[] {
     return lines
   }
 
-  if (id === 'camp:kaelen-rumors' || id === 'thresh:kaelen-rumors') {
+  if (id === 'camp:kaelen-rumors' || id === 'thresh:kaelen-rumors' || id === 'roam:kaelen-rumors') {
     push(lines, 'The rumor shelf is headings and side trouble. He names a price with the pack, not with a sermon.')
     return lines
   }

@@ -1,6 +1,7 @@
 import type { Choice, GameState } from './types'
+import { jobBuyRows } from './rumorJobs'
 
-const RUMOR_SCENES = new Set(['camp:kaelen-rumors', 'thresh:kaelen-rumors'])
+const RUMOR_SCENES = new Set(['camp:kaelen-rumors', 'thresh:kaelen-rumors', 'roam:kaelen-rumors'])
 
 export type RumorShelf = 'intel' | 'side'
 
@@ -33,7 +34,8 @@ function tagRumor(c: Choice): Choice {
 /** Two shelves like Buy/Sell: Intel goes forward. Side trouble is area jobs. */
 export function rumorChoices(state: GameState, authored: Choice[]): Choice[] {
   if (!isRumorCounter(state.sceneId)) return authored
-  const tagged = authored.map(tagRumor)
+  // v163: the door's three leads sell at its home hub only (counter or road pass); elsewhere the sold-out row shows.
+  const tagged = [...authored, ...jobBuyRows(state)].map(tagRumor)
   const shelf = rumorShelfOf(state)
   const root = tagged.filter((c) => c.group !== 'intel' && c.group !== 'side')
   if (shelf === 'intel') {

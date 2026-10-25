@@ -92,6 +92,7 @@ import { bagCap, bagCount, EQUIP_SLOTS, PLATE_LOCKED, PLATE_RECIPE, PLATING, bag
 import { DISGUISE_SOFTEN_NOTE, disguiseArrival, softenCartel } from './disguise'
 import { repairSceneId } from './repair'
 import { isRumorCounter, matchRumorText, rumorChoices } from './rumors'
+import { isRumorSpot, jobWalkRows } from './rumorJobs'
 import { matchShopText, moneyLabel, pickPay, saleableCount, shopChoices, vendorFor } from './trade'
 import type { Choice, DoorId, Effect, EquipSlot, FlagMap, GameState, ItemId, Scene } from './types'
 
@@ -142,7 +143,7 @@ export const KAELEN_NO_NEW_RUMOR = '"Nothing new on the road. You already have K
 /** Trade screens: no rolls while you are in one (Kaelen, Jodi, Korvan, Jaxson's stall, every shop and rumor counter). */
 const TRADE_SCENES = new Set(['roam:kaelen', 'camp:kaelen', 'camp:kaelen-rumors', 'camp:relic', 'thresh:kaelen', 'thresh:kaelen-rumors', 'spine:jodi', 'spine:korvan', 'camp:lean'])
 export function isVendorScene(sceneId: string): boolean {
-  return TRADE_SCENES.has(sceneId) || !!vendorFor(sceneId) || isRumorCounter(sceneId)
+  return TRADE_SCENES.has(sceneId) || isRumorSpot(sceneId) || !!vendorFor(sceneId) || isRumorCounter(sceneId)
 }
 
 export function kaelenHeld(sceneId: string): boolean {
@@ -2083,7 +2084,7 @@ function visibleChoicesRaw(state: GameState): Choice[] {
     : isRumorCounter(state.sceneId)
       ? rumorChoices(state, authored).filter((c) => check(c.show, state))
       : authored
-  return [...bag, ...maskedPickup(state), ...withRest(state, withKaelenPass(state, hymnSapLocks(state, mawToll(state, rows))))]
+  return [...bag, ...maskedPickup(state), ...withRest(state, withKaelenPass(state, [...hymnSapLocks(state, mawToll(state, rows)), ...jobWalkRows(state)]))]
 }
 
 /** The Maw toll: diggers hold the rope down to the Fossil Ribs. Pay (more at higher Cartel Heat), slip past, or fight. Once a Maw visit. */

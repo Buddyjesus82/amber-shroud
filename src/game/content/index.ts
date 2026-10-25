@@ -4,6 +4,7 @@ import { cacheRunScenes } from './cacheRun'
 import { crisisScenes } from './crises'
 import { campKaelenScenes, roamKaelenScenes, threshKaelenScenes } from './kaelen'
 import { openingScenes } from './openings'
+import { rumorSpotScenes } from './rumorSpots'
 import { crucibleScenes } from './crucible'
 import { redMawScenes } from './redMaw'
 import { shadeHandScenes } from './shadeHands'
@@ -18,6 +19,7 @@ const all: Scene[] = [
   ...campScenes,
   ...campKaelenScenes,
   ...roamKaelenScenes,
+  ...rumorSpotScenes,
   ...spineScenes,
   ...shadeHandScenes(),
   ...threshKaelenScenes,

@@ -543,6 +543,12 @@ export const roamKaelenScenes: Scene[] = [
         },
       },
       {
+        id: 'heard',
+        label: 'Ask what he heard',
+        sub: 'What he heard on the last road.',
+        effects: { goto: 'roam:kaelen-rumors', flag: { kaelenKnown: true }, ticks: 1 },
+      },
+      {
         id: 'back',
         label: 'Let him go',
         tone: 'quiet',
@@ -556,6 +562,33 @@ export const roamKaelenScenes: Scene[] = [
         reply:
           '"Seeker talk. Something that walks out of the sand and should not. I will not say their word louder than this. Ask the woman in the skiff if you like breathing less."',
         effects: { ticks: 1 },
+      },
+    ],
+  },
+  {
+    id: 'roam:kaelen-rumors',
+    kind: 'talk',
+    title: 'Rumor Counter',
+    speaker: 'Kaelen the Sifter',
+    body: `"Ask. Pay."`,
+    choices: [
+      {
+        id: 'kallik-free',
+        label: 'Ask what he heard about the Maw',
+        group: 'intel',
+        show: { flagUnset: 'heardKallik' },
+        effects: {
+          flag: { heardKallik: true, kaelenKnown: true },
+          ticks: 1,
+          flash:
+            '"Kallik. Long dead. Buried a haul in the Red Maw and carved a nine-tooth gear on the second rib from the jaw. Blind picks waste you. The mark, the scratch, and this rumor narrow it."',
+        },
+      },
+      {
+        id: 'back',
+        label: 'Back to the pack',
+        tone: 'quiet',
+        effects: { goto: 'roam:kaelen' },
       },
     ],
   },

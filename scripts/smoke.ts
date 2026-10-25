@@ -2737,7 +2737,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v162'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v163'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(!sw.includes('covers/camp04.jpg') && sw.includes('covers/yard.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -3468,7 +3468,7 @@ function assertHelpResolves(s: GameState, where: string) {
 {
   const PRISONER_NAMES = /Kaelen|Sifter|Jaxson|\bVance\b/
   // Kaelen's roaming pack passing by is the one cameo allowed on the Outcast road.
-  const CAMEO_ALLOW = new Set(['roam:kaelen'])
+  const CAMEO_ALLOW = new Set(['roam:kaelen', 'roam:kaelen-rumors', 'spine:rumor-well', 'spine:rumor-corvin', 'spine:rumor-tally'])
   const PRISONER_FLAGS = new Set(['oilRide', 'oilRoad', 'oilTag', 'jaxsonInside', 'oilRefused', 'oilResentful', 'oilMended', 'oilAlly', 'oilJob', 'leftCamp', 'guardDown', 'wireCut', 'campLockdown', 'quietFence', 'bayLooked'])
   /** True when no Outcast state can pass this condition. */
   const shutForOutcast = (c?: Cond): boolean => {
