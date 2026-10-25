@@ -1,5 +1,5 @@
 import { campHuntIsValerius } from './valeriusRest'
-import { isMaskedFlash } from './masked'
+import { isMaskedFlash, maskedCoverKey } from './masked'
 import { STRAY_HUNTER_COVER } from './strayHunter'
 import { bayLookout } from './campJob'
 import { isCampHunt, isSpineHunt, isSybellaOverlay, isThreshHunt } from './hunter'
@@ -68,6 +68,7 @@ export type CoverKey =
   | 'ch1_end'
   | 'under_jaw'
   | 'masked_figure'
+  | 'masked_far'
   | 'holding_cells'
   | 'rim_pilgrims_scar'
   | 'courtguard'
@@ -130,6 +131,7 @@ const FILES: Record<CoverKey, string> = {
   ch1_end: 'ch1-end.jpg',
   under_jaw: 'under-jaw.jpg',
   masked_figure: 'masked-figure.jpg',
+  masked_far: 'masked-far.jpg',
   holding_cells: 'holding-cells.jpg',
   rim_pilgrims_scar: 'rim-pilgrims-scar.jpg',
   courtguard: 'courtguard.jpg',
@@ -227,6 +229,8 @@ export const COVER_BAND: Record<CoverKey, [number, number]> = {
   under_jaw: [0.2, 0.9],
   // The masked figure: hood, both eyeholes and the whole mask down to the beard stay in frame (hood at the top edge, chin near 0.88).
   masked_figure: [0.0, 0.88],
+  // v164: the far-rise glimpse. The small hooded figure on the ridge and the crest under him (figure at 0.36-0.46 of the height, ridge to about 0.6).
+  masked_far: [0.15, 0.62],
   // The prisoner's face and both hands on the bar, the amber gap, and the wrench on the floor all sit between these two lines.
   holding_cells: [0.1, 0.92],
   rim_pilgrims_scar: [0.15, 0.9],
@@ -333,7 +337,8 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
     return fightGround(state, scene)
   }
   // The masked figure: his block screen, and any result line that is his.
-  if (state.flags.maskedHere || isMaskedFlash(state.flash)) return 'masked_figure'
+  if (state.flags.maskedHere) return 'masked_figure'
+  if (isMaskedFlash(state.flash)) return maskedCoverKey(state.flash)
   // Stray Hunter: its cover slot, neutral fight ground until the art lands.
   if (state.flags.strayHunterHere) return (STRAY_HUNTER_COVER as CoverKey | null) ?? fightGround(state, scene)
   if (isSybellaOverlay(state) || id.startsWith('maw:sybella')) return 'sybella'

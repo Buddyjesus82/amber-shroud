@@ -2737,7 +2737,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v163'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v164'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(!sw.includes('covers/camp04.jpg') && sw.includes('covers/yard.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -6821,7 +6821,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   const g = find((n, s) => !!n.flags.maskedSeen && !n.flags.maskedHere && !n.flags.maskedDrop && (n.items.vial_drop ?? 0) === (s.items.vial_drop ?? 0) && M.isMaskedFlash(n.flash))
   assert(g.n.items.scrap === g.s.items.scrap && g.n.health === g.s.health, 'v133: a glimpse costs nothing')
   assert(GE.visibleChoices(g.n).every((c) => !c.id.startsWith('masked-')), 'v133: a glimpse adds no button')
-  assert(A9.playCoverKey(g.n, getScene(g.n.sceneId)) === 'masked_figure', 'v133: his lines carry his cover')
+  assert(A9.playCoverKey(g.n, getScene(g.n.sceneId)) === M.maskedCoverKey(g.n.flash), 'v133: his lines carry his cover (v164: the far lines the far-rise cover, the rest his portrait)')
   assert(A9.COVER_BAND.masked_figure[0] === 0 && A9.COVER_BAND.masked_figure[1] >= 0.85, 'v133: hood to chin stay in frame on a phone')
   // Sign with a Drop he leaves: pick it up; walking off loses it.
   const d = find((n) => !!n.flags.maskedDrop)

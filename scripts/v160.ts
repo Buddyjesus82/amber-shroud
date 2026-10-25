@@ -13,8 +13,8 @@ import type { GameState, ItemId } from '../src/game/types.ts'
 
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v163'"), 'SW cache v163')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v163'"), 'Build label v163')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v164'"), 'SW cache v164')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v164'"), 'Build label v164')
 
 // The Varro scene keeps its own literals (module load order); they must match the kit.
 {
