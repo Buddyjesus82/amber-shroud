@@ -29,7 +29,7 @@ import { coverBand, playCoverFile, playCoverKey } from '../game/art'
 import { HANDS_MAX, handsLeft, handsPips } from '../game/hands'
 import { bayLookout } from '../game/campJob'
 import { isPressureOverlay, pressureFace } from '../game/hunter'
-import { isMaskedFlash, maskedQuietScene } from '../game/masked'
+import { isMaskedFlash, maskedCoverKey, maskedQuietScene } from '../game/masked'
 import { DISGUISE_SOFTEN_NOTE } from '../game/disguise'
 import { ROADS, shownText } from '../game/roads'
 import { scavengeLock } from '../game/scavenge'
@@ -95,8 +95,11 @@ function coverFallback(e: { currentTarget: HTMLImageElement }) {
 }
 
 /** The masked figure's portrait, for a held result that is his. */
-const MASKED_ART = `${import.meta.env.BASE_URL}covers/${playCoverFile('masked_figure')}?v=82`
-const MASKED_BAND = { '--band-top': coverBand('masked_figure')[0], '--band-bot': coverBand('masked_figure')[1] } as CSSProperties
+function maskedArt(flash: string | undefined | null): { art: string; band: CSSProperties } {
+  const key = maskedCoverKey(flash)
+  const [top, bot] = coverBand(key)
+  return { art: `${import.meta.env.BASE_URL}covers/${playCoverFile(key)}?v=82`, band: { '--band-top': top, '--band-bot': bot } as CSSProperties }
+}
 
 function heldStamp(s: GameState): string {
   return `${s.sceneId}|${s.updatedAt ?? 0}|${s.ticks}`
@@ -185,8 +188,8 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
         face: isMaskedFlash(next.flash) ? null : face,
         body: shownText(state, bodyOf(state)),
         // His lines carry his portrait, even on the held screen of the ground you just left.
-        art: isMaskedFlash(next.flash) ? MASKED_ART : artSrc,
-        band: isMaskedFlash(next.flash) ? MASKED_BAND : artBand,
+        art: isMaskedFlash(next.flash) ? maskedArt(next.flash).art : artSrc,
+        band: isMaskedFlash(next.flash) ? maskedArt(next.flash).band : artBand,
         result: shownText(next, next.flash),
         noNav: !showNav,
         stamp: heldStamp(next),

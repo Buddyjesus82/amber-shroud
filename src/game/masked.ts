@@ -31,6 +31,15 @@ const ALL_LINES = [
   MASKED_WAIT_LINE,
 ]
 
+/** v164: the lines where he is only a small shape far off: those get the far-rise cover. Every other line of his (close, or a sign he left) keeps the portrait, and a close line wins if both are in the flash. */
+const FAR_LINES = [MASKED_GLIMPSE_LINE, ...MASKED_GLIMPSE_LINES_EXTRA, MASKED_INTERRUPT_LINE]
+export function maskedCoverKey(flash: string | undefined | null): 'masked_far' | 'masked_figure' {
+  if (!flash) return 'masked_figure'
+  const far = FAR_LINES.some((l) => flash.includes(l))
+  const close = ALL_LINES.some((l) => !FAR_LINES.includes(l) && flash.includes(l))
+  return far && !close ? 'masked_far' : 'masked_figure'
+}
+
 /** Is this result line his? The cover follows it. */
 export function isMaskedFlash(flash: string | undefined | null): boolean {
   return !!flash && ALL_LINES.some((l) => flash.includes(l))
