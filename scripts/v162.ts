@@ -15,11 +15,11 @@ import type { DoorId, GameState } from '../src/game/types.ts'
 
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v167'"), 'SW cache v167')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v167'"), 'Build label v167')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v168'"), 'SW cache v167')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v168'"), 'Build label v168')
 
 const PLAIN = "A curved plate pried from a rib-worm's mouth. A crafting material."
-const TOLD = `${PLAIN} Varro the Bonewright works it.`
+const TOLD = 'Maw Plate: calcified rib-worm hide. Varro at the Bone Market can work this into your gear.'
 const KIT = { maw_plate: 1, scrap: 3, sinew_cord: 1, vial_drop: 3, scrap_buckler: 1, scav_wrap: 1, dust_cloak: 1, head_wrap: 1, shin_wraps: 1 }
 const o = newGame('outcast')
 const at = (scene: string, hub: string, flags: Record<string, unknown> = {}, items: Record<string, number> = KIT): GameState =>
@@ -61,11 +61,11 @@ for (const id of ['maw_plate', ...Object.values(PLATING)] as string[]) {
       const st = { ...at(sc.id, sc.hubId ?? 'spine'), door } as GameState
       let rows: string[] = []
       try { rows = visibleChoices(st).map((c) => c.label) } catch { continue }
-      if (sc.id !== 'maw:zafir' && rows.some((l) => /^Plate the /.test(l))) bad.push(`${door} ${sc.id}`)
+      if (sc.id !== 'maw:zafir' && rows.some((l) => /^Maw Plate (Shield|Armor)$/.test(l))) bad.push(`${door} ${sc.id}`)
       const none = { ...st, items: { ...st.items, maw_plate: 0 } } as GameState
       let rows2: string[] = []
       try { rows2 = visibleChoices(none).map((c) => c.label) } catch { continue }
-      if (rows2.some((l) => /^Plate the /.test(l))) bad.push(`${door} ${sc.id} (no plate)`)
+      if (rows2.some((l) => /^Maw Plate (Shield|Armor)$/.test(l))) bad.push(`${door} ${sc.id} (no plate)`)
       const hints = typedHints(st, getScene(sc.id, door), true).join(' ')
       if (/plate|plating|worm/i.test(hints)) bad.push(`${door} ${sc.id} typed hints`)
     }
@@ -88,8 +88,8 @@ for (const id of ['maw_plate', ...Object.values(PLATING)] as string[]) {
 // 4. At Varro: the hint (body or typed) sets the flag, and then the description reads told.
 {
   const v = at('maw:zafir', 'redmaw', { zafirMet: true, chapter1Done: true })
-  const left = applyEffect(v, visibleChoices(v).find((c) => c.id === 'back')!.effects)
-  ok(left.flags.plateHinted === true && itemDesc('maw_plate', left) === TOLD, 'leaving Varro after his hint: told')
+  const left = applyEffect(v, visibleChoices(v).find((c) => c.id === 'plate-ask')!.effects)
+  ok(left.flags.plateHinted === true && itemDesc('maw_plate', left) === TOLD, 'asking Varro for his hint: told')
   const typed = interpret({ ...v, items: { ...v.items, maw_plate: 0 } } as GameState, 'worm')
   ok(typed.flags.plateHinted === true && itemDesc('maw_plate', typed) === TOLD, 'his typed worm reply: told')
 }

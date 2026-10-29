@@ -11,8 +11,8 @@ import { getScene } from '../src/game/content/index.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 const sw = readFileSync('public/sw.js', 'utf8')
-ok(sw.includes("CACHE = 'amber-shroud-v167'"), 'SW cache v167')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v167'"), 'Build label v167')
+ok(sw.includes("CACHE = 'amber-shroud-v168'"), 'SW cache v167')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v168'"), 'Build label v168')
 
 const buf = readFileSync('public/covers/south-wind.jpg')
 let w = 0, h = 0

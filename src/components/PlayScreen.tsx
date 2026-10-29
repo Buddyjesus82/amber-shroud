@@ -309,7 +309,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
       locked: !on,
       lockedNote: !on ? shownText(state, c.locked) : undefined,
       pills: effectPills(c.effects),
-      onClick: () => on && (scene.id === CHAPTER_ONE_END && c.id === 'title' ? onTitle() : scene.id === 'ch2:legacy' && c.id === 'code' ? sayRef.current?.focus() : scene.id === 'ch2:end' && c.id === 'title' ? (act(applyEffect(state, c.effects)), onTitle()) : act(applyEffect(state, c.effects))),
+      onClick: () => on && (scene.id === CHAPTER_ONE_END && c.id === 'title' ? onTitle() : scene.id === 'ch2:end' && c.id === 'title' ? (act(applyEffect(state, c.effects)), onTitle()) : act(applyEffect(state, c.effects))),
     })
   }
   if (held) {

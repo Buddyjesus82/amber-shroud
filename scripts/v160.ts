@@ -6,23 +6,23 @@ import { existsSync, readFileSync } from 'node:fs'
 import { applyEffect, bodyOf, canPlate, interpret, newGame, visibleChoices } from '../src/game/engine.ts'
 import { beginEncounter, encounterSpec, pickEncounterKind, BEAST_KINDS, RIBWORM_BURROW_LINE, RIBWORM_LINE, RIBWORM_WIN } from '../src/game/encounter.ts'
 import { coverBand, playCoverFile, playCoverKey } from '../src/game/art.ts'
-import { equippedShell, PLATING, PLATE_BASES, PLATE_LOCKED, shellCap } from '../src/game/kit.ts'
+import { equippedShell, PLATING, PLATE_RECIPE_NAMES, PLATE_BASES, PLATE_LOCKED, shellCap } from '../src/game/kit.ts'
 import { ITEMS } from '../src/game/content/catalog.ts'
 import { PLATE_HINT } from '../src/game/content/redMaw.ts'
 import type { GameState, ItemId } from '../src/game/types.ts'
 
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v167'"), 'SW cache v167')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v167'"), 'Build label v167')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v168'"), 'SW cache v167')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v168'"), 'Build label v168')
 
 // The Varro scene keeps its own literals (module load order); they must match the kit.
 {
   const src = readFileSync('src/game/content/redMaw.ts', 'utf8')
   ok(src.includes(`'${PLATE_LOCKED}'`), 'redMaw locked line matches PLATE_LOCKED')
   ok(!/from '\.\.\/kit'|from '\.\/catalog'/.test(src), 'redMaw imports neither kit nor catalog at load')
-  const sc = visibleChoices({ ...newGame('outcast'), sceneId: 'maw:zafir', hubId: 'redmaw', items: { ...newGame('outcast').items, maw_plate: 1, scrap: 3, sinew_cord: 1, vial_drop: 3, ...Object.fromEntries(PLATE_BASES.map((b) => [b, 1])) } } as GameState)
-  for (const b of PLATE_BASES) ok(sc.some((c) => c.label === `Plate the ${ITEMS[b].name}` && c.effects.plate === b), `Varro row for ${b} matches the catalog name`)
+  const sc = visibleChoices({ ...newGame('outcast'), sceneId: 'maw:zafir', hubId: 'redmaw', flags: { ...newGame('outcast').flags, plateHinted: true }, items: { ...newGame('outcast').items, maw_plate: 1, scrap: 3, sinew_cord: 1, vial_drop: 3, ...Object.fromEntries(PLATE_BASES.map((b) => [b, 1])) } } as GameState)
+  for (const b of PLATE_BASES) ok(sc.some((c) => c.label === PLATE_RECIPE_NAMES[b] && c.effects.plate === b), `Varro row for ${b} matches the catalog name`)
 }
 
 // 1. The creature.
@@ -114,25 +114,24 @@ const spine = (extra: Partial<GameState> = {}, flags: Record<string, unknown> = 
   const shells: Record<string, number> = { plated_buckler: 2, plated_scav_wrap: 3, plated_dust_cloak: 3, plated_head_wrap: 2, plated_shin_wraps: 2 }
   for (const [id, n] of Object.entries(shells)) ok(ITEMS[id as ItemId].shell === n, `${id} Shell ${n}`)
   ok(!PLATING.hide_wrap && !PLATING.hide_gloves, 'Hound Hide and Hide Gloves are not plated')
-  ok(PLATE_BASES.length === 5, 'five plated pieces')
+  ok(PLATE_BASES.length === 2 && PLATE_RECIPE_NAMES.scrap_buckler === 'Maw Plate Shield' && PLATE_RECIPE_NAMES.scav_wrap === 'Maw Plate Armor', 'v168: two recipes, Shield and Armor')
   ok(ITEMS.plated_dust_cloak.perk?.includes('skip') && ITEMS.plated_shin_wraps.perk?.includes('Run'), 'cloak and shin perks kept')
 }
 
 // 5. Varro.
 const maw = (items: Record<string, number>, equipped: Record<string, string> = {}, flags: Record<string, unknown> = {}): GameState =>
-  ({ ...newGame('outcast'), sceneId: 'maw:zafir', hubId: 'redmaw', ticks: 80, health: 6, sap: 8, items: { ...newGame('outcast').items, ...items }, equipped, flags: { ...newGame('outcast').flags, noMasked: true, chapter1Done: true, zafirMet: true, ...flags } }) as GameState
+  ({ ...newGame('outcast'), sceneId: 'maw:zafir', hubId: 'redmaw', ticks: 80, health: 6, sap: 8, items: { ...newGame('outcast').items, ...items }, equipped, flags: { ...newGame('outcast').flags, noMasked: true, chapter1Done: true, zafirMet: true, plateHinted: true, ...flags } }) as GameState
 const MATS = { scrap: 3, sinew_cord: 1, vial_drop: 3, maw_plate: 1 }
 {
   // No plate: no buttons; the hint is a one-time body line and the typed reply.
-  const none = maw({ dust_cloak: 1 })
-  ok(!visibleChoices(none).some((c) => c.label.startsWith('Plate the')), 'no plate: no plating buttons')
-  ok(bodyOf(none).includes(PLATE_HINT), 'no plate: the hint shows once in the body')
-  ok(PLATE_HINT.startsWith('"You lived. How rude. If a rib-worm ever leaves you its mouth-plate, don\'t pawn it. Bring it here with cord and scrap, and I will put it where it hurts them."'), 'hint is option C')
-  const left = applyEffect(none, visibleChoices(none).find((c) => c.id === 'back')!.effects)
-  ok(left.flags.plateHinted === true, 'leaving sets plateHinted')
-  ok(!bodyOf({ ...left, sceneId: 'maw:zafir', hubId: 'redmaw' }).includes(PLATE_HINT), 'the hint does not repeat in the body')
-  const typed = interpret({ ...left, sceneId: 'maw:zafir', hubId: 'redmaw' } as GameState, 'ask about a rib-worm plate')
-  ok(String(typed.flash ?? '').includes('mouth-plate'), 'typed: the hint answers a worm/plate question')
+  const none = maw({ scrap_buckler: 1, ...MATS }, {}, { plateHinted: undefined })
+  ok(!visibleChoices(none).some((c) => c.id.startsWith('plate-') && c.id !== 'plate-ask'), 'v168: no Plate buttons until plateHinted')
+  ok(PLATE_HINT.includes('turn a Seeker blade cold'), 'v168: hint is hint_maw_plate')
+  const left = applyEffect(none, visibleChoices(none).find((c) => c.id === 'plate-ask')!.effects)
+  ok(left.flags.plateHinted === true && String(left.flash).includes('rib-worms'), 'asking sets plateHinted')
+  ok(visibleChoices({ ...left, sceneId: 'maw:zafir', hubId: 'redmaw' } as GameState).some((c) => c.id.startsWith('plate-') && c.id !== 'plate-ask'), 'Plate buttons after the hint')
+  const typed = interpret(maw({ dust_cloak: 1 }, {}, { plateHinted: undefined }), 'ask about a rib-worm plate')
+  ok(String(typed.flash ?? '').includes('rib-worms') && typed.flags.plateHinted, 'typed: the hint answers and sets plateHinted')
   const withPlate = maw({ ...MATS, dust_cloak: 1 })
   ok(!bodyOf(withPlate).includes(PLATE_HINT), 'with a plate: no hint line')
 }
@@ -143,7 +142,7 @@ for (const base of PLATE_BASES) {
   // Unworn, base in bag.
   {
     const s = maw({ ...MATS, [base]: 1 })
-    const row = visibleChoices(s).find((c) => c.label === `Plate the ${name}`)
+    const row = visibleChoices(s).find((c) => c.label === PLATE_RECIPE_NAMES[base])
     ok(row && row.sub === `Maw Plate, ${name}, 3 scrap, 1 Sinew Cord, 3 Drops`, `${base}: row and sub-line`)
     ok(canPlate(s, base), `${base}: affordable`)
     const n = applyEffect(s, row!.effects)
@@ -153,13 +152,13 @@ for (const base of PLATE_BASES) {
     const rt = JSON.parse(JSON.stringify(n)) as GameState
     ok(rt.items[plated] === 1 && !(rt.items[base] ?? 0), `${base}: save round-trip`)
     // Typed.
-    const t = interpret(s, `plate the ${name.toLowerCase()}`)
+    const t = interpret(s, PLATE_RECIPE_NAMES[base]!.toLowerCase())
     ok(t.items[plated] === 1, `${base}: typed "plate the ${name.toLowerCase()}" works`)
   }
   // Worn.
   {
     const s = maw({ ...MATS, [base]: 1 }, { [slot]: base })
-    const n = applyEffect(s, visibleChoices(s).find((c) => c.label === `Plate the ${name}`)!.effects)
+    const n = applyEffect(s, visibleChoices(s).find((c) => c.label === PLATE_RECIPE_NAMES[base])!.effects)
     ok(n.equipped?.[slot] === plated && n.items[plated] === 1 && !(n.items[base] ?? 0), `${base}: worn stays worn as the plated piece`)
     ok(equippedShell(n) === Math.min(shellCap(n), ITEMS[plated].shell!), `${base}: plated Shell counts (${equippedShell(n)})`)
     const rt = JSON.parse(JSON.stringify(n)) as GameState
@@ -168,26 +167,27 @@ for (const base of PLATE_BASES) {
   // Short on a material: locked, nothing spent.
   for (const miss of ['maw_plate', 'scrap', 'sinew_cord', 'vial_drop'] as const) {
     const s = maw({ ...MATS, [miss]: 0, [base]: 1 })
-    const row = visibleChoices(s).find((c) => c.label === `Plate the ${name}`)
+    const row = visibleChoices(s).find((c) => c.label === PLATE_RECIPE_NAMES[base])
     if (miss === 'maw_plate') ok(!row, `${base}: no plate hides the button`)
     else ok(row && row.locked === PLATE_LOCKED, `${base}: short of ${miss} is locked`)
-    const t = interpret(s, `plate the ${name.toLowerCase()}`)
+    const t = interpret(s, PLATE_RECIPE_NAMES[base]!.toLowerCase())
     ok(!(t.items[plated] ?? 0), `${base}: typed craft short of ${miss} does nothing`)
   }
 }
 {
   // Only at Varro: the button is on no other scene, and a typed craft elsewhere does nothing.
   const s = { ...maw({ ...MATS, dust_cloak: 1 }), sceneId: 'maw:market' } as GameState
-  ok(!visibleChoices(s).some((c) => c.label.startsWith('Plate the')), 'no plating at the market')
+  ok(!visibleChoices(s).some((c) => c.id.startsWith('plate-') && c.id !== 'plate-ask'), 'no plating at the market')
   ok(!(interpret(s, 'plate the dust cloak').items.plated_dust_cloak ?? 0), 'typed craft elsewhere does nothing')
   // Shell cap: a full plated kit stays at the cap.
   const full = maw({}, { armor: 'plated_scav_wrap', cloak: 'plated_dust_cloak', head: 'plated_head_wrap', legs: 'plated_shin_wraps', offhand: 'plated_buckler' }, { chapter1Done: false })
   ok(equippedShell({ ...full, hubId: 'spine' } as GameState) === 4, 'early Shell cap 4 holds')
   ok(equippedShell(full) === shellCap(full), 'at the Maw the cap holds')
   // Spare base stays in the bag when the worn one is plated... (two bases)
-  const two = maw({ ...MATS, dust_cloak: 2 }, { cloak: 'dust_cloak' })
-  const n = applyEffect(two, visibleChoices(two).find((c) => c.label === 'Plate the Dust Cloak')!.effects)
-  ok(n.equipped?.cloak === 'plated_dust_cloak' && n.items.dust_cloak === 1, 'a spare base cloak stays in the bag')
+  const two = maw({ ...MATS, scav_wrap: 2 }, { armor: 'scav_wrap' })
+  const n = applyEffect(two, visibleChoices(two).find((c) => c.label === 'Maw Plate Armor')!.effects)
+  ok(n.equipped?.armor === 'plated_scav_wrap' && n.items.scav_wrap === 1, 'Maw Plate Armor plates the worn Armor-slot piece; spare stays')
+  ok(!visibleChoices(maw({ ...MATS, dust_cloak: 1, head_wrap: 1, shin_wraps: 1 })).some((c) => c.id.startsWith('plate-') && c.id !== 'plate-ask'), 'v168: no recipe for cloak/head/legs')
 }
 console.log(fails ? `v160: ${fails} failure(s)` : 'v160: all ok')
 process.exit(fails ? 1 : 0)

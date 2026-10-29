@@ -13,10 +13,11 @@ export const STRAY_CUT_ODDS = 6
 export * from './strayLines'
 import { STRAY_ARRIVAL_LINE, STRAY_CUT_SUB, STRAY_FEED_LINE, STRAY_FEED_SUB, STRAY_FIGHT_SUB, STRAY_HOUND_LINE, STRAY_OUTCAST_LINE } from './strayLines'
 
-/** Cover slot for the Stray Hunter. Null: neutral fight ground until the art lands. */
-export const STRAY_HUNTER_COVER: string | null = null
+/** Cover slot for the Stray Hunter: the v168 stake-line art. */
+export const STRAY_HUNTER_COVER: string | null = 'ch2_o_stakes'
 
 const ROAD = /^ch1:[pov]-|^ch1:leave$/
+const CH2_OUTCAST = /^ch2:o-/
 
 export function isStrayHunt(state: Pick<GameState, 'flags'>): boolean {
   return !!state.flags.strayHunterHere && !state.flags.encounterHere
@@ -24,8 +25,11 @@ export function isStrayHunt(state: Pick<GameState, 'flags'>): boolean {
 
 /** Does a Stray Hunter wait on this arrival? Road scenes only, any door, Stray Heat 3+, once every STRAY_HUNT_GAP scenes. */
 export function strayHunterArrives(before: GameState, next: GameState): boolean {
-  if (next.chapterId !== 'cache-run' || next.sceneId === before.sceneId) return false
-  if (!ROAD.test(next.sceneId) || next.sceneId === 'ch1:v-zafir') return false
+  if (next.sceneId === before.sceneId) return false
+  const road = next.chapterId === 'cache-run' && ROAD.test(next.sceneId) && next.sceneId !== 'ch1:v-zafir'
+  // v168: the Outcast's Chapter Two route is Stray Hunter country too (the stake line has its own fixed arrival).
+  const ch2 = next.chapterId === 'into-the-maw' && CH2_OUTCAST.test(next.sceneId) && next.sceneId !== 'ch2:o-stakes'
+  if (!road && !ch2) return false
   if (next.flags.encounterHere || next.flags.hunterHere || next.flags.strayHunterHere || next.flags.downed) return false
   const sc = getScene(next.sceneId)
   const kind = sc.kind

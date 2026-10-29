@@ -8,6 +8,35 @@ import { personAtScene, type PersonId } from './people'
 import type { GameState, Scene } from './types'
 
 export type CoverKey =
+  | 'ch2_fight_dragoon'
+  | 'ch2_fight_drill_lead'
+  | 'ch2_fight_patrol'
+  | 'ch2_o_abyss'
+  | 'ch2_o_bounty'
+  | 'ch2_o_cage'
+  | 'ch2_o_hounds'
+  | 'ch2_o_root'
+  | 'ch2_o_stakes'
+  | 'ch2_o_stilts'
+  | 'ch2_o_strays'
+  | 'ch2_o_wash'
+  | 'ch2_p_abyss'
+  | 'ch2_p_bays'
+  | 'ch2_p_bilge'
+  | 'ch2_p_haul'
+  | 'ch2_p_jaws'
+  | 'ch2_p_shaft'
+  | 'ch2_p_sift'
+  | 'ch2_v_bleed'
+  | 'ch2_v_blown'
+  | 'ch2_v_garden'
+  | 'ch2_v_greg'
+  | 'ch2_v_murch'
+  | 'ch2_v_outpost'
+  | 'ch2_v_ribs'
+  | 'ch2_v_scar'
+  | 'ch2_v_stair'
+  | 'ch2_v_test'
   | 'world'
   | 'hunger'
   | 'spine'
@@ -81,6 +110,35 @@ export type CoverKey =
   | 'extraction_rig'
 
 const FILES: Record<CoverKey, string> = {
+  ch2_fight_dragoon: 'ch2-fight-dragoon.jpg',
+  ch2_fight_drill_lead: 'ch2-fight-drill-lead.jpg',
+  ch2_fight_patrol: 'ch2-fight-patrol.jpg',
+  ch2_o_abyss: 'ch2-o-abyss.jpg',
+  ch2_o_bounty: 'ch2-o-bounty.jpg',
+  ch2_o_cage: 'ch2-o-cage.jpg',
+  ch2_o_hounds: 'ch2-o-hounds.jpg',
+  ch2_o_root: 'ch2-o-root.jpg',
+  ch2_o_stakes: 'ch2-o-stakes.jpg',
+  ch2_o_stilts: 'ch2-o-stilts.jpg',
+  ch2_o_strays: 'ch2-o-strays.jpg',
+  ch2_o_wash: 'ch2-o-wash.jpg',
+  ch2_p_abyss: 'ch2-p-abyss.jpg',
+  ch2_p_bays: 'ch2-p-bays.jpg',
+  ch2_p_bilge: 'ch2-p-bilge.jpg',
+  ch2_p_haul: 'ch2-p-haul.jpg',
+  ch2_p_jaws: 'ch2-p-jaws.jpg',
+  ch2_p_shaft: 'ch2-p-shaft.jpg',
+  ch2_p_sift: 'ch2-p-sift.jpg',
+  ch2_v_bleed: 'ch2-v-bleed.jpg',
+  ch2_v_blown: 'ch2-v-blown.jpg',
+  ch2_v_garden: 'ch2-v-garden.jpg',
+  ch2_v_greg: 'ch2-v-greg.jpg',
+  ch2_v_murch: 'ch2-v-murch.jpg',
+  ch2_v_outpost: 'ch2-v-outpost.jpg',
+  ch2_v_ribs: 'ch2-v-ribs.jpg',
+  ch2_v_scar: 'ch2-v-scar.jpg',
+  ch2_v_stair: 'ch2-v-stair.jpg',
+  ch2_v_test: 'ch2-v-test.jpg',
   world: 'world.jpg',
   hunger: 'hunger.png',
   greg: 'greg.jpg',
@@ -162,6 +220,36 @@ const FILES: Record<CoverKey, string> = {
  * at the sides) instead of hiding the band behind text. See `.scene-img` in index.css.
  */
 export const COVER_BAND: Record<CoverKey, [number, number]> = {
+  // v168: Chapter Two door art. Faces sit high; wide shots keep the middle band.
+  ch2_fight_dragoon: [0.08, 0.72],
+  ch2_fight_drill_lead: [0.08, 0.72],
+  ch2_fight_patrol: [0.08, 0.72],
+  ch2_o_abyss: [0.08, 0.72],
+  ch2_o_bounty: [0.18, 0.86],
+  ch2_o_cage: [0.08, 0.72],
+  ch2_o_hounds: [0.18, 0.86],
+  ch2_o_root: [0.18, 0.86],
+  ch2_o_stakes: [0.08, 0.72],
+  ch2_o_stilts: [0.18, 0.86],
+  ch2_o_strays: [0.18, 0.86],
+  ch2_o_wash: [0.18, 0.86],
+  ch2_p_abyss: [0.08, 0.72],
+  ch2_p_bays: [0.18, 0.86],
+  ch2_p_bilge: [0.18, 0.86],
+  ch2_p_haul: [0.18, 0.86],
+  ch2_p_jaws: [0.08, 0.72],
+  ch2_p_shaft: [0.18, 0.86],
+  ch2_p_sift: [0.18, 0.86],
+  ch2_v_bleed: [0.08, 0.72],
+  ch2_v_blown: [0.18, 0.86],
+  ch2_v_garden: [0.18, 0.86],
+  ch2_v_greg: [0.08, 0.72],
+  ch2_v_murch: [0.08, 0.72],
+  ch2_v_outpost: [0.18, 0.86],
+  ch2_v_ribs: [0.08, 0.72],
+  ch2_v_scar: [0.18, 0.86],
+  ch2_v_stair: [0.18, 0.86],
+  ch2_v_test: [0.08, 0.72],
   world: [0.05, 0.75],
   hunger: [0.05, 0.75],
   greg: [0.0, 0.6],
@@ -335,6 +423,13 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
     if (kind === 'hound') return 'handler'
     if (kind === 'overseer') return 'valerius'
     if (kind === 'greg') return 'greg'
+    // v168: Chapter Two fight art.
+    if (id.startsWith('ch2:')) {
+      if (kind === 'dragoon') return 'ch2_fight_dragoon'
+      if (kind === 'drilllead') return 'ch2_fight_drill_lead'
+      if (kind === 'seekerpatrol') return 'ch2_fight_patrol'
+      if (kind === 'strayhunter' || kind === 'strayhound') return STRAY_HUNTER_COVER as CoverKey
+    }
     if (kind === 'dragoon' || kind === 'seekerpatrol') return 'courtguard'
     if (kind === 'drilllead') return 'extraction_rig'
     if (kind === 'patrol') return 'rell'
@@ -399,7 +494,7 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   if (id === 'ch1:end') return 'ch1_end'
   if (id === 'ch2:stub') return 'under_jaw'
   // v166: Chapter Two covers.
-  const CH2_ART: Record<string, CoverKey> = {'ch2:gate': 'under_jaw', 'ch2:legacy': 'ch1_end', 'ch2:jaws': 'greg', 'ch2:toll-back': 'greg', 'ch2:ribs': 'maw_ribs', 'ch2:gaps': 'maw_ribs', 'ch2:statues': 'resin_vault', 'ch2:survivor': 'resin_vault', 'ch2:murch': 'murch', 'ch2:outpost': 'valerius', 'ch2:abyssal': 'valerius', 'ch2:vex': 'vex', 'ch2:cache': 'hoard', 'ch2:spine': 'under_jaw', 'ch2:drill': 'maw_hold', 'ch2:trapped': 'down', 'ch2:heart': 'hunger', 'ch2:end': 'ch1_end'}
+  const CH2_ART: Record<string, CoverKey> = {'ch2:gate': 'under_jaw', 'ch2:cache': 'hoard', 'ch2:trapped': 'down', 'ch2:heart': 'hunger', 'ch2:end': 'ch1_end', 'ch2:o-abyss': 'ch2_o_abyss', 'ch2:o-bounty': 'ch2_o_bounty', 'ch2:o-cage': 'ch2_o_cage', 'ch2:o-hounds': 'ch2_o_hounds', 'ch2:o-root': 'ch2_o_root', 'ch2:o-stakes': 'ch2_o_stakes', 'ch2:o-stilts': 'ch2_o_stilts', 'ch2:o-strays': 'ch2_o_strays', 'ch2:o-wash': 'ch2_o_wash', 'ch2:p-abyss': 'ch2_p_abyss', 'ch2:p-bays': 'ch2_p_bays', 'ch2:p-bilge': 'ch2_p_bilge', 'ch2:p-haul': 'ch2_p_haul', 'ch2:p-jaws': 'ch2_p_jaws', 'ch2:p-shaft': 'ch2_p_shaft', 'ch2:p-sift': 'ch2_p_sift', 'ch2:v-bleed': 'ch2_v_bleed', 'ch2:v-blown': 'ch2_v_blown', 'ch2:v-garden': 'ch2_v_garden', 'ch2:v-greg': 'ch2_v_greg', 'ch2:v-murch': 'ch2_v_murch', 'ch2:v-outpost': 'ch2_v_outpost', 'ch2:v-ribs': 'ch2_v_ribs', 'ch2:v-scar': 'ch2_v_scar', 'ch2:v-stair': 'ch2_v_stair', 'ch2:v-test': 'ch2_v_test', 'ch2:p-supply': 'ch2_p_bilge', 'ch2:p-drillrun': 'ch2_p_shaft', 'ch2:survivor': 'ch2_v_garden'}
   if (CH2_ART[id]) return CH2_ART[id]
   // The South Wind: the hull on the horizon, not yet her face. v165: the Outcast sees her skiff on the Bone Wash (it used to borrow the camp dock art).
   if (id === 'ch1:south-wind') return state.door === 'outcast' ? 'south_wind' : fightGround(state, scene)

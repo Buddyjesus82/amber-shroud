@@ -2,25 +2,23 @@ import { ROADS } from '../roads'
 import type { Choice, Cond, ItemId, Scene } from '../types'
 
 // v160: Varro and the Maw Plate.
-export const PLATE_HINT = `"You lived. How rude. If a rib-worm ever leaves you its mouth-plate, don't pawn it. Bring it here with cord and scrap, and I will put it where it hurts them."`
+export const VARRO_GREETING = `"Keep your hands off the saws unless you're buying. Scrap is scrap, but bone takes patience. What are you looking to trade?"`
+export const PLATE_HINT = `"See those rib-worms down at the Spine? Their outer hides calcify on pure Shroud resin. You bring me a fresh Maw Plate off one of those beasts, and I can reinforce your gear into something that'll turn a Seeker blade cold."`
 // Literals on purpose: kit.ts and catalog.ts import the content graph, so reading them while this module loads breaks the bundle's load order.
 // scripts/v160.ts checks these match PLATE_LOCKED, PLATE_RECIPE and PLATING.
 const PLATE_LOCKED_LINE = 'Needs a Maw Plate, the piece, 3 scrap, 1 Sinew Cord and 3 Drops.'
-const PLATE_PIECES: [ItemId, string][] = [
-  ['scrap_buckler', 'Scrap Buckler'],
-  ['scav_wrap', 'Scav Wrap'],
-  ['dust_cloak', 'Dust Cloak'],
-  ['head_wrap', 'Head Wrap'],
-  ['shin_wraps', 'Shin Wraps'],
+const PLATE_PIECES: [ItemId, string, string][] = [
+  ['scrap_buckler', 'Scrap Buckler', 'Maw Plate Shield'],
+  ['scav_wrap', 'Scav Wrap', 'Maw Plate Armor'],
 ]
 const HAS_PLATE: Cond = { itemMin: ['maw_plate', 1] }
 const PLATE_MATS: Cond[] = [HAS_PLATE, { itemMin: ['scrap', 3] }, { itemMin: ['sinew_cord', 1] }, { itemMin: ['vial_drop', 3] }]
-const plateChoices: Choice[] = PLATE_PIECES.map(([base, name]) => {
+const plateChoices: Choice[] = PLATE_PIECES.map(([base, name, recipe]) => {
   return {
     id: `plate-${base}`,
-    label: `Plate the ${name}`,
+    label: recipe,
     sub: `Maw Plate, ${name}, 3 scrap, 1 Sinew Cord, 3 Drops`,
-    show: { all: [HAS_PLATE, { itemMin: [base, 1] }] },
+    show: { all: [{ flag: 'plateHinted' }, HAS_PLATE, { itemMin: [base, 1] }] },
     enable: { all: [...PLATE_MATS, { itemMin: [base, 1] }] },
     locked: PLATE_LOCKED_LINE,
     effects: { plate: base, ticks: 1 },
@@ -89,7 +87,6 @@ The ground out here takes more than the camp ever did. Sap goes faster. Hunters 
       },
     ],
     choices: [
-      { id: 'legacy', label: 'Legacy Redemption', sub: 'Type it in the Do box.', show: { all: [{ flag: 'chapter1EndSeen' }, { flagUnset: 'chapter2Unlocked' }] }, effects: { goto: 'ch2:legacy' } },
       {
         id: 'look',
         label: "Look for Kallik's second rib",
@@ -161,27 +158,18 @@ Varro is at his stall. He has watched buyers fail and kept the tray anyway. On i
     kind: 'talk',
     title: 'Varro the Bonewright',
     speaker: 'Varro',
-    body: `"You lived." Varro's smile is thin. "Another one crawls out of the Approach. You look like you'll need Drops. His stock is on the tray. Buy and Sell. When you go down a rib, leave my maps up here."`,
+    body: VARRO_GREETING,
     variants: [
-      {
-        if: { flagUnset: 'zafirCup' },
-        mode: 'replace',
-        body: `"Another one crawls out of the Approach. You look like you'll need Drops." Varro taps the tray. "His stock. Drops, Hound Hide, a baton somebody pawned. Buy and Sell. I sell what is on the tray. Nothing else."`,
-      },
       {
         if: { flag: 'zafirSore' },
         mode: 'append',
         body: `He remembers the crowding. He will not forget it for free.`,
       },
-      {
-        if: { all: [{ flagUnset: 'plateHinted' }, { not: HAS_PLATE }] },
-        mode: 'append',
-        body: PLATE_HINT,
-      },
     ],
     choices: [
+      { id: 'plate-ask', label: 'Ask about the Maw Plate', group: 'talk', show: { flagUnset: 'plateHinted' }, effects: { ticks: 1, flag: { plateHinted: true }, flash: PLATE_HINT } },
       ...plateChoices,
-      { id: 'back', label: 'Leave his stall', tone: 'quiet', effects: { goto: 'maw:market', flag: { plateHinted: true } } },
+      { id: 'back', label: 'Leave his stall', tone: 'quiet', effects: { goto: 'maw:market' } },
     ],
     intents: [
       {

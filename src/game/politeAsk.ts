@@ -94,7 +94,7 @@ export function speakerOnScreen(state: GameState, scene: Scene): string | null {
 
 export function voiceOnScreen(state: GameState, scene: Scene): Voice | null {
   const name = speakerOnScreen(state, scene)
-  const key = voiceKeyForSpeaker(name)
+  const key = voiceKeyForSpeaker(name, scene.id)
   if (key) return VOICES[key]
   const p = personAtScene(scene.id, state)
   if (p) return VOICES[PERSON_VOICE[p.id] ?? p.id] ?? null

@@ -357,6 +357,162 @@ export const VOICES: Record<string, Voice> = {
     refuse: '"Polite. Interesting. Still no."',
     unknown: '"Not on my bounty sheet."',
   },
+  vex_p: {
+    "lines": [
+        "Vex keeps shaking the mesh, eyes on the ground. \"Didn't catch that. Shake while you talk. Still hands get noticed.\"",
+        "He flinches at a far-off whine and counts under his breath. \"Drill. Under the barge. Say it again, slower.\"",
+        "\"I don't know what that means. I know the shaft. I know where it stops dead.\""
+    ],
+    "want": "\"The chain off. That's all. The clippers can have the rest.\"",
+    "price": "\"Price? I don't remember money. I remember the shaft's dead stops. Break the chain and they're yours.\"",
+    "who": "\"Vex. The Hollow, they call me on the line. Before the pens? Ask the vein. It took it.\"",
+    "doing": "\"Sifting. Listening. The ground talks louder than Greg.\"",
+    "what": "\"The tags? Pen tags. Same as yours, I think. I don't remember getting them.\"",
+    "refuse": "Vex shakes his head, fast. \"No. Greg's crew counts the rows. One row short and they shave us all again.\"",
+    "unknown": "\"Never heard it. Could've known them. I don't know who I knew.\"",
+    "items": {
+        "scrap": "\"Two scrap and the chain gives. Murch taught me that. I think.\"",
+        "sap": "\"Sap's for the gaps, not for me.\"",
+        "key": "He goes very still. \"That hums like the vein does. Hide it before the lamps swing back.\"",
+        "spire key": "He goes very still. \"That hums like the vein does. Hide it before the lamps swing back.\""
+    },
+    "knows": {
+        "murch": "\"The Socket? In the bays, under a skiff, pretending to be a bolt. Bring him scrap.\"",
+        "greg": "\"Greg's chain. Greg's rows. Greg's clippers. Don't let him count you.\"",
+        "valerius": "\"He ran the pens. Now he looks down the shaft like someone's waiting there.\"",
+        "miller": "\"The horn. When it blasts twice, lie flat in the grit.\""
+    }
+},
+  murch_p: {
+    "lines": [
+        "\"What? No. Didn't parse. Keep your voice down. The bays echo, and Greg's got ears in the echo.\"",
+        "Murch taps the Adjuster against his thigh and glances at the bay door. \"Say it in bolts and fluid, friend. That's the language down here.\"",
+        "\"Too many words, not enough wrench. Ask me about the lift. The lift I can talk about.\""
+    ],
+    "want": "\"Scrap. Three. The lift motor eats scrap, and then it eats the shaft.\"",
+    "price": "\"Price is scrap. Price is fluid. Price is you not yelling.\"",
+    "who": "\"Murch. The Socket. These were my bays, till they asked for one weld too many.\"",
+    "doing": "\"Hiding in my own bay. Fixing the lift nobody knows I'm fixing.\"",
+    "what": "\"The Adjuster. Weighted spanner. Fixes rams, fixes seals, fixes enforcers who look under skiffs.\"",
+    "refuse": "Murch's eyes go wide. \"In the bays? With Greg two hulls away? No. Hard no.\"",
+    "unknown": "\"Don't know 'em. Don't want to. Names get you chained in the Maw.\"",
+    "items": {
+        "scrap": "\"Scrap! Yes. Three's what the motor needs.\"",
+        "fluid": "\"Fluid? The lift rams are dry as a Seeker's sermon. Find me some and I'll cry on you.\"",
+        "hydraulic fluid": "\"Fluid? The lift rams are dry as a Seeker's sermon. Find me some and I'll cry on you.\"",
+        "cipher-tap": "\"Ten-millimeter cipher-tap. Lost mine running from Greg. Don't wave your hands like you have one.\""
+    },
+    "knows": {
+        "vex": "\"On the sift line. Chained. Doesn't remember his name, but remembers every stop in the shaft.\"",
+        "greg": "Murch's fingers stop tapping. \"He chained you once. He chased me once. Don't give him twice.\"",
+        "miller": "\"The horn. The tubes in the bilge carry his voice down. He talks to himself. Don't answer.\"",
+        "valerius": "\"Camp-04's man. You'd know. Down the shaft, he's waiting with a baton.\""
+    }
+},
+  vex_v: {
+    "lines": [
+        "Vex's eyes slide to the cup on your belt. \"Didn't catch that. The cups drip loud. Say it under them.\"",
+        "He flinches as a cup fills. \"Another one. That's mine, you know. Say it again, slower.\"",
+        "\"I don't know what that means. I know the stair. I know the way in they forgot.\""
+    ],
+    "want": "\"The tube out. Quietly, if you're still a Vessel. Loud, if you're not.\"",
+    "price": "\"Price? I'll show you the stair. That's all I've got that isn't in a cup.\"",
+    "who": "\"Vex. The Hollow. They hung a cup on me once. It didn't fill. Now I fill theirs.\"",
+    "doing": "\"Bleeding. Counting the drips. Waiting for the lamps to look away.\"",
+    "what": "\"The tube? It goes into the vein, then into me, then into the cups. That's the rite.\"",
+    "refuse": "Vex shakes his head, fast. \"No. The keepers hear blood through bone. Your cup would crack in your hand.\"",
+    "unknown": "\"Never heard it. Could've known them. I don't know who I knew.\"",
+    "items": {
+        "scrap": "\"Scrap's for the mechanic on the transport. Not me.\"",
+        "sap": "\"Keep it. You'll need it when they look at your cup too long.\"",
+        "key": "He stares at the rod. \"That hums like the vein does. A real Vessel wouldn't need it.\"",
+        "spire key": "He stares at the rod. \"That hums like the vein does. A real Vessel wouldn't need it.\""
+    },
+    "knows": {
+        "murch": "\"The mechanic chained to the transport. Fixing the thing they'd weld him into.\"",
+        "valerius": "\"He watches you. He watches the cup more.\"",
+        "sybella": "\"Her lamps, her cups, her drills. She doesn't come down. She sends the rite.\"",
+        "greg": "\"Back gate. Crates at night. The Seekers pretend not to see.\""
+    }
+},
+  murch_v: {
+    "lines": [
+        "\"What? No. Didn't parse. Stand like you're inspecting me. They watch everyone who talks to me.\"",
+        "Murch keeps working, fingers twitching. \"Say it in bolts and fluid, Vessel. They don't speak bolts.\"",
+        "\"Too many words. Ask me about the transport. I know every weld on it.\""
+    ],
+    "want": "\"Don't let them weld me in. That's it. That's the whole want.\"",
+    "price": "\"Price? I've got no scrap and no say. Claim me, and I'll fix anything you ever bring me.\"",
+    "who": "\"Murch. The Socket. Strays' tinker. The Seekers' mechanic now, by chain.\"",
+    "doing": "\"Fixing the transport. If it runs, I don't ride in it.\"",
+    "what": "\"The Adjuster? They let me keep it. They need the work more than they fear the spanner.\"",
+    "refuse": "Murch's eyes go wide. \"With a Seeker at my back? You want us both in the amber? No.\"",
+    "unknown": "\"Don't know 'em. In here, I don't know anyone. Safer.\"",
+    "items": {
+        "scrap": "\"Scrap? Hide it. They count my scrap.\"",
+        "fluid": "\"Fluid. Don't. If they see I've got fluid, they'll think I'm fixing a way out.\"",
+        "hydraulic fluid": "\"Fluid. Don't. If they see I've got fluid, they'll think I'm fixing a way out.\"",
+        "cipher-tap": "\"A cipher-tap, here? Put it away before they think I asked for it.\""
+    },
+    "knows": {
+        "vex": "\"In the bleeding room. They fill cups from him. I hear it through the wall.\"",
+        "greg": "\"His crates come through the back gate. He'd sell me back to the Cartel for a smile.\"",
+        "miller": "\"The horn takes the tithe. The Seekers pay it and hate it.\"",
+        "valerius": "\"Outpost's his. He signs who gets welded. Don't let him see you looking at me.\""
+    }
+},
+  vex_o: {
+    "lines": [
+        "Vex presses his face to the bone bars. \"Didn't catch that. The Hunters come back at dusk. Talk faster.\"",
+        "He flinches at a far-off whine. \"Drill. Or a hound. Say it again, slower.\"",
+        "\"I don't know what that means. I know the true gap between the bones. That I know.\""
+    ],
+    "want": "\"The cord cut. Before they sell me down to the lamps.\"",
+    "price": "\"Price? I'll walk you the true gap. No Knot needed, if you've got me.\"",
+    "who": "\"Vex. The Hollow. A Stray, maybe, once. My brand burned off. Or I don't remember it.\"",
+    "doing": "\"Waiting to be sold. Watching the lamps below.\"",
+    "what": "\"The cage? Stray Hunter work. Bone and cord. They sell what they catch.\"",
+    "refuse": "Vex shakes his head, fast. \"No. The Hunters left the cord tied on purpose. They're watching it.\"",
+    "unknown": "\"Never heard it. Could've known them. I don't know who I knew.\"",
+    "items": {
+        "scrap": "\"Scrap's for the tinker in the camp. He takes it off the stone when no one looks.\"",
+        "sap": "\"Save it for the stilts. The water there pulls.\"",
+        "key": "He stares at the rod. \"That hums like the vein does. The Hunters would sell you for it.\"",
+        "spire key": "He stares at the rod. \"That hums like the vein does. The Hunters would sell you for it.\""
+    },
+    "knows": {
+        "murch": "\"The tinker in the Stray camp. He won't look at you. That's how he helps.\"",
+        "valerius": "\"Down there with the lamps. He wants the Stray who cost him Camp-04. That's you, I think.\"",
+        "greg": "\"He's buying your price from the Hunters. He haggles like it's personal.\"",
+        "ossa": "\"Stilt-cord at your brow. Someone still remembers you. Lucky.\""
+    }
+},
+  murch_o: {
+    "lines": [
+        "Murch talks to the skiff he's fixing, not to you. \"Didn't parse. Don't face me. Talk to the hull.\"",
+        "He taps the Adjuster against the runner. \"Bolts and fluid, friend. Not names. Never names here.\"",
+        "\"Too many words. Ask about the lift at the third vertebra. Quietly.\""
+    ],
+    "want": "\"Scrap on the stone. Two. Then walk away like you never saw me.\"",
+    "price": "\"Price is scrap, left where I can find it. Price is you not saying my name in this camp.\"",
+    "who": "\"Nobody. A tinker. You never met me. Murch, if you have to say something.\"",
+    "doing": "\"Fixing a skiff. Fixing a lift nobody in this camp knows about.\"",
+    "what": "\"The Adjuster. Weighted spanner. Don't look at it. Looking makes them look.\"",
+    "refuse": "Murch's hands stop. \"Here? In front of them? They'd cast me out with you. No.\"",
+    "unknown": "\"Don't know 'em. Not saying if I did.\"",
+    "items": {
+        "scrap": "\"On the stone. Not in my hand. Two's enough.\"",
+        "fluid": "\"Fluid? Leave it with the scrap. I'll find it.\"",
+        "hydraulic fluid": "\"Fluid? Leave it with the scrap. I'll find it.\"",
+        "cipher-tap": "\"Put that away. Strays don't carry cipher-taps. Outcasts definitely don't.\""
+    },
+    "knows": {
+        "vex": "\"Caged on the ridge. The Hunters are selling him to the lamps. Cut the cord if you can.\"",
+        "greg": "Murch's fingers stop tapping. \"He's buying you. He chased me once. He doesn't stop.\"",
+        "miller": "\"His horn put a price on you. The Strays heard it. Everyone heard it.\"",
+        "valerius": "\"Lamps under the ridge. He wants you more than the Strays do.\""
+    }
+},
 }
 
 /** Scene speakers and faces onto voice keys. */
@@ -390,6 +546,10 @@ const SPEAKER_VOICE: Record<string, string> = {
   'hound-handler': 'handler',
   nim: 'nim',
   'the collector': 'nim',
+  vex: 'vex',
+  'vex the hollow': 'vex',
+  murch: 'murch',
+  'murch the socket': 'murch',
 }
 
 /** Person ids (people.ts) onto voice keys. */
@@ -398,15 +558,24 @@ export const PERSON_VOICE: Record<string, string> = {
   carapace: 'nim',
 }
 
-export function voiceForSpeaker(name: string | null | undefined): Voice | null {
-  if (!name) return null
-  const key = SPEAKER_VOICE[name.toLowerCase()] ?? SPEAKER_VOICE[name.toLowerCase().split(' ')[0]]
-  return key ? VOICES[key] : null
+/** v168: Vex and Murch speak per door. The scene id (ch2:p-, ch2:v-, ch2:o-) or the door picks the set. */
+const DOOR_LETTER: Record<string, string> = { prisoner: 'p', vessel: 'v', outcast: 'o' }
+function perDoor(key: string, where?: string | null): string {
+  if (key !== 'vex' && key !== 'murch') return key
+  const m = where ? /^ch2:([pvo])-/.exec(where) : null
+  const letter = m ? m[1] : (where && DOOR_LETTER[where]) || 'p'
+  return `${key}_${letter}`
 }
 
-export function voiceKeyForSpeaker(name: string | null | undefined): string | null {
+export function voiceForSpeaker(name: string | null | undefined, where?: string | null): Voice | null {
+  const key = voiceKeyForSpeaker(name, where)
+  return key ? VOICES[key] ?? null : null
+}
+
+export function voiceKeyForSpeaker(name: string | null | undefined, where?: string | null): string | null {
   if (!name) return null
-  return SPEAKER_VOICE[name.toLowerCase()] ?? SPEAKER_VOICE[name.toLowerCase().split(' ')[0]] ?? null
+  const key = SPEAKER_VOICE[name.toLowerCase()] ?? SPEAKER_VOICE[name.toLowerCase().split(' ')[0]] ?? null
+  return key ? perDoor(key, where) : null
 }
 
 /** Rotate lines by the clock and by what was typed, so different commands never all get one line. */

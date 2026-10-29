@@ -1169,7 +1169,9 @@ The Seekers sent their Vessel to Red Maw for what opens the Spire, and they mean
     kind: 'talk',
     title: 'Bone Cairn',
     speaker: 'Varro',
-    body: `Varro does not smile the shop smile. He looks at the gold thread like a fire in a dry stall.
+    body: `"You look like you walked out of a fresh wreck. Work with what you've got or you won't survive the next mile. Let's see your kit."
+
+Varro does not smile the shop smile. He looks at the gold thread like a fire in a dry stall.
 
 "I don't sell headings to walking batteries. I sell the news that she already knows. Pay if you want a curse with better spelling. Or walk. The skiff likes cups that arrive on time."`,
     variants: [

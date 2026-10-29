@@ -310,9 +310,11 @@ export const SCAV_PACK_LOCKED = 'Needs 3 scrap and 1 Sinew Cord'
 
 /** v162: the Maw Plate names Varro as its crafter only after he has said so himself (plateHinted). */
 export const MAW_PLATE_VARRO = ' Varro the Bonewright works it.'
+/** v168: pending Jeramie's approval. */
+export const MAW_PLATE_DESC_HINTED = 'Maw Plate: calcified rib-worm hide. Varro at the Bone Market can work this into your gear.'
 export function itemDesc(id: ItemId, state: Pick<GameState, 'flags'>): string {
   const d = ITEMS[id].desc
-  return id === 'maw_plate' && state.flags.plateHinted ? d + MAW_PLATE_VARRO : d
+  return id === 'maw_plate' && state.flags.plateHinted ? MAW_PLATE_DESC_HINTED : d
 }
 
 export function listedKit(items: Partial<Record<ItemId, number>>, hinted = false): KitChip[] {
@@ -323,7 +325,7 @@ export function listedKit(items: Partial<Record<ItemId, number>>, hinted = false
       name: ITEMS[id].name,
       n: items[id] ?? 0,
       kind: ITEMS[id].kind,
-      desc: id === 'maw_plate' && hinted ? ITEMS[id].desc + MAW_PLATE_VARRO : ITEMS[id].desc,
+      desc: id === 'maw_plate' && hinted ? MAW_PLATE_DESC_HINTED : ITEMS[id].desc,
       slot: ITEMS[id].slot,
       strike: ITEMS[id].strike,
       shell: ITEMS[id].shell,
@@ -403,10 +405,9 @@ export const KNOT_STRAYS_NOTE = 'The Knot at your brow: Strays who know Ossa let
 export const PLATING: Partial<Record<ItemId, ItemId>> = {
   scrap_buckler: 'plated_buckler',
   scav_wrap: 'plated_scav_wrap',
-  dust_cloak: 'plated_dust_cloak',
-  head_wrap: 'plated_head_wrap',
-  shin_wraps: 'plated_shin_wraps',
 }
+/** v168: Varro's two recipes. Maw Plate Shield (Scrap Buckler) and Maw Plate Armor (the Body-slot piece). */
+export const PLATE_RECIPE_NAMES: Partial<Record<ItemId, string>> = { scrap_buckler: 'Maw Plate Shield', scav_wrap: 'Maw Plate Armor' }
 export const PLATE_BASES = Object.keys(PLATING) as ItemId[]
 /** One Maw Plate, the piece, 3 scrap, 1 Sinew Cord and 3 Drops. */
 export const PLATE_RECIPE = { maw_plate: 1, scrap: 3, sinew_cord: 1, vial_drop: 3 } as const
