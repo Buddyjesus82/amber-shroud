@@ -70,6 +70,10 @@ export function terrainPool(state: Pick<GameState, 'hubId' | 'sceneId'>): Terrai
 /** Three ways each enemy can show up. The first is the catalog line. */
 export const OPENERS: Record<EncounterKind, string[]> = {
   masked: [],
+  greg: [],
+  dragoon: [],
+  seekerpatrol: [],
+  drilllead: [],
   strayhunter: [],
   strayhound: [],
   ribworm: [],

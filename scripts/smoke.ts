@@ -2737,7 +2737,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v165'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v166'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(!sw.includes('covers/camp04.jpg') && sw.includes('covers/yard.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -3242,7 +3242,7 @@ function assertHelpResolves(s: GameState, where: string) {
 {
   const NOISE = new Set(['encounterAt', 'huntQuiet'])
   // Rows that move you back to where you came from; the synthetic setup has no "from".
-  const RETURN_ROWS = new Set(['camp:gate back', 'roam:kaelen back', 'ch1:end title'])  // ch1:end title: PlayScreen sends you to the title screen
+  const RETURN_ROWS = new Set(['camp:gate back', 'roam:kaelen back', 'ch1:end title', 'ch2:legacy code'])  // ch1:end title: PlayScreen sends you to the title screen
   const moved = (a: GameState, b: GameState) => {
     if (a.sceneId !== b.sceneId || a.hubId !== b.hubId || a.chapterId !== b.chapterId) return true
     if (JSON.stringify(a.items) !== JSON.stringify(b.items) || JSON.stringify(a.heat) !== JSON.stringify(b.heat)) return true

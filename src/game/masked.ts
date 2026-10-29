@@ -78,7 +78,7 @@ export function maskedActive(state: GameState): boolean {
   const later = !!(state.flags.chapter1Done || state.hubId === 'redmaw')
   if (MASKED_WALKS === 'later-maps' && !later) return false
   const id = state.sceneId
-  if (id.startsWith('open:') || id.startsWith('crisis:')) return false
+  if (id.startsWith('open:') || id.startsWith('crisis:') || id.startsWith('ch2:')) return false
   if (MASKED_WALKS === 'later-maps' ? id.startsWith('ch1:') : id === 'ch1:end') return false
   const kind = getScene(id).kind
   return kind !== 'crisis' && kind !== 'ending'

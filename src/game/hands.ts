@@ -30,7 +30,7 @@ export function snapshot(state: GameState): GameState {
 }
 
 /** v149: flags that mark a finished chapter, in order. Add a chapter's flag here and it gets a checkpoint and a refill. */
-export const CHAPTER_DONE_FLAGS = ['chapter1Done'] as const
+export const CHAPTER_DONE_FLAGS = ['chapter1Done', 'chapter2Done'] as const
 
 /** 0 = Chapter One, 1 = Chapter Two, ... */
 export function chapterIndex(state: Pick<GameState, 'flags'>): number {

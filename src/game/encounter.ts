@@ -8,7 +8,7 @@ import { CARAPACE_HUNTER, SPINE_HUNTER } from './content/spineHunter'
 import type { Choice, Effect, FlagMap, GameState, ItemId } from './types'
 import { hash, OPENERS, sandAnswers, PAIR_LINE, HUSK_CONTROLLER_LINE, sandGripLine, TERRAINS, terrainPool, type Terrain, type TerrainId } from './fightTricks'
 
-export type EncounterKind = 'jackal' | 'cutter' | 'courtguard' | 'tick' | 'pup' | 'scavenger' | 'patrol' | 'handler' | 'hound' | 'overseer' | 'collector' | 'carapace' | 'husk' | 'runner' | 'strayhunter' | 'strayhound' | 'masked' | 'ribworm'
+export type EncounterKind = 'jackal' | 'cutter' | 'courtguard' | 'tick' | 'pup' | 'scavenger' | 'patrol' | 'handler' | 'hound' | 'overseer' | 'collector' | 'carapace' | 'husk' | 'runner' | 'strayhunter' | 'strayhound' | 'masked' | 'ribworm' | 'greg' | 'dragoon' | 'seekerpatrol' | 'drilllead'
 
 export const RIBWORM_LINE = 'The dune breathes. A rib-worm noses up through the sand, ringed like an old spine, mouth all grit and grinding plates.'
 export const RIBWORM_WIN = 'It sinks and does not come back up. The sand settles over it.'
@@ -118,6 +118,11 @@ const SPECS: Spec[] = [
     hp: 3,
     line: 'A Shard-Hound off the lead. Cartel-bred, resin-jawed, amber eyes open. The handler lets it come.',
   },
+  // v166: Chapter Two.
+  { kind: 'greg', name: 'Greg Ambergrin', strike: 3, shell: 2, hp: 4, line: "Greg Ambergrin. Grease-stained coat, Miller's iron brand on the lapel, a skiff crew at his back." },
+  { kind: 'dragoon', name: 'Seeker Dragoons', strike: 3, shell: 1, hp: 3, line: 'Seeker dragoons. Gold trim, resin-shod mounts, lances down.' },
+  { kind: 'seekerpatrol', name: 'Seeker Patrol', strike: 2, shell: 1, hp: 2, line: 'A Seeker patrol. Two lamps, two batons.' },
+  { kind: 'drilllead', name: 'Drill Team Lead', strike: 3, shell: 2, hp: 3, line: "Sybella's drill team lead. Goggles down, a hand-drill on a strap." },
   {
     kind: 'overseer',
     name: 'Overseer Valerius',
@@ -697,7 +702,7 @@ function pocket(state: GameState): number {
  * Fauna pay scrap or sap. People sometimes pay with a knife, a scav wrap, or a cloak.
  */
 /** People carry salve sometimes. Beasts never do. */
-export const HUMAN_KINDS: readonly EncounterKind[] = ['cutter', 'courtguard', 'scavenger', 'patrol', 'handler', 'overseer', 'collector', 'carapace', 'strayhunter', 'strayhound']
+export const HUMAN_KINDS: readonly EncounterKind[] = ['cutter', 'courtguard', 'scavenger', 'patrol', 'handler', 'overseer', 'collector', 'carapace', 'strayhunter', 'strayhound', 'greg', 'dragoon', 'seekerpatrol', 'drilllead']
 export const BEAST_KINDS: readonly EncounterKind[] = ['jackal', 'tick', 'pup', 'hound', 'ribworm']
 /** Percent chance a downed human also carries a Resin Salve. */
 export const HUMAN_SALVE_PCT = 18
@@ -836,7 +841,7 @@ export function dismissEncounter(state: GameState): Effect {
 }
 
 /** He/him for named men on the fight card. Everyone else stays they/them. */
-const HE_KINDS: readonly EncounterKind[] = ['courtguard', 'runner', 'masked']
+const HE_KINDS: readonly EncounterKind[] = ['courtguard', 'runner', 'masked', 'greg', 'drilllead']
 const HE_SWAPS: [RegExp, string][] = [
   [/\bThey still stand\b/g, 'He still stands'],
   [/\bThey drop\b/g, 'He drops'],
