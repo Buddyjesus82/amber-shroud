@@ -15,8 +15,8 @@ import type { DoorId, GameState } from '../src/game/types.ts'
 
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v166'"), 'SW cache v166')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v166'"), 'Build label v166')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v167'"), 'SW cache v167')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v167'"), 'Build label v167')
 
 const PLAIN = "A curved plate pried from a rib-worm's mouth. A crafting material."
 const TOLD = `${PLAIN} Varro the Bonewright works it.`
