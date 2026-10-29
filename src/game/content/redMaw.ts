@@ -89,6 +89,7 @@ The ground out here takes more than the camp ever did. Sap goes faster. Hunters 
       },
     ],
     choices: [
+      { id: 'legacy', label: 'Legacy Redemption', sub: 'Type it in the Do box.', show: { all: [{ flag: 'chapter1EndSeen' }, { flagUnset: 'chapter2Unlocked' }] }, effects: { goto: 'ch2:legacy' } },
       {
         id: 'look',
         label: "Look for Kallik's second rib",

@@ -297,6 +297,39 @@ export const ITEMS: Record<ItemId, ItemDef> = {
     perk: 'In an Amber Husk fight, once: Draw resin — take scrap and a little Sap without shattering the core, or cut the Seeker\'s siphon if one is walking the husk.',
     desc: 'A thin Seeker blade forged to draw living heat and liquefy resin seals under husk plates without shattering the core. Main hand, Strike 3.',
   },
+  // v166: Chapter Two.
+  spire_key: {
+    id: 'spire_key',
+    name: 'Spire Key',
+    kind: 'key',
+    desc: 'A Pre-Collapse Crystalline Resonance Tuning Rod from Kallik\'s Cache. It forces the lower Spire locks without tripping their purges.',
+  },
+  hydraulic_fluid: {
+    id: 'hydraulic_fluid',
+    name: 'Pre-Collapse Hydraulic Fluid',
+    kind: 'key',
+    desc: 'A sealed canister, cold and heavy, untouched since the old world fell. The label is gone. What\'s inside still sloshes.',
+  },
+  deep_memory_pearl: {
+    id: 'deep_memory_pearl',
+    name: 'Pre-Collapse Deep-Memory Pearl',
+    kind: 'key',
+    desc: 'Drawn out of an amber statue. Images that are not yours. A crafting material.',
+  },
+  cipher_key: {
+    id: 'cipher_key',
+    name: 'Cipher Key',
+    kind: 'key',
+    desc: 'Dropped by Valerius at the Abyssal Rib.',
+  },
+  valerius_baton: {
+    id: 'valerius_baton',
+    name: "Valerius's Shock-Baton",
+    kind: 'weapon',
+    slot: 'weapon',
+    strike: 3,
+    desc: 'The Overseer\'s shock-baton, dropped at the Abyssal Rib. Main hand, Strike 3.',
+  },
 }
 
 export const DOORS: Record<string, DoorDef> = {

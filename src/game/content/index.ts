@@ -7,6 +7,7 @@ import { openingScenes } from './openings'
 import { rumorSpotScenes } from './rumorSpots'
 import { crucibleScenes } from './crucible'
 import { redMawScenes } from './redMaw'
+import { chapterTwoScenes } from './intoTheMaw'
 import { shadeHandScenes } from './shadeHands'
 import { spineScenes } from './spine'
 import { thresholdScenes } from './threshold'
@@ -26,6 +27,7 @@ const all: Scene[] = [
   ...thresholdScenes,
   ...cacheRunScenes,
   ...redMawScenes,
+  ...chapterTwoScenes,
   ...crisisScenes,
 ]
 

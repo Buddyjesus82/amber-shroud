@@ -13,6 +13,9 @@ export type CoverKey =
   | 'spine'
   | 'threshold'
   | 'valerius'
+  | 'greg'
+  | 'murch'
+  | 'vex'
   | 'hound'
   | 'sybella'
   | 'thalia'
@@ -80,6 +83,9 @@ export type CoverKey =
 const FILES: Record<CoverKey, string> = {
   world: 'world.jpg',
   hunger: 'hunger.png',
+  greg: 'greg.jpg',
+  murch: 'murch.jpg',
+  vex: 'vex.jpg',
   spine: 'spine.jpg',
   threshold: 'threshold.jpg',
   valerius: 'valerius.jpg',
@@ -158,6 +164,9 @@ const FILES: Record<CoverKey, string> = {
 export const COVER_BAND: Record<CoverKey, [number, number]> = {
   world: [0.05, 0.75],
   hunger: [0.05, 0.75],
+  greg: [0.0, 0.6],
+  murch: [0.0, 0.65],
+  vex: [0.02, 0.8],
   spine: [0.15, 0.85],
   threshold: [0.1, 0.85],
   valerius: [0.05, 0.7],
@@ -325,6 +334,9 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
     // v142: the hound fight shows the Hound-handler portrait (his hound is in it), not the old hound art.
     if (kind === 'hound') return 'handler'
     if (kind === 'overseer') return 'valerius'
+    if (kind === 'greg') return 'greg'
+    if (kind === 'dragoon' || kind === 'seekerpatrol') return 'courtguard'
+    if (kind === 'drilllead') return 'extraction_rig'
     if (kind === 'patrol') return 'rell'
     if (kind === 'courtguard') return 'courtguard'
     if (kind === 'collector') return SPINE_HUNTER.art
@@ -386,6 +398,9 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   if (id === 'ch1:hollow') return 'valued_thing'
   if (id === 'ch1:end') return 'ch1_end'
   if (id === 'ch2:stub') return 'under_jaw'
+  // v166: Chapter Two covers.
+  const CH2_ART: Record<string, CoverKey> = {'ch2:gate': 'under_jaw', 'ch2:legacy': 'ch1_end', 'ch2:jaws': 'greg', 'ch2:toll-back': 'greg', 'ch2:ribs': 'maw_ribs', 'ch2:gaps': 'maw_ribs', 'ch2:statues': 'resin_vault', 'ch2:survivor': 'resin_vault', 'ch2:murch': 'murch', 'ch2:outpost': 'valerius', 'ch2:abyssal': 'valerius', 'ch2:vex': 'vex', 'ch2:cache': 'hoard', 'ch2:spine': 'under_jaw', 'ch2:drill': 'maw_hold', 'ch2:trapped': 'down', 'ch2:heart': 'hunger', 'ch2:end': 'ch1_end'}
+  if (CH2_ART[id]) return CH2_ART[id]
   // The South Wind: the hull on the horizon, not yet her face. v165: the Outcast sees her skiff on the Bone Wash (it used to borrow the camp dock art).
   if (id === 'ch1:south-wind') return state.door === 'outcast' ? 'south_wind' : fightGround(state, scene)
   // The Vessel's Cache Run (the Pilgrim's Scar) shows the Scar, not the title art.

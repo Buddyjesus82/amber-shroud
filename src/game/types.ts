@@ -42,6 +42,11 @@ export type ItemId =
   | 'plated_dust_cloak'
   | 'plated_head_wrap'
   | 'plated_shin_wraps'
+  | 'spire_key'
+  | 'hydraulic_fluid'
+  | 'deep_memory_pearl'
+  | 'cipher_key'
+  | 'valerius_baton'
 
 export type ItemKind = 'gear' | 'currency' | 'key' | 'weapon' | 'armor' | 'garment'
 /**
