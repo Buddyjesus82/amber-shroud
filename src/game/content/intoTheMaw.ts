@@ -21,7 +21,7 @@ export const DRILL_LINES = [
   'A bulkhead behind you screams and gives. Her drill team is through.',
 ] as const
 
-export const MILLER_TURRETS = 'Barge horn, raspy: "Greg. Wake the turrets."'
+export const MILLER_TURRETS = 'The barge horn blasts once: a warning. Then a second blast. Barge horn, raspy: "Greg. Wake the turrets."'
 export const TURRET_LINE = 'The rail turrets cough. Grit and iron chew the water beside the skiff. You make the far side bleeding.'
 export const MURCH_LIFT_LIVE = "\"Lift's live! Shroud-tuned, no purge, no alarm. Get in or get entombed!\""
 export const KEY_TAKEN = 'Spire Key taken. The Seekers want it. The Cartel wants it. You have it.'
@@ -63,6 +63,10 @@ export const chapterTwoScenes: Scene[] = [
     kind: 'story',
     title: 'The Petrified Jaws',
     body: `The jaws stand open forever: teeth of stone taller than skiffs, red with old marrow. Between them, Grizzled Miller's armored skiffs sit nose to nose on a platform across the choke point. Lamps on poles. Turrets on the rails.
+
+The heavy horn atop the barge pops with static, followed by a long, low whistle that echoes off the canyon walls.
+
+"Greg! Tell that runner down in the dirt to stop staring up at my brass. The price is fifteen scraps or two vials of refined sap—no credit, no speeches. If they haven't dropped the weight into the bucket by the count of three... paint the sand with 'em and haul their skiff to the scrap heap."
 
 On the platform stands Greg Ambergrin, Miller's lieutenant, in a grease-stained coat with Miller's heavy iron brand stamped on the lapel. "Miller's gate. Miller's jaws. I just collect. Fifteen scrap, or two vials of refined Oasis Sap. Nobody goes down the beast's throat for free."
 
