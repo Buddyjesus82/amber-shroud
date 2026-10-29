@@ -69,6 +69,7 @@ export type CoverKey =
   | 'under_jaw'
   | 'masked_figure'
   | 'masked_far'
+  | 'south_wind'
   | 'holding_cells'
   | 'rim_pilgrims_scar'
   | 'courtguard'
@@ -132,6 +133,7 @@ const FILES: Record<CoverKey, string> = {
   under_jaw: 'under-jaw.jpg',
   masked_figure: 'masked-figure.jpg',
   masked_far: 'masked-far.jpg',
+  south_wind: 'south-wind.jpg',
   holding_cells: 'holding-cells.jpg',
   rim_pilgrims_scar: 'rim-pilgrims-scar.jpg',
   courtguard: 'courtguard.jpg',
@@ -231,6 +233,8 @@ export const COVER_BAND: Record<CoverKey, [number, number]> = {
   masked_figure: [0.0, 0.88],
   // v164: the far-rise glimpse. The small hooded figure on the ridge and the crest under him (figure at 0.36-0.46 of the height, ridge to about 0.6).
   masked_far: [0.15, 0.62],
+  // v165: Sybella's skiff on the Bone Wash: crane top near 0.09, the blindfold, the hull, and the runners near 0.72.
+  south_wind: [0.08, 0.74],
   // The prisoner's face and both hands on the bar, the amber gap, and the wrench on the floor all sit between these two lines.
   holding_cells: [0.1, 0.92],
   rim_pilgrims_scar: [0.15, 0.9],
@@ -382,8 +386,8 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   if (id === 'ch1:hollow') return 'valued_thing'
   if (id === 'ch1:end') return 'ch1_end'
   if (id === 'ch2:stub') return 'under_jaw'
-  // The South Wind: the hull on the horizon, not yet her face. The door's road art.
-  if (id === 'ch1:south-wind') return state.door === 'outcast' ? 'skiff_bay_docks' : fightGround(state, scene)
+  // The South Wind: the hull on the horizon, not yet her face. v165: the Outcast sees her skiff on the Bone Wash (it used to borrow the camp dock art).
+  if (id === 'ch1:south-wind') return state.door === 'outcast' ? 'south_wind' : fightGround(state, scene)
   // The Vessel's Cache Run (the Pilgrim's Scar) shows the Scar, not the title art.
   if (state.door === 'vessel' && (id === 'ch1:leave' || id === 'ch1:v-hymn')) return 'rim_pilgrims_scar'
   // The Outcast's road start (Cache Run / the Bone Wash) gets the Bone Wash art, not the title art.
