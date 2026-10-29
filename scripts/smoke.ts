@@ -2737,7 +2737,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v164'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v165'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(!sw.includes('covers/camp04.jpg') && sw.includes('covers/yard.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -6075,7 +6075,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   assert(cov('vessel', 'thresh:paddock', { encounterHere: true, encounterKind: 'jackal' }) === 'dust_jackal', 'v116→v117: a Paddock fight is not Oram')
   assert(cov('vessel', 'maw:rim', { encounterHere: true, encounterKind: 'husk' }) === 'amber_husk', 'v116→v117: the Approach husk fight is not threshold')
   for (const k of ['scavenger', 'cutter']) assert(cov('prisoner', 'maw:rim', { encounterHere: true, encounterKind: k }) !== 'hunger', `v116: ${k} fight is not the title art`)
-  assert(cov('outcast', 'ch1:south-wind') === 'skiff_bay_docks', 'v116→v125: South Wind is skiffs, not her face yet')
+  assert(cov('outcast', 'ch1:south-wind') === 'south_wind', 'v116→v165: South Wind is her skiff, not her face yet')
   // 5. The dais clears once the Court Guard is gone.
   {
     const v = newGame('vessel')
@@ -6490,7 +6490,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   th = { ...th, flags: { ...th.flags, encounterHere: false, hunterHere: true, hunterFrom: 'thresh:court' } }
   assert(A5.playCoverKey(th, sceneOf(th)) === 'courtguard', 'v125: Court Guard hunt shows the guard')
   const sw = { ...newGame('outcast'), sceneId: 'ch1:south-wind', chapterId: 'cache-run' as never }
-  assert(A5.playCoverKey(sw, getScene('ch1:south-wind')) === 'skiff_bay_docks', 'v125: Outcast South Wind shows skiffs')
+  assert(A5.playCoverKey(sw, getScene('ch1:south-wind')) === 'south_wind', 'v125→v165: Outcast South Wind shows her skiff')
   // Locked Haul row says 3 scrap with the pack.
   let w = GE.applyEffect(newGame('prisoner'), { goto: 'maw:tuner', enterHub: 'redmaw' })
   w = { ...w, sap: 6, items: { ...w.items, hauler_pack: 1 }, flags: { ...w.flags, encounterHere: false, hunterHere: false, oilJobStep: Number(w.flags.sceneSteps ?? 0) } }
