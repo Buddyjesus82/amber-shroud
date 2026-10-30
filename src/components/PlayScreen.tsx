@@ -89,9 +89,29 @@ export const HELD_CONTINUE_KEY = 'held-continue'
 const COVER_FALLBACK = `${import.meta.env.BASE_URL}covers/${playCoverFile('yard')}`
 function coverFallback(e: { currentTarget: HTMLImageElement }) {
   const img = e.currentTarget
-  if (img.dataset.fallback) return
+  if (img.dataset.fallback) {
+    recoverCovers()
+    return
+  }
   img.dataset.fallback = '1'
   img.src = COVER_FALLBACK
+}
+
+/**
+ * v173: the fallback cover failed too, so images are not getting through at all (a stuck service worker or cache).
+ * Once per session: drop the worker and its caches, then reload from the network. Saves are in localStorage, untouched.
+ */
+function recoverCovers() {
+  try {
+    if (sessionStorage.getItem('amber-shroud.coverRecover')) return
+    sessionStorage.setItem('amber-shroud.coverRecover', '1')
+  } catch {
+    return
+  }
+  const sw = navigator.serviceWorker
+  const drop = sw ? sw.getRegistrations().then((rs) => Promise.all(rs.map((r) => r.unregister()))) : Promise.resolve()
+  const wipe = 'caches' in window ? caches.keys().then((ks) => Promise.all(ks.map((k) => caches.delete(k)))) : Promise.resolve()
+  Promise.all([drop, wipe]).finally(() => window.location.reload())
 }
 
 /** The masked figure's portrait, for a held result that is his. */

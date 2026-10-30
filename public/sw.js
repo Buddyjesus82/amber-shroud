@@ -1,10 +1,10 @@
-const CACHE = 'amber-shroud-v172'
+const CACHE = 'amber-shroud-v173'
 const SCOPE = self.location.pathname.replace(/sw\.js$/, '')
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE).then((cache) =>
-      cache.addAll([
+      addEach(cache, [
         `${SCOPE}manifest.webmanifest`,
         `${SCOPE}favicon.png`,
         `${SCOPE}favicon-48.png`,
@@ -175,6 +175,26 @@ self.addEventListener('fetch', (event) => {
     )
     return
   }
+  // v173: images are cache-first. A precached cover paints at once, even on a stalled or captive connection;
+  // a cache miss goes to the network with a timeout and is stored for next time.
+  if (req.destination === 'image' || /\/covers\/[^/]+\.(jpg|jpeg|png)$/.test(new URL(req.url).pathname)) {
+    event.respondWith(
+      caches.match(req, { ignoreSearch: true }).then(
+        (hit) =>
+          hit ||
+          withTimeout(fetch(req), 10000)
+            .then((res) => {
+              if (res && res.ok) {
+                const copy = res.clone()
+                caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {})
+              }
+              return res
+            })
+            .catch(() => Response.error()),
+      ),
+    )
+    return
+  }
   event.respondWith(
     fetch(req)
       .then((res) => {
@@ -188,3 +208,15 @@ self.addEventListener('fetch', (event) => {
       ),
   )
 })
+
+function withTimeout(p, ms) {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error('timeout')), ms)
+    p.then((v) => { clearTimeout(t); resolve(v) }, (e) => { clearTimeout(t); reject(e) })
+  })
+}
+
+/** v173: precache file by file. One failed cover no longer fails the whole install and strands an old worker. */
+function addEach(cache, urls) {
+  return Promise.all(urls.map((u) => cache.add(u).catch(() => {})))
+}
