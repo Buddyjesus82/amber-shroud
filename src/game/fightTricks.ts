@@ -77,6 +77,8 @@ export const OPENERS: Record<EncounterKind, string[]> = {
   strayhunter: [],
   strayhound: [],
   ribworm: [],
+  leech: [],
+  moth: [],
   courtguard: [],
   runner: [],
   jackal: [

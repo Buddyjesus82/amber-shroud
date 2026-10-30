@@ -3,12 +3,12 @@ import { MASKED_BLOCK_LINE, MASKED_ROUNDS, MASKED_STRIKE_LINE, MASKED_WALKS_OFF_
 import { ITEMS } from './content/catalog'
 import { getScene } from './content'
 import { check } from './logic'
-import { disguiseActive, equippedShell, equippedStrike } from './kit'
+import { disguiseActive, equippedShell, equippedStrike, wearsCloth } from './kit'
 import { CARAPACE_HUNTER, SPINE_HUNTER } from './content/spineHunter'
 import type { Choice, Effect, FlagMap, GameState, ItemId } from './types'
 import { hash, OPENERS, sandAnswers, PAIR_LINE, HUSK_CONTROLLER_LINE, sandGripLine, TERRAINS, terrainPool, type Terrain, type TerrainId } from './fightTricks'
 
-export type EncounterKind = 'jackal' | 'cutter' | 'courtguard' | 'tick' | 'pup' | 'scavenger' | 'patrol' | 'handler' | 'hound' | 'overseer' | 'collector' | 'carapace' | 'husk' | 'runner' | 'strayhunter' | 'strayhound' | 'masked' | 'ribworm' | 'greg' | 'dragoon' | 'seekerpatrol' | 'drilllead'
+export type EncounterKind = 'jackal' | 'cutter' | 'courtguard' | 'tick' | 'pup' | 'scavenger' | 'patrol' | 'handler' | 'hound' | 'overseer' | 'collector' | 'carapace' | 'husk' | 'runner' | 'strayhunter' | 'strayhound' | 'masked' | 'ribworm' | 'greg' | 'dragoon' | 'seekerpatrol' | 'drilllead' | 'leech' | 'moth'
 
 export const RIBWORM_LINE = 'The dune breathes. A rib-worm noses up through the sand, ringed like an old spine, mouth all grit and grinding plates.'
 export const RIBWORM_WIN = 'It sinks and does not come back up. The sand settles over it.'
@@ -16,6 +16,16 @@ export const RIBWORM_WIN = 'It sinks and does not come back up. The sand settles
 export const RIBWORM_BURROW_LINE = 'Burrowed: your first hit does half damage.'
 /** Stray ground: odds in 7 that a stray-pool fight is a rib-worm (weight 1 beside the six others). */
 export const RIBWORM_IN_7 = 1
+// v172: Jodi's drafts A and C (approved).
+export const LEECH_LINE = 'Something slick uncoils from the vat rim. A vat-leech, fat on resin and the blood that drips with it. It wants what is in your veins.'
+export const LEECH_WIN = "It bursts like a blister. Resin and someone's blood."
+export const MOTH_LINE = 'Resin wings open on the stone, gold and thin as a hymn sheet. A hymn-moth. The air hums the chant you were trying to forget.'
+export const MOTH_WIN = 'The wings crack like old varnish. The humming stops.'
+/** Blood Yard and Vat Seam: the leech's weight beside the five Cartel-ground kinds. */
+export const LEECH_WEIGHT = 2
+export const LEECH_GROUND: readonly string[] = ['camp:yard', 'camp:vats']
+/** Seeker ground: the moth's weight beside the Seeker pool. */
+export const MOTH_WEIGHT = 1
 
 /** Fight hits. Sap stays thirst/travel. */
 export const HEALTH_MAX = 6
@@ -34,6 +44,10 @@ const SPECS: Spec[] = [
   { kind: 'masked', name: 'Masked Figure', strike: 1, shell: 3, hp: 3, line: MASKED_BLOCK_LINE },
   // v160: the rib-worm. Spine and Cache Run stray ground. A mini-boss: it burrows (your first swing is halved) and always leaves its mouth-plate.
   { kind: 'ribworm', name: 'Rib-worm', strike: 4, shell: 2, hp: 5, line: RIBWORM_LINE },
+  // v172: Drinks: each hit it lands also takes 1 Sap.
+  { kind: 'leech', name: 'Vat-leech', strike: 2, shell: 1, hp: 3, line: LEECH_LINE },
+  // v172: Lull: its hits take Sap, not Health. The cloth halves it.
+  { kind: 'moth', name: 'Hymn-moth', strike: 2, shell: 0, hp: 3, line: MOTH_LINE },
   { kind: 'strayhunter', ...STRAY_HUNTER_ENCOUNTERS.strayhunter },
   { kind: 'strayhound', ...STRAY_HUNTER_ENCOUNTERS.strayhound },
   {
@@ -267,11 +281,11 @@ export function encounterGround(state: GameState): boolean {
   return ROAD_BEATS.has(state.sceneId)
 }
 
-function ribwormRoll(state: GameState): number {
+function ribwormRoll(state: GameState, salt = 'ribworm', mod = 7): number {
   let h = (Math.imul(seed(state) + 0x1b3d, 374761393) + 668265263) >>> 0
-  for (const ch of 'ribworm') h = Math.imul(h ^ ch.charCodeAt(0), 2246822519) >>> 0
+  for (const ch of salt) h = Math.imul(h ^ ch.charCodeAt(0), 2246822519) >>> 0
   h ^= h >>> 15
-  return (h >>> 0) % 7
+  return (h >>> 0) % mod
 }
 
 export function pickEncounterKind(state: GameState): EncounterKind {
@@ -281,6 +295,7 @@ export function pickEncounterKind(state: GameState): EncounterKind {
   if (state.heat.seekers >= 5 && n % 5 === 0) return 'husk'
   if (turf === 'cartel') {
     const pool: EncounterKind[] = ['pup', 'pup', 'cutter', 'jackal', 'tick']
+    if (LEECH_GROUND.includes(state.sceneId) && ribwormRoll(state, 'leech', pool.length + LEECH_WEIGHT) < LEECH_WEIGHT) return 'leech'
     return pool[n % pool.length]
   }
   // v152: the Shard-pup also wanders Seeker and Stray ground.
@@ -289,6 +304,7 @@ export function pickEncounterKind(state: GameState): EncounterKind {
       state.heat.seekers >= 2
         ? ['husk', 'husk', 'cutter', 'jackal', 'tick', 'scavenger', 'pup']
         : ['cutter', 'cutter', 'jackal', 'tick', 'scavenger', 'pup']
+    if (ribwormRoll(state, 'moth', pool.length + MOTH_WEIGHT) < MOTH_WEIGHT) return 'moth'
     return pool[n % pool.length]
   }
   const pool: EncounterKind[] = ['scavenger', 'scavenger', 'jackal', 'jackal', 'tick', 'pup']
@@ -703,7 +719,7 @@ function pocket(state: GameState): number {
  */
 /** People carry salve sometimes. Beasts never do. */
 export const HUMAN_KINDS: readonly EncounterKind[] = ['cutter', 'courtguard', 'scavenger', 'patrol', 'handler', 'overseer', 'collector', 'carapace', 'strayhunter', 'strayhound', 'greg', 'dragoon', 'seekerpatrol', 'drilllead']
-export const BEAST_KINDS: readonly EncounterKind[] = ['jackal', 'tick', 'pup', 'hound', 'ribworm']
+export const BEAST_KINDS: readonly EncounterKind[] = ['jackal', 'tick', 'pup', 'hound', 'ribworm', 'leech', 'moth']
 /** Percent chance a downed human also carries a Resin Salve. */
 export const HUMAN_SALVE_PCT = 18
 
@@ -748,6 +764,9 @@ function pocketLoot(state: GameState, kind: EncounterKind): Partial<Record<ItemI
   if (kind === 'hound') return { glints: 1, scrap: 2 }
   // v160: the rib-worm always leaves its mouth-plate.
   if (kind === 'ribworm') return { glints: 1, scrap: 2, maw_plate: 1 }
+  // v172: scrap 1, plus a Drop 1 time in 3. Hymn-moth: Resin Salve 1 time in 2, otherwise scrap 1.
+  if (kind === 'leech') return ribwormRoll(state, 'leechLoot', 3) === 0 ? { scrap: 1, vial_drop: 1 } : { scrap: 1 }
+  if (kind === 'moth') return ribwormRoll(state, 'mothLoot', 2) === 0 ? { salve: 1 } : { scrap: 1 }
   if (kind === 'husk') {
     const roll = pocket(state)
     // Resin scrap from the plates; sometimes a Drop from the core. Never salve, never gear.
@@ -1189,8 +1208,24 @@ export function resolveEncounter(
     notes.push(sandGripLine(spec.name, BEAST_KINDS.includes(spec.kind), roll(state, 'gripForm', 2) ? 'mirage' : 'slide', PROPER_KINDS.includes(spec.kind)))
   }
 
-  const sapLoss = latched && move !== 'pull' && f.encounterLatched ? 1 : 0
+  let sapLoss = latched && move !== 'pull' && f.encounterLatched ? 1 : 0
   if (sapLoss) notes.push('The tick drinks. Sap -1.')
+  // v172: the vat-leech drinks: a hit it lands also takes 1 Sap.
+  if (spec.kind === 'leech' && dmgIn > 0 && !f.encounterStun) {
+    sapLoss += 1
+    notes.push('The vat-leech drinks. Sap -1.')
+  }
+  // v172: the hymn-moth's lull takes Sap, not Health. The cloth halves it (every other lull).
+  let lulled = false
+  if (spec.kind === 'moth' && dmgIn > 0 && !f.encounterStun) {
+    dmgIn = 0
+    lulled = true
+    const cloth = wearsCloth(state)
+    if (!cloth || round % 2 === 1) {
+      sapLoss += 1
+      notes.push('The hymn-moth lulls you. Sap -1.')
+    } else notes.push('The cloth dulls the hum. No Sap lost.')
+  }
 
   let theirHp = Math.max(0, c.theirHp - dmgOut)
   let yourHp = Math.max(0, c.yourHp - dmgIn)
@@ -1222,7 +1257,9 @@ export function resolveEncounter(
         : `You hit ${who} for ${dmgOut}.`
   const themLine = f.encounterStun
     ? `${cap(who)} misses. Sand in the eyes.`
-    : dmgIn <= 0
+    : lulled
+      ? `${cap(who)} goes for your Sap.`
+      : dmgIn <= 0
       ? `${cap(who)} misses you.`
       : critIn && dmgIn > dmgInPlain
         ? `Critical Strike! ${cap(who)} hits you for ${dmgIn}.`
@@ -1284,6 +1321,7 @@ export function resolveEncounter(
     const back = snatched ? ` You take back your ${ITEMS[snatched]?.name ?? snatched}.` : ''
     const huskWin = spec.kind === 'husk'
     const wormWin = spec.kind === 'ribworm'
+    const creatureWin = spec.kind === 'leech' ? LEECH_WIN : spec.kind === 'moth' ? MOTH_WIN : ''
     // The Hound-handler is never killed: he is beaten and limps off.
     const handlerWin = spec.kind === 'handler'
     const won = mutualWin ? MUTUAL_WIN_LINE : ''
@@ -1291,6 +1329,8 @@ export function resolveEncounter(
       ? `${HANDLER_BEATEN} ${loot}.${back}${won}`
       : wormWin
         ? `${RIBWORM_WIN}\n\n${loot}.${back}${won}\n\n${lootLine(plateAdd)}.`
+        : creatureWin
+        ? `${creatureWin} ${loot}.${back}${won}`
         : huskWin
         ? `The amber heart shatters. The husk falls still. ${loot}.${back}${won}`
         : `They drop. ${loot}.${back}${won}`

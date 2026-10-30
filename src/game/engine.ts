@@ -148,12 +148,26 @@ export function isVendorScene(sceneId: string): boolean {
   return TRADE_SCENES.has(sceneId) || isRumorSpot(sceneId) || !!vendorFor(sceneId) || isRumorCounter(sceneId)
 }
 
+/** v172: an ambush, hunt, patrol, masked figure or crisis is on screen. Kaelen never appears then. */
+export function interruptActive(state: GameState): boolean {
+  const f = state.flags
+  if (f.encounterHere || f.hunterHere || f.strayHunterHere || f.maskedHere) return true
+  return state.sceneId.startsWith('crisis:') || getScene(state.sceneId).kind === 'crisis'
+}
+
 export function kaelenHeld(sceneId: string): boolean {
   return (KAELEN_HELD_SCENES as readonly string[]).includes(sceneId)
 }
 
 export function newGame(door: DoorId): GameState {
   return persist(openingState(door))
+}
+
+/** v172: the Chapter Two code typed on the title screen. A fresh run of that door, Chapter One marked done, at the unlock card. */
+export function chapterTwoFromCode(door: DoorId): GameState {
+  const base = openingState(door)
+  const next = applyEffect({ ...base, sceneId: CHAPTER_ONE_END }, chapterTwoUnlock())
+  return persist({ ...next, flash: undefined, flags: { ...next.flags, ch2FromCode: true } })
 }
 
 function openingState(door: DoorId): GameState {
@@ -946,8 +960,7 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     next.chapterId !== 'cache-run' &&
     !kaelenHeld(next.sceneId) &&
     !next.flags.kaelenPassing &&
-    !next.flags.hunterHere &&
-    !next.flags.encounterHere &&
+    !interruptActive(next) &&
     !next.sceneId.includes('kaelen') &&
     !next.flags.downed &&
     (next.health ?? 1) > 0
@@ -2275,6 +2288,7 @@ function withRest(state: GameState, rows: Choice[]): Choice[] {
 
 function withKaelenPass(state: GameState, rows: Choice[]): Choice[] {
   if (!state.flags.kaelenPassing || state.sceneId === 'roam:kaelen' || state.sceneId === 'ch1:storm' || kaelenHeld(state.sceneId)) return rows
+  if (interruptActive(state)) return rows
   const k = getScene(state.sceneId).kind
   if (k === 'crisis' || k === 'ending') return rows
   const known = !!state.flags.kaelenKnown

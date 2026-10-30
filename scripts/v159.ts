@@ -10,7 +10,7 @@ import type { DoorId, GameState } from '../src/game/types.ts'
 
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v171'"), 'SW cache v159')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v172'"), 'SW cache v159')
 const GLIMPSES = [MASKED_GLIMPSE_LINE, ...MASKED_GLIMPSE_LINES_EXTRA]
 const hasGlimpse = (f: string | undefined) => !!f && GLIMPSES.some((l) => f.includes(l))
 

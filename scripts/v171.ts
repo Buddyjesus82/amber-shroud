@@ -7,8 +7,8 @@ import { HUNT_CORNERED_LOCK } from '../src/game/hunter.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 const J = (x: unknown) => JSON.stringify(x)
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v171'"), 'SW cache v171')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v171'"), 'Build label v171')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v172'"), 'SW cache v171')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v172'"), 'Build label v171')
 const ap = J(getScene('ch2:approach').choices)
 ok(ap.includes('ch2:greg-toll') && !ap.includes('memory_siphon'), 'gate -> greg-toll, no stash on approach')
 const t = getScene('ch2:greg-toll')

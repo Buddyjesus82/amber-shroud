@@ -2737,7 +2737,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v171'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v172'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(!sw.includes('covers/camp04.jpg') && sw.includes('covers/yard.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -3671,7 +3671,8 @@ function assertHelpResolves(s: GameState, where: string) {
   for (const kind of BEAST_KINDS) {
     for (let t = 0; t < 1000; t++) assert(!carriesSalve({ ...yard, ticks: t }, kind), `${kind} never carries salve`)
     const beast = { ...yard, health: 6, flags: { ...yard.flags, encounterHere: true, encounterKind: kind, encounterHp: 1, fightTaught: true } }
-    for (let t = 0; t < 200; t++) assert(!resolveEncounter({ ...beast, ticks: t }, 'fight').fx.add?.salve, `${kind} loot never has salve`)
+    // v172: Jodi's draft C: the hymn-moth leaves a Resin Salve 1 time in 2.
+    if (kind !== 'moth') for (let t = 0; t < 200; t++) assert(!resolveEncounter({ ...beast, ticks: t }, 'fight').fx.add?.salve, `${kind} loot never has salve`)
   }
   assert(/Rarely, a Resin Salve turns up with the find\./.test(topicText(HELP_TOPICS[1])), 'help scavenge names the salve find')
   assert(/People sometimes carry a Resin Salve on them\. Beasts never do\./.test(fightHelpText()), 'help fight names salve loot')

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { BUILD } from '../version'
 import { DOOR_SLOT_LABEL } from '../game/save'
 import type { DoorId } from '../game/types'
@@ -12,6 +13,8 @@ type Props = {
   onContinue: () => void
   onEraseLast: () => void
   onEraseAll: () => void
+  /** v172: returns false when the code opens nothing. */
+  onCode: (code: string) => boolean
 }
 
 export function TitleScreen({
@@ -24,7 +27,10 @@ export function TitleScreen({
   onContinue,
   onEraseLast,
   onEraseAll,
+  onCode,
 }: Props) {
+  const [code, setCode] = useState('')
+  const [codeMiss, setCodeMiss] = useState(false)
   const hasSave = savedDoors.length > 0
   const lastLabel = lastDoor ? DOOR_SLOT_LABEL[lastDoor] : null
   const slotLine = hasSave ? savedDoors.map((id) => DOOR_SLOT_LABEL[id]).join(' · ') : 'None yet'
@@ -71,6 +77,27 @@ export function TitleScreen({
           Continue{lastLabel ? ` ${lastLabel}` : ''}
           <small>{continueSub}</small>
         </button>
+        <form
+          className="chapter-code"
+          onSubmit={(e) => {
+            e.preventDefault()
+            setCodeMiss(!onCode(code))
+          }}
+        >
+          <input
+            aria-label="Chapter code"
+            placeholder="Chapter code"
+            value={code}
+            autoCapitalize="characters"
+            autoComplete="off"
+            onChange={(e) => {
+              setCode(e.target.value)
+              setCodeMiss(false)
+            }}
+          />
+          <button type="submit" className="btn btn-ghost">Enter code</button>
+          {codeMiss ? <p className="save-hint">That code opens nothing.</p> : null}
+        </form>
         <button type="button" className="text-link" data-replay-intro onClick={onIntro}>
           Watch the intro
         </button>
