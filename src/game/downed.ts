@@ -53,7 +53,8 @@ export function downedNote(state: GameState): string {
   if (kind === 'overseer' || state.sceneId.includes('valerius')) {
     return `You collapse at Valerius's feet. Too hurt to fight. He does not waste the baton twice. "Useful men scrape. Dead men do not."`
   }
-  if (state.hubId === 'redmaw' || state.flags.sybellaHunting) {
+  // v175: Sybella's line is hers alone. A Court Guard loss takes the plain line.
+  if (kind !== 'courtguard' && (state.hubId === 'redmaw' || state.flags.sybellaHunting)) {
     return `You collapse in the grit. Too hurt to fight. The skiff-shadow does not finish you. Something hauls you into rib-shade. You will wake poorer, and she still knows the spot.`
   }
   return `You collapse. Too hurt to fight. The ground keeps you a minute, then lets you up poorer in blood and sap.`

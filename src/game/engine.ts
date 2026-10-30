@@ -387,6 +387,7 @@ function hunterScene(state: GameState, walked = true): string | null {
   if (id === 'camp:hunter' && !campHeard(state) && !closing) return null
   // v145: beating Valerius buys VALERIUS_COOLDOWN quiet scenes with no Camp-04 hunt, at any Heat.
   if (id === 'camp:hunter' && valeriusCooling(state)) return null
+  if (id === 'thresh:hunter' && guardCooling(state)) return null
   // Spine wakes when the Strays have a reason to look (theft, debt, a run past Drennick), or a long linger.
   if (id === 'spine:hunter' && !straysHeard(state) && state.pressure < 6) return null
   return id
@@ -813,8 +814,9 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     next.items = { ...next.items, vial_drop: (next.items.vial_drop ?? 0) - 1, vial_empty: (next.items.vial_empty ?? 0) + 1 }
     next.sap = 3
     next.flash = AUTO_DRINK_LINE
-  } else if (sapCollapsed && !skipCrisis && arrived.kind !== 'crisis' && handsLeft(next) <= 0) {
-    // v148: no hand left for a rescue. The attempt ends here.
+  } else if (sapCollapsed && !skipCrisis && arrived.kind !== 'crisis' && handsLeft(next) <= 1) {
+    // v148: no hand left for a rescue. v175: spending the last hand ends the attempt at once.
+    next.hands = 0
     next.sap = 0
     next.health = 0
     next.flash = undefined
@@ -1077,8 +1079,10 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     // v148: the hand is spent when you fall, so the save already counts it. Ossa's Knot is free.
     if (flags.runOver && typeof next.flags.downedNote === 'string') flags.downedNote = next.flags.downedNote
     if (!flags.runOver && !knotRescue({ ...next, flags })) {
-      if (handsLeft(next) > 0) next.hands = handsLeft(next) - 1
+      // v175: the last hand spent ends the attempt at once.
+      if (handsLeft(next) > 1) next.hands = handsLeft(next) - 1
       else {
+        next.hands = 0
         flags.runOver = true
         flags.downedNote = RUN_OVER_NOTE
       }
@@ -1119,6 +1123,10 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   // Any Court Guard fight ends the Court payoffs (called off, sent down the wrong corridor).
   if (next.flags.encounterHere && next.flags.encounterKind === 'courtguard' && !next.flags.courtGuardFought) {
     next.flags = { ...next.flags, courtGuardFought: true }
+  }
+  // v175: a Court Guard fight on Threshold ground buys the same quiet as beating Valerius. He does not come straight back.
+  if (next.flags.encounterHere && next.flags.encounterKind === 'courtguard' && !state.flags.encounterHere) {
+    next.flags = { ...next.flags, guardCool: true }
   }
   // Killing a Stray Hunter: Stray Heat +1, on its own line. Running or going down does not count.
   if (state.flags.strayHuntFight && state.flags.encounterHere && !next.flags.encounterHere) {
@@ -1397,6 +1405,11 @@ export function valeriusCooling(state: Pick<GameState, 'flags'>): boolean {
   return !!state.flags.valeriusCool && Number(state.flags.huntQuiet ?? 0) < VALERIUS_COOLDOWN
 }
 
+/** v175: after a Court Guard fight, VALERIUS_COOLDOWN quiet scenes with no Threshold hunt. */
+export function guardCooling(state: Pick<GameState, 'flags'>): boolean {
+  return !!state.flags.guardCool && Number(state.flags.huntQuiet ?? 0) < VALERIUS_COOLDOWN
+}
+
 export function noticeHunt(state: GameState): GameState {
   if (state.flags.encounterHere || state.flags.hunterHere || state.flags.downed) return state
   if (getScene(state.sceneId).kind === 'crisis') return state
@@ -1405,6 +1418,7 @@ export function noticeHunt(state: GameState): GameState {
   const maw = state.hubId === 'redmaw' || state.sceneId.startsWith('maw:')
   if (maw && Number(state.flags.sceneSteps ?? 0) - Number(state.flags.sybellaShadowStep ?? -99) < SYBELLA_GAP) return state
   if ((state.hubId === 'camp04' || state.sceneId.startsWith('camp:')) && valeriusCooling(state)) return state
+  if ((state.hubId === 'threshold' || state.sceneId.startsWith('thresh:')) && guardCooling(state)) return state
   const flags = {
     ...state.flags,
     hunterHere: true,
@@ -1927,7 +1941,7 @@ export function interpret(state: GameState, raw: string): GameState {
   const shown = visibleChoices(state)
   const enabled = shown.filter((c) => isChoiceOn(state, c.enable))
 
-  if (isHungerCommand(text, state.door)) {
+  if (isHungerCommand(text, state.door, !!state.flags.chapter1Done)) {
     const fx = hungerCommandEffect(state, enabled)
     if (fx) return withVerb(applyEffect(state, fx), 'hunger')
     const named = enabled.filter((c) => /\b(?:hunger|gullet)\b/i.test(`${c.label} ${c.sub ?? ''}`))
