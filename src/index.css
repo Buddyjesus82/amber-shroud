@@ -103,6 +103,7 @@ button {
 .btn small,
 .choice small {
   display: block;
+  white-space: pre-line;
   font-size: 0.8rem;
   font-weight: 400;
   opacity: 0.78;

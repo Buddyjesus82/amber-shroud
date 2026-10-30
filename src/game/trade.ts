@@ -119,7 +119,7 @@ const KAELEN_STOCK: StockOffer[] = [
     id: 'cloth',
     item: 'ceremonial_cloth',
     label: 'Buy a Vessel Cloth — two Glints',
-    sub: 'Garment. Worn, Cartel eyes read a cup until someone looks closely. Equip it in Gear.',
+    sub: 'Garment. While worn, the Cartel takes you for a Vessel until someone looks closely. Equip it in Gear.',
     cost: { glints: 2 },
     doors: ['prisoner'],
     onceFlag: 'kaelenSoldCloth',
@@ -131,7 +131,7 @@ const KAELEN_STOCK: StockOffer[] = [
     id: 'drop',
     item: 'vial_drop',
     label: 'Buy a Drop of Oasis Sap — three scrap',
-    sub: 'One Drop of sap. Two a stop.',
+    sub: 'Restores 3 Sap. Limit 2 per visit.',
     cost: { scrap: 3 },
     perStop: { flag: 'kaelenDropsHere', n: 2 },
     extraFlag: { kaelenSoldDrop: true },
@@ -142,7 +142,7 @@ const KAELEN_STOCK: StockOffer[] = [
     id: 'knife',
     item: 'needle_knife',
     label: 'Buy a Needle Knife — two scrap',
-    sub: 'Weapon · Strike 3. A tool for resin, not a throat. Equip it in Gear.',
+    sub: 'Weapon · Strike 3. Equip it in Gear.',
     cost: { scrap: 2 },
     onceFlag: 'kaelenSoldKnife',
     extraFlag: { kaelenSoldKnife: true },
@@ -153,7 +153,7 @@ const KAELEN_STOCK: StockOffer[] = [
     id: 'wrap',
     item: 'scav_wrap',
     label: 'Buy a Scav Wrap — two scrap',
-    sub: 'Armor · Shell 2. The step before a cloak. Equip it in Gear.',
+    sub: 'Armor · Shell 2. Equip it in Gear.',
     cost: { scrap: 2 },
     onceFlag: 'kaelenSoldWrap',
     extraFlag: { kaelenSoldWrap: true },
@@ -164,7 +164,7 @@ const KAELEN_STOCK: StockOffer[] = [
     id: 'salve',
     item: 'salve',
     label: 'Buy Resin Salve — two scrap',
-    sub: 'Binds a cut. Health, not sap.',
+    sub: 'Restores 3 Health. Not Sap.',
     cost: { scrap: 2 },
     flash: '"Thumb of resin. Put it on the blood. I do not sell anything meant to open a survivor."',
     tags: ['salve', 'bandage', 'heal', 'resin'],
@@ -173,7 +173,7 @@ const KAELEN_STOCK: StockOffer[] = [
     id: 'cloak',
     item: 'dust_cloak',
     label: 'Buy a Dust Cloak',
-    sub: 'Cloak · Shell 2. Hides a silhouette. Does not hide Heat.',
+    sub: 'Cloak · Shell 2. Does not lower Heat. Equip it in Gear.',
     cost: { glints: 1, scrap: 2 },
     onceFlag: 'kaelenSoldCloak',
     extraFlag: { kaelenSoldCloak: true },
@@ -188,7 +188,7 @@ const SILAS_STOCK: StockOffer[] = [
     id: 'drop',
     item: 'vial_drop',
     label: 'Buy a Drop',
-    sub: 'One Drop of sap. He does not take scrip.',
+    sub: 'Restores 3 Sap. Paying a Glint also uses an empty vial. No scrip.',
     cost: { glints: 1, scrap: 2 },
     extraRemove: { vial_empty: 1 },
     extraFlag: { firstDrop: true, silasGave: true, silasSoldDrop: true },
@@ -199,7 +199,7 @@ const SILAS_STOCK: StockOffer[] = [
     id: 'salve',
     item: 'salve',
     label: 'Buy Resin Salve — two scrap',
-    sub: 'Binds a cut. Health, not sap.',
+    sub: 'Restores 3 Health. Not Sap.',
     cost: { scrap: 2 },
     flash: '"Resin for the blood. Put it on the cut, not in your mouth."',
     tags: ['salve', 'bandage', 'heal', 'resin'],
@@ -208,7 +208,7 @@ const SILAS_STOCK: StockOffer[] = [
     id: 'knife',
     item: 'needle_knife',
     label: 'Buy a Needle Knife — two scrap',
-    sub: 'Dry-well needle. Weapon · Strike 3. Scrapes hard resin and meets a Hound. Equip it in Gear.',
+    sub: 'Weapon · Strike 3. Equip it in Gear.',
     cost: { scrap: 2 },
     onceFlag: 'silasSoldKnife',
     extraFlag: { silasSoldKnife: true },
@@ -219,7 +219,7 @@ const SILAS_STOCK: StockOffer[] = [
     id: 'wrap',
     item: 'scav_wrap',
     label: 'Buy a Scav Wrap — two scrap',
-    sub: 'Dune rag. Armor · Shell 2. The step before a cloak. Equip it in Gear.',
+    sub: 'Armor · Shell 2. Equip it in Gear.',
     cost: { scrap: 2 },
     onceFlag: 'silasSoldWrap',
     extraFlag: { silasSoldWrap: true },
@@ -230,7 +230,7 @@ const SILAS_STOCK: StockOffer[] = [
     id: 'cloak',
     item: 'dust_cloak',
     label: 'Buy a Dust Cloak',
-    sub: 'Dune canvas. Cloak · Shell 2. Hides a silhouette. Does not hide Heat.',
+    sub: 'Cloak · Shell 2. Does not lower Heat. Equip it in Gear.',
     cost: { glints: 1, scrap: 2 },
     onceFlag: 'silasSoldCloak',
     extraFlag: { silasSoldCloak: true },
@@ -253,19 +253,19 @@ const SILAS_STOCK: StockOffer[] = [
 
 const KNIFE_TONE: Record<string, { sub: string; flash: string }> = {
   spine: {
-    sub: 'Dry-well needle. Weapon · Strike 3. Scrapes hard resin and meets a Hound. Equip it in Gear.',
+    sub: 'Weapon · Strike 3. Equip it in Gear.',
     flash: '"Thin and mean. For resin and Hounds." He counts the scrap twice.',
   },
   camp04: {
-    sub: 'Wire steel from the pens. Weapon · Strike 3. For bolts and resin. Equip it in Gear.',
+    sub: 'Weapon · Strike 3. Equip it in Gear.',
     flash: '"Wire steel. Thin. Mean. For resin and bolts, not for a person who is still breathing."',
   },
   threshold: {
-    sub: 'Cup-shadow needle. Weapon · Strike 3. Resin, not a hymn. Equip it in Gear.',
+    sub: 'Weapon · Strike 3. Equip it in Gear.',
     flash: '"A needle for resin. I do not sell a hymn, and I do not sell a throat."',
   },
   redmaw: {
-    sub: 'A thin Maw tooth. Weapon · Strike 3. Not Hound Hide. Equip it in Gear.',
+    sub: 'Weapon · Strike 3. Equip it in Gear.',
     flash: '"Not Varro\'s hide. A needle. I will not sell anything that opens a survivor."',
   },
 }
@@ -304,20 +304,20 @@ export function kaelenOffers(state: GameState): StockOffer[] {
   }
   const wrap =
     hub === 'spine'
-      ? { ...kaelenPiece('wrap'), sub: 'Dune rag. Armor · Shell 2. The step before a cloak. Equip it in Gear.' }
+      ? { ...kaelenPiece('wrap'), sub: 'Armor · Shell 2. Equip it in Gear.' }
       : hub === 'threshold'
-        ? { ...kaelenPiece('wrap'), sub: 'Hymn-shade rag. Armor · Shell 2. Not a vow. Equip it in Gear.' }
-        : { ...kaelenPiece('wrap'), sub: 'Wire and rag from the pens. Armor · Shell 2. Equip it in Gear.' }
+        ? { ...kaelenPiece('wrap'), sub: 'Armor · Shell 2. Equip it in Gear.' }
+        : { ...kaelenPiece('wrap'), sub: 'Armor · Shell 2. Equip it in Gear.' }
   const cloak =
     hub === 'spine'
       ? {
           ...kaelenPiece('cloak'),
-          sub: 'Dune canvas. Cloak · Shell 2. Hides a silhouette. Does not hide Heat.',
+          sub: 'Cloak · Shell 2. Does not lower Heat. Equip it in Gear.',
         }
       : hub === 'threshold'
         ? {
             ...kaelenPiece('cloak'),
-            sub: 'Hymn-dust canvas. Cloak · Shell 2. Hides a silhouette. Does not hide Heat.',
+            sub: 'Cloak · Shell 2. Does not lower Heat. Equip it in Gear.',
           }
         : kaelenPiece('cloak')
   const rows = [...basics, wrap, cloak]
@@ -346,11 +346,11 @@ export function offersFor(state: GameState, vendor: Vendor): StockOffer[] {
   const all = vendor.id === 'kaelen' ? kaelenOffers(state) : vendor.stock
   return all.filter((o) => !o.doors || o.doors.includes(state.door)).map((o) => {
     const cost = seekerMarkup(state, o.cost)
-    return cost === o.cost ? o : { ...o, cost, sub: [o.sub, SEEKER_MARKUP_NOTE].filter(Boolean).join(' ') }
+    return cost === o.cost ? o : { ...o, cost, sub: [o.sub, SEEKER_MARKUP_NOTE].filter(Boolean).join('\n') }
   })
 }
 
-export const SEEKER_MARKUP_NOTE = 'Seeker Heat 8: +1 on every price here.'
+export const SEEKER_MARKUP_NOTE = 'Seeker Heat 8: every price here +1 (Glint or scrap).'
 
 const VENDORS: Vendor[] = [
   {
@@ -372,7 +372,7 @@ const VENDORS: Vendor[] = [
         id: 'buy',
         item: 'vial_drop',
         label: 'Buy a Drop at Approach prices',
-        sub: 'One Drop of sap. Approach prices.',
+        sub: 'Restores 3 Sap. Approach prices: costs more here.',
         cost: { glints: 2 },
         flash: 'Highway robbery. You pay it. The stall is still open. Living costs more here.',
         tags: ['drop', 'vial', 'sap', 'oasis'],
@@ -381,7 +381,7 @@ const VENDORS: Vendor[] = [
         id: 'hide',
         item: 'hide_wrap',
         label: 'Buy Hound Hide — three Glints',
-        sub: 'Armor · Shell 4. Maw specialty. Equip it in Gear.',
+        sub: 'Armor · Shell 4. Equip it in Gear.',
         cost: { glints: 3 },
         onceFlag: 'zafirSoldHide',
         extraFlag: { zafirSoldHide: true },
@@ -392,7 +392,7 @@ const VENDORS: Vendor[] = [
         id: 'baton',
         item: 'ironwood_baton',
         label: 'Buy a Shock Baton — four Glints',
-        sub: 'Weapon · Strike 4. Pawned Ironwood. Equip it in Gear.',
+        sub: 'Weapon · Strike 4. Equip it in Gear.',
         cost: { glints: 4 },
         onceFlag: 'zafirSoldBaton',
         extraFlag: { zafirSoldBaton: true },
