@@ -136,9 +136,9 @@ function authored(state: GameState, scene: Scene): string[] {
     if (on(state, 'striderHot')) push(lines, 'The ride is the dunes, heading or not.')
     const bolt = !on(state, 'bayPikeTook') && has(state, 'wrench')
     if (!on(state, 'lashCord') && bolt) {
-      push(lines, "A lash cord hangs on a post in Pike's bay, and the wrench will turn a resin bolt out of his skiff's rear leg.")
+      push(lines, "A Sinew-Bind hangs on a post in Pike's bay, and the wrench will turn a resin bolt out of his skiff's rear leg.")
     } else if (!on(state, 'lashCord')) {
-      push(lines, "A lash cord hangs on a post in Pike's bay.")
+      push(lines, "A Sinew-Bind hangs on a post in Pike's bay.")
     } else if (bolt) {
       push(lines, "The wrench will turn a resin bolt out of the rear leg of Pike's skiff.")
     }
@@ -158,7 +158,7 @@ function authored(state: GameState, scene: Scene): string[] {
 
   if (id === 'camp:bay-pike') {
     push(lines, 'Pike answers short if you talk to him.')
-    if (!on(state, 'lashCord')) push(lines, 'A lash cord hangs coiled on a post at the left of the bay.')
+    if (!on(state, 'lashCord')) push(lines, 'A Sinew-Bind hangs coiled on a post at the left of the bay.')
     if (!on(state, 'bayPikeTook')) {
       if (has(state, 'wrench')) {
         push(lines, 'A resin bolt with a corporate tag sits in the knee joint of a rear leg, on the side Pike is not working. The wrench will turn it out.')

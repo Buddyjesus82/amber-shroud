@@ -44,6 +44,8 @@ export type ItemId =
   | 'plated_shin_wraps'
   | 'spire_key'
   | 'hydraulic_fluid'
+  | 'memory_siphon'
+  | 'cartel_transponder'
   | 'deep_memory_pearl'
   | 'cipher_key'
   | 'valerius_baton'

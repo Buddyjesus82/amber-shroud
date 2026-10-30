@@ -157,8 +157,8 @@ export function sceneSearch(state: GameState, target: string): Effect | null {
     if (t.includes('cord') || t.includes('lash') || t === 'post') {
       return {
         flash: state.flags.lashCord
-          ? 'The post is bare. The lash cord is already in your hand.'
-          : 'A lash cord hangs coiled on a post at the left of the bay.',
+          ? 'The post is bare. The Sinew-Bind is already in your hand.'
+          : 'A Sinew-Bind hangs coiled on a post at the left of the bay.',
       }
     }
     if (t.includes('bolt') || t.includes('leg') || t.includes('joint') || t.includes('tag')) {
@@ -298,7 +298,7 @@ export function helpEntries(state: GameState, labels: string[]): HelpEntry[] {
         add(list, labels, {
           group: 'Take',
           command: 'trade wrench to Pike',
-          why: 'Pike hands over the lash cord off his post',
+          why: 'Pike hands over the Sinew-Bind off his post',
         })
       }
       add(list, labels, { group: 'Take', command: 'trade wrench to Sarn', why: 'one twist of scrap' })

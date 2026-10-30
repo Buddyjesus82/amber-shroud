@@ -606,7 +606,7 @@ export function encounterChoices(state: GameState): Choice[] {
       show: {
         all: [
           { flagEq: ['encounterKind', 'husk'] },
-          { equipped: 'seeker_extractor' },
+          { any: [{ equipped: 'seeker_extractor' }, { item: 'memory_siphon' }] },
           { flagUnset: 'encounterResinTried' },
         ],
       },

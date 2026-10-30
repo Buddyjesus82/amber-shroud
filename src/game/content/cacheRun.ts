@@ -1610,7 +1610,7 @@ Sybella steps down. Older than the hymns. Blindfold pushed up, kohl ruined on pu
           heat: { seekers: 1 },
           goto: 'ch1:land',
           flash:
-            "You walked past without paying. Sybella didn't stop you, and she didn't let you go either. She's following you into the Approach. Seeker Heat +1.",
+            "You lower your head and throw your weight against the choked bulkhead. Sybella's warning bolt cuts the air an inch above your collar, showering your shoulders in sparks, but the momentum carries you through the gap before her dragoons can lock their grips.\n\nShe's following you into the Approach. Seeker Heat +1.",
         },
       },
       {

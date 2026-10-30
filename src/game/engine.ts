@@ -1853,7 +1853,7 @@ export function interpret(state: GameState, raw: string): GameState {
       return withVerb(applyEffect(state, row.effects), 'rest')
     }
   }
-  if (/\b(rest|sleep|bind|bandage|heal)\b/.test(bare) && (REST_SCENES.has(state.sceneId) || (state.items.salve ?? 0) > 0)) {
+  if (!/sinew.?bind/.test(bare) && /\b(rest|sleep|bind|bandage|heal)\b/.test(bare) && (REST_SCENES.has(state.sceneId) || (state.items.salve ?? 0) > 0)) {
     if ((state.items.salve ?? 0) > 0 && /\b(bind|bandage|salve|heal)\b/.test(bare)) {
       return withVerb(bindSalve(state), 'heal')
     }
