@@ -25,7 +25,7 @@ import { isBayScene } from './content/bayHands'
 import { classifyLook, directedLookFlash, pressureLookFlash, roomLookEffect } from './look'
 import { matchCompass, travelGate } from './map'
 import { chapterTwoAfter, chapterTwoUnlock, isChapterTwoCode } from './ch2'
-import { LEGACY_BAD, chapterTwoSummary } from './content/intoTheMaw'
+import { chapterTwoSummary } from './content/intoTheMaw'
 import { ROAD_NOT_NOW, roadChoice, isTravelText, roadPhrase, roadToMaw, roadHome } from './returnRoad'
 import { CLOSING_PRESSURE, FORCED_PRESSURE, closingNow, homeFaction, restCoolLine, restCools } from './closing'
 import {
@@ -1581,10 +1581,9 @@ export function interpret(state: GameState, raw: string): GameState {
   const said = bare === 'l' || /^l\s/.test(bare) ? bare.replace(/^l\b/, 'look') : bare
   // v166: the Chapter Two vault code. Only at the Chapter One end card or the Legacy box; anywhere else it does nothing.
   if (isChapterTwoCode(raw)) {
-    if (state.sceneId === 'ch1:end' || state.sceneId === 'ch2:legacy') return applyEffect(state, chapterTwoUnlock(state.sceneId === 'ch2:legacy'))
+    if (state.sceneId === 'ch1:end') return applyEffect(state, chapterTwoUnlock())
     return state
   }
-  if (state.sceneId === 'ch2:legacy' && /^[a-z0-9]+(-[a-z0-9]+)+$/i.test(raw.trim())) return persist({ ...state, flash: LEGACY_BAD, updatedAt: Date.now() })
   // v140: a typed travel phrase is read first, before any skip / run / ride guess. Locked (fight, hunt, Down, crisis, dry): it only answers.
   {
     const phrase = roadPhrase(state, text)

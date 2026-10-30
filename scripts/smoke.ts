@@ -2737,7 +2737,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v167'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v168'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(!sw.includes('covers/camp04.jpg') && sw.includes('covers/yard.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -3242,7 +3242,7 @@ function assertHelpResolves(s: GameState, where: string) {
 {
   const NOISE = new Set(['encounterAt', 'huntQuiet'])
   // Rows that move you back to where you came from; the synthetic setup has no "from".
-  const RETURN_ROWS = new Set(['camp:gate back', 'roam:kaelen back', 'ch1:end title', 'ch2:legacy code'])  // ch1:end title: PlayScreen sends you to the title screen
+  const RETURN_ROWS = new Set(['camp:gate back', 'roam:kaelen back', 'ch1:end title'])  // ch1:end title: PlayScreen sends you to the title screen
   const moved = (a: GameState, b: GameState) => {
     if (a.sceneId !== b.sceneId || a.hubId !== b.hubId || a.chapterId !== b.chapterId) return true
     if (JSON.stringify(a.items) !== JSON.stringify(b.items) || JSON.stringify(a.heat) !== JSON.stringify(b.heat)) return true
@@ -3485,7 +3485,7 @@ function assertHelpResolves(s: GameState, where: string) {
     id.startsWith('spine:') ||
     (id.startsWith('ch1:') && !/^ch1:(p|v)-/.test(id)) ||
     id.startsWith('maw:') ||
-    id.startsWith('ch2:') ||
+    (id.startsWith('ch2:') && !id.startsWith('ch2:p-') && !id.startsWith('ch2:v-')) ||
     id === 'crisis:spine' ||
     id === 'crisis:dunes' ||
     id === 'crisis:maw' ||
@@ -4917,9 +4917,9 @@ function assertHelpResolves(s: GameState, where: string) {
   }
   const OLD = /heard that\. Try ask, talk, threaten, trade, help/
   // Every speaker and every person has a voice with real lines.
-  const speakers = new Set(ALL_SCENES.map((sc) => sc.speaker).filter(Boolean) as string[])
-  for (const sp of speakers) {
-    const v = VO.voiceForSpeaker(sp)
+  for (const sc of ALL_SCENES.filter((x) => x.speaker)) {
+    const sp = `${sc.speaker} (${sc.id})`
+    const v = VO.voiceForSpeaker(sc.speaker, sc.id)
     assert(v && v.lines.length >= 3 && v.want && v.who && v.doing && v.what && v.refuse && v.unknown && v.price, `${sp} has fallback lines in their voice`)
   }
   for (const p of Object.values(PEOPLE)) {
