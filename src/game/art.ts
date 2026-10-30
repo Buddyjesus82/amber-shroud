@@ -43,6 +43,20 @@ export type CoverKey =
   | 'threshold'
   | 'stairs'
   | 'ch2_dark'
+  | 'ch2_s_p_supply'
+  | 'ch2_s_p_drillrun'
+  | 'ch2_s_survivor'
+  | 'ch2_s_approach'
+  | 'ch2_s_ditch'
+  | 'ch2_s_gully'
+  | 'ch2_s_irongut'
+  | 'ch2_s_ribs'
+  | 'ch2_s_vein'
+  | 'ch2_s_cache'
+  | 'ch2_s_heart'
+  | 'ch2_s_trapped'
+  | 'ch2_s_end'
+  | 'ch2_s_gate'
   | 'valerius'
   | 'greg'
   | 'murch'
@@ -169,6 +183,20 @@ const FILES: Record<CoverKey, string> = {
   // v169: the Threshold stair (its own art), and the dark placeholder for Chapter Two scenes still without art.
   stairs: 'stairs.jpg',
   ch2_dark: 'ch2-dark.jpg',
+  ch2_s_p_supply: 'ch2-p-supply.jpg',
+  ch2_s_p_drillrun: 'ch2-p-drillrun.jpg',
+  ch2_s_survivor: 'ch2-survivor.jpg',
+  ch2_s_approach: 'ch2-approach.jpg',
+  ch2_s_ditch: 'ch2-ditch.jpg',
+  ch2_s_gully: 'ch2-gully.jpg',
+  ch2_s_irongut: 'ch2-irongut.jpg',
+  ch2_s_ribs: 'ch2-ribs.jpg',
+  ch2_s_vein: 'ch2-vein.jpg',
+  ch2_s_cache: 'ch2-cache.jpg',
+  ch2_s_heart: 'ch2-heart.jpg',
+  ch2_s_trapped: 'ch2-trapped.jpg',
+  ch2_s_end: 'ch2-end.jpg',
+  ch2_s_gate: 'ch2-gate.jpg',
   stray_collector: 'stray-collector.jpg',
   bay_pike: 'bay_pike.jpg',
   corvin: 'corvin.jpg',
@@ -264,6 +292,21 @@ export const COVER_BAND: Record<CoverKey, [number, number]> = {
   threshold: [0.1, 0.85],
   stairs: [0.1, 0.85],
   ch2_dark: [0.1, 0.85],
+  // v170: Chapter Two scene art. Bands keep the people and the subject above the story panel on phones.
+  ch2_s_p_supply: [0.15, 0.75],
+  ch2_s_p_drillrun: [0.1, 0.9],
+  ch2_s_survivor: [0.15, 0.95],
+  ch2_s_approach: [0.2, 0.8],
+  ch2_s_ditch: [0.05, 0.9],
+  ch2_s_gully: [0.05, 0.75],
+  ch2_s_irongut: [0.05, 0.7],
+  ch2_s_ribs: [0.2, 0.95],
+  ch2_s_vein: [0.15, 0.9],
+  ch2_s_cache: [0.15, 0.85],
+  ch2_s_heart: [0.5, 0.95],
+  ch2_s_trapped: [0.1, 0.9],
+  ch2_s_end: [0.1, 0.75],
+  ch2_s_gate: [0.3, 0.85],
   valerius: [0.05, 0.7],
   hound: [0.05, 0.8],
   sybella: [0.0, 0.6],
@@ -501,7 +544,7 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   if (id === 'ch1:end') return 'ch1_end'
   if (id === 'ch2:stub') return 'under_jaw'
   // v166: Chapter Two covers.
-  const CH2_ART: Record<string, CoverKey> = {'ch2:gate': 'under_jaw', 'ch2:cache': 'hoard', 'ch2:trapped': 'down', 'ch2:heart': 'hunger', 'ch2:end': 'ch1_end', 'ch2:o-abyss': 'ch2_o_abyss', 'ch2:o-bounty': 'ch2_o_bounty', 'ch2:o-cage': 'ch2_o_cage', 'ch2:o-hounds': 'ch2_o_hounds', 'ch2:o-root': 'ch2_o_root', 'ch2:o-stakes': 'ch2_o_stakes', 'ch2:o-stilts': 'ch2_o_stilts', 'ch2:o-strays': 'ch2_o_strays', 'ch2:o-wash': 'ch2_o_wash', 'ch2:p-abyss': 'ch2_p_abyss', 'ch2:p-bays': 'ch2_p_bays', 'ch2:p-bilge': 'ch2_p_bilge', 'ch2:p-haul': 'ch2_p_haul', 'ch2:p-jaws': 'ch2_p_jaws', 'ch2:p-shaft': 'ch2_p_shaft', 'ch2:p-sift': 'ch2_p_sift', 'ch2:v-bleed': 'ch2_v_bleed', 'ch2:v-blown': 'ch2_v_blown', 'ch2:v-garden': 'ch2_v_garden', 'ch2:v-greg': 'ch2_v_greg', 'ch2:v-murch': 'ch2_v_murch', 'ch2:v-outpost': 'ch2_v_outpost', 'ch2:v-ribs': 'ch2_v_ribs', 'ch2:v-scar': 'ch2_v_scar', 'ch2:v-stair': 'ch2_v_stair', 'ch2:v-test': 'ch2_v_test', 'ch2:p-supply': 'ch2_dark', 'ch2:p-drillrun': 'ch2_dark', 'ch2:survivor': 'ch2_dark', 'ch2:approach': 'ch2_dark', 'ch2:ditch': 'ch2_dark', 'ch2:gully': 'ch2_dark', 'ch2:irongut': 'ch2_dark', 'ch2:ribs': 'ch2_dark', 'ch2:vein': 'ch2_dark'}
+  const CH2_ART: Record<string, CoverKey> = {'ch2:gate': 'ch2_s_gate', 'ch2:cache': 'ch2_s_cache', 'ch2:trapped': 'ch2_s_trapped', 'ch2:heart': 'ch2_s_heart', 'ch2:end': 'ch2_s_end', 'ch2:o-abyss': 'ch2_o_abyss', 'ch2:o-bounty': 'ch2_o_bounty', 'ch2:o-cage': 'ch2_o_cage', 'ch2:o-hounds': 'ch2_o_hounds', 'ch2:o-root': 'ch2_o_root', 'ch2:o-stakes': 'ch2_o_stakes', 'ch2:o-stilts': 'ch2_o_stilts', 'ch2:o-strays': 'ch2_o_strays', 'ch2:o-wash': 'ch2_o_wash', 'ch2:p-abyss': 'ch2_p_abyss', 'ch2:p-bays': 'ch2_p_bays', 'ch2:p-bilge': 'ch2_p_bilge', 'ch2:p-haul': 'ch2_p_haul', 'ch2:p-jaws': 'ch2_p_jaws', 'ch2:p-shaft': 'ch2_p_shaft', 'ch2:p-sift': 'ch2_p_sift', 'ch2:v-bleed': 'ch2_v_bleed', 'ch2:v-blown': 'ch2_v_blown', 'ch2:v-garden': 'ch2_v_garden', 'ch2:v-greg': 'ch2_v_greg', 'ch2:v-murch': 'ch2_v_murch', 'ch2:v-outpost': 'ch2_v_outpost', 'ch2:v-ribs': 'ch2_v_ribs', 'ch2:v-scar': 'ch2_v_scar', 'ch2:v-stair': 'ch2_v_stair', 'ch2:v-test': 'ch2_v_test', 'ch2:p-supply': 'ch2_s_p_supply', 'ch2:p-drillrun': 'ch2_s_p_drillrun', 'ch2:survivor': 'ch2_s_survivor', 'ch2:approach': 'ch2_s_approach', 'ch2:ditch': 'ch2_s_ditch', 'ch2:gully': 'ch2_s_gully', 'ch2:irongut': 'ch2_s_irongut', 'ch2:ribs': 'ch2_s_ribs', 'ch2:vein': 'ch2_s_vein'}
   if (CH2_ART[id]) return CH2_ART[id]
   // The South Wind: the hull on the horizon, not yet her face. v165: the Outcast sees her skiff on the Bone Wash (it used to borrow the camp dock art).
   if (id === 'ch1:south-wind') return state.door === 'outcast' ? 'south_wind' : fightGround(state, scene)
