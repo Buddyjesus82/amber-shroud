@@ -282,6 +282,11 @@ export function gearTab(id: ItemId): GearTab {
 
 // ── Vessel disguise ──
 
+/** v172: the ceremonial cloth is worn (any door). The hymn-moth's lull is halved by it. */
+export function wearsCloth(state: Pick<GameState, 'equipped'>): boolean {
+  return state.equipped?.garment === 'ceremonial_cloth'
+}
+
 /** Prisoner and Outcast doors: the Vessel Cloth worn reads as a cup to Cartel eyes, until someone sees through it. */
 export function disguiseActive(state: Pick<GameState, 'door' | 'equipped' | 'flags'>): boolean {
   return state.door !== 'vessel' && state.equipped?.garment === 'ceremonial_cloth' && !state.flags.disguiseBlown

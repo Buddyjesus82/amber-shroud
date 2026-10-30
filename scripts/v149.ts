@@ -15,7 +15,7 @@ function ok(cond: unknown, msg: string) {
     console.log('FAIL', msg)
   }
 }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v171'"), 'SW cache v149')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v172'"), 'SW cache v149')
 ok(CHAPTER_DONE_FLAGS[0] === 'chapter1Done', 'chapter list starts with Chapter One')
 const g = newGame('prisoner')
 let s: GameState = persist({ ...g, sceneId: 'ch1:p-ossa', chapterId: 'cache-run', hands: 0, flags: { ...g.flags, noMasked: true } })

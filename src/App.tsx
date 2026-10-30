@@ -3,7 +3,8 @@ import { DoorSelect } from './components/DoorSelect'
 import { IntroCards } from './components/IntroCards'
 import { PlayScreen } from './components/PlayScreen'
 import { TitleScreen } from './components/TitleScreen'
-import { newGame } from './game/engine'
+import { chapterTwoFromCode, newGame } from './game/engine'
+import { isChapterTwoCode } from './game/ch2'
 import {
   clearAllSaves,
   clearSave,
@@ -35,6 +36,7 @@ export default function App() {
   const [state, setState] = useState<GameState | null>(null)
   const [saved, setSaved] = useState(() => saveSnapshot())
   const [booting, setBooting] = useState(true)
+  const [codeStart, setCodeStart] = useState(false)
   const [saveToast, setSaveToast] = useState<string | null>(null)
   const [savedCue, setSavedCue] = useState(false)
   const stateRef = useRef<GameState | null>(null)
@@ -138,6 +140,7 @@ export default function App() {
       <DoorSelect
         savedDoors={saved.doors}
         onBack={() => {
+          setCodeStart(false)
           refreshSaves()
           setView('title')
         }}
@@ -152,7 +155,8 @@ export default function App() {
           if (retry) onChange(retry)
         }}
         onStart={(door: DoorId) => {
-          onChange(newGame(door))
+          onChange(codeStart ? chapterTwoFromCode(door) : newGame(door))
+          setCodeStart(false)
         }}
       />
     )
@@ -164,7 +168,15 @@ export default function App() {
       lastDoor={saved.last}
       lastWhen={saved.when}
       booting={booting}
+      onCode={(code: string) => {
+        if (!isChapterTwoCode(code)) return false
+        refreshSaves()
+        setCodeStart(true)
+        setView('doors')
+        return true
+      }}
       onNew={() => {
+        setCodeStart(false)
         refreshSaves()
         setView('intro')
       }}
