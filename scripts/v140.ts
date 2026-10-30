@@ -162,9 +162,8 @@ for (const door of DOORS) {
   ok(first.sceneId === 'crisis:spine', 'collapse at the Spine lands the crisis')
   ok((first.items.glints ?? 0) === 2, 'the first Spine rescue is free')
   const later = pay({ crisisSpine: true }, { glints: 2 })
-  ok(later.sceneId === 'crisis:spine' && (later.items.glints ?? 0) === 1, 'a later Spine rescue costs a Glint')
-  const scrapOnly = pay({ crisisSpine: true }, { glints: 0, scrap: 2 })
-  ok((scrapOnly.items.scrap ?? 0) === 1, 'a later Spine rescue costs a scrap when there is no Glint')
+  // v171: a later Spine rescue is paid on its own rows (1 Sap or an Empty Vial), not a Glint.
+  ok(later.sceneId === 'crisis:spine-again' && (later.items.glints ?? 0) === 2, 'a later Spine rescue is the either/or rescue')
 }
 
 // Stale text and exits.

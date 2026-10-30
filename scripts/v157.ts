@@ -9,7 +9,7 @@ import type { GameState } from '../src/game/types.ts'
 
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v170'"), 'SW cache v157')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v171'"), 'SW cache v157')
 const base = newGame('vessel')
 const pick = (s: GameState, id: string) => applyEffect({ ...s, flash: undefined }, visibleChoices(s).find((c) => c.id === id)!.effects)
 const court = { ...base, sceneId: 'thresh:court', hubId: 'threshold', flags: { ...base.flags, noMasked: true } } as GameState
