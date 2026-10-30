@@ -343,6 +343,20 @@ export const VOICES: Record<string, Voice> = {
     refuse: '"Try."',
     unknown: '"Never mattered to me."',
   },
+  kip: {
+    lines: [
+      'Kip keeps one hand on the knife. "Say it plain. Mara\'s working."',
+      'Mara doesn\'t look up from the relay box. "Again. Slower."',
+      '"We don\'t trade with people who talk in circles," Kip says.',
+    ],
+    want: '"Water. And that box talking right."',
+    price: '"Fix the box, or share the water. Those are the prices."',
+    who: '"Kip. That\'s Mara. We run the ditch."',
+    doing: '"Waking the relay. It talks to Miller\'s board."',
+    what: '"A dead Cartel relay box. Not dead yet."',
+    refuse: '"No."',
+    unknown: '"Never heard of it. Ditch is all we know."',
+  },
   nim: {
     lines: [
       'Nim breathes through the cracked respirator. "Talk is cheap. Bounties aren\'t."',
@@ -517,6 +531,9 @@ export const VOICES: Record<string, Voice> = {
 
 /** Scene speakers and faces onto voice keys. */
 const SPEAKER_VOICE: Record<string, string> = {
+  'kip and mara': 'kip',
+  kip: 'kip',
+  mara: 'kip',
   'jaxson vance': 'jaxson',
   jaxson: 'jaxson',
   'overseer valerius': 'valerius',

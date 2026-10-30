@@ -1,5 +1,5 @@
 import {
-  CH2_CHAPTER, CH2_CODE, CH2_START_IDS, DRILL_LINES, HORN_MURCH_FIX, HORN_REPAIRED, KEY_TAKEN, MILLER_TURRETS, RECKONING_LOST, RITE_FAIL, RITE_HOLD,
+  CH2_CHAPTER, CH2_CODE, CH2_START_IDS, CH2_ENTRY, DRILL_LINES, HORN_MURCH_FIX, HORN_REPAIRED, KEY_TAKEN, MILLER_TURRETS, RECKONING_LOST, RITE_FAIL, RITE_HOLD,
   SIFT_SPOTTED, STRAYS_THROW_OUT, SUPPLY_HOT, SUPPLY_MURCH, SUPPLY_SAFE, TURRET_LINE, VALERIUS_LOOT,
 } from './content/intoTheMaw'
 import { fightStartFlags } from './encounter'
@@ -50,7 +50,7 @@ export function chapterTwoAfter(state: GameState, next: GameState, _fx?: Effect)
     next.hubId = null
   }
   // v168: each door's first scene holds the checkpoint and refills the hands.
-  if (CH2_START_IDS.includes(next.sceneId) && !f.ch2Started) {
+  if ((next.sceneId === CH2_ENTRY || CH2_START_IDS.includes(next.sceneId)) && !f.ch2Started) {
     f.ch2Started = true
     next.hands = HANDS_MAX
     next.checkpoint = snapshot({ ...next, flash: undefined })

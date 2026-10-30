@@ -5,7 +5,7 @@ import { CH2_STARTS } from '../src/game/content/intoTheMaw.ts'
 import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v168'"), 'SW cache v168')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v169'"), 'SW cache v168')
 for (const d of ['prisoner', 'vessel', 'outcast'] as const) {
   const g = newGame(d)
   const atEnd = { ...g, sceneId: 'ch1:end', chapterId: 'cache-run', hubId: null, health: 6, sap: 6, flags: { ...g.flags, chapter1Done: true, chapter1EndSeen: true, noMasked: true } } as GameState
@@ -16,9 +16,9 @@ for (const d of ['prisoner', 'vessel', 'outcast'] as const) {
   let s = interpret(atEnd, ' Lead-N3x7 ')
   ok(s.sceneId === 'ch2:gate' && s.flags.chapter2Unlocked, `${d}: code opens gate`)
   s = applyEffect(s, visibleChoices(s).find((c) => c.id === 'down')!.effects)
-  ok(s.sceneId === CH2_STARTS[d] && s.checkpoint?.sceneId === CH2_STARTS[d] && s.hands === 3, `${d}: start ${s.sceneId}`)
+  ok(s.sceneId === 'ch2:approach' && s.checkpoint?.sceneId === 'ch2:approach' && s.hands === 3, `${d}: start ${s.sceneId}`)
   let t = { ...s, sceneId: 'ch2:trapped' } as GameState
   t = applyEffect(t, visibleChoices(t).find((c) => c.id === 'again')!.effects)
-  ok(t.sceneId === CH2_STARTS[d] && t.flags.chapter1Done, `${d}: trapped resets to ${CH2_STARTS[d]} (${t.sceneId})`)
+  ok(t.sceneId === 'ch2:approach' && t.flags.chapter1Done, `${d}: trapped resets to the Approach (${t.sceneId})`)
 }
 console.log(fails ? `${fails} FAILED` : 'v166 ok'); process.exit(fails ? 1 : 0)

@@ -9,14 +9,14 @@ import type { GameState } from '../src/game/types.ts'
 
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v168'"), 'SW cache v156')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v169'"), 'SW cache v156')
 const pick = (s: GameState, id: string) => applyEffect({ ...s, flash: undefined }, visibleChoices(s).find((c) => c.id === id)!.effects)
 const base = newGame('vessel')
 const court = (f: Record<string, unknown> = {}) => ({ ...base, sceneId: 'thresh:court', hubId: 'threshold', flags: { ...base.flags, noMasked: true, ...f } }) as GameState
 const art = (s: GameState) => playCoverFile(playCoverKey(s, sceneOf(s)))
 
 const st = pick(court(), 'thalia')
-ok(st.sceneId === 'thresh:stairs' && art(st) === 'threshold.jpg', `Court dais -> The Stairs (${st.sceneId})`)
+ok(st.sceneId === 'thresh:stairs' && art(st) === 'stairs.jpg', `Court dais -> The Stairs (${st.sceneId})`)
 for (const id of ['clear', 'climb']) {
   const n = pick(st, id)
   ok(n.sceneId === 'thresh:thalia' && n.flags.stairsCleared && !n.flags.stairsTo, `${id} -> dais Thalia (${n.sceneId})`)

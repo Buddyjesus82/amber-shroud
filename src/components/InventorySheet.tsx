@@ -181,7 +181,7 @@ function Slot({ state, slot, onClear }: { state: GameState; slot: EquipSlot; onC
     <div className={`equip-slot${item ? ' filled' : ''}`}>
       <em>{SLOT_LABEL[slot]}</em>
       <strong>
-        {item?.name ?? 'Empty'}
+        {slot === 'offhand' && id === 'needle_knife' ? 'Parry Blade' : (item?.name ?? 'Empty')}
         {stat ? <span className="gear-stat">{stat}</span> : null}
       </strong>
       {item ? (

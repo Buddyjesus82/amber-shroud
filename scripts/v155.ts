@@ -9,7 +9,7 @@ import type { GameState } from '../src/game/types.ts'
 
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v168'"), 'SW cache v155')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v169'"), 'SW cache v155')
 const pick = (s: GameState, id: string) => applyEffect(s, visibleChoices(s).find((c) => c.id === id)!.effects)
 const art = (s: GameState) => playCoverFile(playCoverKey(s, sceneOf(s)))
 const base = newGame('vessel')
@@ -18,7 +18,7 @@ const rig = (o: Partial<GameState> = {}) => ({ ...base, sceneId: 'thresh:crucibl
 const st = pick(rig(), 'slip')
 ok(st.sceneId === 'thresh:stairs', `rig leads to The Stairs (${st.sceneId})`)
 ok(sceneOf(st).title === 'The Stairs' && sceneOf(st).body.startsWith('Rubble chokes the stairs'), 'Stairs text')
-ok(art(st) === 'threshold.jpg', `Stairs art is the hall (${art(st)})`)
+ok(art(st) === 'stairs.jpg', `Stairs art is its own (v169) (${art(st)})`)
 ok(!sceneOf(st).speaker, 'no speaker on the Stairs')
 
 const top = getTop(st, 'clear')

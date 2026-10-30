@@ -316,6 +316,19 @@ export const ITEMS: Record<ItemId, ItemDef> = {
     kind: 'key',
     desc: 'Drawn out of an amber statue. Images that are not yours. A crafting material.',
   },
+  // v169: the Memory Siphon rides in the Kit, not the bag.
+  memory_siphon: {
+    id: 'memory_siphon',
+    name: 'Memory Siphon',
+    kind: 'key',
+    desc: 'A Seeker extractor blade with a glass reservoir in the grip. Kit tool, not bag. Draws memory out of amber husks, resin veins and statues.',
+  },
+  cartel_transponder: {
+    id: 'cartel_transponder',
+    name: 'Cartel Transponder Signal',
+    kind: 'key',
+    desc: "FREQ-774, the Blind-Channel Frequency, on Kip and Mara's spliced lead. Spoofs you as an authorized Cartel supply courier on Miller's tracking board.",
+  },
   cipher_key: {
     id: 'cipher_key',
     name: 'Cipher Key',
@@ -365,7 +378,7 @@ export const DOORS: Record<string, DoorDef> = {
   },
   vessel: {
     id: 'vessel',
-    title: 'Vessel',
+    title: 'The Seal of the Outer Keel',
     role: 'Cult',
     place: 'Outer Threshold',
     epithet: 'the False Cup',

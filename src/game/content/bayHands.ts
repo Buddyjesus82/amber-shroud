@@ -88,7 +88,7 @@ const VETCH_AGAIN = 'She welds the air in front of your hand. You keep the finge
 const VETCH_AGAIN_FX: Effect = { pressure: 2, flag: { cartelNotice: true }, ticks: 1 }
 
 const TRADE_PIKE_REPLY =
-  'Pike takes the wrench without stopping the scrape. He lifts the lash cord off the post and hands it to you. He does not shout. The Cartel does not see a theft.'
+  'Pike takes the wrench without stopping the scrape. He lifts the Sinew-Bind off the post and hands it to you. He does not shout. The Cartel does not see a theft.'
 const TRADE_PIKE_FX: Effect = { remove: { wrench: 1 }, flag: { lashCord: true, wrenchBayTrade: 'pike', bayLooked: true }, ticks: 1 }
 const TRADE_SARN_REPLY =
   'Sarn takes the wrench and counts you one twist of scrap off his crate. Quiet. No Cartel Heat. The cord on Pike\'s post is still a separate theft if you want it.'
@@ -114,11 +114,18 @@ const cordTags = [
   'steal cord',
   'steal the cord',
   'steal lash cord',
+  'steal sinew-bind',
   'steal the lash cord',
+  'steal the sinew-bind',
   'take cord',
   'take the cord',
   'take lash cord',
+  'take sinew-bind',
   'take the lash cord',
+  'take the sinew-bind',
+  'take sinew-bind',
+  'take the sinew-bind off the post',
+  'take sinew-bind off the post',
   'grab the cord',
   'grab cord',
 ]
@@ -163,7 +170,7 @@ const pikeRules: IntentRule[] = [
   { tags: boltTags, show: { all: [noWrench, { flagUnset: 'bayPikeTook' }] }, reply: BOLT_NEEDS_WRENCH, effects: {} },
   { tags: phrases(TAKE, pike), show: { flag: 'bayPikeTook' }, reply: PIKE_AGAIN, effects: PIKE_AGAIN_FX },
   { tags: cordTags, show: { flagUnset: 'lashCord' }, reply: CORD_REPLY, effects: CORD_FX },
-  { tags: cordTags, show: { flag: 'lashCord' }, reply: 'The lash cord is already in your hand.', effects: {} },
+  { tags: cordTags, show: { flag: 'lashCord' }, reply: 'The Sinew-Bind is already in your hand.', effects: {} },
   tradePike,
   wornTrade(tradePike.tags, [{ flagUnset: 'lashCord' }]),
 ]
@@ -362,7 +369,7 @@ const back: Choice = {
 export const pikeBayChoices: Choice[] = [
   {
     id: 'cord',
-    label: 'Take the lash cord off the post',
+    label: 'Take the Sinew-Bind off the post',
     sub: 'Pike does not look up. Cartel Heat rises if anyone counts his skiff.',
     show: { flagUnset: 'lashCord' },
     effects: { ...CORD_FX, flash: CORD_REPLY },
@@ -378,7 +385,7 @@ export const pikeBayChoices: Choice[] = [
   },
   {
     id: 'trade-pike',
-    label: 'Trade the wrench to Pike for lash cord',
+    label: 'Trade the wrench to Pike for the Sinew-Bind',
     sub: 'He keeps the steel. You get the cord. He does not call the Cartel.',
     show: { all: [wrenchFree, { flagUnset: 'lashCord' }] },
     enable: wrenchOff,
