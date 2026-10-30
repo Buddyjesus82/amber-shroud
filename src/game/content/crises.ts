@@ -78,12 +78,26 @@ You wake with sand in your teeth and a Drop in your vial you did not earn. Whoev
           sap: 2,
           add: { vial_drop: 1 },
           heat: { strays: 1 },
-          flag: { hungerKnown: true, crisisSpine: true, firstDrop: true, noonDebt: true, strayNotice: true },
+          flag: { hungerKnown: true, crisisSpine: true, firstDrop: true, noonDebt: true, strayNotice: true, outcastRescued: true },
           pressure: 2,
           goto: 'spine:ridge',
           flash: 'Noon returns. So does thirst, on a delay. Somebody on the Spine poured that Drop, and the Strays are asking who drank it. Stray Heat rises.',
         },
       },
+    ],
+  },
+  {
+    // v171: every Spine rescue after the first. No voice: you pay with 1 Sap or an Empty Vial.
+    id: 'crisis:spine-again',
+    hubId: 'spine',
+    kind: 'crisis',
+    title: 'Empty',
+    body: `Sap hits zero like a light going out.
+
+You wake with sand in your teeth and a Drop in your vial you did not earn. Whoever poured it did not stay to be thanked.`,
+    choices: [
+      { id: 'sap', label: 'Pay 1 Sap', sub: 'Sap −1.', effects: { sap: 2, pressure: 2, goto: 'spine:ridge', flash: 'Noon returns. So does thirst, on a delay.' } },
+      { id: 'vial', label: 'Pay an Empty Vial', enable: { item: 'vial_empty' }, locked: 'Needs: an Empty Vial', effects: { sap: 3, remove: { vial_empty: 1 }, pressure: 2, goto: 'spine:ridge', flash: 'Noon returns. So does thirst, on a delay.' } },
     ],
   },
   {
@@ -191,14 +205,22 @@ Sybella's shadow is cooler than the rock. She kneels — ceremonial, not tender 
       {
         id: 'up',
         label: 'Get up. Stay hunted.',
-        show: { door: 'outcast' },
+        show: { all: [{ door: 'outcast' }, { flagUnset: 'outcastRescued' }] },
         effects: {
           sap: 3,
-          flag: { sybellaHunting: true, mawRescued: true },
+          flag: { sybellaHunting: true, mawRescued: true, outcastRescued: true },
           heat: { strays: 1 },
           goto: 'maw:rim',
           flash: 'You live. Not by her hand. A Stray poured it, and the Strays will remember. Stray Heat rises.',
         },
+      },
+      // v171: a later Outcast rescue: Scrap −2, Sap −1.
+      {
+        id: 'up',
+        label: 'Get up. Stay hunted.',
+        sub: 'Scrap −2. Sap −1.',
+        show: { all: [{ door: 'outcast' }, { flag: 'outcastRescued' }] },
+        effects: { sap: 2, remove: { scrap: 2 }, flag: { sybellaHunting: true, mawRescued: true }, goto: 'maw:rim' },
       },
       {
         id: 'up-vessel',

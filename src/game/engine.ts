@@ -46,7 +46,7 @@ import {
 } from './campJob'
 import { jaxsonAway, markMetOnLeave, matchPersonQuery, personAtScene } from './people'
 import { downedNote, knotRescue, wakeEffect } from './downed'
-import { valeriusResting } from './valeriusRest'
+import { campHuntIsValerius, valeriusNodeCooling, valeriusResting } from './valeriusRest'
 import { HANDS_LEFT_SUB, KNOT_FREE_SUB, RUN_OVER_LABEL, RUN_OVER_NOTE, RUN_OVER_SAP_NOTE, RUN_OVER_SUB, handsLeft, restoreCheckpoint, withCheckpoint } from './hands'
 import { markFirstDrop } from './firstDrop'
 import { amberFindSign, downedSign, lowHealthSign, sandTouchReply } from './sandSign'
@@ -226,11 +226,11 @@ import { KAELEN_INTRO, ROADS } from './roads'
 function pickCrisis(state: GameState): string {
   if (state.chapterId === 'cache-run') return 'crisis:dunes'
   if (state.hubId === 'camp04') return state.flags.chapter1Done ? 'crisis:camp-alone' : 'crisis:camp'
-  if (state.hubId === 'spine') return 'crisis:spine'
+  if (state.hubId === 'spine') return state.flags.outcastRescued || state.flags.crisisSpine ? 'crisis:spine-again' : 'crisis:spine'
   if (state.hubId === 'threshold') return 'crisis:thresh'
   if (state.hubId === 'redmaw') return 'crisis:maw'
   if (state.door === 'prisoner') return state.flags.chapter1Done ? 'crisis:camp-alone' : 'crisis:camp'
-  if (state.door === 'outcast') return 'crisis:spine'
+  if (state.door === 'outcast') return state.flags.outcastRescued || state.flags.crisisSpine ? 'crisis:spine-again' : 'crisis:spine'
   return 'crisis:thresh'
 }
 
@@ -815,7 +815,9 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     const c = getScene(next.sceneId)
     if (c.hubId) next.hubId = c.hubId
     // The Spine's first rescue is the free First Drop. Every later one costs a Glint or a scrap, like the other rescues.
-    if (RESCUE_CRISES.has(next.sceneId) || (next.sceneId === 'crisis:spine' && next.flags.crisisSpine)) {
+    // v171: the later Spine rescue and a later Outcast Rim rescue are paid on their own rows.
+    const ownCost = next.sceneId === 'crisis:spine-again' || (next.sceneId === 'crisis:maw' && next.door === 'outcast' && !!next.flags.outcastRescued)
+    if (RESCUE_CRISES.has(next.sceneId) && !ownCost) {
       const pay = (next.items.glints ?? 0) > 0 ? 'glints' : (next.items.scrap ?? 0) > 0 ? 'scrap' : null
       if (pay) {
         next.items = { ...next.items, [pay]: (next.items[pay] ?? 0) - 1 }
@@ -867,6 +869,8 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   const crucibleBeat = (state.sceneId === 'open:vessel' && next.sceneId === 'thresh:crucible-rig') || (state.sceneId === 'thresh:crucible-rig' && (next.sceneId === 'thresh:crucible-stairs' || next.sceneId === STAIRS)) || (state.sceneId === STAIRS && next.sceneId === 'thresh:crucible-stairs') || (state.sceneId === 'thresh:court-guard' && next.sceneId === 'thresh:court')
   const lingered = !fx.still && !vendorBeat && !crucibleBeat && ((fx.ticks ?? 0) > 0 || (fx.pressure ?? 0) > 0 || !!dest)
   const clearingHunt = !!state.flags.hunterHere && (!next.flags.hunterHere || !!fx.unsetFlag?.includes('hunterHere'))
+  // v171: Valerius's node cooldown counts major node (hub) changes.
+  if (next.hubId !== state.hubId && typeof next.flags.valeriusNodes === 'number') next.flags = { ...next.flags, valeriusNodes: next.flags.valeriusNodes + 1 }
   // Sybella's intercept scenes are their own beat: they never count toward a hunt or Heat coming due.
   const interceptBeat = facingSybella(state.sceneId) || facingSybella(next.sceneId)
   if (clearingHunt) {
@@ -901,7 +905,8 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
       sybellaShadowed: from.startsWith('maw:') || next.hubId === 'redmaw' ? true : next.flags.sybellaShadowed,
       sybellaShadowStep: interrupt === 'maw:sybella-shadow' ? Number(next.flags.sceneSteps ?? 0) + (next.sceneId !== state.sceneId ? 1 : 0) : next.flags.sybellaShadowStep,
       metHandler: interrupt === 'camp:hunter' ? true : next.flags.metHandler,
-      huntNoValerius: interrupt === 'camp:hunter' ? valeriusResting(next) : next.flags.huntNoValerius,
+      huntNoValerius: interrupt === 'camp:hunter' ? valeriusResting(next) || valeriusNodeCooling(next) : next.flags.huntNoValerius,
+      valeriusNodes: interrupt === 'camp:hunter' && campHuntIsValerius({ ...next, flags: { ...next.flags, hunterHere: false } }) ? 0 : next.flags.valeriusNodes,
       valeriusCool: interrupt === 'camp:hunter' ? false : next.flags.valeriusCool,
       ...(interrupt === 'spine:hunter'
         ? {
@@ -1395,7 +1400,7 @@ export function noticeHunt(state: GameState): GameState {
     huntQuiet: 0,
     fightQuiet: 0,
     ...(maw ? { sybellaShadowed: true, sybellaShadowStep: Number(state.flags.sceneSteps ?? 0) } : {}),
-    ...(state.hubId === 'camp04' ? { metHandler: true, huntNoValerius: valeriusResting(state) } : {}),
+    ...(state.hubId === 'camp04' ? { metHandler: true, huntNoValerius: valeriusResting(state) || valeriusNodeCooling(state), ...(campHuntIsValerius({ ...state, flags: { ...state.flags, hunterHere: false } }) ? { valeriusNodes: 0 } : {}) } : {}),
     ...(state.hubId === 'spine' ? { spineHunterKind: spineHunterKindAt(state.heat.strays), metCarapace: spineHunterKindAt(state.heat.strays) === 'carapace' ? true : state.flags.metCarapace } : {}),
   }
   const hunted = { ...state, flags }

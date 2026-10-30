@@ -4,13 +4,13 @@ import { getScene } from '../src/game/content/index.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 const J = (x: unknown) => JSON.stringify(x)
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v170'"), 'SW cache v169')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v170'"), 'Build label v169')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v171'"), 'SW cache v169')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v171'"), 'Build label v169')
 ok(existsSync('public/covers/stairs.jpg') && existsSync('public/covers/threshold.jpg'), 'stairs art, threshold kept')
 ok(readFileSync('src/game/art.ts', 'utf8').includes("'stairs'"), 'stairs cover key')
 ok(J(getScene('ch2:gate').choices).includes('ch2:approach'), 'gate -> approach')
 const ap = J(getScene('ch2:approach').choices)
-ok(ap.includes('ch2:gully') && ap.includes('ch2:ditch') && ap.includes('memory_siphon'), 'approach split + prisoner siphon')
+ok(ap.includes('ch2:gully') && ap.includes('ch2:ditch') && J(getScene('ch1:end').choices).includes('memory_siphon'), 'approach split + prisoner siphon (v171: at ch1:end)')
 const d = J(getScene('ch2:ditch').choices)
 ok(d.includes('cartel_transponder') && d.includes('kipDistrust') && d.includes('hands') && d.includes('"strays":1'), 'Kip & Mara')
 const g = J(getScene('ch2:gully').choices)

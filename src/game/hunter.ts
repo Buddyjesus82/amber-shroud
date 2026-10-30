@@ -576,7 +576,7 @@ export function pressureChoices(state: GameState): Choice[] {
 /** Each faction takes a fee once. After that the pay rows stay on the card, locked. */
 export const HUNT_PAID_LOCK = 'Paid once already. They want more than coin now.'
 /** Slipped them before and their Heat is 4+: only the fight rows open. */
-export const HUNT_CORNERED_LOCK = 'They came ready this time. Fight is the only way out.'
+export const HUNT_CORNERED_LOCK = 'The hunt is close, but the dunes still offer a gap.'
 export const HUNT_CORNERED_HEAT = 4
 /** At this Heat even the first hunt is cornered. */
 export const HUNT_CORNERED_FIRST = 6

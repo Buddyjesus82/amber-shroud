@@ -82,8 +82,19 @@ function drillChoices(next: string, kind: 'drilllead' | 'dragoon', fightLabel: s
   ]
 }
 
-const TOLL_SHOW: Cond = { all: [{ flagUnset: 'ch2Won_jaws' }, { flagUnset: 'gregStanding' }] }
-const TOLL_PAID = 'The weight drops into the bucket. Greg counts it twice and waves you on toward the Iron-Gut Pass.'
+export const GREG_TOLL = 'ch2:greg-toll'
+export const GREG_TOLL_BODY = `Horn static, then a long low whistle. Greg Ambergrin stands on his elevated steel platform: oil-stained optics, an iron chain.
+
+Greg, over the horn: "Tell that runner down in the dirt to stop staring up at my brass. The price is fifteen scraps or two vials of refined sap—no credit, no speeches. If they haven't dropped the weight into the bucket by the count of three... paint the sand with 'em and haul their skiff to the scrap heap."`
+export const GREG_TOLL_PENS = `Static, then a murmur: "...Hold on. Greg. That one walks like the pens."
+
+Greg leans over the rail, eyes narrowing as he inspects your tags.
+
+"Cartel stock walking itself back. Miller'll laugh." He spits into the sand. "No toll for stock. Stock goes back in the pen."`
+export const GREG_TOLL_IRON = "Just open the gate, Greg. Here's your iron."
+export const GREG_TOLL_RESIN = 'Two drops of clean resin. Take it and drop the latch.'
+export const GREG_TOLL_SYBELLA = "Sybella's skiff is right behind me, Greg. You want to explain to her why you delayed her run?"
+const GREG_OPEN: Cond = { flagUnset: 'ch2Won_tollgate' }
 export const SIPHON_PRISONER = "Under a tarp at the cairn, someone's stash from the last run: cord, a dead lamp, and a Seeker blade with a glass reservoir in the grip. Nobody's coming back for it. You take the Memory Siphon."
 export const SIPHON_VESSEL = "The locker is meant for the Silt-Bay Docks: Seeker transit seals, a ledger, and a Memory Siphon in a padded case. The Vessel's hands are allowed to take what the Vessel needs."
 export const SIPHON_OUTCAST = "A Stray scout lies against a vertebra, breathing wrong. He sees the brand and laughs once. 'Figures.' He presses a Seeker blade with a glass grip into your hand. 'Took it off a lamp. Don't let them have it back.' He doesn't breathe again."
@@ -125,8 +136,6 @@ Greg unhooks a chain from his belt. "No toll for stock. Stock goes back in the p
       { id: 'through', label: 'Climb into the haul', tone: 'hunger', show: { flag: 'ch2Won_jaws' }, effects: { goto: 'ch2:p-haul' } },
       { id: 'haul', label: 'Bury yourself in the scrap haul', sub: 'The haul skiffs go in under the platform.', show: { flagUnset: 'ch2Won_jaws' }, effects: { flag: { gregStanding: 'bypassed' }, goto: 'ch2:p-haul' } },
       { id: 'scrip', label: 'Pay in Cartel Scrip', sub: '2 scrip.', show: { flagUnset: 'ch2Won_jaws' }, enable: { itemMin: ['scrip', 2] }, locked: 'Needs: 2 Cartel Scrip', effects: { remove: { scrip: 2 }, flag: { gregStanding: 'paid' }, goto: 'ch2:p-haul', flash: "Greg turns the scrip over. 'Miller's own paper, coming home.' He looks away while you climb into the haul." } },
-      { id: 'toll', label: 'Pay the toll', sub: '15 scrap.', show: TOLL_SHOW, enable: { itemMin: ['scrap', 15] }, locked: 'Needs: 15 scrap', effects: { remove: { scrap: 15 }, flag: { gregStanding: 'paid' }, goto: 'ch2:irongut', flash: TOLL_PAID } },
-      { id: 'tollsap', label: 'Pay the toll in Sap', sub: '2 vials.', show: TOLL_SHOW, enable: { itemMin: ['vial_drop', 2] }, locked: 'Needs: 2 vials', effects: { remove: { vial_drop: 2 }, flag: { gregStanding: 'paid' }, goto: 'ch2:irongut', flash: TOLL_PAID } },
       { id: 'fight', label: "Fight Greg's chain", tone: 'danger', show: { flagUnset: 'ch2Won_jaws' }, effects: { flag: { gregStanding: 'hostile', ch2Fight: 'jaws' }, ambush: { kind: 'greg', line: "Greg swings the chain like he's done it a thousand times. He has." } } },
     ],
   },
@@ -241,8 +250,6 @@ The horn crackles once more: "Seekers pay the tithe, Greg. Gold dust or not."
 
 Greg sees the gold dust on you and steps back. 'Seeker business goes through. Seeker business also pays.'`,
     choices: [
-      { id: 'toll', label: 'Pay the toll', sub: '15 scrap.', show: TOLL_SHOW, enable: { itemMin: ['scrap', 15] }, locked: 'Needs: 15 scrap', effects: { remove: { scrap: 15 }, flag: { gregStanding: 'paid' }, goto: 'ch2:irongut', flash: TOLL_PAID } },
-      { id: 'tollsap', label: 'Pay the toll in Sap', sub: '2 vials.', show: TOLL_SHOW, enable: { itemMin: ['vial_drop', 2] }, locked: 'Needs: 2 vials', effects: { remove: { vial_drop: 2 }, flag: { gregStanding: 'paid' }, goto: 'ch2:irongut', flash: TOLL_PAID } },
       { id: 'tithe', label: 'Pay the tithe', sub: '1 vial.', enable: { item: 'vial_drop' }, locked: 'Needs: a vial', effects: { remove: { vial_drop: 1 }, flag: { gregStanding: 'paid' }, goto: 'ch2:v-outpost' } },
       { id: 'walk', label: 'Walk as a Vessel', sub: 'Seeker Heat +1.', enable: vesselGarb, locked: 'Needs: the Seeker cloth', effects: { heat: { seekers: 1 }, goto: 'ch2:v-outpost', flash: "Greg won't touch a Vessel. He spits after you pass." } },
       { id: 'name', label: 'Name Sybella', show: { any: [{ flag: 'sybellaNamed' }, { flag: 'sybellaHelpAsked' }] }, effects: { flag: { ch2SybellaNamed: true }, goto: 'ch2:v-outpost', flash: "Greg goes pale at the name. 'Through. Fast. I never saw you.'" } },
@@ -392,8 +399,6 @@ The horn rasps again: "Not that one, Greg. The Strays want that one. Hold it for
 
 "Not today. Today you're worth more than the toll."`,
     choices: [
-      { id: 'toll', label: 'Pay the toll', sub: '15 scrap.', show: TOLL_SHOW, enable: { itemMin: ['scrap', 15] }, locked: 'Needs: 15 scrap', effects: { remove: { scrap: 15 }, flag: { gregStanding: 'paid' }, goto: 'ch2:irongut', flash: TOLL_PAID } },
-      { id: 'tollsap', label: 'Pay the toll in Sap', sub: '2 vials.', show: TOLL_SHOW, enable: { itemMin: ['vial_drop', 2] }, locked: 'Needs: 2 vials', effects: { remove: { vial_drop: 2 }, flag: { gregStanding: 'paid' }, goto: 'ch2:irongut', flash: TOLL_PAID } },
       { id: 'run', label: 'Run the wash past the platform', tone: 'danger', effects: { flag: { outcastBounty: true }, goto: 'ch2:o-stakes' } },
       { id: 'knot', label: "Show Ossa's Knot", show: knot, effects: { goto: 'ch2:o-stakes', flash: "Greg sees the stilt-cord at your brow. 'Ossa's. Huh.' He lets you go, for now." } },
     ],
@@ -509,10 +514,28 @@ To the west ridge, a fissure: the Decoy Gully. A Cartel signal-pylon stands over
 
 Off the road, smoke rises from a drainage ditch.`,
     choices: [
-      ...(Object.entries(CH2_STARTS) as [DoorId, string][]).map(([door, goto]) => ({ id: 'gate', label: 'The Main Gate', sub: "Greg's toll.", tone: 'hunger' as const, show: { door }, effects: { goto } })),
+      ...(Object.entries(CH2_STARTS) as [DoorId, string][]).map(([door]) => ({ id: 'gate', label: 'The Main Gate', sub: "Greg's toll.", tone: 'hunger' as const, show: { door }, effects: { goto: GREG_TOLL } })),
       { id: 'gully', label: 'The Decoy Gully', effects: { goto: 'ch2:gully' } },
       { id: 'ditch', label: 'The ditch camp', show: { any: [{ flagUnset: 'kipCodes' }, { flagUnset: 'kipFate' }] }, effects: { goto: 'ch2:ditch' } },
-      { id: 'stash', label: 'Search the stash at the cairn', show: { all: [{ door: 'prisoner' }, { flagUnset: 'siphonGot' }] }, effects: { add: { memory_siphon: 1 }, flag: { siphonGot: true }, flash: SIPHON_PRISONER } },
+    ],
+  },
+  // ── v171: Greg's toll at the Main Gate (spec: ch2-greg-toll.md) ──
+  {
+    id: GREG_TOLL,
+    kind: 'story',
+    title: 'The Main Gate',
+    body: GREG_TOLL_BODY,
+    variants: [{ if: { door: 'prisoner' }, mode: 'append', body: GREG_TOLL_PENS }],
+    choices: [
+      { id: 'iron', label: GREG_TOLL_IRON, sub: '15 scrap.', show: GREG_OPEN, enable: { itemMin: ['scrap', 15] }, locked: 'Needs: 15 scrap', effects: { remove: { scrap: 15 }, flag: { gregStanding: 'paid' }, goto: 'ch2:irongut', flash: 'The winch opens the gate.' } },
+      { id: 'resin', label: GREG_TOLL_RESIN, sub: '2 vials.', show: GREG_OPEN, enable: { itemMin: ['vial_drop', 2] }, locked: 'Needs: 2 vials', effects: { remove: { vial_drop: 2 }, flag: { gregStanding: 'paid' }, goto: 'ch2:irongut', flash: 'Greg checks the seals and waves you through.' } },
+      { id: 'skiff', label: 'Hide in the haul skiff under the platform', show: { all: [GREG_OPEN, { door: 'prisoner' }] }, effects: { flag: { gregStanding: 'bypassed' }, goto: 'ch2:p-haul', flash: 'The skiff grinds into the subterranean repair bays.' } },
+      { id: 'sybella', label: GREG_TOLL_SYBELLA, show: { all: [GREG_OPEN, { any: [{ door: 'vessel' }, { door: 'outcast' }] }] }, effects: { flag: { ch2SybellaNamed: true }, goto: 'ch2:irongut', flash: "'Through. Fast. I never saw you.'" } },
+      { id: 'knot', label: "Show Ossa's Knot", show: { all: [GREG_OPEN, { door: 'outcast' }, knot] }, effects: { goto: 'ch2:irongut', flash: "'Ossa's. Huh.' He lets you go, for now." } },
+      { id: 'fight', label: 'Fight Greg and the gate guard', sub: 'Cartel Heat +2.', tone: 'danger', show: GREG_OPEN, effects: { heat: { cartel: 2 }, flag: { gregStanding: 'hostile', ch2Fight: 'tollgate' }, ambush: { kind: 'greg', line: "Greg swings the chain like he's done it a thousand times. He has." } } },
+      { id: 'guard', label: 'Fight the gate guard', tone: 'danger', show: { all: [{ flag: 'ch2Won_tollgate' }, { flagUnset: 'ch2Won_tollguard' }] }, effects: { flag: { ch2Fight: 'tollguard' }, ambush: { kind: 'patrol', line: 'The gate guard comes at you.' } } },
+      { id: 'through', label: 'Go through the gate', tone: 'hunger', show: { all: [{ flag: 'ch2Won_tollgate' }, { flag: 'ch2Won_tollguard' }] }, effects: { goto: 'ch2:irongut' } },
+      BACK_TO('ch2:approach'),
     ],
   },
   {

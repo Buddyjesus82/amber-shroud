@@ -50,7 +50,7 @@ const VESSEL_SPOKE = new Set(['ch1:v-hymn', 'ch1:v-runners', 'ch1:v-zafir'])
 export function sceneFitsDoor(sceneId: string, door: DoorId): boolean {
   if (!hasScene(sceneId)) return false
   if (sceneId === 'open:prisoner' || sceneId.startsWith('camp:') || sceneId === 'crisis:camp' || sceneId === 'crisis:camp-alone') return door === 'prisoner'
-  if (sceneId === 'open:outcast' || sceneId.startsWith('spine:') || sceneId === 'crisis:spine') return door === 'outcast'
+  if (sceneId === 'open:outcast' || sceneId.startsWith('spine:') || sceneId === 'crisis:spine' || sceneId === 'crisis:spine-again') return door === 'outcast'
   if (sceneId === 'open:vessel' || sceneId.startsWith('thresh:') || sceneId === 'crisis:thresh') return door === 'vessel'
   if (PRISONER_SPOKE.has(sceneId)) return door === 'prisoner'
   if (OUTCAST_SPOKE.has(sceneId)) return door === 'outcast'

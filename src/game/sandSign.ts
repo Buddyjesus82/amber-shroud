@@ -53,6 +53,7 @@ export function sandGround(state: Pick<GameState, 'door' | 'hubId' | 'sceneId' |
     state.chapterId === 'cache-run' ||
     state.sceneId.startsWith('ch1:o-') ||
     state.sceneId === 'crisis:spine' ||
+    state.sceneId === 'crisis:spine-again' ||
     state.sceneId === 'crisis:dunes'
   )
 }

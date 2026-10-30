@@ -1,4 +1,5 @@
 import { ROADS } from '../roads'
+import { SIPHON_PRISONER } from './intoTheMaw'
 import type { Choice, Cond, ItemId, Scene } from '../types'
 
 // v160: Varro and the Maw Plate.
@@ -916,6 +917,8 @@ You can keep playing from the Rim, or go back to the title.`,
         sub: 'Keep playing from the Maw Rim.',
         effects: { goto: 'maw:rim' },
       },
+      // v171: the Prisoner's Memory Siphon stash moved here from the Approach.
+      { id: 'stash', label: 'Search the stash at the cairn', show: { all: [{ door: 'prisoner' }, { flagUnset: 'siphonGot' }] }, effects: { add: { memory_siphon: 1 }, flag: { siphonGot: true }, flash: SIPHON_PRISONER } },
       {
         id: 'title',
         label: 'Back to the title',

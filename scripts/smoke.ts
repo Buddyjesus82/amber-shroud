@@ -2737,7 +2737,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v170'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v171'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(!sw.includes('covers/camp04.jpg') && sw.includes('covers/yard.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -5378,7 +5378,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
     assert(at.sceneId === 'ch1:end' && at.flags.chapter1EndSeen, `v95: ${door} first Rim arrival ends Chapter One`)
     const body = GE.bodyOf(at)
     assert(/Chapter One ends here/.test(body) && !/leviathan|vault|Spire|key/i.test(body), `v95: ${door} chapter end is short and spoiler-free`)
-    assert(GE.visibleChoices(at).map((c) => c.id).join(',') === 'continue,title', `v95: ${door} chapter end offers Continue and the title`)
+    assert(GE.visibleChoices(at).map((c) => c.id).filter((id) => id !== 'stash').join(',') === 'continue,title', `v95: ${door} chapter end offers Continue and the title`)
     const on = rawApplyEffect(at, GE.visibleChoices(at)[0].effects)
     assert(on.sceneId === 'maw:rim' && !on.flags.hunterHere && !on.flags.encounterHere, `v95: ${door} Continue lands quietly on the Rim`)
     const again = rawApplyEffect(rawApplyEffect(on, { goto: 'maw:ribs' }), { goto: 'maw:rim' })
