@@ -15,10 +15,12 @@ function norm(text: string): string {
 }
 
 /** Typed Hunger, not Kaelen's lead. Buttons still own "take the Hunger lead". */
-export function isHungerCommand(text: string, door?: DoorId): boolean {
+export function isHungerCommand(text: string, door?: DoorId, afterOne = false): boolean {
   const hay = norm(text)
   const words = roadWords(door)
   if (!words.test(hay)) return false
+  // v175: a door's own road (the Scar, the Wash) is Chapter One's. After it, only Gullet or Hunger names the next one.
+  if (afterOne && !/\b(?:hunger|gullet)\b/.test(hay)) return false
   if (/\beast wash\b/.test(hay)) return false
   if (/\b(lead|intel|rumou?r|glint)\b/.test(hay)) return false
   if (new RegExp(`^(?:the\\s+)?(?:${words.source})$`).test(hay)) return true

@@ -633,11 +633,12 @@ A blind pick costs sap. Scratches on the wrong rib only look like that gear.`,
         label: 'The second rib from the jaw',
         sub: 'Two clues agree: the mark, the map, or the rumor. The sealed way opens.',
         show: {
-          any: [
+          // v175: once the rib is open its scrap is taken. No second +3.
+          all: [{ flagUnset: 'ribOpen' }, { any: [
             { all: [{ item: 'kallik_mark' }, { item: 'cache_map' }] },
             { all: [{ item: 'kallik_mark' }, { flag: 'heardKallik' }] },
             { all: [{ item: 'cache_map' }, { flag: 'heardKallik' }] },
-          ],
+          ] }],
         },
         effects: {
           flag: { ribOpen: true, heardGear: true },
