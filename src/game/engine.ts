@@ -814,9 +814,8 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     next.items = { ...next.items, vial_drop: (next.items.vial_drop ?? 0) - 1, vial_empty: (next.items.vial_empty ?? 0) + 1 }
     next.sap = 3
     next.flash = AUTO_DRINK_LINE
-  } else if (sapCollapsed && !skipCrisis && arrived.kind !== 'crisis' && handsLeft(next) <= 1) {
-    // v148: no hand left for a rescue. v175: spending the last hand ends the attempt at once.
-    next.hands = 0
+  } else if (sapCollapsed && !skipCrisis && arrived.kind !== 'crisis' && handsLeft(next) <= 0) {
+    // v148: no hand left for a rescue. The attempt ends here, at once (v176: three hands, three rescues).
     next.sap = 0
     next.health = 0
     next.flash = undefined
@@ -1079,10 +1078,9 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     // v148: the hand is spent when you fall, so the save already counts it. Ossa's Knot is free.
     if (flags.runOver && typeof next.flags.downedNote === 'string') flags.downedNote = next.flags.downedNote
     if (!flags.runOver && !knotRescue({ ...next, flags })) {
-      // v175: the last hand spent ends the attempt at once.
-      if (handsLeft(next) > 1) next.hands = handsLeft(next) - 1
+      // v176: three hands, three rescues. A fall at 0 hands ends the attempt at once.
+      if (handsLeft(next) > 0) next.hands = handsLeft(next) - 1
       else {
-        next.hands = 0
         flags.runOver = true
         flags.downedNote = RUN_OVER_NOTE
       }

@@ -481,7 +481,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
               </div>
               <em>{healthLabel(state.health)}</em>
             </div>
-            <div className={`sap hands ${handsLeft(state) <= 1 ? 'thin' : ''}`} title="Hands — get-ups left this chapter">
+            <div className={`sap hands ${handsLeft(state) <= 1 ? 'thin' : ''}`} title={handsLeft(state) > 0 ? "Hands — get-ups left this chapter" : "No hands left — the next fall ends the run"}>
               <span className="sap-label">Hands</span>
               <span className="hands-pips" aria-label={`${handsLeft(state)} of ${HANDS_MAX} hands`}>{handsPips(state)}</span>
             </div>
