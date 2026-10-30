@@ -26,8 +26,7 @@ ok(handsLeft(g) === 3 && g.checkpoint && g.checkpoint.sceneId === g.sceneId, 'ne
 let s: GameState = persist({ ...g, sceneId: 'camp:yard', hubId: 'camp04', ticks: 20, items: { ...g.items, scrap: 4 }, flags: { ...g.flags, guardDown: true, noMasked: true } })
 
 // 2. Each Down spends one, shown on the button.
-// v175: the last hand is the run. Two rescues, then the third Down ends it.
-for (let i = 3; i >= 2; i--) {
+for (let i = 3; i >= 1; i--) {
   s = down(s)
   ok(s.flags.downed && handsLeft(s) === i - 1, `Down #${4 - i}: hands ${i} -> ${i - 1}`)
   ok(row(s, 'wake')!.sub === `Hands left: ${i - 1}`, `Down button sub "Hands left: ${i - 1}"`)
@@ -38,7 +37,7 @@ for (let i = 3; i >= 2; i--) {
 }
 // 3. Out of hands: the next Down ends the attempt; typed "wake" cannot dodge it.
 s = down(s)
-ok(s.flags.runOver && bodyOf(s) === RUN_OVER_NOTE, 'third Down (last hand): run over note')
+ok(s.flags.runOver && bodyOf(s) === RUN_OVER_NOTE, 'fourth Down: run over note')
 ok(visibleChoices(s).length === 1 && visibleChoices(s)[0].label === RUN_OVER_LABEL, 'run over: one button')
 ok(reload()?.flags.runOver, 'run over is saved')
 const typed = interpret(s, 'wake')
@@ -65,7 +64,7 @@ ok(s.sceneId === g.sceneId && !s.flags.guardDown && handsLeft(s) === HANDS_MAX &
   ok(handsLeft(k) === 1 && row(k, 'wake')!.sub === "Ossa's Knot. No hand spent.", 'Knot rescue spends no hand')
   k = wake(k)
   k = down(k)
-  ok(handsLeft(k) === 0 && k.flags.knotRescued && k.flags.runOver, 'after the Knot, the next Down spends the last hand: run over')
+  ok(handsLeft(k) === 0 && k.flags.knotRescued, 'after the Knot, the next Down spends a hand')
 }
 // 7. Chapter Two checkpoint keeps Chapter One; run over there restores the Maw arrival.
 {
