@@ -19,7 +19,7 @@ function ok(cond: unknown, msg: string) {
     console.log('FAIL', msg)
   }
 }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v172'"), 'SW cache v152')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v173'"), 'SW cache v152')
 // 1. Hound Sign describes the handler.
 {
   const b = getScene('spine:hound').body
