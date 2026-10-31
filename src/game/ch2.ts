@@ -1,5 +1,5 @@
 import {
-  CH2_CHAPTER, CH2_CODE, CH2_START_IDS, CH2_ENTRY, DRILL_LINES, HORN_MURCH_FIX, HORN_REPAIRED, KEY_TAKEN, MILLER_TURRETS, RECKONING_LOST, RITE_FAIL, RITE_HOLD,
+  BREACH_SCENES, DRILL_SCENES, TOO_MANY_LAMPS, CH2_CHAPTER, CH2_CODE, CH2_START_IDS, CH2_ENTRY, DRILL_LINES, HORN_MURCH_FIX, HORN_REPAIRED, KEY_TAKEN, MILLER_TURRETS, RECKONING_LOST, RITE_FAIL, RITE_HOLD,
   SIFT_SPOTTED, STRAYS_THROW_OUT, SUPPLY_HOT, SUPPLY_MURCH, SUPPLY_SAFE, TURRET_LINE, VALERIUS_LOOT,
 } from './content/intoTheMaw'
 import { fightStartFlags } from './encounter'
@@ -183,14 +183,23 @@ export function chapterTwoAfter(state: GameState, next: GameState, _fx?: Effect)
     f = next.flags
   }
   // The drill clock: Sybella's team comes down while you walk.
-  if (moved && !f.spireKey) {
+  // v180: a breach scene says the drills are through; the stage follows, with no second line.
+  if (moved && BREACH_SCENES.includes(next.sceneId)) f.drillStage = 3
+  else if (moved && !f.spireKey) {
     const steps = Number(f.ch2Steps ?? 0) + 1
     f.ch2Steps = steps
     const stage = steps >= 18 ? 3 : steps >= 12 ? 2 : steps >= 6 ? 1 : 0
     if (stage > Number(f.drillStage ?? 0)) {
       f.drillStage = stage
-      addFlash(next, DRILL_LINES[stage])
+      // Scenes that print the drill stage themselves do not also get the flash.
+      if (!DRILL_SCENES.includes(next.sceneId)) addFlash(next, DRILL_LINES[stage])
     }
+  }
+  // v180: with the Spire Key, a Seeker patrol is waiting at the drill run (once), and the zone's Seekers hit harder.
+  if (moved && f.spireKey && BREACH_SCENES.includes(next.sceneId) && !f.keyPatrolMet && !next.flags.encounterHere && !next.flags.downed) {
+    f.keyPatrolMet = true
+    openFight(next, 'seekerpatrol', 'keypatrol', TOO_MANY_LAMPS)
+    f = next.flags
   }
   return next
 }

@@ -30,6 +30,8 @@ export const MILLER_TURRETS = 'The barge horn blasts once: a warning. Then a sec
 export const TURRET_LINE = 'The rail turrets cough. Grit and iron chew the water beside the skiff. You make the far side bleeding.'
 export const KEY_TAKEN = 'Spire Key taken. The Seekers want it. The Cartel wants it. You have it.'
 export const RECKONING_LOST = "Greg weighs the rod in his palm and grins. 'Smart. Miller remembers smart.'"
+export const GULLY_SCRAP = 'You work the casing off the snapped conduit. Two good pieces of scrap.'
+export const LIFT_HUMS = 'The lift is ready. The gear housing hums now, and the platform strains on its rails, waiting to drop.'
 export const DRILL_BREACH = "Behind you, Sybella's drills breach the bone."
 export const GULLY_SPLICE = "You insert the spliced lead into the pylon's audio jack. The horn atop the pylon crackles with static, pinging Miller's command barge over the canyon ridge. After three long seconds, the turret lenses swivel away from your chest, and the heavy iron gate latch drops with a dull hydraulic thud."
 export const MILLER_WHISTLE = 'Over the ridge, Miller\'s horn gives a single long whistle. Not a warning. A delivery runner, logged.'
@@ -53,6 +55,9 @@ export const TOO_MANY_LAMPS = 'Too many lamps have turned your way tonight.'
 export const STRAYS_THROW_OUT = "'Twice cast out. Once more and it's for keeps.'"
 export const TEST_FAIL = "It rings. 'Hollow. Like you.'"
 
+/** v180: scenes whose body already says the drills are through. */
+export const BREACH_SCENES = ['ch2:p-drillrun', 'ch2:v-blown', 'ch2:o-hounds']
+export const DRILL_SCENES = ['ch2:v-outpost', 'ch2:o-root', 'ch2:gully']
 const drillVariants = [1, 2, 3].map((n) => ({ if: { flagEq: ['drillStage', n] } as Cond, mode: 'append' as const, body: DRILL_LINES[n] }))
 const vexPending: Cond = { all: [{ flag: 'vexFreed' }, { flagUnset: 'vexFate' }] }
 const abyssClear: Cond = { any: [{ flag: 'ch2Won_valerius' }, { flag: 'ribsCollapsed' }] }
@@ -236,7 +241,6 @@ Vex looks at the tags on you, then at your shaved head. 'Pens. They tagged me to
     kind: 'story',
     title: 'The Drill Line',
     body: `The shaft shakes. A drill-head comes through the wall above the cage, Sybella's team on the other side of it.\n\n${DRILL_BREACH}`,
-    variants: drillVariants,
     choices: drillChoices('ch2:p-abyss', 'drilllead', 'Fight the drill lead', 'drill'),
   },
   {
@@ -386,7 +390,6 @@ Vex stares at the cup on your belt. 'They hung one of those on me once. I think.
     kind: 'story',
     title: 'Cover Blown',
     body: `The lamps that bowed to you turn. 'False cup!' Sybella's drill team comes down the stair after you.\n\n${DRILL_BREACH}`,
-    variants: drillVariants,
     choices: drillChoices('ch2:v-ribs', 'dragoon', 'Fight the dragoons', 'dragoons'),
   },
   {
@@ -503,7 +506,6 @@ From below, Valerius: 'The Stray who cost me Camp-04.'`,
     kind: 'story',
     title: 'Drills and Hounds',
     body: `The drills come down the Spine Root behind you, and ahead of them, a shard-hound that already has your scent.\n\n${DRILL_BREACH}`,
-    variants: drillVariants,
     choices: drillChoices('ch2:o-abyss', 'drilllead', 'Fight the drill lead', 'drill'),
   },
   {
@@ -582,9 +584,11 @@ Off the road, smoke rises from a drainage ditch.`,
     body: `The fissure cuts the west ridge. Halfway up it, the Cartel signal-pylon: a radar dish, a horn on top, two auto scrap-turrets whose lenses follow anything warm. A junction box sits at its foot with an audio jack in it.
 
 Past the pylon, an iron gate, latched.`,
+    variants: [...drillVariants, { if: { flagUnset: 'gullyScrap' }, mode: 'append', body: 'A snapped conduit hangs off the pylon, its casing loose.' }],
     choices: [
       { id: 'splice', label: 'Splice into the junction box', sub: 'FREQ-774.', tone: 'hunger', enable: { item: 'cartel_transponder' }, locked: 'Needs: the Cartel Transponder Signal', effects: { flag: { gullyBypass: true, millerLogged: true, gregStanding: 'bypassed' }, goto: 'ch2:irongut', flash: `${GULLY_SPLICE}\n\n${MILLER_WHISTLE}` } },
-      { id: 'run', label: 'Run the turrets', sub: 'Health −2. Cartel Heat +2.', tone: 'danger', effects: { health: -2, heat: { cartel: 2 }, flag: { gullyRun: true }, goto: 'ch2:irongut', flash: "The turrets cough. Scrap shot chews the fissure wall beside you, then you. You go over the gate bleeding. Up on the barge, Miller's horn blasts once." } },
+      { id: 'casing', label: 'Pry the loose casing', sub: '2 scrap.', show: { flagUnset: 'gullyScrap' }, effects: { add: { scrap: 2 }, flag: { gullyScrap: true }, flash: GULLY_SCRAP } },
+      { id: 'run', label: 'Run the turrets', sub: 'Health −4. Cartel Heat +2.', tone: 'danger', effects: { health: -4, heat: { cartel: 2 }, flag: { gullyRun: true }, goto: 'ch2:irongut', flash: "The turrets cough. Scrap shot chews the fissure wall beside you, then you. You go over the gate bleeding. Up on the barge, Miller's horn blasts once." } },
       BACK_TO('ch2:approach'),
     ],
   },
@@ -606,7 +610,7 @@ Past the pylon, an iron gate, latched.`,
 The Spire Key. A Pre-Collapse Crystalline Resonance Tuning Rod. It forces the lower Spire locks without tripping their purges. Everyone down here wants it. Now everyone down here wants you.`,
     choices: [
       { id: 'key', label: 'Take the Key', tone: 'hunger', show: { flagUnset: 'spireKey' }, effects: { add: { spire_key: 1 }, flag: { spireKey: true }, heat: { seekers: 2, cartel: 2 }, flash: KEY_TAKEN } },
-      { id: 'niche', label: 'Search the back of the niche', show: { flagUnset: 'fluidTaken' }, effects: { add: { hydraulic_fluid: 1 }, flag: { fluidTaken: true }, flash: "Behind the rod, a sealed canister, cold and heavy, untouched since the old world fell. The label is gone. What's inside still sloshes." } },
+      { id: 'niche', label: 'Search the back of the niche', sub: 'Sap −1.', show: { flagUnset: 'fluidTaken' }, enable: { sapMin: 2 }, locked: 'Need Sap to spare.', effects: { sap: -1, add: { hydraulic_fluid: 1 }, flag: { fluidTaken: true }, flash: "Behind the rod, a sealed canister, cold and heavy, untouched since the old world fell. The label is gone. What's inside still sloshes." } },
       { id: 'back', label: 'Go on', tone: 'hunger', show: { all: [{ flag: 'spireKey' }, { door: 'prisoner' }] }, effects: { goto: 'ch2:p-drillrun' } },
       { id: 'back', label: 'Go on', tone: 'hunger', show: { all: [{ flag: 'spireKey' }, { door: 'vessel' }] }, effects: { flag: { coverBlown: true }, goto: 'ch2:v-blown' } },
       { id: 'back', label: 'Go on', tone: 'hunger', show: { all: [{ flag: 'spireKey' }, { door: 'outcast' }] }, effects: { goto: 'ch2:o-hounds' } },
@@ -621,19 +625,20 @@ The Spire Key. A Pre-Collapse Crystalline Resonance Tuning Rod. It forces the lo
 Above you, Sybella's drill-rigs are breaking through. Every bite shakes grit down the shaft.`,
     variants: [
       { if: { flagUnset: 'murchProtected' }, body: "The true ribs close overhead like a roof of bone. Between them, a Pre-Collapse lift platform hangs dead on its rails, its gear housing jammed. Nobody is working on it.\n\nAbove you, Sybella's drill-rigs are breaking through. Every bite shakes grit down the shaft." },
-      { if: { flag: 'liftDone' }, mode: 'append', body: 'The lift is ready.' },
+      { if: { all: [{ flag: 'liftDone' }, { flagUnset: 'liftLadder' }] }, mode: 'append', body: LIFT_HUMS },
+      { if: { flag: 'liftLadder' }, mode: 'append', body: 'The lift is ready.' },
       { if: vexPending, mode: 'append', body: "Vex has stopped walking. A raw Amber vein runs through the rib beside him, and he stares into it like it's calling him. 'It's in there. Who I was.'" },
     ],
     choices: [
       { id: 'scrap', label: 'Give Murch 3 scrap', sub: 'The lift runs. Murch keeps his kit.', show: { all: [{ flagUnset: 'liftDone' }, { flag: 'murchProtected' }] }, enable: { itemMin: ['scrap', 3] }, locked: 'Needs: 3 scrap', effects: { remove: { scrap: 3 }, flag: { liftDone: true, murchShop: 'full' }, flash: "He takes the scrap without looking. Three turns of the spanner and the platform shudders awake. 'Runs. It runs. Get on before it remembers it's dead.'" } },
       { id: 'force', label: 'Force the gear by hand', sub: 'Sap −1. Health −1.', tone: 'danger', show: { flagUnset: 'liftDone' }, enable: { sapMin: 2 }, locked: 'Need Sap to spare.', effects: { sap: -1, health: -1, flag: { liftDone: true }, flash: 'You put your whole back into the crank. Something in your shoulder gives before the gear does. Then the gear gives.' } },
-      { id: 'ladder', label: 'Take the emergency ladder', sub: 'Murch dumps his tool-rig to climb.', tone: 'quiet', show: { all: [{ flagUnset: 'liftDone' }, { flag: 'murchProtected' }] }, effects: { flag: { liftDone: true, liftLadder: true, murchShop: 'stripped' }, flash: "Murch heaves his tool-rig down the shaft to make the climb. It hits bottom a long time later. 'That was everything,' he says. 'That was my whole shop.'" } },
+      { id: 'ladder', label: 'Take the emergency ladder', sub: 'Murch dumps his tool-rig to climb down.', tone: 'quiet', show: { all: [{ flagUnset: 'liftDone' }, { flag: 'murchProtected' }] }, effects: { flag: { liftDone: true, liftLadder: true, murchShop: 'stripped' }, flash: "Murch heaves his tool-rig down the shaft so you can climb down. It hits bottom a long time later. 'That was everything,' he says. 'That was my whole shop.'" } },
       { id: 'ladder', label: 'Take the emergency ladder', tone: 'quiet', show: { all: [{ flagUnset: 'liftDone' }, { flagUnset: 'murchProtected' }] }, effects: { flag: { liftDone: true, liftLadder: true }, flash: 'Rung by rung, down the side of the rib. Some rungs hold.' } },
       { id: 'restrain', label: 'Restrain Vex', show: vexPending, effects: { flag: { vexFate: 'scout' }, flash: "You catch his arm and pull him off the vein. Vex blinks at the glow, then at you. Whatever he was, it stays in there. He stays with you. A scout for what comes next." } },
       { id: 'allow', label: 'Let him touch the vein', tone: 'danger', show: vexPending, effects: { flag: { vexFate: 'burn', bleedCore: true }, flash: "Vex puts both hands on the vein. The light goes into him and something goes out. When he turns, he doesn't know your face. He knows one thing. 'BLEED-CORE,' he says. 'Tell the airlock BLEED-CORE. It shuts behind you. It shuts on her.'" } },
-      { id: 'siphon', label: 'Siphon the vein first', sub: 'Memory Siphon. Seeker Heat +1.', tone: 'danger', show: vexPending, enable: { item: 'memory_siphon' }, locked: 'Needs: the Memory Siphon', effects: { add: { deep_memory_pearl: 1 }, heat: { seekers: 1 }, flag: { vexFate: 'siphoned' }, flash: "You set the Siphon in the vein before he can touch it. The reservoir fills gold. The archway above you cracks down its length. Vex makes a sound like you took something from him. You did. He won't get it back now.\n\nSomewhere above, a Seeker lamp turns your way." } },
-      { id: 'vein', label: 'Siphon the vein', sub: 'Memory Siphon. Seeker Heat +1.', show: { all: [{ not: vexPending }, { item: 'memory_siphon' }, { flagUnset: 'veinSiphoned' }, { flagUnset: 'vexFate' }] }, effects: { add: { deep_memory_pearl: 1 }, heat: { seekers: 1 }, flag: { veinSiphoned: true }, flash: 'The reservoir fills gold. Images that are not yours. Somewhere above, a Seeker lamp turns your way.' } },
-      { id: 'ride', label: 'Ride the lift down', tone: 'hunger', show: { all: [{ flag: 'liftDone' }, { flagUnset: 'liftLadder' }, { not: vexPending }] }, effects: { goto: 'ch2:vein', flash: RIBS_CLIMAX } },
+      { id: 'siphon', label: 'Siphon the vein first', sub: 'Memory Siphon. Seeker Heat +1.', tone: 'danger', show: vexPending, enable: { item: 'memory_siphon' }, locked: 'Needs: the Memory Siphon', effects: { add: { deep_memory_pearl: 1 }, heat: { seekers: 1 }, flag: { vexFate: 'siphoned', veinSiphoned: true }, flash: "You set the Siphon in the vein before he can touch it. The reservoir fills gold. The archway above you cracks down its length. Vex makes a sound like you took something from him. You did. He won't get it back now.\n\nSomewhere above, a Seeker lamp turns your way." } },
+      { id: 'vein', label: 'Siphon the vein', sub: 'Memory Siphon. Seeker Heat +1.', show: { all: [{ not: vexPending }, { item: 'memory_siphon' }] }, enable: { flagUnset: 'veinSiphoned' }, locked: 'The vein is already dry.', effects: { add: { deep_memory_pearl: 1 }, heat: { seekers: 1 }, flag: { veinSiphoned: true }, flash: 'The reservoir fills gold. Images that are not yours. Somewhere above, a Seeker lamp turns your way.' } },
+      { id: 'ride', label: 'Descend the lift', tone: 'hunger', show: { all: [{ flag: 'liftDone' }, { flagUnset: 'liftLadder' }, { not: vexPending }] }, effects: { goto: 'ch2:vein', flash: RIBS_CLIMAX } },
       { id: 'climb', label: 'Climb down', tone: 'hunger', show: { all: [{ flag: 'liftLadder' }, { not: vexPending }] }, effects: { goto: 'ch2:vein', flash: RIBS_CLIMAX_LADDER } },
     ],
     intents: [

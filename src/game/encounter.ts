@@ -211,9 +211,12 @@ export function exchangeDamage(strike: number, swing: number, shell: number, flo
   return Math.max(floor, strike + swing - shell)
 }
 
+const KEY_HUNTERS: readonly EncounterKind[] = ['seekerpatrol', 'dragoon', 'drilllead']
 export function encounterSpec(state: GameState): Spec {
   const kind = state.flags.encounterKind
   const named = SPECS.find((s) => s.kind === kind)
+  // v180: carrying the Spire Key, the Maw's Seekers and drill crews come harder.
+  if (named && state.flags.spireKey && state.chapterId === 'into-the-maw' && KEY_HUNTERS.includes(named.kind)) return { ...named, strike: named.strike + 1 }
   if (named) return named
   return SPECS[seed(state) % SPECS.length]
 }
