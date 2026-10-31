@@ -298,6 +298,12 @@ export const ITEMS: Record<ItemId, ItemDef> = {
     desc: 'A thin Seeker blade forged to draw living heat and liquefy resin seals under husk plates without shattering the core. Main hand, Strike 3.',
   },
   // v166: Chapter Two.
+  crate_key: {
+    id: 'crate_key',
+    name: 'Crate Key',
+    kind: 'key',
+    desc: "Greg's. 'This opens more than crates.'",
+  },
   spire_key: {
     id: 'spire_key',
     name: 'Spire Key',

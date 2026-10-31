@@ -43,6 +43,7 @@ export type ItemId =
   | 'plated_head_wrap'
   | 'plated_shin_wraps'
   | 'spire_key'
+  | 'crate_key'
   | 'hydraulic_fluid'
   | 'memory_siphon'
   | 'cartel_transponder'

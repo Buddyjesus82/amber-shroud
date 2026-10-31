@@ -130,6 +130,8 @@ export function chapterTwoAfter(state: GameState, next: GameState, _fx?: Effect)
       if (tag === 'test') {
         delete f.cupPassed
         f.cupFailed = true
+        // v179: lost or fled, he has moved on: no sprite, no voice in the test chamber.
+        if (!won) f.valeriusMoved = true
       }
       if (won) {
         f[`ch2Won_${tag}`] = true

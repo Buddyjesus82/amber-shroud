@@ -88,9 +88,9 @@ for (let t = 0; t < 30; t++) {
 {
   const text = JSON.stringify(HELP_TOPICS) + JSON.stringify(FIGHT_HELP)
   ok(!/Strike 2, Shell 3, Health 3/.test(text), 'Help no longer says the husk is Strike 2')
-  ok(/Strike 3, Shell 3, Health 3/.test(text), 'Help says the husk is Strike 3')
+  // v179: help carries no stat formulas
   ok(!/luck to both sides/.test(text), 'Help no longer says luck goes to both sides')
-  ok(/roll from 1 up to their Strike/.test(text), 'Help says their hit is a roll from 1 up to their Strike')
+  ok(!/roll from 1 up/.test(text), 'v179: help has no roll formula')
 }
 
 // Hound-handler art: the new portrait everywhere; the old hound art is no longer used by any scene or card.

@@ -1159,8 +1159,11 @@ export function resolveEncounter(
   }
   if (move === 'guard') {
     const cut = spec.kind === 'overseer' || spec.kind === 'husk' ? 1 : 2
-    hitIn((d) => Math.max(0, d - cut))
-    inTags.push(`Guard: you take ${cut} less damage.`)
+    // v179: Guard blunts a landed hit but never erases it (a Strike 2 hit still lands for 1).
+    const before = dmgIn
+    hitIn((d) => (d > 0 ? Math.max(DAMAGE_FLOOR, d - cut) : 0))
+    const took = before - dmgIn
+    if (took > 0) inTags.push(`Guard: you take ${took} less damage.`)
     notes.push('You guard.')
   } else if (move === 'feint') {
     // Feint: you slip the swing. Their hit is 1 lighter.
