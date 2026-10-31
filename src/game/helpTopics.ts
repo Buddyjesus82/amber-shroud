@@ -21,13 +21,13 @@ export const HELP_HINT = 'Try: help <topic>'
 const FIGHT_SECTIONS: HelpSection[] = [
   {
     rows: [
-      { key: 'STRIKE', text: 'How hard you hit. Your Main hand weapon sets it, plus 1 for a blade or club in the Off hand. Bare hands are 1.' },
-      { key: 'SHELL', text: 'How much a hit is blunted. Your worn armor pieces and a shield add up to it, up to 5. No armor is 0.' },
-      { key: 'LUCK', text: 'Every exchange adds a little luck to your hit. Their hit is a roll from 1 up to their Strike.' },
-      { key: 'DAMAGE', text: 'Your Strike against their Shell decides how hard you hit. Their hit is a roll from 1 up to their Strike, less your Shell. A landed hit always does some damage. You both hit in the same exchange.' },
-      { key: 'HEALTH', text: 'Hits take Health. You start at 6. Sap is for thirst and walking.' },
-      { key: 'LOG', text: 'After each exchange the log says it plainly: "You hit the jackal for 3." and "The jackal hits you for 1." Anything that changed a hit gets its own short line, like "Feint: +2 to your hit." or "High ground: +1 to your hit."' },
-      { key: 'GEAR', text: 'Main hand sets Strike; a short blade or club in the Off hand adds 1. Body, Cloak, Head, Legs, Hands, and a shield add to Shell, up to 5. A garment adds nothing in a fight.' },
+      { key: 'STRIKE', text: 'How hard you hit. Your Main hand weapon sets it.' },
+      { key: 'SHELL', text: 'How much a hit is blunted. Your worn armor pieces and a shield add up to it.' },
+      { key: 'LUCK', text: 'Every exchange adds a little luck to your hit.' },
+      { key: 'DAMAGE', text: 'Your Strike against their Shell decides how hard you hit. A landed hit always does some damage. You both hit in the same exchange.' },
+      { key: 'HEALTH', text: 'Hits take Health. Sap is for thirst and walking.' },
+      { key: 'LOG', text: 'After each exchange the log says it plainly. Anything that changed a hit gets its own short line.' },
+      { key: 'GEAR', text: 'Main hand sets Strike. Body, Cloak, Head, Legs, Hands, and a shield add to Shell. A garment adds nothing in a fight.' },
       { key: 'ENEMY', text: 'The fight card lists their Strike, Shell, and Health.' },
     ],
   },
@@ -35,8 +35,8 @@ const FIGHT_SECTIONS: HelpSection[] = [
     title: 'OPTIONS',
     rows: [
       { key: 'Fight', text: 'One exchange per tap. Plain Strike against Strike.' },
-      { key: 'Guard', text: 'You do not hit this exchange. Their hit on you is 2 less.' },
-      { key: 'Feint', text: 'You do not hit this exchange. Their hit on you is 1 less, and your next Fight hits harder. You cannot feint again until you Fight.' },
+      { key: 'Guard', text: 'You do not hit this exchange. Their hit on you is blunted.' },
+      { key: 'Feint', text: 'You do not hit this exchange. Their hit on you is blunted, and your next Fight hits harder. You cannot feint again until you Fight.' },
       { key: 'Throw sand', text: 'Once per fight. You do not hit. Risky. If it works, they miss this exchange and the next. If it fails, they hit as normal. Against an Amber Husk (no eyes), sand almost never works.' },
       { key: 'Aim for the core', text: 'Amber Husk only, once per fight. About half the time you crack the amber heart for a heavy blow. Otherwise you miss that exchange and they hit you.' },
       { key: 'Cut the Seeker down', text: 'When a Seeker walks an Amber Husk. No hit on the husk. Often you drop the Seeker so the husk cannot be re-charged. The husk still hits you that exchange.' },
@@ -44,7 +44,7 @@ const FIGHT_SECTIONS: HelpSection[] = [
       { key: 'Run', text: 'Even odds or better to get away. Ground, a hound, or a pin changes the odds. A failed run gives them a free hit. No loot.' },
       { key: 'Pull the tick', text: 'Only while an amber-tick is latched on. Stops the Sap drain. With Hide Gloves on, you also strike that exchange.' },
       { key: 'Deal', text: 'Only when a hurt enemy offers one. Ends the fight on their terms.' },
-      { key: 'Give the road', text: 'Before the first exchange only. Ends the fight. No loot. No cost.' },
+      { key: 'Give the road', text: 'Before the first exchange only. Ends the fight. No loot. Costs 1 Sap.' },
       { key: 'Cloak skip', text: 'With body armor or a cloak on, before the first exchange. Same as giving the road.' },
       { key: 'Walk past', text: 'Prisoner and Outcast doors, wearing Vessel Cloth that has not been seen through, against Cartel people only. Before the first exchange. Good odds they let you pass. Otherwise the cloth is seen through, Cartel Heat +2, and the fight goes on.' },
       { text: 'A move that cannot be used right now stays on the list, greyed, with the reason.' },
@@ -68,10 +68,10 @@ const FIGHT_SECTIONS: HelpSection[] = [
       { key: 'Shard-pup', crit: true, text: 'Crits twice as often.' },
       { key: 'Vent patrol', text: 'The shock baton can numb your arm. Your next hit has no extra force.' },
       { key: 'Hound-handler', text: 'Running is harder. A failed run lets the hound bite too.' },
-      { key: 'Valerius', text: 'Strike 4, Shell 3, Health 6. Guard only takes 1 off his baton. He never dies: beat him and he gets away, Cartel Heat -1, and the Camp-04 hunt stays quiet for 10 scenes.' },
+      { key: 'Valerius', text: 'He never dies: beat him and he gets away, Cartel Heat -1, and the Camp-04 hunt stays quiet for 10 scenes.' },
       { key: 'Stray collector', text: 'Hurt, he offers to call it square: Stray Heat -1, no loot.' },
-      { key: 'Nim', text: 'The Carapace hunter, at Stray Heat 4 or more on the Spine. Opens with the harpoon: +1 and you are pinned. No Run until you land a hit.' },
-      { key: 'Amber Husk', text: 'Seeker Spire construct. Strike 3, Shell 3, Health 3. No pain or fear: empty rounds do not make it leave. Guard only takes 1 off. Sand almost never works. Shatter the amber core to drop it. A Seeker with an extractor can re-charge it once unless you cut the Seeker down first. Rarely, defeating a Seeker who walked a husk drops a Seeker Extractor.' },
+      { key: 'Nim', text: 'The Carapace hunter, at Stray Heat 4 or more on the Spine. Opens with the harpoon and you are pinned. No Run until you land a hit.' },
+      { key: 'Amber Husk', text: 'Seeker Spire construct. No pain or fear: empty rounds do not make it leave. Sand almost never works. Shatter the amber core to drop it. A Seeker with an extractor can re-charge it once unless you cut the Seeker down first. Rarely, defeating a Seeker who walked a husk drops a Seeker Extractor.' },
     ],
   },
   {
@@ -287,7 +287,9 @@ export function helpRoute(text: string): HelpRoute | null {
 
 /** Opens by itself once: the first fight card of this run. Old saves that already fought skip it. */
 export function fightHelpAuto(state: Pick<GameState, 'flags'>): boolean {
-  return !!state.flags.encounterHere && !state.flags.encounterDone && !state.flags.fightHelpSeen && !state.flags.fightTaught
+  // v179: never opens by itself. The fight help is there when asked for.
+  void state
+  return false
 }
 
 /**

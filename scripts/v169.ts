@@ -4,8 +4,8 @@ import { getScene } from '../src/game/content/index.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 const J = (x: unknown) => JSON.stringify(x)
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v178'"), 'SW cache v169')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v178'"), 'Build label v169')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v179'"), 'SW cache v169')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v179'"), 'Build label v169')
 ok(existsSync('public/covers/stairs.jpg') && existsSync('public/covers/threshold.jpg'), 'stairs art, threshold kept')
 ok(readFileSync('src/game/art.ts', 'utf8').includes("'stairs'"), 'stairs cover key')
 ok(J(getScene('ch2:gate').choices).includes('ch2:approach'), 'gate -> approach')
@@ -16,7 +16,7 @@ ok(d.includes('cartel_transponder') && d.includes('kipDistrust') && d.includes('
 const g = J(getScene('ch2:gully').choices)
 ok(g.includes('spliced lead') && g.includes('long whistle') && g.includes('ch2:irongut'), 'gully splice')
 ok(getScene('ch2:irongut').title === 'The Iron-Gut Pass', 'Iron-Gut Pass')
-ok(J(getScene('ch2:v-outpost').choices).includes('Silt-Bay Docks'), 'vessel locker')
+ok(!J(getScene('ch2:v-outpost').choices).includes('Silt-Bay Docks'), 'v179: vessel locker removed')
 ok(J(getScene('ch2:o-root').choices).includes('memory_siphon'), 'outcast scout')
 const r = getScene('ch2:ribs')
 ok(String(r.body).includes('goggles pushed up over his copper mask'), 'Murch goggles')

@@ -95,6 +95,19 @@ export const GREG_TOLL_IRON = "Just open the gate, Greg. Here's your iron."
 export const GREG_TOLL_RESIN = 'Two drops of clean resin. Take it and drop the latch.'
 export const GREG_TOLL_SYBELLA = "Sybella's skiff is right behind me, Greg. You want to explain to her why you delayed her run?"
 const GREG_OPEN: Cond = { flagUnset: 'ch2Won_tollgate' }
+/** v179: Greg turns the name away from a runner the Seekers already watch. */
+export const SYBELLA_RAGS = "Sybella's team doesn't walk with rags like you."
+export const RING_LINE = 'The cup is chosen, not filled. The mark carries the weight.'
+const sybellaCool: Cond = { heatMax: ['seekers', 3] }
+const sybellaHot: Cond = { heatMin: ['seekers', 4] }
+/** Name Sybella: free under Seeker Heat 4; at 4 or more it costs 1 scrip or 1 scrap. */
+function sybellaRows(id: string, label: string, show: Cond, fx: Choice['effects']): Choice[] {
+  return [
+    { id, label, show: { all: [show, sybellaCool] }, effects: fx },
+    { id, label, sub: '1 scrip.', show: { all: [show, sybellaHot] }, enable: { item: 'scrip' }, locked: SYBELLA_RAGS, effects: { ...fx, remove: { scrip: 1 } } },
+    { id, label, sub: '1 scrap.', show: { all: [show, sybellaHot] }, enable: { item: 'scrap' }, locked: SYBELLA_RAGS, effects: { ...fx, remove: { scrap: 1 } } },
+  ]
+}
 export const SIPHON_PRISONER = "Under a tarp at the cairn, someone's stash from the last run: cord, a dead lamp, and a Seeker blade with a glass reservoir in the grip. Nobody's coming back for it. You take the Memory Siphon."
 export const SIPHON_VESSEL = "The locker is meant for the Silt-Bay Docks: Seeker transit seals, a ledger, and a Memory Siphon in a padded case. The Vessel's hands are allowed to take what the Vessel needs."
 export const SIPHON_OUTCAST = "A Stray scout lies against a vertebra, breathing wrong. He sees the brand and laughs once. 'Figures.' He presses a Seeker blade with a glass grip into your hand. 'Took it off a lamp. Don't let them have it back.' He doesn't breathe again."
@@ -252,7 +265,7 @@ Greg sees the gold dust on you and steps back. 'Seeker business goes through. Se
     choices: [
       { id: 'tithe', label: 'Pay the tithe', sub: '1 vial.', enable: { item: 'vial_drop' }, locked: 'Needs: a vial', effects: { remove: { vial_drop: 1 }, flag: { gregStanding: 'paid' }, goto: 'ch2:v-outpost' } },
       { id: 'walk', label: 'Walk as a Vessel', sub: 'Seeker Heat +1.', enable: vesselGarb, locked: 'Needs: the Seeker cloth', effects: { heat: { seekers: 1 }, goto: 'ch2:v-outpost', flash: "Greg won't touch a Vessel. He spits after you pass." } },
-      { id: 'name', label: 'Name Sybella', show: { any: [{ flag: 'sybellaNamed' }, { flag: 'sybellaHelpAsked' }] }, effects: { flag: { ch2SybellaNamed: true }, goto: 'ch2:v-outpost', flash: "Greg goes pale at the name. 'Through. Fast. I never saw you.'" } },
+      ...sybellaRows('name', 'Name Sybella', { any: [{ flag: 'sybellaNamed' }, { flag: 'sybellaHelpAsked' }] }, { flag: { ch2SybellaNamed: true }, goto: 'ch2:v-outpost', flash: "Greg goes pale at the name. 'Through. Fast. I never saw you.'" }),
     ],
   },
   {
@@ -270,10 +283,9 @@ Greg sees the gold dust on you and steps back. 'Seeker business goes through. Se
       { id: 'test', label: 'Submit to the test', show: { all: [unblown, { flagUnset: 'cupPassed' }] }, effects: { goto: 'ch2:v-test' } },
       { id: 'murch', label: 'The transport bay', show: { all: [unblown, { flagUnset: 'murchProtected' }, { flagUnset: 'murchCaptured' }] }, effects: { goto: 'ch2:v-murch' } },
       { id: 'garden', label: 'Walk the garden rite', show: { all: [unblown, { flagUnset: 'statueSiphoned' }] }, effects: { goto: 'ch2:v-garden' } },
-      { id: 'bleed', label: 'The bleeding room', show: { all: [unblown, { flagUnset: 'vexFreed' }, { flagUnset: 'vexLeft' }] }, effects: { goto: 'ch2:v-bleed' } },
+      { id: 'bleed', label: 'The bleeding room', show: { all: [unblown, { flagUnset: 'vexFreed' }] }, effects: { goto: 'ch2:v-bleed' } },
       { id: 'greg', label: 'The back gate', show: { all: [unblown, { flagUnset: 'gregDealt' }, { flagUnset: 'gregSold' }] }, effects: { goto: 'ch2:v-greg' } },
       { id: 'stair', label: "Oram's lower stair", tone: 'hunger', show: { flagUnset: 'spireKey' }, enable: { all: [{ flag: 'cupPassed' }, { any: [{ flag: 'vexFreed' }, { flag: 'crateKey' }] }] }, locked: 'Needs: the test passed, and Vex or the crate key', effects: { goto: 'ch2:v-stair' } },
-      { id: 'locker', label: 'Open the transit locker', sub: 'Stamped for the Silt-Bay Docks.', show: { all: [unblown, { flagUnset: 'siphonGot' }] }, effects: { add: { memory_siphon: 1 }, flag: { siphonGot: true }, flash: SIPHON_VESSEL } },
       { id: 'run', label: 'Run', tone: 'danger', show: blown, effects: { goto: 'ch2:v-blown' } },
     ],
   },
@@ -286,6 +298,7 @@ Greg sees the gold dust on you and steps back. 'Seeker business goes through. Se
     choices: [
       { id: 'drop', label: 'Bleed a Drop into it', sub: '1 vial.', show: { flagUnset: 'cupPassed' }, enable: { item: 'vial_drop' }, locked: 'Needs: a vial', effects: { remove: { vial_drop: 1 }, flag: { cupPassed: true }, flash: 'The cup goes quiet. Valerius frowns, and lets it go.' } },
       { id: 'bluff', label: 'Bluff', tone: 'danger', show: { all: [{ flagUnset: 'cupPassed' }, { flagUnset: 'cupFailed' }] }, effects: { flag: { cupPassed: true, ch2Fight: 'test' }, sneak: { odds: 5, kind: 'overseer', spotted: TEST_FAIL } } },
+      { id: 'ring', label: 'Bluff the Ring', sub: "Show Ossa's Knot or Kallik's Mark.", show: { flagUnset: 'cupPassed' }, enable: { any: [{ item: 'ossa_token' }, { item: 'knotted_wrap' }, { item: 'kallik_mark' }] }, locked: "Needs: Ossa's Knot or Kallik's Mark", effects: { flag: { cupPassed: true }, goto: 'ch2:v-stair', flash: RING_LINE } },
       BACK_TO('ch2:v-outpost'),
     ],
   },
@@ -320,13 +333,16 @@ Greg sees the gold dust on you and steps back. 'Seeker business goes through. Se
 
 Vex stares at the cup on your belt. 'They hung one of those on me once. I think. It didn't fill.'`,
     choices: [
-      { id: 'quiet', label: 'Free him quietly', sub: '1 Sap. Seeker Heat +1.', show: { all: [{ flagUnset: 'vexFreed' }, { flagUnset: 'vexLeft' }] }, enable: { all: [vesselGarb, { heatMax: ['seekers', 3] }, { sapMin: 2 }] }, locked: 'Needs: the cloth, 1 Sap, Seeker Heat 3 or less', effects: { sap: -1, heat: { seekers: 1 }, flag: { vexFreed: true }, flash: 'You fold the tube and set a cup under the drip so the row still fills. Slower. Nobody counts drips.' } },
-      { id: 'rite', label: 'Free him by rite', sub: 'Seeker Heat +1.', show: { all: [{ flagUnset: 'vexFreed' }, { flagUnset: 'vexLeft' }, { heatMax: ['seekers', 2] }] }, enable: { flag: 'cupPassed' }, locked: 'Needs: the cup test passed', effects: { heat: { seekers: 1 }, flag: { vexFreed: true }, flash: RITE_HOLD } },
-      { id: 'rite', label: 'Free him by rite', sub: 'Seeker Heat +1. The keeper may doubt you.', tone: 'danger', show: { all: [{ flagUnset: 'vexFreed' }, { flagUnset: 'vexLeft' }, { heatMin: ['seekers', 3] }, { heatMax: ['seekers', 4] }] }, enable: { flag: 'cupPassed' }, locked: 'Needs: the cup test passed', effects: { heat: { seekers: 1 }, flag: { vexFreed: true, ch2RiteRoll: true } } },
-      { id: 'rite', label: 'Free him by rite', sub: 'Your cover will not hold.', tone: 'danger', show: { all: [{ flagUnset: 'vexFreed' }, { flagUnset: 'vexLeft' }, { heatMin: ['seekers', 5] }] }, enable: { flag: 'cupPassed' }, locked: 'Needs: the cup test passed', effects: { flag: { vexFreed: true, coverBlown: true }, flash: `${TOO_MANY_LAMPS}\n\n${RITE_FAIL}` } },
-      { id: 'force', label: 'Free him by force', sub: 'Your cover blows. Seeker Heat +2.', tone: 'danger', show: { all: [{ flagUnset: 'vexFreed' }, { flagUnset: 'vexLeft' }] }, enable: weapon, locked: 'Needs: a weapon', effects: { heat: { seekers: 2 }, flag: { vexFreed: true, coverBlown: true }, flash: 'The tube comes out. The cups stop filling. Somebody will notice.' } },
-      { id: 'leave', label: 'Leave him filling', tone: 'quiet', show: { all: [{ flagUnset: 'vexFreed' }, { flagUnset: 'vexLeft' }] }, effects: { flag: { vexLeft: true }, goto: 'ch2:v-outpost' } },
-      { id: 'back', label: 'Back', tone: 'quiet', show: { any: [{ flag: 'vexFreed' }, { flag: 'vexLeft' }] }, effects: { goto: 'ch2:v-outpost' } },
+      { id: 'quiet', label: 'Free him quietly', sub: '1 Sap. Seeker Heat +1.', show: { all: [{ flagUnset: 'vexFreed' }] }, enable: { all: [vesselGarb, { heatMax: ['seekers', 3] }, { sapMin: 2 }] }, locked: 'Needs: the cloth, 1 Sap, Seeker Heat 3 or less', effects: { sap: -1, heat: { seekers: 1 }, flag: { vexFreed: true, vexLeft: false }, flash: 'You fold the tube and set a cup under the drip so the row still fills. Slower. Nobody counts drips.' } },
+      { id: 'rite', label: 'Free him by rite', sub: 'Seeker Heat +1.', show: { all: [{ flagUnset: 'vexFreed' }, { heatMax: ['seekers', 2] }] }, enable: { flag: 'cupPassed' }, locked: 'Needs: the cup test passed', effects: { heat: { seekers: 1 }, flag: { vexFreed: true, vexLeft: false }, flash: RITE_HOLD } },
+      { id: 'rite', label: 'Free him by rite', sub: 'Seeker Heat +1. The keeper may doubt you.', tone: 'danger', show: { all: [{ flagUnset: 'vexFreed' }, { heatMin: ['seekers', 3] }, { heatMax: ['seekers', 4] }] }, enable: { flag: 'cupPassed' }, locked: 'Needs: the cup test passed', effects: { heat: { seekers: 1 }, flag: { vexFreed: true, vexLeft: false, ch2RiteRoll: true } } },
+      { id: 'rite', label: 'Free him by rite', sub: 'Your cover will not hold.', tone: 'danger', show: { all: [{ flagUnset: 'vexFreed' }, { heatMin: ['seekers', 5] }] }, enable: { flag: 'cupPassed' }, locked: 'Needs: the cup test passed', effects: { flag: { vexFreed: true, vexLeft: false, coverBlown: true }, flash: `${TOO_MANY_LAMPS}\n\n${RITE_FAIL}` } },
+      { id: 'force', label: 'Free him by force', sub: 'Your cover blows. Seeker Heat +2.', tone: 'danger', show: { all: [{ flagUnset: 'vexFreed' }] }, enable: weapon, locked: 'Needs: a weapon', effects: { heat: { seekers: 2 }, flag: { vexFreed: true, vexLeft: false, coverBlown: true }, flash: 'The tube comes out. The cups stop filling. Somebody will notice.' } },
+      { id: 'leave', label: 'Leave him filling', tone: 'quiet', show: { flagUnset: 'vexFreed' }, effects: { flag: { vexLeft: true }, goto: 'ch2:v-outpost' } },
+      { id: 'gate', label: 'The back gate', show: { all: [{ flag: 'vexFreed' }, unblown, { flagUnset: 'gregDealt' }, { flagUnset: 'gregSold' }] }, effects: { goto: 'ch2:v-greg' } },
+      { id: 'smuggle', label: "Smuggler's Run", sub: '1 Sap.', tone: 'danger', show: { all: [{ flag: 'vexFreed' }, blown, { flagUnset: 'drillPast' }] }, enable: { sapMin: 2 }, locked: 'Needs: 2 Sap', effects: { sap: -1, flag: { drillPast: true }, goto: 'ch2:v-ribs' } },
+      { id: 'smuggle', label: "Smuggler's Run", sub: '1 scrap.', tone: 'danger', show: { all: [{ flag: 'vexFreed' }, blown, { flagUnset: 'drillPast' }] }, enable: { item: 'scrap' }, locked: 'Needs: 1 scrap', effects: { remove: { scrap: 1 }, flag: { drillPast: true }, goto: 'ch2:v-ribs' } },
+      { id: 'back', label: 'Back', tone: 'quiet', show: { flag: 'vexFreed' }, effects: { goto: 'ch2:v-outpost' } },
     ],
   },
   {
@@ -349,7 +365,7 @@ Vex stares at the cup on your belt. 'They hung one of those on me once. I think.
     title: 'The Back Gate',
     body: 'Greg, out of the barge\'s shadow, unloading Cartel crates through a Seeker gate at night. He sees you and freezes. "Seeker business. Mine\'s private."',
     choices: [
-      { id: 'deal', label: 'Deal', sub: 'Carry a crate in for him.', show: { all: [{ flagUnset: 'gregDealt' }, { flagUnset: 'gregSold' }] }, effects: { ticks: 1, flag: { gregDealt: true, crateKey: true, gregStanding: 'worked' }, flash: "'Keep your mouth shut, cup. This opens more than crates.'" } },
+      { id: 'deal', label: 'Deal', sub: 'Carry a crate in for him.', show: { all: [{ flagUnset: 'gregDealt' }, { flagUnset: 'gregSold' }] }, effects: { ticks: 1, add: { crate_key: 1 }, flag: { gregDealt: true, crateKey: true, gregStanding: 'worked' }, flash: "'Keep your mouth shut, cup. This opens more than crates.'" } },
       { id: 'sell', label: 'Sell him out to Valerius', sub: 'Seeker Heat −2.', tone: 'danger', show: { all: [{ flagUnset: 'gregDealt' }, { flagUnset: 'gregSold' }] }, effects: { heat: { seekers: -2 }, flag: { gregSold: true, gregStanding: 'sold' }, goto: 'ch2:v-outpost' } },
       BACK_TO('ch2:v-outpost'),
     ],
@@ -361,7 +377,7 @@ Vex stares at the cup on your belt. 'They hung one of those on me once. I think.
     body: "Oram's marks again, Seeker-sealed. The seal answers the crate key, or Vex's hand on the stone.",
     choices: [
       { id: 'greg', label: 'Greg, in the stairwell', tone: 'danger', show: stairGreg, effects: { flag: { stairGregDone: true, ch2Fight: 'stairgreg' }, ambush: { kind: 'greg', line: "'You sold me to the lamps. Now I sell you to the dark.'" } } },
-      { id: 'down', label: 'Open the seal', tone: 'hunger', show: { not: stairGreg }, effects: { goto: 'ch2:cache' } },
+      { id: 'down', label: 'Open the seal', tone: 'hunger', show: { not: stairGreg }, enable: { any: [{ flag: 'vexFreed' }, { flag: 'crateKey' }] }, locked: 'Needs: Vex or the crate key', effects: { goto: 'ch2:cache' } },
       { id: 'back', label: 'Back', tone: 'quiet', show: { all: [{ not: stairGreg }, unblown] }, effects: { goto: 'ch2:v-outpost' } },
     ],
   },
@@ -530,7 +546,7 @@ Off the road, smoke rises from a drainage ditch.`,
       { id: 'iron', label: GREG_TOLL_IRON, sub: '15 scrap.', show: GREG_OPEN, enable: { itemMin: ['scrap', 15] }, locked: 'Needs: 15 scrap', effects: { remove: { scrap: 15 }, flag: { gregStanding: 'paid' }, goto: 'ch2:irongut', flash: 'The winch opens the gate.' } },
       { id: 'resin', label: GREG_TOLL_RESIN, sub: '2 vials.', show: GREG_OPEN, enable: { itemMin: ['vial_drop', 2] }, locked: 'Needs: 2 vials', effects: { remove: { vial_drop: 2 }, flag: { gregStanding: 'paid' }, goto: 'ch2:irongut', flash: 'Greg checks the seals and waves you through.' } },
       { id: 'skiff', label: 'Hide in the haul skiff under the platform', show: { all: [GREG_OPEN, { door: 'prisoner' }] }, effects: { flag: { gregStanding: 'bypassed' }, goto: 'ch2:p-haul', flash: 'The skiff grinds into the subterranean repair bays.' } },
-      { id: 'sybella', label: GREG_TOLL_SYBELLA, show: { all: [GREG_OPEN, { any: [{ door: 'vessel' }, { door: 'outcast' }] }] }, effects: { flag: { ch2SybellaNamed: true }, goto: 'ch2:irongut', flash: "'Through. Fast. I never saw you.'" } },
+      ...sybellaRows('sybella', GREG_TOLL_SYBELLA, { all: [GREG_OPEN, { any: [{ door: 'vessel' }, { door: 'outcast' }] }] }, { flag: { ch2SybellaNamed: true }, goto: 'ch2:irongut', flash: "'Through. Fast. I never saw you.'" }),
       { id: 'knot', label: "Show Ossa's Knot", show: { all: [GREG_OPEN, { door: 'outcast' }, knot] }, effects: { goto: 'ch2:irongut', flash: "'Ossa's. Huh.' He lets you go, for now." } },
       { id: 'fight', label: 'Fight Greg and the gate guard', sub: 'Cartel Heat +2.', tone: 'danger', show: GREG_OPEN, effects: { heat: { cartel: 2 }, flag: { gregStanding: 'hostile', ch2Fight: 'tollgate' }, ambush: { kind: 'greg', line: "Greg swings the chain like he's done it a thousand times. He has." } } },
       { id: 'guard', label: 'Fight the gate guard', tone: 'danger', show: { all: [{ flag: 'ch2Won_tollgate' }, { flagUnset: 'ch2Won_tollguard' }] }, effects: { flag: { ch2Fight: 'tollguard' }, ambush: { kind: 'patrol', line: 'The gate guard comes at you.' } } },
@@ -684,7 +700,7 @@ export function chapterTwoSummary(f: Record<string, unknown>, items: Record<stri
     `Vex: ${vex}`,
     `Murch "The Socket": ${murch}${shop}`,
     `Kip and Mara: ${kip}${f.kipDistrust ? ' (trust lost)' : ''}`,
-    `Greg and Miller: ${greg}`,
+    `${f.millerHeard || f.millerLogged ? 'Greg and Miller' : 'Greg'}: ${greg}`,
     `Chapter Three code: ${CH3_CODE}`,
   ].join('\n\n')
 }

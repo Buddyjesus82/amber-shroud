@@ -351,7 +351,7 @@ export function kitLine(items: Partial<Record<ItemId, number>>): string {
 
 export type CostPill = { kind: 'sap' | 'item' | 'heat'; text: string }
 
-export function effectPills(fx: Effect): CostPill[] {
+export function effectPills(fx: Effect, heat?: Partial<Record<'cartel' | 'seekers' | 'strays', number>>): CostPill[] {
   const pills: CostPill[] = []
   if (fx.sap && fx.sap < 0) pills.push({ kind: 'sap', text: `Sap ${fx.sap}` })
   if (fx.health && fx.health < 0) pills.push({ kind: 'sap', text: `Health ${fx.health}` })
@@ -382,7 +382,8 @@ export function effectPills(fx: Effect): CostPill[] {
   if (fx.heat) {
     for (const f of ['cartel', 'seekers', 'strays'] as const) {
       const n = fx.heat[f]
-      if (n) {
+      // v179: no cooling pill when that Heat is already 0.
+      if (n && !(n < 0 && heat && (heat[f] ?? 0) <= 0)) {
         const label = f === 'cartel' ? 'Cartel' : f === 'seekers' ? 'Seekers' : 'Strays'
         pills.push({ kind: 'heat', text: n > 0 ? `${label} +${n}` : `${label} Heat ${n}` })
       }

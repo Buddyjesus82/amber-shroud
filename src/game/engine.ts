@@ -202,10 +202,14 @@ export function persist(state: GameState): GameState {
   return next
 }
 
+export const VALERIUS_GONE = 'The lamp still burns. Valerius has moved on.'
+
 export function sceneOf(state: GameState): Scene {
   const scene = getScene(state.sceneId, state.door)
   // v146: Jaxson has left Camp-04 after Chapter One; his stall has no voice.
   if (scene.speaker === 'Jaxson Vance' && jaxsonAway(state, scene.id)) return { ...scene, speaker: undefined }
+  // v179: after the lost test fight Valerius has moved on. The test chamber has no voice and no Valerius.
+  if (scene.id === 'ch2:v-test' && state.flags.valeriusMoved) return { ...scene, speaker: undefined, body: VALERIUS_GONE }
   return scene
 }
 
@@ -1113,6 +1117,10 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   }
   // v166: Chapter Two upkeep (chapter, checkpoint, fights, drill clock).
   next = chapterTwoAfter(state, next, fx)
+  // v179: the Memory Siphon comes with the end of Chapter One (and the Chapter Two code start), every door.
+  if (!state.flags.chapter1Done && next.flags.chapter1Done && !next.flags.siphonGot) {
+    next = { ...next, items: { ...next.items, memory_siphon: (next.items.memory_siphon ?? 0) + 1 }, flags: { ...next.flags, siphonGot: true } }
+  }
   if (next.flags.encounterFled && !next.flags.encounterHere) {
     const flags = { ...next.flags }
     delete flags.encounterFled
@@ -1612,7 +1620,8 @@ export function interpret(state: GameState, raw: string): GameState {
   // v166: the Chapter Two vault code. Only at the Chapter One end card or the Legacy box; anywhere else it does nothing.
   if (isChapterTwoCode(raw)) {
     if (state.sceneId === 'ch1:end') return applyEffect(state, chapterTwoUnlock())
-    return state
+    // v179: typed anywhere else, the code does what the title box does: a fresh run of this door at Chapter Two.
+    return chapterTwoFromCode(state.door)
   }
   // v140: a typed travel phrase is read first, before any skip / run / ride guess. Locked (fight, hunt, Down, crisis, dry): it only answers.
   {

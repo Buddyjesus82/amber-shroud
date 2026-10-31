@@ -328,7 +328,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
       group: c.group,
       locked: !on,
       lockedNote: !on ? shownText(state, c.locked) : undefined,
-      pills: effectPills(c.effects),
+      pills: effectPills(c.effects, state.heat),
       onClick: () => on && (scene.id === CHAPTER_ONE_END && c.id === 'title' ? onTitle() : scene.id === 'ch2:end' && c.id === 'title' ? (act(applyEffect(state, c.effects)), onTitle()) : act(applyEffect(state, c.effects))),
     })
   }
