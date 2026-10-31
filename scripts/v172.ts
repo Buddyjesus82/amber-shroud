@@ -5,8 +5,8 @@ import { fightStartFlags, pickEncounterKind, resolveEncounter, encounterSpec, LE
 import { isChapterTwoCode } from '../src/game/ch2.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v189'"), 'SW cache v172')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v189'"), 'Build label v172')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v190'"), 'SW cache v172')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v190'"), 'Build label v172')
 const sw = readFileSync('public/sw.js', 'utf8')
 ok(sw.includes('covers/vat-leech.jpg') && sw.includes('covers/hymn-moth.jpg'), 'covers precached')
 const kinds = (sceneId: string, hubId: string | null, door: 'prisoner' | 'vessel' = 'prisoner') => {

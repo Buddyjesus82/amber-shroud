@@ -7,8 +7,8 @@ import { gearLookLine } from '../src/game/kit.ts'
 import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v189'"), 'SW cache v187')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v189'"), 'Build label v187')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v190'"), 'SW cache v187')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v190'"), 'Build label v187')
 ok(RELEASED_CHAPTERS.two === true, 'Chapter Two released')
 const pick = (x: GameState, id: string) => applyEffect(x, visibleChoices(x).find((c) => c.id === id)!.effects)
 // Release: Continue opens Chapter Two in place, every door; siphon comes with it

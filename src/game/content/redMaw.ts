@@ -940,7 +940,7 @@ Chapter One ends here. Continue to go down into the Maw.`,
       {
         id: 'continue',
         label: 'Continue',
-        sub: 'Keep playing from the Maw Rim.',
+        sub: 'Go down into the Maw.',
         effects: { goto: 'maw:rim' },
       },
       // v171: the Prisoner's Memory Siphon stash moved here from the Approach.
