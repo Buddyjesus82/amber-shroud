@@ -52,6 +52,7 @@ export type CoverKey =
   | 'ch2_s_irongut'
   | 'ch2_s_ribs'
   | 'ch2_s_ribs_lift'
+  | 'ch2_s_ribs_lift_solo'
   | 'ch2_s_vein'
   | 'ch2_s_cache'
   | 'ch2_s_heart'
@@ -195,6 +196,7 @@ const FILES: Record<CoverKey, string> = {
   ch2_s_irongut: 'ch2-irongut.jpg',
   ch2_s_ribs: 'ch2-ribs.jpg',
   ch2_s_ribs_lift: 'ch2-ribs-lift.jpg',
+  ch2_s_ribs_lift_solo: 'ch2-ribs-lift-solo.jpg',
   ch2_s_vein: 'ch2-vein.jpg',
   ch2_s_cache: 'ch2-cache.jpg',
   ch2_s_heart: 'ch2-heart.jpg',
@@ -308,6 +310,7 @@ export const COVER_BAND: Record<CoverKey, [number, number]> = {
   ch2_s_irongut: [0.05, 0.7],
   ch2_s_ribs: [0.2, 0.95],
   ch2_s_ribs_lift: [0.05, 0.65],
+  ch2_s_ribs_lift_solo: [0.05, 0.65],
   ch2_s_vein: [0.15, 0.9],
   ch2_s_cache: [0.15, 0.85],
   ch2_s_heart: [0.5, 0.95],
@@ -559,7 +562,8 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   // v179: Valerius has moved on; the test chamber shows the outpost, not him.
   if (id === 'ch2:v-test' && state.flags.valeriusMoved) return 'ch2_v_outpost'
   // v180: the lift is awake.
-  if (id === 'ch2:ribs' && state.flags.liftDone && !state.flags.liftLadder) return 'ch2_s_ribs_lift'
+  // v181: Murch only when he ran it for you; forced by hand or no Murch, the empty lift.
+  if (id === 'ch2:ribs' && state.flags.liftDone && !state.flags.liftLadder) return state.flags.murchProtected && state.flags.murchShop === 'full' ? 'ch2_s_ribs_lift' : 'ch2_s_ribs_lift_solo'
   if (CH2_ART[id]) return CH2_ART[id]
   // The South Wind: the hull on the horizon, not yet her face. v165: the Outcast sees her skiff on the Bone Wash (it used to borrow the camp dock art).
   if (id === 'ch1:south-wind') return state.door === 'outcast' ? 'south_wind' : fightGround(state, scene)

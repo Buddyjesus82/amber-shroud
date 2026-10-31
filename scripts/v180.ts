@@ -8,8 +8,8 @@ import { DRILL_BREACH, DRILL_LINES, GULLY_SCRAP, LIFT_HUMS } from '../src/game/c
 import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v180'"), 'SW cache v180')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v180'"), 'Build label v180')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v181'"), 'SW cache v180')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v181'"), 'Build label v180')
 const v = chapterTwoFromCode('vessel')
 const at = (sceneId: string, extra: Partial<GameState> = {}, flags: object = {}): GameState => ({ ...v, sceneId, ...extra, flags: { ...v.flags, ...flags } }) as GameState
 const row = (s: GameState, id: string) => visibleChoices(s).find((c) => c.id === id)
@@ -55,7 +55,7 @@ ok(walk.flags.drillStage === 1 && count(`${bodyOf(walk)}\n${walk.flash ?? ''}`, 
 const ribsSrc = JSON.stringify(sceneOf(at('ch2:ribs', {}, { murchProtected: true })))
 ok(!/make the climb/.test(ribsSrc) && /Descend the lift/.test(JSON.stringify(sceneOf(at('ch2:ribs')).choices)), 'downward verbs')
 // 8 ribs ready
-const ready = at('ch2:ribs', {}, { liftDone: true, murchProtected: true })
+const ready = at('ch2:ribs', {}, { liftDone: true, murchProtected: true, murchShop: 'full' })
 ok(bodyOf(ready).includes(LIFT_HUMS) && coverFor(ready) === 'ch2_s_ribs_lift', 'ribs: humming lift text and art')
 ok(coverFor(at('ch2:ribs')) === 'ch2_s_ribs', 'ribs: dead lift art before')
 if (fails) { console.log(`${fails} FAILED`); process.exit(1) }
