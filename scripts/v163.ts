@@ -12,8 +12,8 @@ import type { Choice, DoorId, GameState } from '../src/game/types.ts'
 
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v177'"), 'SW cache v167')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v177'"), 'Build label v168')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v178'"), 'SW cache v167')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v178'"), 'Build label v168')
 
 // 0. Production safety: the data table and the spot scenes read neither kit nor catalog at module load.
 for (const f of ['src/game/rumorJobs.ts', 'src/game/content/rumorSpots.ts']) {
