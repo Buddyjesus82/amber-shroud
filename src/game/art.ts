@@ -397,7 +397,7 @@ export const COVER_BAND: Record<CoverKey, [number, number]> = {
   // The prisoner's face and both hands on the bar, the amber gap, and the wrench on the floor all sit between these two lines.
   holding_cells: [0.1, 0.92],
   // v191: razor-wire, vents, harvesters and the tower along the top; the prisoner face-down in the muck.
-  prisoner_opening: [0.05, 0.85],
+  prisoner_opening: [0.08, 0.95],
   rim_pilgrims_scar: [0.15, 0.9],
   // Court Guard: face, coat, and the curved blade.
   courtguard: [0.05, 0.85],
