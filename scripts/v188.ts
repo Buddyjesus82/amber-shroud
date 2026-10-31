@@ -6,8 +6,8 @@ import { VOICES } from '../src/game/voices.ts'
 import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v188'"), 'SW cache v188')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v188'"), 'Build label v188')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v189'"), 'SW cache v188')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v189'"), 'Build label v188')
 const pick = (x: GameState, id: string) => { const c = visibleChoices(x).find((c) => c.id === id); ok(c, `choice ${id} on ${x.sceneId}`); return applyEffect(x, c!.effects) }
 const at = (door: 'vessel' | 'prisoner' | 'outcast', sceneId: string, flags: Record<string, unknown> = {}, items: Record<string, number> = {}) => {
   const g = newGame(door)
