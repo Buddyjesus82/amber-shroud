@@ -8,8 +8,8 @@ import { DRILL_BREACH, DRILL_LINES, GULLY_SCRAP, LIFT_HUMS } from '../src/game/c
 import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v184'"), 'SW cache v180')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v184'"), 'Build label v180')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v185'"), 'SW cache v180')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v185'"), 'Build label v180')
 const v = chapterTwoFromCode('vessel')
 const at = (sceneId: string, extra: Partial<GameState> = {}, flags: object = {}): GameState => ({ ...v, sceneId, ...extra, flags: { ...v.flags, ...flags } }) as GameState
 const row = (s: GameState, id: string) => visibleChoices(s).find((c) => c.id === id)
@@ -58,6 +58,6 @@ ok(!/make the climb/.test(ribsSrc) && /Descend the lift/.test(JSON.stringify(sce
 // 8 ribs ready
 const ready = at('ch2:ribs', {}, { liftDone: true, murchProtected: true, murchShop: 'full' })
 ok(bodyOf(ready).includes(LIFT_HUMS) && coverFor(ready) === 'ch2_s_ribs_lift', 'ribs: humming lift text and art')
-ok(coverFor(at('ch2:ribs')) === 'ch2_s_ribs', 'ribs: dead lift art before')
+ok(coverFor(at('ch2:ribs', {}, { murchProtected: true })) === 'ch2_s_ribs', 'ribs: dead lift art before')
 if (fails) { console.log(`${fails} FAILED`); process.exit(1) }
 console.log('v180 ok')

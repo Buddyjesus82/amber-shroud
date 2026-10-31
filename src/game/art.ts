@@ -563,6 +563,8 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   if (id === 'ch2:v-test' && state.flags.valeriusMoved) return 'ch2_v_outpost'
   // v180: the lift is awake.
   // v181: Murch only when he ran it for you; forced by hand or no Murch, the empty lift.
+  // v185: nobody working on the lift, nobody in the picture.
+  if (id === 'ch2:ribs' && !state.flags.murchProtected && !state.flags.liftDone) return 'ch2_s_ribs_lift_solo'
   if (id === 'ch2:ribs' && state.flags.liftDone && !state.flags.liftLadder) return state.flags.murchProtected && state.flags.murchShop === 'full' ? 'ch2_s_ribs_lift' : 'ch2_s_ribs_lift_solo'
   if (CH2_ART[id]) return CH2_ART[id]
   // The South Wind: the hull on the horizon, not yet her face. v165: the Outcast sees her skiff on the Bone Wash (it used to borrow the camp dock art).

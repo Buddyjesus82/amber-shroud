@@ -8,8 +8,8 @@ import { effectPills } from '../src/game/kit.ts'
 import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v184'"), 'SW cache v179')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v184'"), 'Build label v179')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v185'"), 'SW cache v179')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v185'"), 'Build label v179')
 const v = chapterTwoFromCode('vessel')
 ok((v.items.memory_siphon ?? 0) === 1 && v.flags.siphonGot, 'code start grants the Siphon')
 const at = (sceneId: string, extra: Partial<GameState> = {}, flags: object = {}): GameState => ({ ...v, sceneId, ...extra, flags: { ...v.flags, ...flags } }) as GameState
@@ -64,7 +64,7 @@ let dup = false
 for (let t = 0; t < 200; t++) { const r: any = resolveEncounter({ ...sp, ticks: t, flags: { ...sp.flags, ...fightStartFlags(sp, 'dragoon'), encounterFeint: true } }, 'fight'); const txt = String(r.fx.flash ?? r.card ?? JSON.stringify(r)); if ((txt.match(/Extra force/g) ?? []).length > 1 || (txt.match(/Feint: \+/g) ?? []).length > 1) dup = true }
 ok(!dup, 'crit log lists each bonus once')
 // Valerius moved
-const moved = at('ch2:v-test', {}, { valeriusMoved: true })
+const moved = at('ch2:v-test', {}, { valeriusMoved: true, cupPassed: true })
 ok(!sceneOf(moved).speaker && sceneOf(moved).body === VALERIUS_GONE, 'Valerius gone from the test chamber')
 // 8 typed code
 const mid = interpret(at('ch2:v-outpost'), 'LEAD-N3X7')

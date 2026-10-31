@@ -209,7 +209,9 @@ export function sceneOf(state: GameState): Scene {
   // v146: Jaxson has left Camp-04 after Chapter One; his stall has no voice.
   if (scene.speaker === 'Jaxson Vance' && jaxsonAway(state, scene.id)) return { ...scene, speaker: undefined }
   // v179: after the lost test fight Valerius has moved on. The test chamber has no voice and no Valerius.
-  if (scene.id === 'ch2:v-test' && state.flags.valeriusMoved) return { ...scene, speaker: undefined, body: VALERIUS_GONE }
+  // v185: only once the test is behind you. While a Drop can still pass it, he is still at the lamp.
+  if (scene.id === 'ch2:v-blown' && !state.flags.coverBlown) return { ...scene, title: 'The Drill Line' }
+  if (scene.id === 'ch2:v-test' && state.flags.valeriusMoved && state.flags.cupPassed) return { ...scene, speaker: undefined, body: VALERIUS_GONE }
   return scene
 }
 
