@@ -294,9 +294,9 @@ Greg sees the gold dust on you and steps back. 'Seeker business goes through. Se
     choices: [
       { id: 'test', label: 'Submit to the test', show: { all: [unblown, { flagUnset: 'cupPassed' }] }, effects: { goto: 'ch2:v-test' } },
       { id: 'murch', label: 'The transport bay', show: { all: [unblown, { flagUnset: 'murchProtected' }, { flagUnset: 'murchCaptured' }] }, effects: { goto: 'ch2:v-murch' } },
-      { id: 'garden', label: 'Walk the garden rite', show: { all: [unblown, { flagUnset: 'statueSiphoned' }] }, effects: { goto: 'ch2:v-garden' } },
-      { id: 'bleed', label: 'The bleeding room', show: { all: [unblown, { flagUnset: 'vexFreed' }] }, effects: { goto: 'ch2:v-bleed' } },
-      { id: 'greg', label: 'The back gate', show: { all: [unblown, { flagUnset: 'gregDealt' }, { flagUnset: 'gregSold' }] }, effects: { goto: 'ch2:v-greg' } },
+      { id: 'garden', label: 'Walk the garden rite', show: { flagUnset: 'statueSiphoned' }, effects: { goto: 'ch2:v-garden' } },
+      { id: 'bleed', label: 'The bleeding room', show: { flagUnset: 'vexFreed' }, effects: { goto: 'ch2:v-bleed' } },
+      { id: 'greg', label: 'The back gate', show: { all: [{ flagUnset: 'gregDealt' }, { flagUnset: 'gregSold' }] }, effects: { goto: 'ch2:v-greg' } },
       { id: 'stair', label: "Oram's lower stair", tone: 'hunger', show: { flagUnset: 'spireKey' }, enable: { all: [{ flag: 'cupPassed' }, { any: [{ flag: 'vexFreed' }, { flag: 'crateKey' }] }] }, locked: 'Needs: the test passed, and Vex or the crate key', effects: { goto: 'ch2:v-stair' } },
       { id: 'run', label: 'Run', tone: 'danger', show: blown, effects: { goto: 'ch2:v-blown' } },
       { id: 'market', label: 'Bone Market', tone: 'quiet', show: unblown, effects: { flag: { ch2TownFrom: 'ch2:v-outpost' }, goto: 'maw:market' } },
@@ -406,6 +406,7 @@ Vex stares at the cup on your belt. 'They hung one of those on me once. I think.
     kind: 'story',
     title: 'Cover Blown',
     body: `The lamps that bowed to you turn. 'False cup!' Sybella's drill team comes down the stair after you.\n\n${DRILL_BREACH}`,
+    variants: [{ if: { flagUnset: 'coverBlown' }, body: `Sybella's drill team comes down the stair after you.\n\n${DRILL_BREACH}` }],
     choices: drillChoices('ch2:v-ribs', 'dragoon', 'Fight the dragoons', 'dragoons'),
   },
   {
@@ -630,7 +631,9 @@ The Spire Key. A Pre-Collapse Crystalline Resonance Tuning Rod. It forces the lo
       { id: 'key', label: 'Take the Key', tone: 'hunger', show: { flagUnset: 'spireKey' }, effects: { add: { spire_key: 1 }, flag: { spireKey: true }, heat: { seekers: 2, cartel: 2 }, flash: KEY_TAKEN } },
       { id: 'niche', label: 'Search the back of the niche', sub: 'Sap −1.', show: { flagUnset: 'fluidTaken' }, enable: { sapMin: 2 }, locked: 'Need Sap to spare.', effects: { sap: -1, add: { hydraulic_fluid: 1 }, flag: { fluidTaken: true }, flash: "Behind the rod, a sealed canister, cold and heavy, untouched since the old world fell. The label is gone. What's inside still sloshes." } },
       { id: 'back', label: 'Go on', tone: 'hunger', show: { all: [{ flag: 'spireKey' }, { door: 'prisoner' }] }, effects: { goto: 'ch2:p-drillrun' } },
-      { id: 'back', label: 'Go on', tone: 'hunger', show: { all: [{ flag: 'spireKey' }, { door: 'vessel' }] }, effects: { flag: { coverBlown: true }, goto: 'ch2:v-blown' } },
+      { id: 'back', label: 'Go on', tone: 'hunger', show: { all: [{ flag: 'spireKey' }, { door: 'vessel' }, { flagUnset: 'cupPassed' }] }, effects: { flag: { coverBlown: true }, goto: 'ch2:v-blown' } },
+      // v185: the cup test passed, the cover holds. The drills still come.
+      { id: 'back', label: 'Go on', tone: 'hunger', show: { all: [{ flag: 'spireKey' }, { door: 'vessel' }, { flag: 'cupPassed' }] }, effects: { goto: 'ch2:v-blown' } },
       { id: 'back', label: 'Go on', tone: 'hunger', show: { all: [{ flag: 'spireKey' }, { door: 'outcast' }] }, effects: { goto: 'ch2:o-hounds' } },
     ],
   },

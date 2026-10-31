@@ -5,12 +5,12 @@ import { playCoverKey, playCoverFile, coverBand } from '../src/game/art.ts'
 import { newGame } from '../src/game/engine.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v184'"), 'SW cache v170')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v184'"), 'Build label v170')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v185'"), 'SW cache v170')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v185'"), 'Build label v170')
 const seen = new Set<string>()
 for (const n of ['p-supply', 'p-drillrun', 'survivor', 'approach', 'ditch', 'gully', 'irongut', 'ribs', 'vein', 'cache', 'heart', 'trapped', 'end', 'gate']) {
   const sc = getScene(`ch2:${n}`)
-  const st = { ...newGame('prisoner'), sceneId: sc.id }
+  const g = newGame('prisoner'); const st = { ...g, sceneId: sc.id, flags: { ...g.flags, ...(n === 'ribs' ? { murchProtected: true } : {}) } }
   const k = playCoverKey(st, sc), f = playCoverFile(k)
   ok(f === `ch2-${n}.jpg` && existsSync(`public/covers/${f}`) && !seen.has(f), `ch2:${n} has its own art (${f})`)
   ok(readFileSync('public/sw.js', 'utf8').includes(`covers/ch2-${n}.jpg`), `sw precaches ch2-${n}`)
