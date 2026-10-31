@@ -123,6 +123,7 @@ export type CoverKey =
   | 'masked_far'
   | 'south_wind'
   | 'holding_cells'
+  | 'prisoner_opening'
   | 'rim_pilgrims_scar'
   | 'courtguard'
   | 'down'
@@ -238,6 +239,7 @@ const FILES: Record<CoverKey, string> = {
   masked_far: 'masked-far.jpg',
   south_wind: 'south-wind.jpg',
   holding_cells: 'holding-cells.jpg',
+  prisoner_opening: 'prisoner-opening.jpg',
   rim_pilgrims_scar: 'rim-pilgrims-scar.jpg',
   courtguard: 'courtguard.jpg',
   down: 'down.jpg',
@@ -394,6 +396,8 @@ export const COVER_BAND: Record<CoverKey, [number, number]> = {
   south_wind: [0.08, 0.74],
   // The prisoner's face and both hands on the bar, the amber gap, and the wrench on the floor all sit between these two lines.
   holding_cells: [0.1, 0.92],
+  // v191: razor-wire, vents, harvesters and the tower along the top; the prisoner face-down in the muck.
+  prisoner_opening: [0.08, 0.95],
   rim_pilgrims_scar: [0.15, 0.9],
   // Court Guard: face, coat, and the curved blade.
   courtguard: [0.05, 0.85],
@@ -531,7 +535,8 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   // v150: the empty stall has its own art, never the camp fence cover.
   if (id === 'camp:lean' && state.flags.chapter1Done) return 'stall_empty'
   // v151: no scene uses the fence cover (camp04.jpg) any more.
-  if (state.flags.chapter1Done && id === 'camp:cages') return 'holding_cells'
+  // v191: the quiet holding-cells art is the scene after 'Sit up'.
+  if (id === 'camp:cages') return 'holding_cells'
   if (state.flags.chapter1Done && id.startsWith('camp:jaxson')) return 'stall_empty'
   if (state.flags.chapter1Done && id === 'crisis:camp') return 'down'
   if (state.door === 'prisoner' && (id === 'crisis:spine' || id === 'crisis:spine-again' || id === 'crisis:thresh')) return 'down'
@@ -546,8 +551,8 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   if (id === 'camp:bay') return bayLookout(state) ? 'hotwire' : 'skiff_bay_docks'
   if (id === 'camp:bay-pike') return 'bay_pike'
   if (id === 'camp:relic') return 'hoard'
-  // The first Prisoner scene: the cage bar, the amber gap, the wrench. (camp:cages is Jaxson's shop and keeps his portrait.)
-  if (id === 'open:prisoner') return 'holding_cells'
+  // v191: the first Prisoner scene matches its text: face-down in the pen muck, Camp-04 loud around you.
+  if (id === 'open:prisoner') return 'prisoner_opening'
   if (id === 'crisis:maw') return 'down'
   // The Cache Run collapse is a Down screen too.
   if (id === 'crisis:dunes') return 'down'
