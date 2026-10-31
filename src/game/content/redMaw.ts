@@ -935,9 +935,7 @@ You can bind your cuts, rest here, or haul parts for him. None of it opens Kalli
     title: 'End of Chapter One',
     body: `You made it to the Maw Rim.
 
-Chapter One ends here. More of the story is coming.
-
-You can keep playing from the Rim, or go back to the title.`,
+Chapter One ends here. Continue to go down into the Maw.`,
     choices: [
       {
         id: 'continue',
