@@ -16,7 +16,7 @@ function ok(cond: unknown, msg: string) {
   }
 }
 const sw = readFileSync('public/sw.js', 'utf8')
-ok(sw.includes("CACHE = 'amber-shroud-v181'"), 'SW cache v147')
+ok(sw.includes("CACHE = 'amber-shroud-v182'"), 'SW cache v147')
 ok(sw.includes('ignoreSearch: true') && sw.includes("req.destination === 'image' ? Response.error()"), 'SW: covers match without ?v=, images never answered with the page')
 const FLAGS: Record<string, unknown>[] = [
   {},

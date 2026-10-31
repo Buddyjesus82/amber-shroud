@@ -29,6 +29,7 @@ import { coverBand, playCoverFile, playCoverKey } from '../game/art'
 import { HANDS_MAX, handsLeft, handsPips } from '../game/hands'
 import { bayLookout } from '../game/campJob'
 import { isPressureOverlay, pressureFace } from '../game/hunter'
+import { DRILL_LINES } from '../game/content/intoTheMaw'
 import { isMaskedFlash, maskedCoverKey, maskedQuietScene } from '../game/masked'
 import { DISGUISE_SOFTEN_NOTE } from '../game/disguise'
 import { ROADS, shownText } from '../game/roads'
@@ -191,7 +192,8 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     const moved = screenKey(next) !== screenKey(state)
     const fightResult = isEncounterResult(state) || !!next.flags.encounterHere
     // A note that only rides along (the Vessel cloth line) shows on the next screen; it is not a result to hold.
-    const noteOnly = next.flash === DISGUISE_SOFTEN_NOTE
+    // v182: the drill clock alone is not a result either. It shows on the new screen, so no click is spent on it.
+    const noteOnly = next.flash === DISGUISE_SOFTEN_NOTE || (DRILL_LINES as readonly string[]).includes(next.flash ?? '')
     // v159: his line never holds over a talk or offer card; it shows on the ground you arrive at, in plain text.
     const maskedOnQuiet = isMaskedFlash(next.flash) && maskedQuietScene(state.sceneId)
     // Leaving a crisis (Empty, Approach Dry) shows its result on the new ground, so the dry title does not linger.
