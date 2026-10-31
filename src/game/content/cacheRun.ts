@@ -949,6 +949,20 @@ The Seekers sent their Vessel to Red Maw for what opens the Spire, and they mean
       },
     ],
     choices: [
+      // v188: one stable Drop on the Vessel road, once per run.
+      {
+        id: 'scrape',
+        label: 'Pocket the Drop',
+        sub: 'A smear, not an honest Drop. It will still keep you standing.',
+        show: { flagUnset: 'vHymnDrop' },
+        effects: {
+          add: { vial_drop: 1 },
+          flag: { vHymnDrop: true },
+          ticks: 1,
+          still: true,
+          flash: 'The Drop does not care whose god it was.',
+        },
+      },
       {
         id: 'oram',
         label: "Follow Oram's heading",
@@ -1612,7 +1626,7 @@ Sybella steps down. Older than the hymns. Blindfold pushed up, kohl ruined on pu
           heat: { seekers: 1 },
           goto: 'ch1:land',
           flash:
-            "You lower your head and throw your weight against the choked bulkhead. Sybella's warning bolt cuts the air an inch above your collar, showering your shoulders in sparks, but the momentum carries you through the gap before her dragoons can lock their grips.\n\nShe's following you into the Approach. Seeker Heat +1.",
+            "You lower your head and run for the open sand past her skiff. Sybella's warning bolt cuts the air an inch above your collar, but the momentum carries you past her before she can turn.\n\nShe's following you into the Approach. Seeker Heat +1.",
         },
       },
       {

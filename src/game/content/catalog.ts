@@ -385,7 +385,7 @@ export const DOORS: Record<string, DoorDef> = {
   vessel: {
     id: 'vessel',
     title: 'The Seal of the Outer Keel',
-    role: 'Cult',
+    role: 'Vessel',
     place: 'Outer Threshold',
     epithet: 'the False Cup',
     blurb:

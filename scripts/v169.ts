@@ -4,8 +4,8 @@ import { getScene } from '../src/game/content/index.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 const J = (x: unknown) => JSON.stringify(x)
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v187'"), 'SW cache v169')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v187'"), 'Build label v169')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v188'"), 'SW cache v169')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v188'"), 'Build label v169')
 ok(existsSync('public/covers/stairs.jpg') && existsSync('public/covers/threshold.jpg'), 'stairs art, threshold kept')
 ok(readFileSync('src/game/art.ts', 'utf8').includes("'stairs'"), 'stairs cover key')
 ok(J(getScene('ch2:gate').choices).includes('ch2:approach'), 'gate -> approach')
@@ -24,6 +24,6 @@ const rc = J(r.choices)
 ok(rc.includes('"scrap":3') && rc.includes('stripped') && rc.includes('bleedCore') && rc.includes('deep_memory_pearl') && (r.intents?.length ?? 0) >= 2, 'ribs choices')
 ok(J(getScene('ch2:vein').choices).includes('ch2:heart'), 'vein -> heart')
 ok(String(getScene('ch2:heart').body).includes('Barge horns'), 'barge horns')
-ok(readFileSync('src/game/content/cacheRun.ts', 'utf8').includes('throw your weight against the choked bulkhead'), 'Sybella Push Past')
+ok(readFileSync('src/game/content/intoTheMaw.ts', 'utf8').includes('throw your weight against the choked bulkhead'), 'Sybella Push Past (enclosed version kept; v188 open-sand at the skiff)')
 ok(!readFileSync('src/game/content/intoTheMaw.ts', 'utf8').match(/flying/i), 'no flying')
 console.log(fails ? `${fails} FAILED` : 'v169 ok'); process.exit(fails ? 1 : 0)

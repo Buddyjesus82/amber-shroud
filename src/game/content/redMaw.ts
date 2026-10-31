@@ -105,7 +105,7 @@ The ground out here takes more than the camp ever did. Sap goes faster. Hunters 
         label: 'The gear-marked rib',
         sub: 'The sealed way. You already found the teeth.',
         show: { flag: 'ribOpen' },
-        effects: { goto: 'maw:hold', ticks: 1 },
+        effects: { goto: 'ch2:stub', ticks: 1 },
       },
     ],
     intents: [
@@ -326,6 +326,13 @@ Varro is at his stall. He has watched buyers fail and kept the tray anyway. On i
         show: { all: [{ flag: 'ossaStillness' }, { flagUnset: 'ossaToldDay' }] },
         effects: { goto: 'maw:ossa-day', ticks: 1 },
       },
+      {
+        id: 'day-vessel',
+        label: 'Stay quiet with her',
+        sub: 'She stops pretending she does not know you.',
+        show: { all: [{ door: 'vessel' }, { flagUnset: 'ossaStillness' }, { flagUnset: 'ossaToldDay' }, { flagUnset: 'ossaRobbed' }] },
+        effects: { flag: { ossaStillness: true }, goto: 'maw:ossa-day', ticks: 1 },
+      },
       { id: 'back', label: 'Give her the quiet', tone: 'quiet', effects: { goto: 'maw:stilt' } },
     ],
     intents: [
@@ -384,8 +391,21 @@ A breath. The cord in her hands gets a second knot. "That is the day. The rest I
         id: 'back',
         label: 'Let her stop there',
         sub: 'She has said the day. The rest waits.',
-        show: { flag: 'ossaStillness' },
+        show: { all: [{ flag: 'ossaStillness' }, { not: { all: [{ door: 'vessel' }, { not: { item: 'ossa_token' } }] } }] },
         effects: {
+          flag: { ossaToldDay: true },
+          goto: 'maw:stilt',
+          ticks: 1,
+          flash: 'She ties the cord a second time and does not add a name. The rest waits until you ask.',
+        },
+      },
+      {
+        id: 'back-knot',
+        label: 'Let her stop there',
+        sub: 'She has said the day. The rest waits.',
+        show: { all: [{ flag: 'ossaStillness' }, { door: 'vessel' }, { not: { item: 'ossa_token' } }] },
+        effects: {
+          add: { ossa_token: 1 },
           flag: { ossaToldDay: true },
           goto: 'maw:stilt',
           ticks: 1,
@@ -777,6 +797,7 @@ A blind pick costs sap. Scratches on the wrong rib only look like that gear.`,
 
 The gear-marked rib opened a handspan and gave you what was in the mouth of it. The rest is still down there, under the jaw, where Kallik did not come back from. This is written down.`,
     choices: [
+      { id: 'down', label: 'Go down', tone: 'hunger', effects: { goto: 'ch2:stub' } },
       {
         id: 'back',
         label: 'Climb back to the Approach',

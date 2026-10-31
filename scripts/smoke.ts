@@ -2666,8 +2666,8 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
       'walk the hunger',
     ]) {
       const via = interpret(rim, typed)
-      assert(via.sceneId === 'ch2:stub', `${door} Do "${typed}" enters the Walking Amber`)
-      assert(via.chapterId === 'walking-amber', `${door} Do "${typed}" is the next Gullet`)
+      // v188: the old stub is bypassed; the Gullet opens the real Chapter Two road.
+      assert(via.sceneId !== 'ch2:stub' && via.sceneId.startsWith('ch2:'), `${door} Do "${typed}" enters Chapter Two (${via.sceneId})`)
       assert(!bad.test(via.flash ?? ''), `${door} Do "${typed}" has no error flash`)
     }
     const wandered = interpret(rim, 'walk')
@@ -2693,9 +2693,9 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 
     let lip = { ...rim, sceneId: 'maw:lip' }
     const fromLip = interpret(lip, 'take the hunger')
-    assert(fromLip.sceneId === 'ch2:stub', `${door} Hollow Lip take the hunger matches the hook`)
+    assert(fromLip.sceneId.startsWith('ch2:') && fromLip.sceneId !== 'ch2:stub', `${door} Hollow Lip take the hunger matches the hook`)
     const lipRun = interpret(lip, 'run')
-    assert(lipRun.sceneId === 'ch2:stub' && lipRun.chapterId === 'walking-amber', `${door} Hollow Lip run is the Gullet button`)
+    assert(lipRun.sceneId.startsWith('ch2:') && lipRun.sceneId !== 'ch2:stub', `${door} Hollow Lip run is the Gullet button`)
     assert(!bad.test(lipRun.flash ?? ''), `${door} Hollow Lip run has no error flash`)
 
     let land = newGame(door)
@@ -2740,7 +2740,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v187'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v188'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(!sw.includes('covers/camp04.jpg') && sw.includes('covers/yard.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')

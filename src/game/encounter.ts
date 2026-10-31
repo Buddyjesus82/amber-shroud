@@ -770,7 +770,8 @@ function lootFor(state: GameState, kind: EncounterKind): Partial<Record<ItemId, 
 
 function pocketLoot(state: GameState, kind: EncounterKind): Partial<Record<ItemId, number>> {
   if (kind === 'jackal') return { scrap: 2 }
-  if (kind === 'tick') return { vial_drop: 1 }
+  // v188: the tick's Drop comes once per run; a repeat tick is just a scrap.
+  if (kind === 'tick') return state.flags.tickDropped ? { scrap: 1 } : { vial_drop: 1 }
   if (kind === 'pup') return { glints: 1, scrap: 1 }
   // Grown Shard-Hound: the pup's pocket, plus the resin off its jaw.
   if (kind === 'hound') return { glints: 1, scrap: 2 }
@@ -1360,7 +1361,7 @@ export function resolveEncounter(
       heat: spec.kind === 'hound' ? { cartel: 1 } : handlerWin ? { cartel: 2 } : undefined,
       pressure: dmgIn > 0 ? 1 : undefined,
       // v153: beating the hound or the handler keeps Valerius himself away for 10 quiet scenes (hunts still come).
-      flag: { encounterGrip: grip, ...Object.fromEntries(ONCE_GEAR.filter((id) => add[id]).map((id) => [gearDropFlag(id), true])), ...(handlerWin ? { handlerInjured: true } : {}), ...(handlerWin || spec.kind === 'hound' ? { valeriusRest: true, valeriusQuiet: 0 } : {}), ...(state.sceneId === 'thresh:court-guard' && spec.kind === 'courtguard' ? { crucibleGuardBeaten: true } : {}) },
+      flag: { encounterGrip: grip, ...(spec.kind === 'tick' && add.vial_drop ? { tickDropped: true } : {}), ...Object.fromEntries(ONCE_GEAR.filter((id) => add[id]).map((id) => [gearDropFlag(id), true])), ...(handlerWin ? { handlerInjured: true } : {}), ...(handlerWin || spec.kind === 'hound' ? { valeriusRest: true, valeriusQuiet: 0 } : {}), ...(state.sceneId === 'thresh:court-guard' && spec.kind === 'courtguard' ? { crucibleGuardBeaten: true } : {}) },
     })
   }
 

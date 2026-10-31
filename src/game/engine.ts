@@ -517,9 +517,22 @@ function closingBeats(next: GameState, fx: Effect, moved: boolean): GameState {
   return next
 }
 
+/** v188: where 'forward' from the Sealed Way, the gear-marked rib, and Under the Jaw lands. */
+function stubForward(state: GameState, fx: Effect): Effect {
+  const { startChapter: _s, ...rest } = fx
+  if (state.flags.chapter2Unlocked) return { ...rest, goto: 'ch2:gate' }
+  if (state.flags.chapter1Done) {
+    const un = chapterTwoUnlock()
+    return { ...rest, ...un, flag: { ...fx.flag, ...un.flag } }
+  }
+  return { ...fx, goto: CHAPTER_ONE_END }
+}
+
 export function applyEffect(state: GameState, fx: Effect): GameState {
   // v186: Chapter Two released, the End card's Continue opens it in place (same as the code on that card).
   if (state.sceneId === CHAPTER_ONE_END && fx.goto === 'maw:rim' && !state.flags.chapter2Unlocked && isChapterReleased('two')) return applyEffect(state, chapterTwoUnlock())
+  // v188: nothing lands on the old 'Under the Jaw' stub once Chapter Two is out. The way forward is the real road.
+  if (fx.goto === 'ch2:stub' && isChapterReleased('two')) return applyEffect(state, stubForward(state, fx))
   if (fx.plate) return platePiece(state, fx.plate)
   if (fx.restoreCheckpoint) {
     const back = restoreCheckpoint(state)

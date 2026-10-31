@@ -8,7 +8,7 @@ import type { GameState } from '../src/game/types.ts'
 
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v187'"), 'SW cache v158')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v188'"), 'SW cache v158')
 
 const g = newGame('prisoner')
 const at = (scene: string, cartel: number, extra: Record<string, unknown> = {}, ticks = 44): GameState => ({

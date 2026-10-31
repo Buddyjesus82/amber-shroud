@@ -550,11 +550,6 @@ function authored(state: GameState, scene: Scene): string[] {
     return lines
   }
 
-  if (id === 'ch2:stub') {
-    push(lines, 'Under the jaw is as far as this road is written. The rim is the way back.')
-    return lines
-  }
-
   if (id === 'open:prisoner') {
     push(lines, 'The jaw in the next bunk is the only mouth that knows you are awake. The tower is still only a shadow.')
     return lines
