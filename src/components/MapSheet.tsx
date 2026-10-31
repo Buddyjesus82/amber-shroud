@@ -1,6 +1,6 @@
 import { useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { HUBS } from '../game/content/catalog'
-import { travelTo } from '../game/engine'
+import { CH2_BACKTRACK, chapterTwoLocked, travelTo } from '../game/engine'
 import { adjacency, currentNode, edgeSap as rawEdgeSap, hubMapOf, nodeById } from '../game/map'
 import { ROAD_SAP } from '../game/returnRoad'
 import { estimateLabel, layoutLabels, type Box } from '../game/mapLabels'
@@ -45,13 +45,15 @@ export function MapSheet({ state, onChange, onClose }: Props) {
         <header className="sheet-head">
           <div>
             <p className="kicker map-kicker">scavenged scrap</p>
-            <h2>{map ? titleFor(state, map) : 'Unmapped'}</h2>
+            <h2>{map && !chapterTwoLocked(state) ? titleFor(state, map) : 'Unmapped'}</h2>
           </div>
           <button type="button" className="text-link scrap-stow" onClick={onClose}>
             Stow
           </button>
         </header>
-        {state.chapterId === 'cache-run' ? (
+        {chapterTwoLocked(state) ? (
+          <p className="map-coming">{CH2_BACKTRACK}</p>
+        ) : state.chapterId === 'cache-run' ? (
           <p className="map-coming">{ROAD_MAP_LINE}</p>
         ) : !map || !map.ready ? (
           <p className="map-coming">{map?.coming ?? 'This ground is still being scratched. Coming.'}</p>
