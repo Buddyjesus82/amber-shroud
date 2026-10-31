@@ -57,7 +57,10 @@ function applyEffect(state: Parameters<typeof rawApplyEffect>[0], fx: Parameters
   if (next.flags.strayHunterHere && !state.flags.strayHunterHere) next = rawApplyEffect({ ...state, flags: { ...state.flags, strayHuntStep: 1e9 } }, fx)
   // v95: older walks also step through the one-time End of Chapter One screen at the Rim.
   if (next.sceneId === 'ch1:end' && state.sceneId !== 'ch1:end') {
-    const on = rawApplyEffect(next, getScene('ch1:end').choices[0].effects)
+    // v187: Chapter Two is released; older walks keep playing Chapter One past the card (the release is tested in v186/v187).
+    const held = !next.flags.chapter2Unlocked
+    const on = rawApplyEffect(held ? { ...next, flags: { ...next.flags, chapter2Unlocked: true } } : next, getScene('ch1:end').choices[0].effects)
+    if (held) { const f = { ...on.flags }; delete f.chapter2Unlocked; return { ...on, flags: f, flash: on.flash ?? next.flash } }
     return { ...on, flash: on.flash ?? next.flash }
   }
   if (next.sceneId !== 'ch1:storm' || state.sceneId === 'ch1:storm') return next
@@ -2737,7 +2740,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v186'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v187'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(!sw.includes('covers/camp04.jpg') && sw.includes('covers/yard.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -5381,8 +5384,10 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
     assert(/Chapter One ends here/.test(body) && !/leviathan|vault|Spire|key/i.test(body), `v95: ${door} chapter end is short and spoiler-free`)
     assert(GE.visibleChoices(at).map((c) => c.id).filter((id) => id !== 'stash').join(',') === 'continue,title', `v95: ${door} chapter end offers Continue and the title`)
     const on = rawApplyEffect(at, GE.visibleChoices(at)[0].effects)
-    assert(on.sceneId === 'maw:rim' && !on.flags.hunterHere && !on.flags.encounterHere, `v95: ${door} Continue lands quietly on the Rim`)
-    const again = rawApplyEffect(rawApplyEffect(on, { goto: 'maw:ribs' }), { goto: 'maw:rim' })
+    // v187: Chapter Two released, so Continue opens it in place.
+    assert(on.sceneId.startsWith('ch2:') && on.flags.chapter2Unlocked && !on.flags.hunterHere && !on.flags.encounterHere, `v95: ${door} Continue opens Chapter Two quietly (${on.sceneId})`)
+    const rim = rawApplyEffect({ ...at, sceneId: 'maw:market' }, { goto: 'maw:rim' })
+    const again = rawApplyEffect(rawApplyEffect(rim, { goto: 'maw:ribs' }), { goto: 'maw:rim' })
     assert(again.sceneId !== 'ch1:end', `v95: ${door} chapter end shows once`)
   }
   console.log('v95 story checks OK')
@@ -6790,7 +6795,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   assert(L.MASKED_FLAKE_LINE === 'A rust-colored flake lies on the stone, the size of a thumbnail. Metal, not rock.', 'v133: flake line')
   assert(L.MASKED_BLOCK_LINE === "Across the wash, the hood turns toward you. The mask doesn't move.", 'v133: block line')
   assert(L.MASKED_INTERRUPT_LINE === 'Whatever was hunting you stopped. Up the slope, a hooded shape stands where it was.', 'v133: interrupt line')
-  assert(L.MASKED_TOLL_LINE === 'He takes one scrap from your pack and leaves a Drop in its place. You never felt it.', 'v133: toll line')
+  assert(L.MASKED_TOLL_LINE === 'The masked figure takes one scrap from your pack and leaves a Drop in its place. You never felt it.', 'v133: toll line')
   assert(L.MASKED_STRIKE_LINE === "You swing. He catches your wrist, looks at you through the eyeholes, and lets go. Then he's gone.", 'v133: strike line')
   assert(L.MASKED_WALKS_OFF_LINE === 'He steps back into the storm. Not a scratch on him.', 'v133: walks-off line')
 

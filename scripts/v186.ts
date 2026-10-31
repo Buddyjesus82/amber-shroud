@@ -5,13 +5,13 @@ import { RELEASED_CHAPTERS } from '../src/game/chapters.ts'
 import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v186'"), 'SW cache v186')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v186'"), 'Build label v186')
-// 1 release switch: Chapter Two not released, End card Continue goes to the Rim
-ok(RELEASED_CHAPTERS.two === false, 'Chapter Two not released')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v187'"), 'SW cache v186')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v187'"), 'Build label v186')
+// 1 release switch (v187: Chapter Two released): End card Continue opens Chapter Two in place
+ok(RELEASED_CHAPTERS.two === true, 'Chapter Two released')
 const end = { ...newGame('vessel'), sceneId: CHAPTER_ONE_END, flags: { ...newGame('vessel').flags, chapter1EndSeen: true } } as GameState
 const cont = applyEffect(end, visibleChoices(end).find((c) => c.id === 'continue')!.effects)
-ok(cont.sceneId === 'maw:rim' && !cont.flags.chapter2Unlocked, 'unreleased: Continue keeps playing Chapter One')
+ok(!!cont.flags.chapter2Unlocked, 'released: Continue opens Chapter Two')
 // 2 fallbacks
 const v = chapterTwoFromCode('vessel')
 const s = applyEffect(v, visibleChoices(v)[0].effects)

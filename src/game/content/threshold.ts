@@ -268,6 +268,8 @@ Oram is here more often than he is in the Court. He prefers the animals to the h
           sap: -1,
           flag: { striderReady: true },
           ticks: 1,
+          // v187: readying the Strider is a stable chore, not a road: no roaming fight.
+          still: true,
           flash:
             'Bit in. The Strider hates you in a workable way. When the Gullet starts, this beast will spend itself on your behalf.',
         },

@@ -1000,6 +1000,8 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     !fightBeat &&
     !next.flags.hunterHere &&
     !clearingHunt &&
+    // v187: the Sealed Way climb-back draws a road fight once, not every trip (no loot loop).
+    !(state.sceneId === 'maw:hold' && state.flags.holdClimbed) &&
     encounterGround(next) &&
     canEncounter(next, { traveled, firstWalk })
   ) {
@@ -1011,6 +1013,7 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   } else if (firstWalk) {
     next.flags = { ...next.flags, roadFightSeen: true }
   }
+  if (state.sceneId === 'maw:hold' && next.sceneId !== 'maw:hold' && !next.flags.holdClimbed) next.flags = { ...next.flags, holdClimbed: true }
   // Road hunters: the faction behind you sends someone down the road. One per run; ambushes ignore Health.
   const roadHunt = roadHunterKind(state, next)
   if (roadHunt) {
@@ -1122,8 +1125,9 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   }
   // v166: Chapter Two upkeep (chapter, checkpoint, fights, drill clock).
   next = chapterTwoAfter(state, next, fx)
-  // v179: the Memory Siphon comes with the end of Chapter One (and the Chapter Two code start), every door.
-  if (!state.flags.chapter1Done && next.flags.chapter1Done && !next.flags.siphonGot) {
+  // v179: the Memory Siphon comes with Chapter Two (Continue at the End of Chapter One card, or the code), every door.
+  // v187: keyed on chapter2Unlocked, not chapter1Done, so finishing Chapter One alone does not grant it.
+  if (!state.flags.chapter2Unlocked && next.flags.chapter2Unlocked && !next.flags.siphonGot) {
     next = { ...next, items: { ...next.items, memory_siphon: (next.items.memory_siphon ?? 0) + 1 }, flags: { ...next.flags, siphonGot: true } }
   }
   if (next.flags.encounterFled && !next.flags.encounterHere) {

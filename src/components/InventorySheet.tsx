@@ -136,6 +136,7 @@ function WornTab({ state, chips, onChange }: { state: GameState; chips: KitChip[
                   {c.name}
                   {c.n - wornCount(state, c.id) > 1 ? ` ×${c.n - wornCount(state, c.id)}` : ''}
                   {gearStat(c) ? ` · ${gearStat(c)}` : ''}
+                  {ITEMS[c.id].offhand === 'blade' || ITEMS[c.id].offhand === 'club' ? ' · Off-hand Strike +1' : ''}
                 </strong>
                 <span>{ITEMS[c.id].perk ?? c.desc}</span>
                 {slotsFor(c.id)

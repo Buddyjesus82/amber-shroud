@@ -4,8 +4,8 @@ import { chapterTwoFromCode, visibleChoices, applyEffect, interpret, travelTo, C
 import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v186'"), 'SW cache v184')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v186'"), 'Build label v184')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v187'"), 'SW cache v184')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v187'"), 'Build label v184')
 ok(CH2_BACKTRACK === 'The upper wash is behind you. The descent only goes deeper.', 'exact line')
 const v = chapterTwoFromCode('vessel')
 let s = applyEffect(v, visibleChoices(v)[0].effects)

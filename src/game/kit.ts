@@ -296,7 +296,11 @@ export function disguiseActive(state: Pick<GameState, 'door' | 'equipped' | 'fla
 
 /** "look at my gear": what is worn, the numbers, and the bag. */
 export function gearLookLine(state: GameState): string {
-  const worn = EQUIP_SLOTS.filter((slot) => state.equipped?.[slot]).map((slot) => `${SLOT_LABEL[slot]}: ${ITEMS[state.equipped[slot] as ItemId].name}`)
+  const worn = EQUIP_SLOTS.filter((slot) => state.equipped?.[slot]).map((slot) => {
+    const def = ITEMS[state.equipped[slot] as ItemId]
+    // v187: an off-hand blade or club adds Strike +1, not its own Strike.
+    return `${SLOT_LABEL[slot]}: ${def.name}${slot === 'offhand' && def.offhand !== 'shield' ? ' (Strike +1)' : ''}`
+  })
   const parts = [
     worn.length ? `You wear ${worn.join(', ')}.` : 'You wear nothing that counts in a fight.',
     `Strike ${equippedStrike(state)}, Shell ${equippedShell(state)}.`,

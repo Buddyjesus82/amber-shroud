@@ -12,7 +12,7 @@ export const MASKED_BOOTS_LINE = 'Someone has been standing here. The sand still
 export const MASKED_FLAKE_LINE = 'A rust-colored flake lies on the stone, the size of a thumbnail. Metal, not rock.'
 export const MASKED_BLOCK_LINE = "Across the wash, the hood turns toward you. The mask doesn't move."
 export const MASKED_INTERRUPT_LINE = 'Whatever was hunting you stopped. Up the slope, a hooded shape stands where it was.'
-export const MASKED_TOLL_LINE = 'He takes one scrap from your pack and leaves a Drop in its place. You never felt it.'
+export const MASKED_TOLL_LINE = 'The masked figure takes one scrap from your pack and leaves a Drop in its place. You never felt it.'
 export const MASKED_STRIKE_LINE = "You swing. He catches your wrist, looks at you through the eyeholes, and lets go. Then he's gone."
 export const MASKED_WALKS_OFF_LINE = 'He steps back into the storm. Not a scratch on him.'
 // New lines (flagged for approval).
