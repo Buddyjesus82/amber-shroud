@@ -234,7 +234,7 @@ export function answerAsk(state: GameState, scene: Scene, ask: Ask, choices: Cho
   if (safe.length === 1 && freeChoice(safe[0]) && /^(ask|hear|listen|get|accept|take the offered|let )/i.test(safe[0].label)) {
     return { flash: '', run: safe[0], verb: 'ask' }
   }
-  const say = v ? (item && v.items?.[item.key]) || v.want : sceneVoice(scene, state, said)
+  const say = v ? (item && v.items?.[item.key]) || wantLine(v, state) : sceneVoice(scene, state, said)
   if (shelf.length) return { flash: `${say} Shelf: ${shelf.join('; ')}. Type "buy ${item?.key ?? obj}" or open Buy.`, verb: 'ask' }
   return { flash: `${say} ${hintLine(choices, on, matching.length ? words : undefined)}`, verb: 'ask' }
 }
@@ -293,4 +293,10 @@ export function typedHints(state: GameState, scene: Scene, roam: boolean): strin
   if (roam) out.push('scavenge')
   out.push('look', 'help')
   return out.slice(0, 4)
+}
+
+// Ossa's 'twice' line is for the robbed only; everyone else hears the first half.
+function wantLine(v: Voice, state: GameState): string {
+  if (v === VOICES.ossa && !state.flags.ossaRobbed) return '"I give what I choose."'
+  return v.want
 }
