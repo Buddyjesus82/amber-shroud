@@ -127,6 +127,13 @@ export const RIBS_CLIMAX_LADDER = "The drill breaks through the rib above. Seeke
 const LIFT_DO = ['use', 'wrench', 'kick', 'lever', 'gear', 'crank', 'pry', 'jam', 'bash', 'shove', 'hammer', 'buckler', 'plate']
 /** Heavy enough to turn the lift gear: Scrap Buckler, Maw Plate (or plated pieces), iron scrap. */
 const HEAVY_TOOL: Cond = { any: [{ item: 'scrap_buckler' }, { item: 'plated_buckler' }, { item: 'maw_plate' }, { item: 'plated_scav_wrap' }, { item: 'scrap' }] }
+/** v186: the cup test failed and nothing left can pass it. */
+const NO_PASS: Cond = { all: [{ flag: 'cupFailed' }, { flagUnset: 'cupPassed' }, { not: { any: [{ item: 'vial_drop' }, { item: 'ossa_token' }, { item: 'knotted_wrap' }, { item: 'kallik_mark' }] } }] }
+/** v186: the Ribs crank's heavy gear, without loose scrap (scrap is the vent's price). */
+const VENT_TOOL: Cond = { any: [{ item: 'scrap_buckler' }, { item: 'plated_buckler' }, { item: 'maw_plate' }, { item: 'plated_scav_wrap' }] }
+export const VENT_LINE = "You lever the corroded grate off the steam pipe and squeeze through. You drop onto the upper landing of Oram's Lower Stair."
+export const VENT_HURT_LINE = "You jam scrap under the corroded grate and squeeze through the steam pipe. It takes skin. You drop onto the upper landing of Oram's Lower Stair."
+export const SIPHON_TRICK_LINE = 'You drain residue from a broken wall conduit into the cup. Valerius frowns, and lets it go.'
 const BACK_TO = (id: string): Choice => ({ id: 'back', label: 'Back', tone: 'quiet', effects: { goto: id } })
 
 export const chapterTwoScenes: Scene[] = [
@@ -313,6 +320,10 @@ Greg sees the gold dust on you and steps back. 'Seeker business goes through. Se
       { id: 'drop', label: 'Bleed a Drop into it', sub: '1 vial.', show: { flagUnset: 'cupPassed' }, enable: { item: 'vial_drop' }, locked: 'Needs: a vial', effects: { remove: { vial_drop: 1 }, flag: { cupPassed: true }, flash: 'The cup goes quiet. Valerius frowns, and lets it go.' } },
       { id: 'bluff', label: 'Bluff', tone: 'danger', show: { all: [{ flagUnset: 'cupPassed' }, { flagUnset: 'cupFailed' }] }, effects: { flag: { cupPassed: true, ch2Fight: 'test' }, sneak: { odds: 5, kind: 'overseer', spotted: TEST_FAIL } } },
       { id: 'ring', label: 'Bluff the Ring', sub: "Show Ossa's Knot or Kallik's Mark.", show: { flagUnset: 'cupPassed' }, enable: { any: [{ item: 'ossa_token' }, { item: 'knotted_wrap' }, { item: 'kallik_mark' }] }, locked: "Needs: Ossa's Knot or Kallik's Mark", effects: { flag: { cupPassed: true }, goto: 'ch2:v-stair', flash: RING_LINE } },
+      // v186: no pass route left (test failed, no vial, no Knot or Mark). Two hard ways on.
+      { id: 'vent', label: 'Maintenance Vent', sub: 'Your heavy gear pries the grate.', tone: 'quiet', show: { all: [NO_PASS, VENT_TOOL] }, effects: { flag: { cupPassed: true }, goto: 'ch2:v-stair', flash: VENT_LINE } },
+      { id: 'vent', label: 'Maintenance Vent', sub: 'Scrap −1. Health −2.', tone: 'danger', show: { all: [NO_PASS, { not: VENT_TOOL }] }, enable: { itemMin: ['scrap', 1] }, locked: 'Needs: 1 scrap', effects: { remove: { scrap: 1 }, health: -2, flag: { cupPassed: true }, goto: 'ch2:v-stair', flash: VENT_HURT_LINE } },
+      { id: 'siphon-trick', label: 'Siphoned Trick', sub: 'Seeker Heat +1.', tone: 'danger', show: NO_PASS, effects: { heat: { seekers: 1 }, flag: { cupPassed: true }, flash: SIPHON_TRICK_LINE } },
       BACK_TO('ch2:v-outpost'),
     ],
   },
