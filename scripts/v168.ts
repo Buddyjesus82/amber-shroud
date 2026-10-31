@@ -5,8 +5,8 @@ import { itemDesc, PLATE_RECIPE_NAMES, PLATE_RECIPE } from '../src/game/kit.ts'
 import { CH2_STARTS } from '../src/game/content/intoTheMaw.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v190'"), 'SW cache v168')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v190'"), 'Build label v168')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v191'"), 'SW cache v168')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v191'"), 'Build label v168')
 for (const id of Object.values(CH2_STARTS)) ok(getScene(id), `start ${id}`)
 for (const id of ['ch2:cache', 'ch2:trapped', 'ch2:heart', 'ch2:end']) ok(getScene(id), `shared ${id}`)
 ok(!ALL_SCENES.some((s) => s.id === 'ch2:legacy'), 'legacy scene gone')
