@@ -1280,8 +1280,20 @@ export function fightLocked(state: GameState): boolean {
   return !!(f.encounterHere || f.hunterHere || f.strayHunterHere || f.maskedHere || f.downed || (state.health ?? 1) <= 0 || isPressureOverlay(state))
 }
 
+/** v184: in Chapter Two the Map never walks back to Chapter One ground. */
+export const CH2_BACKTRACK = 'The upper wash is behind you. The descent only goes deeper.'
+export function chapterTwoLocked(state: Pick<GameState, 'flags'>): boolean {
+  return !!state.flags.ch2Started && !state.flags.chapter2Done
+}
+
 export function travelTo(state: GameState, sceneId: string): GameState {
   if (state.sceneId === sceneId) return state
+  if (chapterTwoLocked(state) && !sceneId.startsWith('ch2:')) {
+    // A button on this screen that goes there (the Vessel market and stilt rows, a Back) still works.
+    const row = visibleChoices(state).find((c) => c.effects?.goto === sceneId && isChoiceOn(state, c.enable))
+    if (row) return applyEffect(state, row.effects)
+    return persist({ ...state, flash: CH2_BACKTRACK })
+  }
   if (fightLocked(state)) return persist({ ...state, flash: ROAD_NOT_NOW })
   // The Bone Wash node on the Spine map is the road out: same as typing the road.
   if (sceneId === 'ch1:leave' && state.hubId && !state.chapterId && state.flags.chapter1Done) {
