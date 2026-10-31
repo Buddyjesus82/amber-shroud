@@ -151,6 +151,9 @@ Varro is at his stall. He has watched buyers fail and kept the tray anyway. On i
           flash: 'A coil of wire nobody claimed. In the Approach, unclaimed is a kind of trap. You take it anyway.',
         },
       },
+      // v183: Vessel, Chapter Two: back down to the ground you came from.
+      { id: 'back-ch2', label: 'Back', tone: 'quiet', show: { flagEq: ['ch2TownFrom', 'ch2:v-outpost'] }, effects: { flag: { ch2TownFrom: false }, goto: 'ch2:v-outpost' } },
+      { id: 'back-ch2', label: 'Back', tone: 'quiet', show: { flagEq: ['ch2TownFrom', 'ch2:v-stair'] }, effects: { flag: { ch2TownFrom: false }, goto: 'ch2:v-stair' } },
     ],
   },
   {
@@ -259,6 +262,9 @@ Varro is at his stall. He has watched buyers fail and kept the tray anyway. On i
         sub: 'She is alive. What she says depends on how you left her on the road.',
         effects: { goto: 'maw:ossa', ticks: 1, flag: { ossaMet: true } },
       },
+      // v183: Vessel, Chapter Two: back down to the ground you came from.
+      { id: 'back-ch2', label: 'Back', tone: 'quiet', show: { flagEq: ['ch2TownFrom', 'ch2:v-outpost'] }, effects: { flag: { ch2TownFrom: false }, goto: 'ch2:v-outpost' } },
+      { id: 'back-ch2', label: 'Back', tone: 'quiet', show: { flagEq: ['ch2TownFrom', 'ch2:v-stair'] }, effects: { flag: { ch2TownFrom: false }, goto: 'ch2:v-stair' } },
     ],
   },
   {

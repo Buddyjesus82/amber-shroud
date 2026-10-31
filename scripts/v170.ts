@@ -5,8 +5,8 @@ import { playCoverKey, playCoverFile, coverBand } from '../src/game/art.ts'
 import { newGame } from '../src/game/engine.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v182'"), 'SW cache v170')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v182'"), 'Build label v170')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v183'"), 'SW cache v170')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v183'"), 'Build label v170')
 const seen = new Set<string>()
 for (const n of ['p-supply', 'p-drillrun', 'survivor', 'approach', 'ditch', 'gully', 'irongut', 'ribs', 'vein', 'cache', 'heart', 'trapped', 'end', 'gate']) {
   const sc = getScene(`ch2:${n}`)

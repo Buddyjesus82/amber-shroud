@@ -8,8 +8,8 @@ import { DRILL_BREACH, DRILL_LINES, GULLY_SCRAP, LIFT_HUMS } from '../src/game/c
 import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v182'"), 'SW cache v180')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v182'"), 'Build label v180')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v183'"), 'SW cache v180')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v183'"), 'Build label v180')
 const v = chapterTwoFromCode('vessel')
 const at = (sceneId: string, extra: Partial<GameState> = {}, flags: object = {}): GameState => ({ ...v, sceneId, ...extra, flags: { ...v.flags, ...flags } }) as GameState
 const row = (s: GameState, id: string) => visibleChoices(s).find((c) => c.id === id)
@@ -21,7 +21,8 @@ ok(pried.items.scrap === 2 && pried.flash?.includes(GULLY_SCRAP), 'casing gives 
 ok(!row(pried, 'casing'), 'casing once only')
 // 2 turrets
 const t = applyEffect(at('ch2:gully', { health: 6 }), row(at('ch2:gully'), 'run')!.effects)
-ok(t.health === 2 && row(at('ch2:gully'), 'run')!.sub === 'Health −4. Cartel Heat +2.', 'turrets cost 4 Health')
+// v183: without the splice the raw run is Health −6, Cartel Heat +3 (see v183.ts).
+ok(t.health === 0 && row(at('ch2:gully'), 'run')!.sub === 'Health −6. Cartel Heat +3.', 'raw turrets cost 6 Health')
 // 3 Key patrol
 const c = at('ch2:cache')
 const keyed = applyEffect(c, row(c, 'key')!.effects)
