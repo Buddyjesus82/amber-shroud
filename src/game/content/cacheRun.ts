@@ -1060,7 +1060,9 @@ The Seekers sent their Vessel to Red Maw for what opens the Spire, and they mean
         id: 'pour',
         label: 'Pour a Drop so they count you a Vessel',
         sub: 'Spend 1 Drop. Seeker Heat drops. They let you walk on to Varro.',
-        show: { item: 'vial_drop' },
+        // v187: always offered (Brin asks for it); locked without a Drop.
+        enable: { item: 'vial_drop' },
+        locked: 'Needs: a Drop',
         effects: {
           remove: { vial_drop: 1 },
           add: { vial_empty: 1 },

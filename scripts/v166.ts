@@ -5,7 +5,7 @@ import { CH2_STARTS } from '../src/game/content/intoTheMaw.ts'
 import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v186'"), 'SW cache v168')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v187'"), 'SW cache v168')
 for (const d of ['prisoner', 'vessel', 'outcast'] as const) {
   const g = newGame(d)
   const atEnd = { ...g, sceneId: 'ch1:end', chapterId: 'cache-run', hubId: null, health: 6, sap: 6, flags: { ...g.flags, chapter1Done: true, chapter1EndSeen: true, noMasked: true } } as GameState

@@ -753,8 +753,17 @@ export function extractorDrop(state: GameState, kind: EncounterKind): Partial<Re
   return { seeker_extractor: 1 }
 }
 
+/** v187: road gear drops land once per run each; a repeat roll gives scrap instead (no Blood Shiv farm). */
+export const ONCE_GEAR: ItemId[] = ['shiv', 'rusted_dagger', 'scav_wrap', 'dust_cloak']
+export const gearDropFlag = (id: ItemId) => `gearDrop_${id}`
 function lootFor(state: GameState, kind: EncounterKind): Partial<Record<ItemId, number>> {
-  const add = { ...pocketLoot(state, kind), ...extractorDrop(state, kind) }
+  const add: Partial<Record<ItemId, number>> = { ...pocketLoot(state, kind), ...extractorDrop(state, kind) }
+  for (const id of ONCE_GEAR) {
+    if (add[id] && state.flags[gearDropFlag(id)]) {
+      delete add[id]
+      if (!add.scrap) add.scrap = 1
+    }
+  }
   if (carriesSalve(state, kind)) add.salve = (add.salve ?? 0) + 1
   return add
 }
@@ -1351,7 +1360,7 @@ export function resolveEncounter(
       heat: spec.kind === 'hound' ? { cartel: 1 } : handlerWin ? { cartel: 2 } : undefined,
       pressure: dmgIn > 0 ? 1 : undefined,
       // v153: beating the hound or the handler keeps Valerius himself away for 10 quiet scenes (hunts still come).
-      flag: { encounterGrip: grip, ...(handlerWin ? { handlerInjured: true } : {}), ...(handlerWin || spec.kind === 'hound' ? { valeriusRest: true, valeriusQuiet: 0 } : {}), ...(state.sceneId === 'thresh:court-guard' && spec.kind === 'courtguard' ? { crucibleGuardBeaten: true } : {}) },
+      flag: { encounterGrip: grip, ...Object.fromEntries(ONCE_GEAR.filter((id) => add[id]).map((id) => [gearDropFlag(id), true])), ...(handlerWin ? { handlerInjured: true } : {}), ...(handlerWin || spec.kind === 'hound' ? { valeriusRest: true, valeriusQuiet: 0 } : {}), ...(state.sceneId === 'thresh:court-guard' && spec.kind === 'courtguard' ? { crucibleGuardBeaten: true } : {}) },
     })
   }
 

@@ -210,7 +210,7 @@ const GEAR_SECTIONS: HelpSection[] = [
       { key: 'SLOTS', text: 'Head, Body, Legs, Hands, Cloak, Garment, Main hand, Off hand. Tap a piece on the Worn tab of Gear to equip it. Empty slots stay on the layout.' },
       { key: 'HANDS', text: 'Main hand takes any weapon, never a shield. Off hand takes a short blade, a club, or a shield.' },
       { key: 'STRIKE', text: 'Your Main hand weapon sets Strike. Bare hand is 1. A short blade or club in the Off hand adds 1.' },
-      { key: 'SHELL', text: 'Body, Cloak, Head, Legs, Hands, and a shield add up to Shell, up to 5. A garment adds none.' },
+      { key: 'SHELL', text: 'Body, Cloak, Head, Legs, Hands, and a shield add up to Shell. Shell tops out at 4; Shell 5 opens past the Maw. A garment adds none.' },
       { key: 'PERKS', text: 'Dust Cloak: skip a road fight before the first exchange. Shin Wraps: Run gets away more often. Hide Gloves: pull a tick and strike in the same exchange. Seeker Extractor: once in an Amber Husk fight, Draw resin — scrap and Sap without shattering the core, or cut a Seeker siphon.' },
       { key: 'BAG', text: 'Your bag has 10 slots. A Scav Pack has 14, a Hauler Pack 20. A stack of small goods (Drops, salves, scrap, cord) takes one slot however many are in it; each spare weapon or wearable takes its own. Key items, coin (Glints, Scrip), and worn gear ride free.' },
       { key: 'FULL', text: 'With a full bag, a new find stays on the ground. Drop something to take it, or leave it. Walking away leaves it.' },
