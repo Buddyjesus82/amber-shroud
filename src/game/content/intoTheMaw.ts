@@ -31,6 +31,9 @@ export const TURRET_LINE = 'The rail turrets cough. Grit and iron chew the water
 export const KEY_TAKEN = 'Spire Key taken. The Seekers want it. The Cartel wants it. You have it.'
 export const RECKONING_LOST = "Greg weighs the rod in his palm and grins. 'Smart. Miller remembers smart.'"
 export const GULLY_SCRAP = 'You work the casing off the snapped conduit. Two good pieces of scrap.'
+export const RIBS_DRILL = "Above you, Sybella's drill-rigs are breaking through. Every bite shakes grit down the shaft."
+export const RIBS_LADDER = 'The emergency ladder runs down the side of the rib.'
+export const VEX_FIRST = 'Vex is still at the vein.'
 export const LIFT_HUMS = 'The lift is ready. The gear housing hums now, and the platform strains on its rails, waiting to drop.'
 export const DRILL_BREACH = "Behind you, Sybella's drills breach the bone."
 export const GULLY_SPLICE = "You insert the spliced lead into the pylon's audio jack. The horn atop the pylon crackles with static, pinging Miller's command barge over the canyon ridge. After three long seconds, the turret lenses swivel away from your chest, and the heavy iron gate latch drops with a dull hydraulic thud."
@@ -625,8 +628,9 @@ The Spire Key. A Pre-Collapse Crystalline Resonance Tuning Rod. It forces the lo
 Above you, Sybella's drill-rigs are breaking through. Every bite shakes grit down the shaft.`,
     variants: [
       { if: { flagUnset: 'murchProtected' }, body: "The true ribs close overhead like a roof of bone. Between them, a Pre-Collapse lift platform hangs dead on its rails, its gear housing jammed. Nobody is working on it.\n\nAbove you, Sybella's drill-rigs are breaking through. Every bite shakes grit down the shaft." },
-      { if: { all: [{ flag: 'liftDone' }, { flagUnset: 'liftLadder' }] }, mode: 'append', body: LIFT_HUMS },
-      { if: { flag: 'liftLadder' }, mode: 'append', body: 'The lift is ready.' },
+      // v182: the text follows the lift. Once it runs, nothing hangs dead and nobody swears at it.
+      { if: { all: [{ flag: 'liftDone' }, { flagUnset: 'liftLadder' }] }, body: `The true ribs close overhead like a roof of bone. ${LIFT_HUMS}\n\n${RIBS_DRILL}` },
+      { if: { flag: 'liftLadder' }, body: `The true ribs close overhead like a roof of bone. Between them, a Pre-Collapse lift platform hangs dead on its rails. ${RIBS_LADDER}\n\n${RIBS_DRILL}` },
       { if: vexPending, mode: 'append', body: "Vex has stopped walking. A raw Amber vein runs through the rib beside him, and he stares into it like it's calling him. 'It's in there. Who I was.'" },
     ],
     choices: [
@@ -638,8 +642,8 @@ Above you, Sybella's drill-rigs are breaking through. Every bite shakes grit dow
       { id: 'allow', label: 'Let him touch the vein', tone: 'danger', show: vexPending, effects: { flag: { vexFate: 'burn', bleedCore: true }, flash: "Vex puts both hands on the vein. The light goes into him and something goes out. When he turns, he doesn't know your face. He knows one thing. 'BLEED-CORE,' he says. 'Tell the airlock BLEED-CORE. It shuts behind you. It shuts on her.'" } },
       { id: 'siphon', label: 'Siphon the vein first', sub: 'Memory Siphon. Seeker Heat +1.', tone: 'danger', show: vexPending, enable: { item: 'memory_siphon' }, locked: 'Needs: the Memory Siphon', effects: { add: { deep_memory_pearl: 1 }, heat: { seekers: 1 }, flag: { vexFate: 'siphoned', veinSiphoned: true }, flash: "You set the Siphon in the vein before he can touch it. The reservoir fills gold. The archway above you cracks down its length. Vex makes a sound like you took something from him. You did. He won't get it back now.\n\nSomewhere above, a Seeker lamp turns your way." } },
       { id: 'vein', label: 'Siphon the vein', sub: 'Memory Siphon. Seeker Heat +1.', show: { all: [{ not: vexPending }, { item: 'memory_siphon' }] }, enable: { flagUnset: 'veinSiphoned' }, locked: 'The vein is already dry.', effects: { add: { deep_memory_pearl: 1 }, heat: { seekers: 1 }, flag: { veinSiphoned: true }, flash: 'The reservoir fills gold. Images that are not yours. Somewhere above, a Seeker lamp turns your way.' } },
-      { id: 'ride', label: 'Descend the lift', tone: 'hunger', show: { all: [{ flag: 'liftDone' }, { flagUnset: 'liftLadder' }, { not: vexPending }] }, effects: { goto: 'ch2:vein', flash: RIBS_CLIMAX } },
-      { id: 'climb', label: 'Climb down', tone: 'hunger', show: { all: [{ flag: 'liftLadder' }, { not: vexPending }] }, effects: { goto: 'ch2:vein', flash: RIBS_CLIMAX_LADDER } },
+      { id: 'ride', label: 'Descend the lift', tone: 'hunger', show: { all: [{ flag: 'liftDone' }, { flagUnset: 'liftLadder' }] }, enable: { not: vexPending }, locked: VEX_FIRST, effects: { goto: 'ch2:vein', flash: RIBS_CLIMAX } },
+      { id: 'climb', label: 'Climb down', tone: 'hunger', show: { flag: 'liftLadder' }, enable: { not: vexPending }, locked: VEX_FIRST, effects: { goto: 'ch2:vein', flash: RIBS_CLIMAX_LADDER } },
     ],
     intents: [
       { tags: LIFT_DO, show: { all: [{ flagUnset: 'liftDone' }, HEAVY_TOOL] }, reply: 'You jam it into the gear teeth and lean. The housing groans, then turns. No blood this time.', effects: { flag: { liftDone: true } } },

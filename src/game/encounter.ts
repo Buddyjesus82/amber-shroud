@@ -1279,7 +1279,9 @@ export function resolveEncounter(
     healthDelta = 1 - c.yourHp
   }
   const top = statRows(yourHp, c.strike, c.shell, spec, theirHp)
-  const hitCard = [top, youLine, themLine, ...bonusLines, ...(notes.length ? [notes.join(' ')] : [])].join('\n\n')
+  // v182: the hit that would have dropped you lands after they fall. The line says so.
+  const themSaid = mutualWin && dmgIn > 0 ? themLine.replace(/\.$/, `, but you drop ${who} first.`) : themLine
+  const hitCard = [top, youLine, themSaid, ...bonusLines, ...(notes.length ? [notes.join(' ')] : [])].join('\n\n')
   const sap = sapLoss ? -sapLoss : undefined
 
   // He cannot be killed. A strike ends it, and so does the third round: he walks off. No loot, no Heat.
