@@ -36,8 +36,9 @@ export const RIBS_LADDER = 'The emergency ladder runs down the side of the rib.'
 export const VEX_FIRST = 'Vex is still at the vein.'
 export const LIFT_HUMS = 'The lift is ready. The gear housing hums now, and the platform strains on its rails, waiting to drop.'
 export const DRILL_BREACH = "Behind you, Sybella's drills breach the bone."
-export const GULLY_SPLICE = "You insert the spliced lead into the pylon's audio jack. The horn atop the pylon crackles with static, pinging Miller's command barge over the canyon ridge. After three long seconds, the turret lenses swivel away from your chest, and the heavy iron gate latch drops with a dull hydraulic thud."
-export const MILLER_WHISTLE = 'Over the ridge, Miller\'s horn gives a single long whistle. Not a warning. A delivery runner, logged.'
+export const GULLY_SPLICE = "You insert the spliced lead into the pylon's audio jack. The horn atop the pylon crackles with static, pinging the canyon command horn over the ridge. After three long seconds, the turret lenses swivel away from your chest, and the heavy iron gate latch drops with a dull hydraulic thud."
+export const GULLY_RUN = 'The turrets cough. Scrap shot chews the fissure wall beside you, then you. You go over the gate bleeding. Up on the barge, the canyon command horn blasts once.'
+export const MILLER_WHISTLE = 'Over the ridge, the canyon command horn gives a single long whistle. Not a warning. A delivery runner, logged.'
 export const PUSH_PAST = "You lower your head and throw your weight against the choked bulkhead. Sybella's warning bolt cuts the air an inch above your collar, showering your shoulders in sparks, but the momentum carries you through the gap before her dragoons can lock their grips."
 export const VALERIUS_LOOT = "Valerius's shock-baton and a cipher key, left in the dust where he ran."
 
@@ -286,6 +287,10 @@ Greg sees the gold dust on you and steps back. 'Seeker business goes through. Se
 
 "'Before she has you, I check you. That's my job now.'"`,
     variants: drillVariants,
+    intents: [
+      { tags: ['bone market', 'market', 'varro'], reply: '', effects: { flag: { ch2TownFrom: 'ch2:v-outpost' }, goto: 'maw:market' } },
+      { tags: ['ossa', 'stilt', 'where is ossa'], reply: '', effects: { flag: { ch2TownFrom: 'ch2:v-outpost' }, goto: 'maw:stilt' } },
+    ],
     choices: [
       { id: 'test', label: 'Submit to the test', show: { all: [unblown, { flagUnset: 'cupPassed' }] }, effects: { goto: 'ch2:v-test' } },
       { id: 'murch', label: 'The transport bay', show: { all: [unblown, { flagUnset: 'murchProtected' }, { flagUnset: 'murchCaptured' }] }, effects: { goto: 'ch2:v-murch' } },
@@ -294,6 +299,8 @@ Greg sees the gold dust on you and steps back. 'Seeker business goes through. Se
       { id: 'greg', label: 'The back gate', show: { all: [unblown, { flagUnset: 'gregDealt' }, { flagUnset: 'gregSold' }] }, effects: { goto: 'ch2:v-greg' } },
       { id: 'stair', label: "Oram's lower stair", tone: 'hunger', show: { flagUnset: 'spireKey' }, enable: { all: [{ flag: 'cupPassed' }, { any: [{ flag: 'vexFreed' }, { flag: 'crateKey' }] }] }, locked: 'Needs: the test passed, and Vex or the crate key', effects: { goto: 'ch2:v-stair' } },
       { id: 'run', label: 'Run', tone: 'danger', show: blown, effects: { goto: 'ch2:v-blown' } },
+      { id: 'market', label: 'Bone Market', tone: 'quiet', show: unblown, effects: { flag: { ch2TownFrom: 'ch2:v-outpost' }, goto: 'maw:market' } },
+      { id: 'stilt', label: 'Stilt Shade', tone: 'quiet', show: unblown, effects: { flag: { ch2TownFrom: 'ch2:v-outpost' }, goto: 'maw:stilt' } },
     ],
   },
   {
@@ -382,10 +389,16 @@ Vex stares at the cup on your belt. 'They hung one of those on me once. I think.
     kind: 'story',
     title: "Oram's Lower Stair",
     body: "Oram's marks again, Seeker-sealed. The seal answers the crate key, or Vex's hand on the stone.",
+    intents: [
+      { tags: ['bone market', 'market', 'varro'], reply: '', effects: { flag: { ch2TownFrom: 'ch2:v-stair' }, goto: 'maw:market' } },
+      { tags: ['ossa', 'stilt', 'where is ossa'], reply: '', effects: { flag: { ch2TownFrom: 'ch2:v-stair' }, goto: 'maw:stilt' } },
+    ],
     choices: [
       { id: 'greg', label: 'Greg, in the stairwell', tone: 'danger', show: stairGreg, effects: { flag: { stairGregDone: true, ch2Fight: 'stairgreg' }, ambush: { kind: 'greg', line: "'You sold me to the lamps. Now I sell you to the dark.'" } } },
       { id: 'down', label: 'Open the seal', tone: 'hunger', show: { not: stairGreg }, enable: { any: [{ flag: 'vexFreed' }, { flag: 'crateKey' }] }, locked: 'Needs: Vex or the crate key', effects: { goto: 'ch2:cache' } },
       { id: 'back', label: 'Back', tone: 'quiet', show: { all: [{ not: stairGreg }, unblown] }, effects: { goto: 'ch2:v-outpost' } },
+      { id: 'market', label: 'Bone Market', tone: 'quiet', show: { not: stairGreg }, effects: { flag: { ch2TownFrom: 'ch2:v-stair' }, goto: 'maw:market' } },
+      { id: 'stilt', label: 'Stilt Shade', tone: 'quiet', show: { not: stairGreg }, effects: { flag: { ch2TownFrom: 'ch2:v-stair' }, goto: 'maw:stilt' } },
     ],
   },
   {
@@ -591,7 +604,9 @@ Past the pylon, an iron gate, latched.`,
     choices: [
       { id: 'splice', label: 'Splice into the junction box', sub: 'FREQ-774.', tone: 'hunger', enable: { item: 'cartel_transponder' }, locked: 'Needs: the Cartel Transponder Signal', effects: { flag: { gullyBypass: true, millerLogged: true, gregStanding: 'bypassed' }, goto: 'ch2:irongut', flash: `${GULLY_SPLICE}\n\n${MILLER_WHISTLE}` } },
       { id: 'casing', label: 'Pry the loose casing', sub: '2 scrap.', show: { flagUnset: 'gullyScrap' }, effects: { add: { scrap: 2 }, flag: { gullyScrap: true }, flash: GULLY_SCRAP } },
-      { id: 'run', label: 'Run the turrets', sub: 'Health −4. Cartel Heat +2.', tone: 'danger', effects: { health: -4, heat: { cartel: 2 }, flag: { gullyRun: true }, goto: 'ch2:irongut', flash: "The turrets cough. Scrap shot chews the fissure wall beside you, then you. You go over the gate bleeding. Up on the barge, Miller's horn blasts once." } },
+      { id: 'run', label: 'Run the turrets', sub: 'Health −4. Cartel Heat +2.', tone: 'danger', show: { item: 'cartel_transponder' }, effects: { health: -4, heat: { cartel: 2 }, flag: { gullyRun: true }, goto: 'ch2:irongut', flash: GULLY_RUN } },
+      // v183: no splice, no spoof. The turrets and the board both see you.
+      { id: 'run', label: 'Run the turrets', sub: 'Health −6. Cartel Heat +3.', tone: 'danger', show: { not: { item: 'cartel_transponder' } }, effects: { health: -6, heat: { cartel: 3 }, flag: { gullyRun: true }, goto: 'ch2:irongut', flash: GULLY_RUN } },
       BACK_TO('ch2:approach'),
     ],
   },
