@@ -24,6 +24,7 @@ import { helpRoute, HELP_HINT, HELP_TOPICS, topicText } from './helpTopics'
 import { isBayScene } from './content/bayHands'
 import { classifyLook, directedLookFlash, pressureLookFlash, roomLookEffect } from './look'
 import { matchCompass, travelGate } from './map'
+import { isChapterReleased } from './chapters'
 import { chapterTwoAfter, chapterTwoUnlock, isChapterTwoCode } from './ch2'
 import { chapterTwoSummary } from './content/intoTheMaw'
 import { ROAD_NOT_NOW, roadChoice, isTravelText, roadPhrase, roadToMaw, roadHome } from './returnRoad'
@@ -517,6 +518,8 @@ function closingBeats(next: GameState, fx: Effect, moved: boolean): GameState {
 }
 
 export function applyEffect(state: GameState, fx: Effect): GameState {
+  // v186: Chapter Two released, the End card's Continue opens it in place (same as the code on that card).
+  if (state.sceneId === CHAPTER_ONE_END && fx.goto === 'maw:rim' && !state.flags.chapter2Unlocked && isChapterReleased('two')) return applyEffect(state, chapterTwoUnlock())
   if (fx.plate) return platePiece(state, fx.plate)
   if (fx.restoreCheckpoint) {
     const back = restoreCheckpoint(state)
