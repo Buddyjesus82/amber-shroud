@@ -15,8 +15,8 @@ import type { DoorId, GameState } from '../src/game/types.ts'
 
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v176'"), 'SW cache v167')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v176'"), 'Build label v168')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v177'"), 'SW cache v167')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v177'"), 'Build label v168')
 
 const PLAIN = "A curved plate pried from a rib-worm's mouth. A crafting material."
 const TOLD = 'Maw Plate: calcified rib-worm hide. Varro at the Bone Market can work this into your gear.'

@@ -4,8 +4,8 @@ import { getScene } from '../src/game/content/index.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 const J = (x: unknown) => JSON.stringify(x)
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v176'"), 'SW cache v169')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v176'"), 'Build label v169')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v177'"), 'SW cache v169')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v177'"), 'Build label v169')
 ok(existsSync('public/covers/stairs.jpg') && existsSync('public/covers/threshold.jpg'), 'stairs art, threshold kept')
 ok(readFileSync('src/game/art.ts', 'utf8').includes("'stairs'"), 'stairs cover key')
 ok(J(getScene('ch2:gate').choices).includes('ch2:approach'), 'gate -> approach')
