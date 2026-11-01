@@ -8,15 +8,15 @@ import { effectPills } from '../src/game/kit.ts'
 import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v196'"), 'SW cache v179')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v196'"), 'Build label v179')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v197'"), 'SW cache v179')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v197'"), 'Build label v179')
 const v = chapterTwoFromCode('vessel')
 ok((v.items.memory_siphon ?? 0) === 1 && v.flags.siphonGot, 'code start grants the Siphon')
 const at = (sceneId: string, extra: Partial<GameState> = {}, flags: object = {}): GameState => ({ ...v, sceneId, ...extra, flags: { ...v.flags, ...flags } }) as GameState
 const rows = (s: GameState) => visibleChoices(s)
 const row = (s: GameState, id: string, sub?: string) => rows(s).find((c) => c.id === id && (sub === undefined || c.sub === sub))
 // 1 Bluff the Ring
-ok(!row(at('ch2:v-outpost'), 'locker'), 'no transit locker')
+ok(row(at('ch2:v-outpost'), 'locker'), 'v197: transit locker restored')
 const noMark = at('ch2:v-test', { items: { ...v.items, ossa_token: 0, knotted_wrap: 0, kallik_mark: 0 } })
 const ring = row(noMark, 'ring')
 ok(ring && ring.label === 'Bluff the Ring' && !isChoiceOn(noMark, ring.enable), 'ring locked without a mark')

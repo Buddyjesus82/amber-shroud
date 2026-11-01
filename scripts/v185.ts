@@ -6,8 +6,8 @@ import { playCoverKey } from '../src/game/art.ts'
 import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v196'"), 'SW cache v185')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v196'"), 'Build label v185')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v197'"), 'SW cache v185')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v197'"), 'Build label v185')
 const v = chapterTwoFromCode('vessel')
 const s = applyEffect(v, visibleChoices(v)[0].effects)
 const at = (sceneId: string, flags: object = {}) => ({ ...s, sceneId, flags: { ...s.flags, ...flags } }) as GameState

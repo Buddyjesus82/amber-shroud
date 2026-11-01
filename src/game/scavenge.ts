@@ -51,10 +51,12 @@ export function canDrawResin(state: GameState): boolean {
   return extractor || (state.items.memory_siphon ?? 0) > 0
 }
 export const DRAW_RESIN_FLASH = 'You draw resin from the seam. Scrap +1. Sap +1.'
+export const DRAW_RESIN_FLASH_TUNED = 'You draw resin from the seam. Scrap +1. Sap +2.'
 export function applyDrawResin(state: GameState): GameState {
   if (!canDrawResin(state)) return state
-  const next = applyDelta(state, { add: { scrap: 1 }, sap: 1, ticks: 1, flag: { [`resin:${state.sceneId}`]: true } })
-  next.flash = DRAW_RESIN_FLASH
+  const tuned = !!state.flags.siphonTuned
+  const next = applyDelta(state, { add: { scrap: 1 }, sap: tuned ? 2 : 1, ticks: 1, flag: { [`resin:${state.sceneId}`]: true } })
+  next.flash = tuned ? DRAW_RESIN_FLASH_TUNED : DRAW_RESIN_FLASH
   next.sceneId = state.sceneId
   next.hubId = state.hubId
   return next

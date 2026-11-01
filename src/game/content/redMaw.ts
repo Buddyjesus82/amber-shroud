@@ -1,5 +1,5 @@
 import { ROADS } from '../roads'
-import { SIPHON_PRISONER } from './intoTheMaw'
+import { SIPHON_PRISONER, siphonSpotRows } from './intoTheMaw'
 import type { Choice, Cond, ItemId, Scene } from '../types'
 
 // v160: Varro and the Maw Plate.
@@ -945,7 +945,7 @@ Chapter One ends here. Continue to go down into the Maw.`,
         effects: { goto: 'ch2:approach' },
       },
       // v171: the Prisoner's Memory Siphon stash moved here from the Approach.
-      { id: 'stash', label: 'Search the stash at the cairn', show: { all: [{ door: 'prisoner' }, { flagUnset: 'siphonGot' }] }, effects: { add: { memory_siphon: 1 }, flag: { siphonGot: true }, flash: SIPHON_PRISONER } },
+      ...siphonSpotRows({ id: 'stash', label: 'Search the stash at the cairn' }, { door: 'prisoner' }, SIPHON_PRISONER, 'stash'),
       {
         id: 'title',
         label: 'Back to the title',
