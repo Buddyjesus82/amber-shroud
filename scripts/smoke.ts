@@ -59,7 +59,8 @@ function applyEffect(state: Parameters<typeof rawApplyEffect>[0], fx: Parameters
   if (next.sceneId === 'ch1:end' && state.sceneId !== 'ch1:end') {
     // v187: Chapter Two is released; older walks keep playing Chapter One past the card (the release is tested in v186/v187).
     const held = !next.flags.chapter2Unlocked
-    const on = rawApplyEffect(held ? { ...next, flags: { ...next.flags, chapter2Unlocked: true } } : next, getScene('ch1:end').choices[0].effects)
+    // v192: Continue now always enters Chapter Two; older walks take the old step on to the Rim.
+    const on = rawApplyEffect(held ? { ...next, flags: { ...next.flags, chapter2Unlocked: true } } : next, { goto: 'maw:rim' })
     if (held) { const f = { ...on.flags }; delete f.chapter2Unlocked; return { ...on, flags: f, flash: on.flash ?? next.flash } }
     return { ...on, flash: on.flash ?? next.flash }
   }
@@ -2740,7 +2741,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v191'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v192'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(!sw.includes('covers/camp04.jpg') && sw.includes('covers/yard.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')

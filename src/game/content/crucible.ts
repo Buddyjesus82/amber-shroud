@@ -91,6 +91,19 @@ export const crucibleScenes: Scene[] = [
           flash: 'You scramble up the loose pile. A brick shifts under your foot.',
         },
       },
+      // v192: once a run, a little Scrap from the pile.
+      {
+        id: 'scavenge',
+        label: 'Scavenge the debris',
+        show: { flagUnset: 'stairScavenged' },
+        effects: {
+          still: true,
+          add: { scrap: 1, offering_bowl: 1 },
+          flag: { stairScavenged: true },
+          bonusScrap: { oneIn: 3, scrap: 1, line: 'You pull 1 more Scrap from the rubble.' },
+          flash: 'You pull 1 Scrap from the rubble.\n\nYou pull an Offering Bowl from the rubble.',
+        },
+      },
     ],
   },
   {

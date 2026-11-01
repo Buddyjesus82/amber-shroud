@@ -9,7 +9,7 @@ import type { GameState } from '../src/game/types.ts'
 
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v191'"), 'SW cache v155')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v192'"), 'SW cache v155')
 const pick = (s: GameState, id: string) => applyEffect(s, visibleChoices(s).find((c) => c.id === id)!.effects)
 const art = (s: GameState) => playCoverFile(playCoverKey(s, sceneOf(s)))
 const base = newGame('vessel')
@@ -51,6 +51,6 @@ ok(back.sceneId === 'thresh:crucible-stairs', 'cleared: straight to Thalia')
 const typed = interpret(st, 'look')
 ok(typed.sceneId === 'thresh:stairs' && !!typed.flash, 'Do box works on the Stairs')
 const saved = JSON.parse(JSON.stringify(st)) as GameState
-ok(sceneOf(saved).id === 'thresh:stairs' && visibleChoices(saved).length === 2, 'Stairs survives a save round-trip')
+ok(sceneOf(saved).id === 'thresh:stairs' && visibleChoices(saved).length === 3, 'Stairs survives a save round-trip')
 console.log(fails ? `v155: ${fails} failure(s)` : 'v155: all ok')
 process.exit(fails ? 1 : 0)

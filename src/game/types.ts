@@ -46,6 +46,7 @@ export type ItemId =
   | 'crate_key'
   | 'hydraulic_fluid'
   | 'memory_siphon'
+  | 'offering_bowl'
   | 'cartel_transponder'
   | 'deep_memory_pearl'
   | 'cipher_key'
@@ -128,6 +129,8 @@ export type Effect = {
   ambush?: { kind: string; line: string }
   /** v155: a 1-in-oneIn seeded chance of losing `health`. The loss shows on its own line. */
   risk?: { oneIn: number; health: number }
+  /** v192: a 1-in-oneIn seeded chance of `scrap` more Scrap. The extra shows on its own line. */
+  bonusScrap?: { oneIn: number; scrap: number; line: string }
   sap?: number
   health?: number
   heat?: Partial<Heat>

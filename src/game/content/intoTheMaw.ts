@@ -318,6 +318,8 @@ Greg sees the gold dust on you and steps back. 'Seeker business goes through. Se
     body: 'Valerius holds your false cup up to the lamp. "Empty cups ring. Full ones don\'t." He taps it.',
     choices: [
       { id: 'drop', label: 'Bleed a Drop into it', sub: '1 vial.', show: { flagUnset: 'cupPassed' }, enable: { item: 'vial_drop' }, locked: 'Needs: a vial', effects: { remove: { vial_drop: 1 }, flag: { cupPassed: true }, flash: 'The cup goes quiet. Valerius frowns, and lets it go.' } },
+      // v192: the Offering Bowl from the Stairs, holding a Drop, passes for a cup. The Drop is spent into it.
+      { id: 'bowl', label: 'Hold out the Offering Bowl', sub: 'A Drop poured into it. 1 vial.', show: { all: [{ flagUnset: 'cupPassed' }, { item: 'offering_bowl' }] }, enable: { item: 'vial_drop' }, locked: 'Needs: a vial', effects: { remove: { vial_drop: 1 }, flag: { cupPassed: true }, flash: 'The cup goes quiet. Valerius frowns, and lets it go.' } },
       { id: 'bluff', label: 'Bluff', tone: 'danger', show: { all: [{ flagUnset: 'cupPassed' }, { flagUnset: 'cupFailed' }] }, effects: { flag: { cupPassed: true, ch2Fight: 'test' }, sneak: { odds: 5, kind: 'overseer', spotted: TEST_FAIL } } },
       { id: 'ring', label: 'Bluff the Ring', sub: "Show Ossa's Knot or Kallik's Mark.", show: { flagUnset: 'cupPassed' }, enable: { any: [{ item: 'ossa_token' }, { item: 'knotted_wrap' }, { item: 'kallik_mark' }] }, locked: "Needs: Ossa's Knot or Kallik's Mark", effects: { flag: { cupPassed: true }, goto: 'ch2:v-stair', flash: RING_LINE } },
       // v186: no pass route left (test failed, no vial, no Knot or Mark). Two hard ways on.

@@ -9,7 +9,7 @@ import type { GameState } from '../src/game/types.ts'
 
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v191'"), 'SW cache v157')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v192'"), 'SW cache v157')
 const base = newGame('vessel')
 const pick = (s: GameState, id: string) => applyEffect({ ...s, flash: undefined }, visibleChoices(s).find((c) => c.id === id)!.effects)
 const court = { ...base, sceneId: 'thresh:court', hubId: 'threshold', flags: { ...base.flags, noMasked: true } } as GameState
@@ -17,9 +17,9 @@ ok(canScavenge(court), 'Court still scavenges')
 const st = pick(court, 'thalia')
 ok(st.sceneId === 'thresh:stairs' && st.hubId === 'threshold', 'Court -> Stairs, still in the hub')
 ok(!canScavenge(st), 'no Scavenge on the Stairs from the Court')
-ok(visibleChoices(st).map((c) => c.id).join(',') === 'clear,climb', 'only the two choices')
+ok(visibleChoices(st).map((c) => c.id).join(',') === 'clear,climb,scavenge', 'only the three choices (v192: Scavenge the debris)')
 const typed = interpret(st, 'scavenge')
-ok(typed.sceneId === 'thresh:stairs' && JSON.stringify(typed.items) === JSON.stringify(st.items), 'typed scavenge finds nothing on the Stairs')
+ok(typed.sceneId === 'thresh:stairs' && typed.flags.stairScavenged === true && !!typed.flash?.startsWith('You pull 1 Scrap'), 'v192: typed scavenge uses the once-a-run debris row, not the hub Scavenge')
 const top = pick(st, 'clear')
 ok(top.sceneId === 'thresh:thalia' && canScavenge(top), 'dais Thalia keeps its usual buttons')
 const src = readFileSync('src/components/PlayScreen.tsx', 'utf8')

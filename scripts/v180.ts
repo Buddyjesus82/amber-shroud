@@ -8,8 +8,8 @@ import { DRILL_BREACH, DRILL_LINES, GULLY_SCRAP, LIFT_HUMS } from '../src/game/c
 import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v191'"), 'SW cache v180')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v191'"), 'Build label v180')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v192'"), 'SW cache v180')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v192'"), 'Build label v180')
 const v = chapterTwoFromCode('vessel')
 const at = (sceneId: string, extra: Partial<GameState> = {}, flags: object = {}): GameState => ({ ...v, sceneId, ...extra, flags: { ...v.flags, ...flags } }) as GameState
 const row = (s: GameState, id: string) => visibleChoices(s).find((c) => c.id === id)
