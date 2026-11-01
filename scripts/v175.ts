@@ -6,8 +6,8 @@ import { isHungerCommand } from '../src/game/hunger'
 import type { GameState } from '../src/game/types'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v194'"), 'SW cache v175')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v194'"), 'Build label v175')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v195'"), 'SW cache v175')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v195'"), 'Build label v175')
 ok(!isHungerCommand("take the pilgrim's scar", 'vessel', true) && isHungerCommand('take the gullet', 'vessel', true) && isHungerCommand("take the pilgrim's scar", 'vessel'), 'Scar is not the Chapter Two road')
 ok(readFileSync('src/game/content/redMaw.ts', 'utf8').includes("all: [{ flagUnset: 'ribOpen' }"), 'rib +3 once')
 const base = { hubId: 'threshold', sceneId: 'thresh:paddock', flags: {}, items: {}, sap: 3 } as unknown as GameState

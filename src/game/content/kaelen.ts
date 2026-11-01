@@ -1,4 +1,7 @@
-import { FENCE_HOLE_BACK } from '../campJob'
+import { FENCE_HOLE_BACK, PLAN_HEARD } from '../campJob'
+
+export const KAELEN_GRATE_FLASH =
+  'Kaelen pries the loose grate behind the sifting chutes and presses a filed scrap shim into your hand. You drop into the outer drainage Gullet. Behind you, the tower light finds the breach.'
 import type { Scene } from '../types'
 
 const rumorHook = `"News is inventory. I don't give it away. Scrap buys a Drop of Oasis Sap. Glints buy intel. Ask. Pay. Then you get a lead — side trouble, or the Gullet, or both if your pockets are honest."`
@@ -53,6 +56,30 @@ export const campKaelenScenes: Scene[] = [
           flag: { kaelenKnown: true, kaelenMud: true },
           flash:
             '"I can tell a clerk you went west with a hull you do not have." He does not smile. Cartel Heat cools. He lies for survivors.',
+        },
+      },
+      {
+        // v195: Kaelen's grate. Skips Jaxson's job for good; not held by the guard-station lock.
+        id: 'grate',
+        label: 'Take the grate behind the chutes',
+        sub: "Wire-Cutter Shim. Cartel Heat +2. Skips Jaxson's job.",
+        tone: 'hunger',
+        show: {
+          all: [
+            { door: 'prisoner' },
+            { flagUnset: 'chapter1Done' },
+            { flagUnset: 'guardDown' },
+            { flagUnset: 'striderHot' },
+            { any: [{ pressureMin: 8 }, { flag: 'hunterHere' }, { flag: 'campLockdown' }, { flag: 'campForcedSeen' }, PLAN_HEARD] },
+          ],
+        },
+        effects: {
+          add: { wire_cutter_shim: 1 },
+          heat: { cartel: 2 },
+          flag: { kaelenEscape: true, jaxsonCold: true, hungerKnown: true },
+          startChapter: 'cache-run',
+          goto: 'ch1:leave',
+          flash: KAELEN_GRATE_FLASH,
         },
       },
       {

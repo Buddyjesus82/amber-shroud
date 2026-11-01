@@ -657,11 +657,13 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   // Every escape out of Camp-04 plays the storm beat first; the route's own line waits for the Hunger.
   const campEscape =
     !!fx.startChapter && dest === 'ch1:leave' && (state.hubId === 'camp04' || state.sceneId.startsWith('camp:'))
+  // v195: out through Kaelen's grate, Jaxson catches you on the road before the leave.
+  if (state.sceneId === 'ch1:storm' && dest === 'ch1:leave' && next.flags.kaelenEscape && !next.flags.jaxsonReunion) dest = 'ch1:p-reunion'
   if (campEscape) {
     dest = 'ch1:storm'
     next.flags = { ...next.flags, stormFlash: fx.flash ?? '' }
     next.flash = undefined
-  } else if (state.sceneId === 'ch1:storm' && dest === 'ch1:leave') {
+  } else if ((state.sceneId === 'ch1:storm' || state.sceneId === 'ch1:p-reunion') && dest === 'ch1:leave') {
     const held = state.flags.stormFlash
     const flags = { ...next.flags }
     delete flags.stormFlash
@@ -1057,7 +1059,8 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   const roadHunt = roadHunterKind(state, next)
   if (roadHunt) {
     next.flags = { ...next.flags, ...fightStartFlags(next, roadHunt.kind), encounterNoSkip: true, roadHuntDone: true, roadFightSeen: true }
-    next.flash = roadHunt.line
+    const carried = (state.sceneId === 'ch1:storm' || state.sceneId === 'ch1:p-reunion') && next.sceneId === 'ch1:leave' ? next.flash : undefined
+    next.flash = [carried, roadHunt.line].filter(Boolean).join(' ')
   }
   // Vessel's second road stop: one fixed runner, once per run, whatever came before. Ignores Health.
   const secondStop = !roadHunt ? secondStopRunner(state, next) : null
