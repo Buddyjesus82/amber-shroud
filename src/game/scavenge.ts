@@ -28,7 +28,40 @@ export function hubRoam(state: GameState): boolean {
   return true
 }
 
+/** v196: Chapter Two Maw scenes (ch2:approach down) that can hold a scavenge spot. */
+const MAW_SPOT_SKIP = new Set(['ch2:end', 'ch2:stub', 'ch2:trapped', 'ch2:heart'])
+/** v196: 1 in 2 Maw scenes is a scavenge spot, picked fresh each run. */
+export const MAW_SPOT_PCT = 50
+export function mawSpot(state: GameState): boolean {
+  const id = state.sceneId
+  if (!id.startsWith('ch2:') || MAW_SPOT_SKIP.has(id)) return false
+  if (state.flags.encounterHere || state.flags.hunterHere || state.flags.downed) return false
+  let h = 2166136261
+  for (const ch of `${state.startedAt ?? 0}:${id}`) h = Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0
+  h ^= h >>> 16
+  h = Math.imul(h, 0x45d9f3b) >>> 0
+  h ^= h >>> 16
+  return (h >>> 0) % 100 < MAW_SPOT_PCT
+}
+
+/** v196: Draw resin at a Maw spot. Same as the husk fight: scrap +1, Sap +1. Once per spot. */
+export function canDrawResin(state: GameState): boolean {
+  if (!mawSpot(state) || state.flags[`resin:${state.sceneId}`]) return false
+  const extractor = Object.values(state.equipped ?? {}).includes('seeker_extractor')
+  return extractor || (state.items.memory_siphon ?? 0) > 0
+}
+export const DRAW_RESIN_FLASH = 'You draw resin from the seam. Scrap +1. Sap +1.'
+export function applyDrawResin(state: GameState): GameState {
+  if (!canDrawResin(state)) return state
+  const next = applyDelta(state, { add: { scrap: 1 }, sap: 1, ticks: 1, flag: { [`resin:${state.sceneId}`]: true } })
+  next.flash = DRAW_RESIN_FLASH
+  next.sceneId = state.sceneId
+  next.hubId = state.hubId
+  return next
+}
+
 export function canScavenge(state: GameState): boolean {
+  if (mawSpot(state)) return true
   if (!hubRoam(state)) return false
   const id = sceneOf(state)
   // v157: no Scavenge on The Stairs, from the Court or the opening.
@@ -74,7 +107,7 @@ export function scavengeSalve(state: GameState): boolean {
 /** Past the Outcast outpost and at the bite, heat fights cost blood: more resin turns up in the grit. */
 export const SCAVENGE_SALVE_PCT_FAR = 15
 export function scavengeSalvePct(state: GameState): number {
-  return state.hubId === 'spine' || state.hubId === 'redmaw' ? SCAVENGE_SALVE_PCT_FAR : SCAVENGE_SALVE_PCT
+  return state.hubId === 'spine' || state.hubId === 'redmaw' || state.sceneId.startsWith('ch2:') ? SCAVENGE_SALVE_PCT_FAR : SCAVENGE_SALVE_PCT
 }
 
 const SALVE_FIND = ' Under it, a thumb of Resin Salve in a twist of cloth.'

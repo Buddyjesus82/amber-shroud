@@ -89,7 +89,7 @@ import {
 import { talkFallback, talkIntentsFor } from './talk'
 import { answerAsk, answerLate, hintLine, readAsk, readLateAsk, sceneVoice, voiceOnScreen } from './politeAsk'
 import { pickLine } from './voices'
-import { applyScavenge, canScavenge, canSkim, skimHeat, skimLocked } from './scavenge'
+import { applyDrawResin, applyScavenge, canScavenge, canSkim, skimHeat, skimLocked } from './scavenge'
 import { writeSave } from './save'
 import { bagCap, bagCount, EQUIP_SLOTS, PLATE_LOCKED, PLATE_RECIPE, PLATING, bagFree, bagLoad, bagStacks, bagUnits, disguiseActive, fitBag, gearLookLine, heldNames, heldOf, KNOT_STRAYS_NOTE, KNOT_TIE_LOCKED, knotWorn, SCAV_PACK_LOCKED, SCAV_PACK_RECIPE, SLOT_LABEL, slotsFor, takeHeld, wornCount } from './kit'
 import { DISGUISE_SOFTEN_NOTE, disguiseArrival, softenCartel } from './disguise'
@@ -1542,6 +1542,10 @@ export function scavenge(state: GameState): GameState {
     }),
     'scavenge',
   )
+}
+
+export function drawResin(state: GameState): GameState {
+  return persist({ ...applyDrawResin(state), updatedAt: Date.now() })
 }
 
 export function skim(state: GameState): GameState {
