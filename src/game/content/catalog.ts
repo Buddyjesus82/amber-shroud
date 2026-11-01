@@ -336,6 +336,13 @@ export const ITEMS: Record<ItemId, ItemDef> = {
     kind: 'key',
     desc: 'A cracked clay offering bowl from the stair rubble. You notice a sticky amber residue in the bottom. It could hold a Drop.',
   },
+  // v195: Kaelen's grate escape.
+  wire_cutter_shim: {
+    id: 'wire_cutter_shim',
+    name: 'Wire-Cutter Shim',
+    kind: 'key',
+    desc: 'An improvised scrap shim Kaelen filed down for the perimeter wire.',
+  },
   cartel_transponder: {
     id: 'cartel_transponder',
     name: 'Cartel Transponder Signal',

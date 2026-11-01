@@ -14,6 +14,12 @@ const done = {
 } as const
 
 /** Vessel Cache Run: the hymn-road start has a runner on it, every time. */
+const REUNION_FX = {
+  goto: 'ch1:leave',
+  flag: { jaxsonReunion: true, striderHot: true },
+  flash: '"We\'re outside the wire, that\'s what counts—but don\'t expect me to hold the door next time."',
+} as const
+
 export const BARGAIN_EMPTY_LINE = 'You talk. She listens the way old stone listens. No mark for talk. Seeker Heat +1. She still follows.'
 export const LAND_BARGAIN_EMPTY = 'You talked. She listened. No mark on your brow. She is still coming.'
 export const AMBUSH_RUNNER = 'A Seeker runner was waiting where the hymn-road starts. He drops off the rock in front of you, spear low. No way around him.'
@@ -39,6 +45,20 @@ This is your window. Go.`,
         tone: 'hunger',
         effects: { goto: 'ch1:leave' },
       },
+    ],
+  },
+  {
+    id: 'ch1:p-reunion',
+    chapterId: 'cache-run',
+    kind: 'story',
+    title: 'Dust Choke',
+    speaker: 'Jaxson Vance',
+    body: `A Cartel runner screams out of the dust behind you, searchlights raking the ridge at its back. Jaxson swerves the hotwired rig alongside, spitting sand.
+
+"You left me dangling over a live bay with the tower on full sweep! I had to hot-wire this pig while two guards were taking a leak against the bulkhead. Jump in before the spotlight catches us both!"`,
+    choices: [
+      { id: 'kaelen', label: "Tell him Kaelen's grate was the only way out", tone: 'hunger', effects: REUNION_FX },
+      { id: 'sorry', label: "Tell him you're sorry", tone: 'hunger', effects: REUNION_FX },
     ],
   },
   {

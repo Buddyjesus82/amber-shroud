@@ -361,7 +361,7 @@ He is the one who can break you out. He hotwires Ironclad Skiff-Striders, and he
       {
         id: 'stash',
         label: "Search Jaxson's stash",
-        show: { all: [{ flag: 'jaxsonFavor' }, { flagUnset: 'jaxsonStash' }] },
+        show: { all: [{ flag: 'jaxsonFavor' }, { flagUnset: 'jaxsonStash' }, { flagUnset: 'jaxsonCold' }] },
         effects: {
           flag: { jaxsonStash: true, jaxsonPaid: true },
           add: { scrap: 2 },
@@ -862,7 +862,7 @@ He taps the brass. "If you need supplies, see Kaelen the Sifter at the Wire. Jit
       {
         id: 'paid',
         label: 'The station is down. The runner is live. Pay up.',
-        show: { all: [{ all: [{ flag: 'striderHot' }, { flagUnset: 'jaxsonDropGiven' }] }, JAX_HERE] },
+        show: { all: [{ all: [{ flag: 'striderHot' }, { flagUnset: 'jaxsonDropGiven' }, { flagUnset: 'jaxsonCold' }] }, JAX_HERE] },
         effects: {
           add: { vial_drop: 1 },
           goto: 'camp:lean',

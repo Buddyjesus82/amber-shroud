@@ -47,6 +47,7 @@ export type ItemId =
   | 'hydraulic_fluid'
   | 'memory_siphon'
   | 'offering_bowl'
+  | 'wire_cutter_shim'
   | 'cartel_transponder'
   | 'deep_memory_pearl'
   | 'cipher_key'

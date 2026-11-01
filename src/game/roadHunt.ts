@@ -19,7 +19,7 @@ export const ROAD_FLOOR_LINE = 'Someone was waiting where the road starts. No wa
 
 const DOOR_FACTION = { prisoner: 'cartel', outcast: 'strays', vessel: 'seekers' } as const
 const ROAD = /^ch1:[pov]-/
-const SKIP = new Set(['ch1:v-zafir'])
+const SKIP = new Set(['ch1:v-zafir', 'ch1:p-reunion'])
 
 /** A road hunter or the Outcast floor fight for this arrival, or null. At most one per run. */
 export function roadHunterKind(before: GameState, next: GameState): { kind: EncounterKind; line: string } | null {
