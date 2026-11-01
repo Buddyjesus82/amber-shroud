@@ -535,12 +535,25 @@ function endCardContinue(state: GameState): Effect {
   return fx
 }
 
+export const WIRE_BLOCKED =
+  "The Overseer's tower is still live—searchlights cut the sand to ribbons. You can't break the wire until that station is dropped."
+
 export function applyEffect(state: GameState, fx: Effect): GameState {
   // v186: Chapter Two released, the End card's Continue opens it in place (same as the code on that card).
   // v192: always, on any save (chapter2Unlocked set or not), straight onto the Approach. The Siphon comes with it if not had yet.
   if (state.sceneId === CHAPTER_ONE_END && fx.goto === CH2_ENTRY && !fx.flag?.chapter2Unlocked) return applyEffect(state, endCardContinue(state))
   // v188: nothing lands on the old 'Under the Jaw' stub once Chapter Two is out. The way forward is the real road.
   if (fx.goto === 'ch2:stub' && isChapterReleased('two')) return applyEffect(state, stubForward(state, fx))
+  if (fx.wireExit) {
+    const { wireExit: _w, ...rest } = fx
+    if (state.door !== 'prisoner') return applyEffect(state, rest)
+    if (!state.flags.guardDown) return applyEffect(state, { flash: WIRE_BLOCKED })
+    if (!state.flags.striderHot) {
+      const after = applyEffect(state, { ...rest, health: (rest.health ?? 0) - 3, sap: (rest.sap ?? 0) - 1 })
+      return { ...after, flash: [after.flash, 'Health -3. Sap -1.'].filter(Boolean).join('\n\n') }
+    }
+    return applyEffect(state, rest)
+  }
   if (fx.plate) return platePiece(state, fx.plate)
   if (fx.restoreCheckpoint) {
     const back = restoreCheckpoint(state)

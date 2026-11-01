@@ -6,8 +6,8 @@ import { CH2_ENTRY } from '../src/game/content/intoTheMaw.ts'
 import type { DoorId, GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v193'"), 'SW cache v192')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v193'"), 'Build label v192')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v194'"), 'SW cache v192')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v194'"), 'Build label v192')
 const cont = getScene('ch1:end').choices.find((c) => c.id === 'continue')!.effects
 const cases: [string, Record<string, unknown>, number][] = [
   ['fresh', {}, 0],

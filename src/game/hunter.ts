@@ -104,7 +104,9 @@ export const SYBELLA_SHADOW_APPEND = `The skiff-shadow slides over this ground w
 
 You are still here. Face her smoke only if you walk it.`
 
-function hungerOuts(heat: Choice['effects']['heat']): Choice[] {
+function hungerOuts(heat: Choice['effects']['heat'], wire = false): Choice[] {
+  // v194: on the Prisoner's camp sweep the on-foot runs need the guard station dropped.
+  const w = wire ? { wireExit: true } : {}
   return [
     {
       id: 'hunter-ride',
@@ -125,6 +127,7 @@ function hungerOuts(heat: Choice['effects']['heat']): Choice[] {
       show: { any: [{ flag: 'hungerKnown' }, { item: 'oram_map' }] },
       tone: 'hunger',
       effects: {
+        ...w,
         startChapter: 'cache-run',
         goto: 'ch1:leave',
         heat,
@@ -141,6 +144,7 @@ function hungerOuts(heat: Choice['effects']['heat']): Choice[] {
       },
       tone: 'danger',
       effects: {
+        ...w,
         flag: { hungerKnown: true, cacheBlind: true },
         startChapter: 'cache-run',
         goto: 'ch1:leave',
@@ -254,7 +258,7 @@ function campHuntChoices(state: GameState): Choice[] {
       flash: 'You drop into work that is already here. Cartel Heat cools. The handler loses the shape of you. You never left.',
     }),
   })
-  rows.push(...hungerOuts({ cartel: 2 }))
+  rows.push(...hungerOuts({ cartel: 2 }, true))
   return campHuntIsValerius(state) ? rows.map((c) => valeriusRow(state, c)) : rows
 }
 

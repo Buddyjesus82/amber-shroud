@@ -2741,7 +2741,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v193'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v194'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(!sw.includes('covers/camp04.jpg') && sw.includes('covers/yard.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -3276,6 +3276,8 @@ function assertHelpResolves(s: GameState, where: string) {
         if (x.sceneId !== sc.id) continue
         for (const c of visibleChoices(x)) {
           if (!isChoiceOn(x, c.enable) || RETURN_ROWS.has(`${sc.id} ${c.id}`)) continue
+          // v194: a wire exit with the guard station still up only says why (the block line).
+          if (c.effects.wireExit && door === 'prisoner' && !x.flags.guardDown) continue
           if (!moved(x, applyEffect(x, c.effects))) flat.push(`${door} ${sc.id} "${c.label}"`)
         }
       }
