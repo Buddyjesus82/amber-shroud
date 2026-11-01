@@ -5,8 +5,8 @@ import { getScene } from '../src/game/content/index.ts'
 import { playCoverKey } from '../src/game/art.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v192'"), 'SW cache v191')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v192'"), 'Build label v191')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v193'"), 'SW cache v191')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v193'"), 'Build label v191')
 ok(existsSync('public/covers/prisoner-opening.jpg'), 'opening art file')
 const p = newGame('prisoner')
 ok(playCoverKey({ ...p, sceneId: 'open:prisoner' }, getScene('open:prisoner')) === 'prisoner_opening', 'open:prisoner -> opening art')

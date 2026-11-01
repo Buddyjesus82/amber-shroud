@@ -334,7 +334,7 @@ export const ITEMS: Record<ItemId, ItemDef> = {
     id: 'offering_bowl',
     name: 'Offering Bowl',
     kind: 'key',
-    desc: 'An old offering bowl from the rubble on the Stairs. It can hold a Drop.',
+    desc: 'A cracked clay offering bowl from the stair rubble. You notice a sticky amber residue in the bottom. It could hold a Drop.',
   },
   cartel_transponder: {
     id: 'cartel_transponder',
