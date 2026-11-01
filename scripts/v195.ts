@@ -5,10 +5,10 @@ import { ITEMS } from '../src/game/content/index.ts'
 import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v195'"), 'SW cache v195')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v196'"), 'SW cache v195')
 ok(readFileSync('public/sw.js', 'utf8').includes('covers/jaxson-reunion.jpg'), 'reunion cover precached')
 ok(existsSync('public/covers/jaxson-reunion.jpg'), 'reunion cover file')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v195'"), 'Build label v195')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v196'"), 'Build label v195')
 ok(ITEMS.wire_cutter_shim?.desc === 'An improvised scrap shim Kaelen filed down for the perimeter wire.', 'shim desc')
 const at = (sceneId: string, flags: Record<string, unknown>, door: 'prisoner' | 'outcast' = 'prisoner', pressure = 0): GameState => {
   const g = newGame(door)

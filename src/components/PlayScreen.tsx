@@ -17,6 +17,7 @@ import {
   scavenge,
   sceneOf,
   skim,
+  drawResin,
   visibleChoices,
   CHAPTER_ONE_END,
 } from '../game/engine'
@@ -33,7 +34,7 @@ import { DRILL_LINES } from '../game/content/intoTheMaw'
 import { isMaskedFlash, maskedCoverKey, maskedQuietScene } from '../game/masked'
 import { DISGUISE_SOFTEN_NOTE } from '../game/disguise'
 import { ROADS, shownText } from '../game/roads'
-import { scavengeLock } from '../game/scavenge'
+import { canDrawResin, scavengeLock } from '../game/scavenge'
 import { RUSH_CHANCE, RUSH_MOVES, RUSH_WINDOW_MS, STALL_BASE, STALL_MAX_S, STALL_MIN_S, STALL_STEP, STALL_TICK_S } from '../game/noticeHeat'
 import { fightLocked, noticeOn, timingNotice } from '../game/engine'
 import { isShopOpen } from '../game/trade'
@@ -258,6 +259,15 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
       locked: !!scavengeLock(state),
       lockedNote: scavengeLock(state) ?? undefined,
       onClick: () => !scavengeLock(state) && onChange(scavenge(state)),
+    })
+  }
+  if (!overlay && !shopOpen && canDrawResin(state)) {
+    optionRows.push({
+      key: 'draw-resin',
+      tone: 'quiet',
+      label: 'Draw resin',
+      sub: 'Scrap +1. Sap +1. Once per spot.',
+      onClick: () => onChange(drawResin(state)),
     })
   }
   const hasSceneSkim = choices.some((c) => c.id === 'skim')
