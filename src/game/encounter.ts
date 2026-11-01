@@ -621,7 +621,7 @@ export function encounterChoices(state: GameState): Choice[] {
       sub:
         state.flags.encounterController && !state.flags.encounterControllerDown
           ? 'Seeker Extractor. Once a fight. Cut the siphon filament so the husk cannot be re-charged. No hit on the husk; it still hits you.'
-          : 'Seeker Extractor. Once a fight. Draw resin under the plates: scrap +1, Sap +1. The core stays lit. The husk still hits you.',
+          : `Seeker Extractor. Once a fight. Draw resin under the plates: scrap +1, Sap +${state.flags.siphonTuned ? 2 : 1}. The core stays lit. The husk still hits you.`,
       show: {
         all: [
           { flagEq: ['encounterKind', 'husk'] },
@@ -1166,8 +1166,9 @@ export function resolveEncounter(
       notes.push('You slide the Seeker Extractor under a plate and cut the siphon filament. The Seeker loses the line. The husk cannot be re-charged.')
     } else {
       resinLoot = { scrap: 1 }
-      resinSap = 1
-      notes.push('You draw living heat under the plates. Resin liquefies without cracking the core. Scrap +1. Sap +1. The husk still stands.')
+      // v197: a slotted Module (siphonTuned) draws Sap +2.
+      resinSap = f.siphonTuned ? 2 : 1
+      notes.push(`You draw living heat under the plates. Resin liquefies without cracking the core. Scrap +1. Sap +${resinSap}. The husk still stands.`)
     }
   }
   if (move === 'guard') {

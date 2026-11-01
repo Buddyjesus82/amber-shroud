@@ -266,7 +266,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
       key: 'draw-resin',
       tone: 'quiet',
       label: 'Draw resin',
-      sub: 'Scrap +1. Sap +1. Once per spot.',
+      sub: state.flags.siphonTuned ? 'Scrap +1. Sap +2. Once per spot.' : 'Scrap +1. Sap +1. Once per spot.',
       onClick: () => onChange(drawResin(state)),
     })
   }

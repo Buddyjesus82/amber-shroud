@@ -5,8 +5,8 @@ import { canScavenge, canDrawResin, mawSpot, DRAW_RESIN_FLASH } from '../src/gam
 import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v196'"), 'SW cache v196')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v196'"), 'Build label v196')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v197'"), 'SW cache v196')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v197'"), 'Build label v196')
 const MAW = ['ch2:approach', 'ch2:gully', 'ch2:irongut', 'ch2:cache', 'ch2:ribs', 'ch2:vein', 'ch2:p-jaws', 'ch2:p-bays', 'ch2:v-scar', 'ch2:o-wash', 'ch2:o-root', 'ch2:p-sift']
 for (const door of ['prisoner', 'vessel', 'outcast'] as const) {
   let on = 0, tot = 0

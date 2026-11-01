@@ -17,7 +17,7 @@ function ok(cond: unknown, msg: string) {
     console.log('FAIL', msg)
   }
 }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v196'"), 'SW cache v153')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v197'"), 'SW cache v153')
 
 function huntAt(flags: Record<string, unknown>, cartel = 7): GameState {
   const g = newGame('prisoner')

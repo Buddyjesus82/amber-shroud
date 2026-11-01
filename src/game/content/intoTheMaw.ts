@@ -120,6 +120,30 @@ function sybellaRows(id: string, label: string, show: Cond, fx: Choice['effects'
 export const SIPHON_PRISONER = "Under a tarp at the cairn, someone's stash from the last run: cord, a dead lamp, and a Seeker blade with a glass reservoir in the grip. Nobody's coming back for it. You take the Memory Siphon."
 export const SIPHON_VESSEL = "The locker is meant for the Silt-Bay Docks: Seeker transit seals, a ledger, and a Memory Siphon in a padded case. The Vessel's hands are allowed to take what the Vessel needs."
 export const SIPHON_OUTCAST = "A Stray scout lies against a vertebra, breathing wrong. He sees the brand and laughs once. 'Figures.' He presses a Seeker blade with a glass grip into your hand. 'Took it off a lamp. Don't let them have it back.' He doesn't breathe again."
+/** v197: the door Siphon spot. Case A hands over the full Seeker Extractor; Case B slots the Module into the one you carry. */
+export const SIPHON_BLADE_LINE = (where: 'stash' | 'locker' | 'corpse') =>
+  `You pull the curved Seeker blade from the ${where}. A heavy brass resin-core is already slotted into the guard, humming faintly with amber light.`
+export const SIPHON_SLOT_LABEL = 'Slot the Module into your Extractor Blade.'
+export const SIPHON_SLOT_LINE = 'You slot the Module into your Extractor Blade.\n\nSap Harvest +1.'
+const HAS_BLADE: Cond = { any: [{ item: 'seeker_extractor' }, { equipped: 'seeker_extractor' }] }
+const HAS_SIPHON: Cond = { item: 'memory_siphon' }
+const SPOT_FLAGS = { siphonGot: true, siphonSpotDone: true, hasSiphonModule: true, hasMemorySiphon: true }
+export function siphonSpotRows(
+  base: { id: string; label: string; sub?: string },
+  where: Cond,
+  text: string,
+  spot: 'stash' | 'locker' | 'corpse',
+): Choice[] {
+  const open: Cond = { all: [where, { flagUnset: 'siphonSpotDone' }] }
+  const a = `${text}\n\n${SIPHON_BLADE_LINE(spot)}`
+  const b = `${text}\n\n${SIPHON_SLOT_LINE}`
+  return [
+    { ...base, show: { all: [open, { not: HAS_BLADE }, { not: HAS_SIPHON }] }, effects: { add: { seeker_extractor: 1, memory_siphon: 1 }, flag: SPOT_FLAGS, flash: a } },
+    { ...base, show: { all: [open, { not: HAS_BLADE }, HAS_SIPHON] }, effects: { add: { seeker_extractor: 1 }, flag: SPOT_FLAGS, flash: a } },
+    { ...base, label: SIPHON_SLOT_LABEL, sub: undefined, show: { all: [open, HAS_BLADE, { not: HAS_SIPHON }] }, effects: { add: { memory_siphon: 1 }, flag: { ...SPOT_FLAGS, siphonTuned: true }, flash: b } },
+    { ...base, label: SIPHON_SLOT_LABEL, sub: undefined, show: { all: [open, HAS_BLADE, HAS_SIPHON] }, effects: { flag: { ...SPOT_FLAGS, siphonTuned: true }, flash: b } },
+  ]
+}
 export const RELAY_FIXED = "You splice a lead into the box and bind it with the Sinew-Bind. The relay clicks and starts reading numbers. Mara writes them on her arm: FREQ-774. 'Cartel courier channel. Miller's board will think you're a supply runner.'"
 export const RIBS_CLIMAX = "The drill breaks through the rib above. Seeker dragoons rappel down on lines, gold trim catching the lamps. The platform drops out from under their boots and takes you down."
 export const RIBS_CLIMAX_LADDER = "The drill breaks through the rib above. Seeker dragoons rappel down on lines, gold trim catching the lamps. You drop the last rungs and run."
@@ -305,6 +329,7 @@ Greg sees the gold dust on you and steps back. 'Seeker business goes through. Se
       { id: 'bleed', label: 'The bleeding room', show: { flagUnset: 'vexFreed' }, effects: { goto: 'ch2:v-bleed' } },
       { id: 'greg', label: 'The back gate', show: { all: [{ flagUnset: 'gregDealt' }, { flagUnset: 'gregSold' }] }, effects: { goto: 'ch2:v-greg' } },
       { id: 'stair', label: "Oram's lower stair", tone: 'hunger', show: { flagUnset: 'spireKey' }, enable: { all: [{ flag: 'cupPassed' }, { any: [{ flag: 'vexFreed' }, { flag: 'crateKey' }] }] }, locked: 'Needs: the test passed, and Vex or the crate key', effects: { goto: 'ch2:v-stair' } },
+      ...siphonSpotRows({ id: 'locker', label: 'Open the transit locker', sub: 'Stamped for the Silt-Bay Docks.' }, unblown, SIPHON_VESSEL, 'locker'),
       { id: 'run', label: 'Run', tone: 'danger', show: blown, effects: { goto: 'ch2:v-blown' } },
       { id: 'market', label: 'Bone Market', tone: 'quiet', show: unblown, effects: { flag: { ch2TownFrom: 'ch2:v-outpost' }, goto: 'maw:market' } },
       { id: 'stilt', label: 'Stilt Shade', tone: 'quiet', show: unblown, effects: { flag: { ch2TownFrom: 'ch2:v-outpost' }, goto: 'maw:stilt' } },
@@ -469,7 +494,7 @@ The horn rasps again: "Not that one, Greg. The Strays want that one. Hold it for
       { id: 'strays', label: "The Strays' deep camp", effects: { goto: 'ch2:o-strays' } },
       { id: 'cage', label: 'The outpost ridge', effects: { goto: 'ch2:o-cage' } },
       { id: 'bounty', label: "Where Greg's crew waits", show: { all: [{ flagUnset: 'bountyFooled' }, { flagUnset: 'bountyBroken' }] }, effects: { goto: 'ch2:o-bounty' } },
-      { id: 'scout', label: 'The dying scout', show: { flagUnset: 'siphonGot' }, effects: { add: { memory_siphon: 1 }, flag: { siphonGot: true }, flash: SIPHON_OUTCAST } },
+      ...siphonSpotRows({ id: 'scout', label: 'The dying scout' }, { door: 'outcast' }, SIPHON_OUTCAST, 'corpse'),
       { id: 'stilts', label: 'Down the flooded gaps', tone: 'hunger', effects: { goto: 'ch2:o-stilts' } },
     ],
   },
