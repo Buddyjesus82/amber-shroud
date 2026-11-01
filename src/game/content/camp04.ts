@@ -1432,6 +1432,7 @@ He hunts Sap thieves and unpermitted relic hoarders. You look like both. First m
         show: { flag: 'hungerKnown' },
         tone: 'hunger',
         effects: {
+          wireExit: true,
           startChapter: 'cache-run',
           goto: 'ch1:leave',
           heat: { cartel: 2 },
@@ -1444,6 +1445,7 @@ He hunts Sap thieves and unpermitted relic hoarders. You look like both. First m
         show: { flagUnset: 'hungerKnown' },
         tone: 'danger',
         effects: {
+          wireExit: true,
           flag: { hungerKnown: true, cacheBlind: true },
           startChapter: 'cache-run',
           goto: 'ch1:leave',
@@ -1501,7 +1503,7 @@ You can stay and scrape until the Drop in you burns out. Or take Jaxson's runner
         label: 'Take the Gullet',
         tone: 'hunger',
         show: { flag: 'hungerKnown' },
-        effects: { startChapter: 'cache-run', goto: 'ch1:leave' },
+        effects: { wireExit: true, startChapter: 'cache-run', goto: 'ch1:leave' },
       },
       {
         id: 'blind',
@@ -1509,6 +1511,7 @@ You can stay and scrape until the Drop in you burns out. Or take Jaxson's runner
         tone: 'danger',
         show: { flagUnset: 'hungerKnown' },
         effects: {
+          wireExit: true,
           flag: { hungerKnown: true, cacheBlind: true },
           startChapter: 'cache-run',
           goto: 'ch1:leave',

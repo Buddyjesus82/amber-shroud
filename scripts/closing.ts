@@ -143,7 +143,11 @@ for (const door of DOORS) {
     ok(stay.sceneId === 'camp:yard' && stay.hubId === 'camp04', `prisoner: Stay one more hour returns to the Yard (${stay.sceneId})`)
     const second = applyEffect({ ...stay, sceneId: 'camp:yard' }, { ticks: 1, pressure: 1, goto: 'camp:vents' })
     ok(second.sceneId !== 'camp:forced', `prisoner: forced card is once (${second.sceneId})`)
-    const go = applyEffect(nf, getScene('camp:forced').choices.find((c) => c.id === 'go')!.effects)
+    // v194: the wire needs the guard station dropped first.
+    const goFx = getScene('camp:forced').choices.find((c) => c.id === 'go')!.effects
+    const held = applyEffect(nf, goFx)
+    ok(held.sceneId === 'camp:forced' && !held.chapterId, `prisoner: Take the Gullet holds with the guard up (${held.sceneId})`)
+    const go = applyEffect({ ...nf, flags: { ...nf.flags, guardDown: true } }, goFx)
     ok(go.chapterId === 'cache-run', `prisoner: Take the Gullet starts the run (${go.sceneId})`)
     // Not on a talk scene.
     const talk = applyEffect({ ...f, flags: { ...f.flags, huntQuiet: 0 } }, { ticks: 1, pressure: 1, goto: 'camp:kaelen' })

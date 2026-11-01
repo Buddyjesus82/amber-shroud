@@ -131,6 +131,8 @@ export type Effect = {
   risk?: { oneIn: number; health: number }
   /** v192: a 1-in-oneIn seeded chance of `scrap` more Scrap. The extra shows on its own line. */
   bonusScrap?: { oneIn: number; scrap: number; line: string }
+  /** v194: Prisoner camp wire exit. Needs guardDown; on foot (no striderHot) costs Health 3 and Sap 1 more. */
+  wireExit?: boolean
   sap?: number
   health?: number
   heat?: Partial<Heat>
