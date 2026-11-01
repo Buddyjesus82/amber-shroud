@@ -26,7 +26,7 @@ import { classifyLook, directedLookFlash, pressureLookFlash, roomLookEffect } fr
 import { matchCompass, travelGate } from './map'
 import { isChapterReleased } from './chapters'
 import { chapterTwoAfter, chapterTwoUnlock, isChapterTwoCode } from './ch2'
-import { chapterTwoSummary } from './content/intoTheMaw'
+import { CH2_ENTRY, chapterTwoSummary } from './content/intoTheMaw'
 import { ROAD_NOT_NOW, roadChoice, isTravelText, roadPhrase, roadToMaw, roadHome } from './returnRoad'
 import { CLOSING_PRESSURE, FORCED_PRESSURE, closingNow, homeFaction, restCoolLine, restCools } from './closing'
 import {
@@ -528,9 +528,17 @@ function stubForward(state: GameState, fx: Effect): Effect {
   return { ...fx, goto: CHAPTER_ONE_END }
 }
 
+/** v192: Continue on the End of Chapter One card. */
+function endCardContinue(state: GameState): Effect {
+  const fx: Effect = { goto: CH2_ENTRY, flag: { chapter2Unlocked: true, chapter1Done: true, siphonGot: true } }
+  if (!state.flags.siphonGot) fx.add = { memory_siphon: 1 }
+  return fx
+}
+
 export function applyEffect(state: GameState, fx: Effect): GameState {
   // v186: Chapter Two released, the End card's Continue opens it in place (same as the code on that card).
-  if (state.sceneId === CHAPTER_ONE_END && fx.goto === 'maw:rim' && !state.flags.chapter2Unlocked && isChapterReleased('two')) return applyEffect(state, chapterTwoUnlock())
+  // v192: always, on any save (chapter2Unlocked set or not), straight onto the Approach. The Siphon comes with it if not had yet.
+  if (state.sceneId === CHAPTER_ONE_END && fx.goto === CH2_ENTRY && !fx.flag?.chapter2Unlocked) return applyEffect(state, endCardContinue(state))
   // v188: nothing lands on the old 'Under the Jaw' stub once Chapter Two is out. The way forward is the real road.
   if (fx.goto === 'ch2:stub' && isChapterReleased('two')) return applyEffect(state, stubForward(state, fx))
   if (fx.plate) return platePiece(state, fx.plate)
@@ -572,6 +580,11 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     const { risk, ...rest } = fx
     const hit = hashRoll(state, 'risk') % risk.oneIn === 0
     fx = hit ? { ...rest, health: (rest.health ?? 0) - risk.health, flash: `${rest.flash ?? ''}\n\nHealth -${risk.health}.`.trimStart() } : rest
+  }
+  if (fx.bonusScrap) {
+    const { bonusScrap, ...rest } = fx
+    const hit = hashRoll(state, 'bonusScrap') % bonusScrap.oneIn === 0
+    fx = hit ? { ...rest, add: { ...rest.add, scrap: (rest.add?.scrap ?? 0) + bonusScrap.scrap }, flash: `${rest.flash ?? ''}\n\n${bonusScrap.line}`.trimStart() } : rest
   }
   if (fx.travel) {
     const rest = { ...fx }

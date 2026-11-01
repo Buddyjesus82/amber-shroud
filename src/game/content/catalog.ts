@@ -329,6 +329,13 @@ export const ITEMS: Record<ItemId, ItemDef> = {
     kind: 'key',
     desc: 'A Seeker extractor blade with a glass reservoir in the grip. Kit tool, not bag. Draws memory out of amber husks, resin veins and statues.',
   },
+  // v192: from the rubble on the Stairs. Holds a Drop; passes for a cup at Valerius's test.
+  offering_bowl: {
+    id: 'offering_bowl',
+    name: 'Offering Bowl',
+    kind: 'key',
+    desc: 'An old offering bowl from the rubble on the Stairs. It can hold a Drop.',
+  },
   cartel_transponder: {
     id: 'cartel_transponder',
     name: 'Cartel Transponder Signal',

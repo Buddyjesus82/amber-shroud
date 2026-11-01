@@ -8,8 +8,8 @@ import { effectPills } from '../src/game/kit.ts'
 import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v191'"), 'SW cache v179')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v191'"), 'Build label v179')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v192'"), 'SW cache v179')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v192'"), 'Build label v179')
 const v = chapterTwoFromCode('vessel')
 ok((v.items.memory_siphon ?? 0) === 1 && v.flags.siphonGot, 'code start grants the Siphon')
 const at = (sceneId: string, extra: Partial<GameState> = {}, flags: object = {}): GameState => ({ ...v, sceneId, ...extra, flags: { ...v.flags, ...flags } }) as GameState

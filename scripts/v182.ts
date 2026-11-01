@@ -5,8 +5,8 @@ import { fightStartFlags, resolveEncounter } from '../src/game/encounter.ts'
 import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v191'"), 'SW cache v182')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v191'"), 'Build label v182')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v192'"), 'SW cache v182')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v192'"), 'Build label v182')
 const v = chapterTwoFromCode('vessel')
 const at = (flags: object) => ({ ...v, sceneId: 'ch2:ribs', flags: { ...v.flags, ...flags } }) as GameState
 // 3: text follows the lift

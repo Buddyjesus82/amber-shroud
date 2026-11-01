@@ -941,7 +941,8 @@ Chapter One ends here. Continue to go down into the Maw.`,
         id: 'continue',
         label: 'Continue',
         sub: 'Go down into the Maw.',
-        effects: { goto: 'maw:rim' },
+        // v192: straight onto the Approach on every save (the engine adds the Chapter Two flags and the Siphon).
+        effects: { goto: 'ch2:approach' },
       },
       // v171: the Prisoner's Memory Siphon stash moved here from the Approach.
       { id: 'stash', label: 'Search the stash at the cairn', show: { all: [{ door: 'prisoner' }, { flagUnset: 'siphonGot' }] }, effects: { add: { memory_siphon: 1 }, flag: { siphonGot: true }, flash: SIPHON_PRISONER } },

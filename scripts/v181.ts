@@ -5,8 +5,8 @@ import { playCoverKey, playCoverFile } from '../src/game/art.ts'
 import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v191'"), 'SW cache v181')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v191'"), 'Build label v181')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v192'"), 'SW cache v181')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v192'"), 'Build label v181')
 const v = chapterTwoFromCode('vessel')
 const k = (flags: object) => { const s = { ...v, sceneId: 'ch2:ribs', flags: { ...v.flags, ...flags } } as GameState; return playCoverKey(s, sceneOf(s)) }
 ok(k({ liftDone: true, murchProtected: true, murchShop: 'full' }) === 'ch2_s_ribs_lift', 'Murch ran it: Murch art')
