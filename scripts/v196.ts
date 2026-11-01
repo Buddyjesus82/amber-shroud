@@ -5,8 +5,8 @@ import { canScavenge, canDrawResin, mawSpot, DRAW_RESIN_FLASH } from '../src/gam
 import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v197'"), 'SW cache v196')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v197'"), 'Build label v196')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v198'"), 'SW cache v196')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v198'"), 'Build label v196')
 const MAW = ['ch2:approach', 'ch2:gully', 'ch2:irongut', 'ch2:cache', 'ch2:ribs', 'ch2:vein', 'ch2:p-jaws', 'ch2:p-bays', 'ch2:v-scar', 'ch2:o-wash', 'ch2:o-root', 'ch2:p-sift']
 for (const door of ['prisoner', 'vessel', 'outcast'] as const) {
   let on = 0, tot = 0
@@ -37,7 +37,7 @@ if (spot) {
   const ex = { ...spot, equipped: { ...spot.equipped, weapon: 'seeker_extractor' } } as GameState
   ok(canDrawResin(ex), 'Draw resin with Seeker Extractor')
   const r = drawResin(sip)
-  ok((r.items.scrap ?? 0) === before + 1 && r.sap === 4 && r.flash === DRAW_RESIN_FLASH, `resin: scrap +1, Sap +1 (${r.sap})`)
+  ok((r.items.scrap ?? 0) === before + 1 && (r.items.salve ?? 0) === (sip.items.salve ?? 0) + 1 && r.sap === 3 && r.flash === DRAW_RESIN_FLASH, `resin: Resin +1, scrap +1, no Sap (${r.sap})`)
   ok(!canDrawResin(r), 'once per spot')
 }
 const ch1 = { ...base, sceneId: 'ch1:leave', chapterId: 'cache-run', startedAt: 5 } as GameState

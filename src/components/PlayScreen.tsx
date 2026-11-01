@@ -34,7 +34,7 @@ import { DRILL_LINES } from '../game/content/intoTheMaw'
 import { isMaskedFlash, maskedCoverKey, maskedQuietScene } from '../game/masked'
 import { DISGUISE_SOFTEN_NOTE } from '../game/disguise'
 import { ROADS, shownText } from '../game/roads'
-import { canDrawResin, scavengeLock } from '../game/scavenge'
+import { canDrawResin, DRAW_RESIN_SUB, DRAW_RESIN_SUB_TUNED, scavengeLock } from '../game/scavenge'
 import { RUSH_CHANCE, RUSH_MOVES, RUSH_WINDOW_MS, STALL_BASE, STALL_MAX_S, STALL_MIN_S, STALL_STEP, STALL_TICK_S } from '../game/noticeHeat'
 import { fightLocked, noticeOn, timingNotice } from '../game/engine'
 import { isShopOpen } from '../game/trade'
@@ -266,7 +266,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
       key: 'draw-resin',
       tone: 'quiet',
       label: 'Draw resin',
-      sub: state.flags.siphonTuned ? 'Scrap +1. Sap +2. Once per spot.' : 'Scrap +1. Sap +1. Once per spot.',
+      sub: state.flags.siphonTuned ? DRAW_RESIN_SUB_TUNED : DRAW_RESIN_SUB,
       onClick: () => onChange(drawResin(state)),
     })
   }

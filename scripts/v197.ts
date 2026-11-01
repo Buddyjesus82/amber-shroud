@@ -6,8 +6,8 @@ import { SIPHON_PRISONER, SIPHON_VESSEL, SIPHON_OUTCAST, SIPHON_SLOT_LABEL } fro
 import type { DoorId, GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v197'"), 'SW cache v197')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v197'"), 'Build label v197')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v198'"), 'SW cache v197')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v198'"), 'Build label v197')
 const SPOTS: [DoorId, string, string, string, string, Record<string, unknown>][] = [
   ['prisoner', 'ch1:end', 'stash', SIPHON_PRISONER, 'stash', {}],
   ['vessel', 'ch2:v-outpost', 'locker', SIPHON_VESSEL, 'locker', { chapter1Done: true, chapter2Unlocked: true }],
@@ -41,13 +41,13 @@ for (const [door, sceneId, id, text, where, flags] of SPOTS) {
     }
   }
 }
-// Tuned resin at a Maw spot: Sap +2.
+// Tuned resin at a Maw spot: v198 moved the bonus onto Resin (+2), no Sap.
 const g = newGame('prisoner')
 let spot: GameState | null = null
 for (let i = 0; i < 50 && !spot; i++) { const s = { ...g, startedAt: 1000 + i, sceneId: 'ch2:ribs', hubId: null, sap: 3, items: { ...g.items, memory_siphon: 1 }, flags: { ...g.flags } } as GameState; if (mawSpot(s)) spot = s }
 if (spot) {
-  ok(applyDrawResin(spot).sap === 4, 'plain resin Sap +1')
-  ok(applyDrawResin({ ...spot, flags: { ...spot.flags, siphonTuned: true } }).sap === 5, 'tuned resin Sap +2')
+  ok(applyDrawResin(spot).sap === 3 && (applyDrawResin(spot).items.salve ?? 0) === (spot.items.salve ?? 0) + 1, 'plain resin Resin +1, no Sap')
+  { const t = applyDrawResin({ ...spot, flags: { ...spot.flags, siphonTuned: true } }); ok(t.sap === 3 && (t.items.salve ?? 0) === (spot.items.salve ?? 0) + 2, 'tuned resin Resin +2, no Sap') }
 } else ok(false, 'spot')
 console.log(fails ? `v197: ${fails} fail(s)` : 'v197: ok')
 if (fails) process.exit(1)

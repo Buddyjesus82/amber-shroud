@@ -16,7 +16,7 @@ function ok(cond: unknown, msg: string) {
   }
 }
 const sw = readFileSync('public/sw.js', 'utf8')
-ok(sw.includes("CACHE = 'amber-shroud-v197'"), 'SW cache v151')
+ok(sw.includes("CACHE = 'amber-shroud-v198'"), 'SW cache v151')
 ok(!sw.includes('camp04.jpg'), 'camp04.jpg not precached')
 ok(!readFileSync('src/components/PlayScreen.tsx', 'utf8').includes("playCoverFile('camp04')"), 'failed-image fallback is not camp04')
 ok(playCoverFile('nope' as CoverKey) === 'yard.jpg', 'unknown key falls back to yard.jpg')

@@ -1,5 +1,6 @@
 import { ITEMS } from './content/catalog'
 import { applyDelta } from './logic'
+import { bagCap, bagFits, bagLoad } from './kit'
 import type { Faction, GameState, ItemId } from './types'
 
 const SKIM_SCENES = new Set([
@@ -44,19 +45,26 @@ export function mawSpot(state: GameState): boolean {
   return (h >>> 0) % 100 < MAW_SPOT_PCT
 }
 
-/** v196: Draw resin at a Maw spot. Same as the husk fight: scrap +1, Sap +1. Once per spot. */
+/** v196/v198: Draw resin at a Maw spot. Resin +1 (Resin Salve, Kaelen's heal item), Scrap +1, no Sap. Once per spot.
+ *  v198: the tuned Module's approved Sap Harvest +1 now lands on Resin instead: Resin +2. */
 export function canDrawResin(state: GameState): boolean {
   if (!mawSpot(state) || state.flags[`resin:${state.sceneId}`]) return false
   const extractor = Object.values(state.equipped ?? {}).includes('seeker_extractor')
   return extractor || (state.items.memory_siphon ?? 0) > 0
 }
-export const DRAW_RESIN_FLASH = 'You draw resin from the seam. Scrap +1. Sap +1.'
-export const DRAW_RESIN_FLASH_TUNED = 'You draw resin from the seam. Scrap +1. Sap +2.'
+export const DRAW_RESIN_FLASH = 'You draw resin from the seam. Resin +1. Scrap +1.'
+export const DRAW_RESIN_FLASH_TUNED = 'You draw resin from the seam. Resin +2. Scrap +1.'
+export const DRAW_RESIN_SUB = 'Resin +1. Scrap +1. Once per spot.'
+export const DRAW_RESIN_SUB_TUNED = 'Resin +2. Scrap +1. Once per spot.'
 export function applyDrawResin(state: GameState): GameState {
   if (!canDrawResin(state)) return state
-  const tuned = !!state.flags.siphonTuned
-  const next = applyDelta(state, { add: { scrap: 1 }, sap: tuned ? 2 : 1, ticks: 1, flag: { [`resin:${state.sceneId}`]: true } })
-  next.flash = tuned ? DRAW_RESIN_FLASH_TUNED : DRAW_RESIN_FLASH
+  const resin = state.flags.siphonTuned ? 2 : 1
+  const fits = bagFits(state, { salve: resin, scrap: 1 })
+  const add: Partial<Record<ItemId, number>> = fits ? { salve: resin, scrap: 1 } : { scrap: 1 }
+  const next = applyDelta(state, { add, ticks: 1, flag: { [`resin:${state.sceneId}`]: true } })
+  next.flash = fits
+    ? resin === 2 ? DRAW_RESIN_FLASH_TUNED : DRAW_RESIN_FLASH
+    : `You draw resin from the seam. Scrap +1. Bag full (${bagLoad(state)}/${bagCap(state)} slots). Drop something to free a slot.`
   next.sceneId = state.sceneId
   next.hubId = state.hubId
   return next
