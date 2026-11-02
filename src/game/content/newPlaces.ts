@@ -178,6 +178,8 @@ export const newPlaceScenes: Scene[] = [
     title: 'The Shattered Spine',
     body: 'The Shattered Spine. The ruin you pulled yourself out of. Vertebrae lie scattered in the sand.',
     choices: [
+      // v205: Sable Varn in the trench. Refuse her once and the node locks.
+      { id: 'sable', label: 'Sable Varn', show: { all: [{ flagUnset: 'sableRefused' }, { flagUnset: 'sableWon' }, { flagUnset: 'companionLost_sable' }] }, effects: { goto: 'spine:sable' } },
       { id: 'ossuary', label: 'The Ossuary', sub: '1 Sap.', effects: { ...sapRoad(1), goto: 'spine:ossuary' } },
       { id: 'ridge', label: 'Noon Spine', sub: '1 Sap.', tone: 'quiet', effects: { ...sapRoad(1), goto: 'spine:ridge' } },
     ],

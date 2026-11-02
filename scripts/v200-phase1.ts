@@ -27,7 +27,7 @@ const b = pick(p, 'bribe_foreman'); ok(b.sceneId === 'camp:log-deck' && b.sap ==
 ok(getScene('camp:sift-gate').choices!.find((c) => c.id === 'steal_manifest')!.effects.sneak?.kind === 'patrol', 'steal_manifest sneak, patrol fight')
 const v = pick(pick(p, 'vents'), 'crawl_vents'); ok(v.sceneId === 'camp:bay' && v.health === 4, 'crawl_vents Health 2, to Skiff Bay')
 const d = pick(b, 'skiffbay'); ok(d.sceneId === 'camp:bay' && d.sap === 5, 'deck -> Skiff Bay 1 Sap')
-ok(ids(b).sort().join() === 'back,skiffbay', 'deck: no special actions')
+ok(ids(b).sort().join() === 'back,orla,skiffbay', 'deck: only the v205 Orla recruit added')
 const passed = pick({ ...p, items: { ...p.items, cartel_pass: 1 } }, 'pass'); ok(passed.sceneId === 'camp:log-deck' && passed.sap === 7, 'pass: free entry')
 // Outcast: Dry Well -> Dust-Eye -> Hound Sign
 let o = pick(at('outcast', 'spine:well', { hubId: 'spine' }), 'dusteye'); ok(o.sceneId === 'spine:dugouts' && o.sap === 7, 'well -> dugouts 1 Sap')

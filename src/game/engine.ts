@@ -1,3 +1,4 @@
+import { companionOf, keltStep, LINES as PARTY_LINES, recruitFx, sneakOdds } from './companions'
 import { STAIRS, STAIRS_CLEARED, STAIRS_TO } from './content/crucible'
 import { hash as hashRoll } from './fightTricks'
 import { isMaskedBlock, MASKED_BLOCK_LINE, maskedBody, maskedChoices, maskedPass, maskedPickup } from './masked'
@@ -582,6 +583,11 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     delete rest.payGlintRemove
     fx = { ...rest, remove }
   }
+  // v205: a recruit folds the join (and any swap) into the choice's own effect.
+  if (fx.recruit) {
+    const { recruit, recruitHp, ...rest } = fx
+    fx = recruitFx(state, recruit, rest, recruitHp)
+  }
   // v155: once the rubble stair is cleared, the way goes straight to Thalia.
   if (fx.goto === STAIRS && state.flags[STAIRS_CLEARED]) fx = { ...fx, goto: 'thresh:crucible-stairs' }
   // v156: the Court's 'Climb the dais' takes the same rubble stair first, then her dais scene.
@@ -910,9 +916,14 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
       next.flash = fx.ambush.line
       // v203: Rig Guards after the Foreman: Overtime, on its own line.
       if (fx.ambush.kind === 'rigguard' && next.flags.foremanFought) next.flash = `${next.flash}\n\n${OVERTIME_LINE}`
-    } else if (fx.sneak && sneakSpotted(next, fx.sneak.odds)) {
+    } else if (fx.sneak && sneakSpotted(next, sneakOdds(state, fx.sneak))) {
       next.flags = { ...next.flags, ...fightStartFlags(next, fx.sneak.kind as EncounterKind) }
       next.flash = fx.sneak.spotted
+      // v205: Sable Varn's Heat Affinity. A spotted sneak draws more eyes.
+      if (companionOf(state)?.id === 'sable') {
+        next.heat = { ...next.heat, strays: next.heat.strays + 1, seekers: next.heat.seekers + 1 }
+        next.flash = `${next.flash}\n\n${PARTY_LINES.sableHeat}`
+      }
       // v200: a spotted sneak keeps nothing it would have taken.
       if (fx.sneak.forfeit) {
         const items = { ...next.items }
@@ -1248,6 +1259,8 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     for (const k of ['gatePaid', 'gateTicks', 'gateSteps', 'gateRested']) delete flags[k]
     next.flags = flags
   }
+  // v205: Kelt's Runner's timer ticks on every scene change.
+  next = keltStep(state, next)
   next = closingBeats(next, fx, !!dest)
   // The masked figure: a sighting on a new scene, or a hunt he stops.
   next = maskedPass(state, next, fx)
@@ -2193,7 +2206,14 @@ function noEscapeAfterChapterOne(state: GameState, rows: Choice[]): Choice[] {
 }
 
 export function visibleChoices(state: GameState): Choice[] {
-  return noEscapeAfterChapterOne(state, visibleChoicesRaw(state))
+  return partySwap(state, noEscapeAfterChapterOne(state, visibleChoicesRaw(state)))
+}
+
+/** v205: one party slot. A recruit row says who it swaps out. */
+function partySwap(state: GameState, rows: Choice[]): Choice[] {
+  const mate = companionOf(state)
+  if (!mate) return rows
+  return rows.map((c) => (c.effects.recruit && c.effects.recruit !== mate.id ? { ...c, sub: [c.sub, PARTY_LINES.swaps(mate.name)].filter(Boolean).join(' ') } : c))
 }
 
 function visibleChoicesRaw(state: GameState): Choice[] {

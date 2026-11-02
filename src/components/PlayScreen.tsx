@@ -1,3 +1,4 @@
+import { PartyCard } from './PartyCard'
 import { CRUCIBLE_SCENES, STAIRS } from '../game/content/crucible'
 import { typedHints } from '../game/politeAsk'
 import { Fragment, useEffect, useRef, useState, type CSSProperties } from 'react'
@@ -524,6 +525,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
             </button>
           ) : null}
         </div>
+        <PartyCard state={state} onOpen={() => setKit(true)} />
         <div className="place-line">
           <strong>{held ? held.title : placeTitle}</strong>
           <span className="place-meta">

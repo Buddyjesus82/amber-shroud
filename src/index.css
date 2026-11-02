@@ -2307,3 +2307,12 @@ h2 {
   animation: none;
   transform: none;
 }
+
+/* v205: the party slot */
+.party-card { display: flex; align-items: center; gap: 8px; margin: 6px 0 2px; padding: 4px 8px 4px 4px; border: 1px solid rgba(224, 160, 80, 0.35); border-radius: 8px; background: rgba(30, 18, 8, 0.55); cursor: pointer; }
+.party-card.party-full { cursor: default; margin: 8px 0; }
+.party-portrait { width: 36px; height: 36px; border-radius: 6px; object-fit: cover; flex: none; }
+.party-full .party-portrait { width: 3.5rem; height: 3.5rem; }
+.party-body { display: flex; flex-direction: column; gap: 2px; font-size: 0.82rem; line-height: 1.2; }
+.party-stats { opacity: 0.85; }
+.party-ask { display: flex; gap: 12px; }

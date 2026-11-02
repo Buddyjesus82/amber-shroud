@@ -8,8 +8,8 @@ import type { DoorId, GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 const sw = readFileSync('public/sw.js', 'utf8')
-ok(sw.includes("CACHE = 'amber-shroud-v204'"), 'SW cache v199')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v204'"), 'Build v199')
+ok(sw.includes("CACHE = 'amber-shroud-v205'"), 'SW cache v199')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v205'"), 'Build v199')
 const at = (door: DoorId, sceneId: string, extra: Partial<GameState> = {}, flags: Record<string, unknown> = {}): GameState => {
   const g = newGame(door)
   return { ...g, sceneId, sap: 9, health: 6, ...extra, flags: { ...g.flags, noMasked: true, ...flags } } as GameState
