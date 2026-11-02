@@ -34,7 +34,7 @@ import { isPressureOverlay, pressureFace } from '../game/hunter'
 import { DRILL_LINES } from '../game/content/intoTheMaw'
 import { isMaskedFlash, maskedCoverKey, maskedQuietScene } from '../game/masked'
 import { DISGUISE_SOFTEN_NOTE } from '../game/disguise'
-import { ROADS, shownText } from '../game/roads'
+import { kaelenNamed, ROADS, shownText } from '../game/roads'
 import { canDrawResin, DRAW_RESIN_SUB, DRAW_RESIN_SUB_TUNED, scavengeLock } from '../game/scavenge'
 import { RUSH_CHANCE, RUSH_MOVES, RUSH_WINDOW_MS, STALL_BASE, STALL_MAX_S, STALL_MIN_S, STALL_STEP, STALL_TICK_S } from '../game/noticeHeat'
 import { fightLocked, noticeOn, timingNotice } from '../game/engine'
@@ -637,7 +637,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
                   ? 'on'
                   : overlay
                     ? 'talk / fight / bribe / run'
-                    : `look / talk / fight / bribe / help / who is ${state.door === 'outcast' ? 'silas' : state.door === 'vessel' ? 'oram' : state.flags.kaelenKnown ? 'kaelen' : 'valerius'}`
+                    : `look / talk / fight / bribe / help / who is ${state.door === 'outcast' ? 'silas' : state.door === 'vessel' ? 'oram' : kaelenNamed(state.flags) ? 'kaelen' : 'valerius'}`
               }
               enterKeyHint="go"
               autoComplete="off"

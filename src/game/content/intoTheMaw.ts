@@ -72,11 +72,16 @@ const abyssClear: Cond = { any: [{ flag: 'ch2Won_valerius' }, { flag: 'ribsColla
 const knot: Cond = { equipped: 'ossa_token' }
 const weapon: Cond = { slot: 'weapon' }
 const vesselGarb: Cond = { any: [{ equipped: 'ceremonial_cloth' }, { flag: 'fakeVessel' }] }
-const reckonDue: Cond = { all: [{ flagUnset: 'reckoningDone' }, { any: [{ heatMin: ['cartel', 5] }, { flag: 'millerHeard' }] }] }
+const reckonDue: Cond = { all: [{ flagUnset: 'reckoningDone' }, { flagUnset: 'gullyBypass' }, { any: [{ heatMin: ['cartel', 5] }, { flag: 'millerHeard' }] }] }
 const outcastReckonDue: Cond = { all: [{ flagUnset: 'reckoningDone' }, { flagUnset: 'bountyFooled' }, { flagUnset: 'bountyBroken' }] }
 const stairGreg: Cond = { all: [{ flag: 'gregSold' }, { flagUnset: 'stairGregDone' }] }
 const blown: Cond = { flag: 'coverBlown' }
 const unblown: Cond = { flagUnset: 'coverBlown' }
+
+/** v207 NEW: the Shaft Foot once Valerius is down. */
+export const SHAFT_FOOT_CLEAR = 'Valerius is down. The Shaft Foot is quiet.'
+/** v207: the ribs way down: the Spire Key, BLEED-CORE, Thalia's Clearance or Kaelen's Shim. */
+const RIBS_WAY: Cond = { any: [VEIN_KEY, { item: 'spire_key' }, { flag: 'bleedCore' }, { flag: 'airlockFreq' }] }
 
 /** The Valerius foot of each route. Win the fight, or bring the ribs down with the Key, then on into the Abyssal Ribs. */
 function abyssChoices(collapseLabel: string): Choice[] {
@@ -288,7 +293,8 @@ Vex looks at the tags on you, then at your shaved head. 'Pens. They tagged me to
     title: 'The Shaft Foot',
     body: "'My stock. My runaway stock.'",
     variants: [
-      { if: { flag: 'overseerChip' }, mode: 'append', body: "His hand goes to the chipped baton. 'You marked it. At the camp. I remember the sound.'" },
+      { if: abyssClear, body: SHAFT_FOOT_CLEAR },
+      { if: { all: [{ flag: 'overseerChip' }, { not: abyssClear }] }, mode: 'append', body: "His hand goes to the chipped baton. 'You marked it. At the camp. I remember the sound.'" },
     ],
     choices: [...abyssChoices('Collapse the shaft with the Key'), rig04Entry({ flag: 'drillPast' })],
   },
@@ -395,6 +401,8 @@ Vex stares at the cup on your belt. 'They hung one of those on me once. I think.
       { id: 'rite', label: 'Free him by rite', sub: 'Seeker Heat +1. The keeper may doubt you.', tone: 'danger', show: { all: [{ flagUnset: 'vexFreed' }, { heatMin: ['seekers', 3] }, { heatMax: ['seekers', 4] }] }, enable: { flag: 'cupPassed' }, locked: 'Needs: the cup test passed', effects: { heat: { seekers: 1 }, flag: { vexFreed: true, vexLeft: false, ch2RiteRoll: true } } },
       { id: 'rite', label: 'Free him by rite', sub: 'Your cover will not hold.', tone: 'danger', show: { all: [{ flagUnset: 'vexFreed' }, { heatMin: ['seekers', 5] }] }, enable: { flag: 'cupPassed' }, locked: 'Needs: the cup test passed', effects: { flag: { vexFreed: true, vexLeft: false, coverBlown: true }, flash: `${TOO_MANY_LAMPS}\n\n${RITE_FAIL}` } },
       { id: 'force', label: 'Free him by force', sub: 'Your cover blows. Seeker Heat +2.', tone: 'danger', show: { all: [{ flagUnset: 'vexFreed' }] }, enable: weapon, locked: 'Needs: a weapon', effects: { heat: { seekers: 2 }, flag: { vexFreed: true, vexLeft: false, coverBlown: true }, flash: 'The tube comes out. The cups stop filling. Somebody will notice.' } },
+      // v207: no lamps to fool and no weapon: the tube comes out by hand, and it costs blood. Seeker Heat does not gate it.
+      { id: 'hand', label: 'Free him by hand', sub: 'Health −2. Your cover blows. Seeker Heat +2.', tone: 'danger', show: { all: [{ flagUnset: 'vexFreed' }, { not: weapon }] }, enable: { healthMin: 3 }, locked: 'Needs: 3 Health', effects: { health: -2, heat: { seekers: 2 }, flag: { vexFreed: true, vexLeft: false, coverBlown: true }, flash: 'The tube comes out. The cups stop filling. Somebody will notice.' } },
       { id: 'leave', label: 'Leave him filling', tone: 'quiet', show: { flagUnset: 'vexFreed' }, effects: { flag: { vexLeft: true }, goto: 'ch2:v-outpost' } },
       { id: 'gate', label: 'The back gate', show: { all: [{ flag: 'vexFreed' }, unblown, { flagUnset: 'gregDealt' }, { flagUnset: 'gregSold' }] }, effects: { goto: 'ch2:v-greg' } },
       { id: 'smuggle', label: "Smuggler's Run", sub: '1 Sap.', tone: 'danger', show: { all: [{ flag: 'vexFreed' }, blown, { flagUnset: 'drillPast' }] }, enable: { sapMin: 2 }, locked: 'Needs: 2 Sap', effects: { sap: -1, flag: { drillPast: true }, goto: 'ch2:v-ribs' } },
@@ -696,7 +704,9 @@ Above you, Sybella's drill-rigs are breaking through. Every bite shakes grit dow
       { if: vexPending, mode: 'append', body: "Vex has stopped walking. A raw Amber vein runs through the rib beside him, and he stares into it like it's calling him. 'It's in there. Who I was.'" },
     ],
     choices: [
-      { id: 'scrap', label: 'Give Murch 3 scrap', sub: 'The lift runs. Murch keeps his kit.', show: { all: [{ flagUnset: 'liftDone' }, { flag: 'murchProtected' }] }, enable: { itemMin: ['scrap', 3] }, locked: 'Needs: 3 scrap', effects: { remove: { scrap: 3 }, flag: { liftDone: true, murchShop: 'full' }, flash: "He takes the scrap without looking. Three turns of the spanner and the platform shudders awake. 'Runs. It runs. Get on before it remembers it's dead.'" } },
+      { id: 'scrap', label: 'Give Murch 3 scrap', sub: 'The lift runs. Murch keeps his kit.', show: { all: [{ flagUnset: 'liftDone' }, { flag: 'murchProtected' }, { flagUnset: 'murchScrap' }] }, enable: { itemMin: ['scrap', 3] }, locked: 'Needs: 3 scrap', effects: { remove: { scrap: 3 }, flag: { liftDone: true, murchShop: 'full' }, flash: "He takes the scrap without looking. Three turns of the spanner and the platform shudders awake. 'Runs. It runs. Get on before it remembers it's dead.'" } },
+      // v207: Murch was paid once already (the lift motor, or the scrap on the stone). He does not charge twice.
+      { id: 'scrap', label: 'Let Murch run the lift', sub: 'Already paid. Murch keeps his kit.', show: { all: [{ flagUnset: 'liftDone' }, { flag: 'murchProtected' }, { flag: 'murchScrap' }] }, effects: { flag: { liftDone: true, murchShop: 'full' }, flash: "Three turns of the spanner and the platform shudders awake. 'Runs. It runs. Get on before it remembers it's dead.'" } },
       { id: 'force', label: 'Force the gear by hand', sub: 'Sap −1. Health −1.', tone: 'danger', show: { flagUnset: 'liftDone' }, enable: { sapMin: 2 }, locked: 'Need Sap to spare.', effects: { sap: -1, health: -1, flag: { liftDone: true }, flash: 'You put your whole back into the crank. Something in your shoulder gives before the gear does. Then the gear gives.' } },
       { id: 'ladder', label: 'Take the emergency ladder', sub: 'Murch dumps his tool-rig to climb down.', tone: 'quiet', show: { all: [{ flagUnset: 'liftDone' }, { flag: 'murchProtected' }] }, effects: { flag: { liftDone: true, liftLadder: true, murchShop: 'stripped' }, flash: "Murch heaves his tool-rig down the shaft so you can climb down. It hits bottom a long time later. 'That was everything,' he says. 'That was my whole shop.'" } },
       { id: 'ladder', label: 'Take the emergency ladder', tone: 'quiet', show: { all: [{ flagUnset: 'liftDone' }, { flagUnset: 'murchProtected' }] }, effects: { flag: { liftDone: true, liftLadder: true }, flash: 'Rung by rung, down the side of the rib. Some rungs hold.' } },
@@ -704,12 +714,12 @@ Above you, Sybella's drill-rigs are breaking through. Every bite shakes grit dow
       { id: 'allow', label: 'Let him touch the vein', tone: 'danger', show: vexPending, effects: { flag: { vexFate: 'burn', bleedCore: true }, flash: "Vex puts both hands on the vein. The light goes into him and something goes out. When he turns, he doesn't know your face. He knows one thing. 'BLEED-CORE,' he says. 'Tell the airlock BLEED-CORE. It shuts behind you. It shuts on her.'" } },
       { id: 'siphon', label: 'Siphon the vein first', sub: 'Memory Siphon. Seeker Heat +1.', tone: 'danger', show: vexPending, enable: { item: 'memory_siphon' }, locked: 'Needs: the Memory Siphon', effects: { add: { deep_memory_pearl: 1 }, heat: { seekers: 1 }, flag: { vexFate: 'siphoned', veinSiphoned: true }, flash: "You set the Siphon in the vein before he can touch it. The reservoir fills gold. The archway above you cracks down its length. Vex makes a sound like you took something from him. You did. He won't get it back now.\n\nSomewhere above, a Seeker lamp turns your way." } },
       { id: 'vein', label: 'Siphon the vein', sub: 'Memory Siphon. Seeker Heat +1.', show: { all: [{ not: vexPending }, { item: 'memory_siphon' }] }, enable: { flagUnset: 'veinSiphoned' }, locked: 'The vein is already dry.', effects: { add: { deep_memory_pearl: 1 }, heat: { seekers: 1 }, flag: { veinSiphoned: true }, flash: 'The reservoir fills gold. Images that are not yours. Somewhere above, a Seeker lamp turns your way.' } },
-      { id: 'ride', label: 'Descend the lift', tone: 'hunger', show: { all: [{ flag: 'liftDone' }, { flagUnset: 'liftLadder' }, VEIN_KEY] }, enable: { not: vexPending }, locked: VEX_FIRST, effects: { goto: 'ch2:vein', flash: RIBS_CLIMAX } },
-      { id: 'climb', label: 'Climb down', tone: 'hunger', show: { all: [{ flag: 'liftLadder' }, VEIN_KEY] }, enable: { not: vexPending }, locked: VEX_FIRST, effects: { goto: 'ch2:vein', flash: RIBS_CLIMAX_LADDER } },
-      { id: 'ride-sealed', label: 'Descend the lift', tone: 'hunger', show: { all: [{ flag: 'liftDone' }, { flagUnset: 'liftLadder' }, { not: VEIN_KEY }, { door: 'prisoner' }] }, enable: { not: vexPending }, locked: VEX_FIRST, effects: { goto: 'ch2:trapped', flash: VEIN_LOCKED } },
-      { id: 'ride-sealed-x', label: 'Descend the lift', tone: 'hunger', show: { all: [{ flag: 'liftDone' }, { flagUnset: 'liftLadder' }, { not: VEIN_KEY }, { not: { door: 'prisoner' } }] }, enable: { not: vexPending }, locked: VEX_FIRST, effects: { goto: 'ch2:trapped', flash: VEIN_LOCKED_NO_SHIM } },
-      { id: 'climb-sealed', label: 'Climb down', tone: 'hunger', show: { all: [{ flag: 'liftLadder' }, { not: VEIN_KEY }, { door: 'prisoner' }] }, enable: { not: vexPending }, locked: VEX_FIRST, effects: { goto: 'ch2:trapped', flash: VEIN_LOCKED } },
-      { id: 'climb-sealed-x', label: 'Climb down', tone: 'hunger', show: { all: [{ flag: 'liftLadder' }, { not: VEIN_KEY }, { not: { door: 'prisoner' } }] }, enable: { not: vexPending }, locked: VEX_FIRST, effects: { goto: 'ch2:trapped', flash: VEIN_LOCKED_NO_SHIM } },
+      { id: 'ride', label: 'Descend the lift', tone: 'hunger', show: { all: [{ flag: 'liftDone' }, { flagUnset: 'liftLadder' }, RIBS_WAY] }, enable: { not: vexPending }, locked: VEX_FIRST, effects: { goto: 'ch2:vein', flash: RIBS_CLIMAX } },
+      { id: 'climb', label: 'Climb down', tone: 'hunger', show: { all: [{ flag: 'liftLadder' }, RIBS_WAY] }, enable: { not: vexPending }, locked: VEX_FIRST, effects: { goto: 'ch2:vein', flash: RIBS_CLIMAX_LADDER } },
+      { id: 'ride-sealed', label: 'Descend the lift', tone: 'hunger', show: { all: [{ flag: 'liftDone' }, { flagUnset: 'liftLadder' }, { not: RIBS_WAY }, { door: 'prisoner' }] }, enable: { not: vexPending }, locked: VEX_FIRST, effects: { goto: 'ch2:trapped', flash: VEIN_LOCKED } },
+      { id: 'ride-sealed-x', label: 'Descend the lift', tone: 'hunger', show: { all: [{ flag: 'liftDone' }, { flagUnset: 'liftLadder' }, { not: RIBS_WAY }, { not: { door: 'prisoner' } }] }, enable: { not: vexPending }, locked: VEX_FIRST, effects: { goto: 'ch2:trapped', flash: VEIN_LOCKED_NO_SHIM } },
+      { id: 'climb-sealed', label: 'Climb down', tone: 'hunger', show: { all: [{ flag: 'liftLadder' }, { not: RIBS_WAY }, { door: 'prisoner' }] }, enable: { not: vexPending }, locked: VEX_FIRST, effects: { goto: 'ch2:trapped', flash: VEIN_LOCKED } },
+      { id: 'climb-sealed-x', label: 'Climb down', tone: 'hunger', show: { all: [{ flag: 'liftLadder' }, { not: RIBS_WAY }, { not: { door: 'prisoner' } }] }, enable: { not: vexPending }, locked: VEX_FIRST, effects: { goto: 'ch2:trapped', flash: VEIN_LOCKED_NO_SHIM } },
     ],
     intents: [
       { tags: LIFT_DO, show: { all: [{ flagUnset: 'liftDone' }, HEAVY_TOOL] }, reply: 'You jam it into the gear teeth and lean. The housing groans, then turns. No blood this time.', effects: { flag: { liftDone: true } } },
@@ -726,7 +736,9 @@ Above you, Sybella's drill-rigs are breaking through. Every bite shakes grit dow
       { id: 'key', label: 'Set the Spire Key to the vein', tone: 'hunger', show: { item: 'spire_key' }, effects: { goto: 'ch2:heart', flash: 'The Key finds the pitch. The airlock opens.' } },
       { id: 'code', label: 'Speak BLEED-CORE', tone: 'hunger', show: { all: [{ not: { item: 'spire_key' } }, { any: [{ flag: 'bleedCore' }, { flag: 'airlockFreq' }] }] }, effects: { flag: { airlockSealed: true }, goto: 'ch2:heart', flash: 'The airlock takes the code, opens, and slams shut behind you. Through the bone, a drill stalls against the seal.' } },
       { id: 'seal', label: 'Speak BLEED-CORE behind you', show: { all: [{ item: 'spire_key' }, { flag: 'bleedCore' }, { flagUnset: 'airlockSealed' }] }, effects: { flag: { airlockSealed: true }, flash: "You say it to the bone. The airlock hums lower. Whatever comes down after you will find it shut." } },
-      { id: 'sealed', label: 'Try the lock', tone: 'quiet', show: { all: [{ not: { item: 'spire_key' } }, { flagUnset: 'bleedCore' }, { flagUnset: 'airlockFreq' }] }, effects: { goto: 'ch2:trapped', flash: VEIN_SHUT } },
+      { id: 'bargain', label: "Present Thalia's Clearance", sub: "Thalia's Bargain.", tone: 'hunger', show: { all: [{ not: { item: 'spire_key' } }, { flagUnset: 'bleedCore' }, { flagUnset: 'airlockFreq' }, { flag: 'hasBargainFlag' }] }, effects: { goto: 'ch2:heart' } },
+      { id: 'shim', label: 'Bypass Lock with Wire-Cutter Shim', sub: 'Wire-Cutter Shim.', tone: 'hunger', show: { all: [{ not: { item: 'spire_key' } }, { flagUnset: 'bleedCore' }, { flagUnset: 'airlockFreq' }, { flagUnset: 'hasBargainFlag' }, { item: 'wire_cutter_shim' }] }, effects: { goto: 'ch2:heart' } },
+      { id: 'sealed', label: 'Try the lock', tone: 'quiet', show: { all: [{ not: { item: 'spire_key' } }, { flagUnset: 'bleedCore' }, { flagUnset: 'airlockFreq' }, { flagUnset: 'hasBargainFlag' }, { not: { item: 'wire_cutter_shim' } }] }, effects: { goto: 'ch2:trapped', flash: VEIN_SHUT } },
     ],
   },
   {

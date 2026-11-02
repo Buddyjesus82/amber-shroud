@@ -17,6 +17,8 @@ export type StockOffer = {
   extraRemove?: Partial<Record<ItemId, number>>
   flash: string
   tags: string[]
+  /** v207: hidden while you already carry the item. */
+  unlessHeld?: boolean
   /** Only sold in these doors. */
   doors?: DoorId[]
   /** Sells out after n buys on one visit (the counter flag clears when you walk off). */
@@ -103,6 +105,20 @@ const AUTH_PRODUCT = new Set([
 ])
 
 const KAELEN_STOCK: StockOffer[] = [
+  // v207: the Prisoner who did Jaxson's job never got the grate shim. Kaelen sells one, once.
+  {
+    id: 'shim',
+    item: 'wire_cutter_shim',
+    label: 'Buy a Wire-Cutter Shim — four scrap',
+    sub: 'Key item. Opens the vein airlock under the Abyssal Ribs.',
+    cost: { scrap: 4 },
+    doors: ['prisoner'],
+    unlessHeld: true,
+    onceFlag: 'kaelenSoldShim',
+    extraFlag: { kaelenSoldShim: true },
+    flash: '"Filed it for the perimeter wire. It opens worse than wire."',
+    tags: ['shim', 'wire', 'cutter', 'lock'],
+  },
   {
     id: 'hauler',
     item: 'hauler_pack',
@@ -324,7 +340,7 @@ export function kaelenOffers(state: GameState): StockOffer[] {
   const tone = KNIFE_TONE[hub] ?? KNIFE_TONE.camp04
   rows.push({ ...kaelenPiece('knife'), sub: tone.sub, flash: tone.flash })
   // Hauler Pack and Vessel Cloth: Prisoner door only. Kaelen is a cameo in the other doors.
-  if (state.door === 'prisoner') rows.push(kaelenPiece('hauler'), kaelenPiece('cloth'))
+  if (state.door === 'prisoner') rows.push(kaelenPiece('hauler'), kaelenPiece('cloth'), kaelenPiece('shim'))
   return rows
 }
 
@@ -344,7 +360,7 @@ export function kaelenBuyFlash(state: GameState): string {
 
 export function offersFor(state: GameState, vendor: Vendor): StockOffer[] {
   const all = vendor.id === 'kaelen' ? kaelenOffers(state) : vendor.stock
-  return all.filter((o) => !o.doors || o.doors.includes(state.door)).map((o) => {
+  return all.filter((o) => (!o.doors || o.doors.includes(state.door)) && !(o.unlessHeld && (state.items[o.item] ?? 0) > 0)).map((o) => {
     const cost = seekerMarkup(state, o.cost)
     return cost === o.cost ? o : { ...o, cost, sub: [o.sub, SEEKER_MARKUP_NOTE].filter(Boolean).join('\n') }
   })

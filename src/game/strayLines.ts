@@ -4,7 +4,7 @@ export const STRAY_ARRIVAL_LINE = 'Someone is reading your trail. A stake stands
 export const STRAY_HOUND_LINE = "A Stray steps off the ridge with a shard-hound at heel. The hound's spine glitters. It already has your scent."
 export const STRAY_OUTCAST_LINE = '"Your kind let you walk out. They never said you could walk far."'
 // Pending approval: result lines for the three buttons.
-export const STRAY_CUT_SUB = 'Costs 1 Sap. A chance to lose them.'
+export const STRAY_CUT_SUB = 'Costs 1 Sap. You lose them.'
 export const STRAY_CUT_LINE = 'You cut your trail across hard grit. When you look back, the stake is alone.'
 export const STRAY_CUT_FAIL_LINE = 'The cord on the stake twitches. They are still on your trail.'
 export const STRAY_FEED_SUB = 'Costs a Drop. The hound loses interest.'

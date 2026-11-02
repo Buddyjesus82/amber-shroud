@@ -2741,7 +2741,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v205'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v207'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(!sw.includes('covers/camp04.jpg') && sw.includes('covers/yard.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -5239,7 +5239,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   const base = { ...newGame(door), sceneId, hubId, pressure: 9, ticks: 13, heat: { cartel: 6, seekers: 6, strays: 6 }, flags: { kaelenPassing: true, huntQuiet: 9 } } as unknown as GameState
   const rows = GE.visibleChoices(base)
   assert(rows.some((c) => c.id === 'kaelen-rumors' && c.label === 'Ask the trader about rumors'), `${door} ${sceneId}: unnamed trader rumors button`)
-  const named = GE.visibleChoices({ ...base, flags: { ...base.flags, kaelenKnown: true } })
+  const named = GE.visibleChoices({ ...base, flags: { ...base.flags, kaelenKnown: true, kaelenIntroSeen: true } })
   assert(named.some((c) => c.label === 'Ask Kaelen about rumors'), `${door} ${sceneId}: named Kaelen rumors button`)
   for (const typed of ['ask about rumors', 'ask kaelen about rumors', 'trade with the trader']) {
     const n = GE.interpret(base, typed)
@@ -5909,7 +5909,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
     assert(GE.bodyOf(n).includes(GE.KAELEN_INTRO) && !named(n), `v115: ${door} roadside rumors open on the intro, headed "the trader"`)
   }
   const ps = readFileSync('src/components/PlayScreen.tsx', 'utf8')
-  assert(ps.includes("state.flags.kaelenKnown ? 'kaelen' : 'valerius'"), 'v115: the Do placeholder does not name Kaelen early')
+  assert(ps.includes("kaelenNamed(state.flags) ? 'kaelen' : 'valerius'"), 'v115: the Do placeholder does not name Kaelen early')
   // 7. Kaelen's pass rows stay where he stopped.
   {
     const v = newGame('vessel')
@@ -6591,7 +6591,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
     }
     assert(k.heat.strays === 4 && String(k.flash).split('\n').includes(SH.STRAY_KILL_LINE), `v127: killing one is Stray Heat +1 (${k.heat.strays}, ${k.flash})`)
   }
-  // Cut your trail: either loses them or opens the fight.
+  // Cut your trail: v207, it always loses them. No fight.
   let lost = 0, caught = 0
   for (let t = 0; t < 40; t++) {
     const { next } = onRoad('outcast', 3, 6, t * 3)
@@ -6600,7 +6600,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
     if (n.flags.encounterHere) caught++
     else if (!n.flags.strayHunterHere && n.flash === SH.STRAY_CUT_LINE) lost++
   }
-  assert(lost > 0 && caught > 0, `v127: cutting the trail can lose them or not (${lost}/${caught})`)
+  assert(lost > 0 && caught === 0, `v207: cutting the trail always loses them (${lost}/${caught})`)
   console.log('v127 checks OK')
 }
 

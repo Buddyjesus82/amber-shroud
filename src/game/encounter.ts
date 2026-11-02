@@ -543,12 +543,16 @@ function openerOf(state: GameState, spec: Spec): string {
 }
 
 /** Encounter interrupt body only — never the place underneath. */
+/** v207 NEW: an unarmed, badly hurt runner is told before the fight. */
+export const UNARMED_LOW_WARN = 'No weapon in hand, and Health is low. Equip one in Gear before you walk into a fight.'
+
 export function encounterCard(state: GameState): string {
   const clashText = state.flags.encounterClash
   if (typeof clashText === 'string' && clashText) return clashText
   const c = clashOf(state)
   const compares = compareLines(state, c)
-  const head = `${openerOf(state, c.spec)}\n\n${terrainOf(state).line}`
+  const warn = !state.equipped?.weapon && (state.health ?? HEALTH_MAX) <= 2 ? `${UNARMED_LOW_WARN}\n\n` : ''
+  const head = `${warn}${openerOf(state, c.spec)}\n\n${terrainOf(state).line}`
   // Stat rows sit at the top of the card.
   if (!state.flags.fightTaught) {
     return `${compares}\n\n${head}\n\n${state.flags.encounterNoSkip ? TEACH_NO_SKIP : TEACH}`
@@ -797,6 +801,8 @@ export function extractorDrop(state: GameState, kind: EncounterKind): Partial<Re
 export const ONCE_GEAR: ItemId[] = ['shiv', 'rusted_dagger', 'scav_wrap', 'dust_cloak']
 export const gearDropFlag = (id: ItemId) => `gearDrop_${id}`
 function lootFor(state: GameState, kind: EncounterKind): Partial<Record<ItemId, number>> {
+  // v207: no farming. A second Stray Hunter carries nothing: no pocket, no gear, no salve.
+  if ((kind === 'strayhunter' || kind === 'strayhound') && state.flags.strayLooted) return {}
   const add: Partial<Record<ItemId, number>> = { ...pocketLoot(state, kind), ...extractorDrop(state, kind) }
   for (const id of ONCE_GEAR) {
     if (add[id] && state.flags[gearDropFlag(id)]) {
@@ -809,6 +815,8 @@ function lootFor(state: GameState, kind: EncounterKind): Partial<Record<ItemId, 
 }
 
 function pocketLoot(state: GameState, kind: EncounterKind): Partial<Record<ItemId, number>> {
+  // v207: a Stray Hunter's pockets pay once a run. The next ones carry nothing worth taking.
+  if ((kind === 'strayhunter' || kind === 'strayhound') && state.flags.strayLooted) return {}
   if (kind === 'jackal') return { scrap: 2 }
   // v188: the tick's Drop comes once per run; a repeat tick is just a scrap.
   if (kind === 'tick') return state.flags.tickDropped ? { scrap: 1 } : { vial_drop: 1 }
@@ -1466,7 +1474,7 @@ function resolveEncounterCore(
         ? `${creatureWin} ${loot}.${back}${won}`
         : huskWin
         ? `The amber heart shatters. The husk falls still. ${loot}.${back}${won}`
-        : `They drop. ${loot}.${back}${won}`
+        : `They drop.${loot ? ` ${loot}.` : ''}${back}${won}`
     return holdCard(state, spec, `${hitCard}\n\n${outcome}`, outcome, {
       health: healthDelta,
       add,
@@ -1476,7 +1484,7 @@ function resolveEncounterCore(
       heat: spec.kind === 'hound' ? { cartel: 1 } : handlerWin ? { cartel: 2 } : undefined,
       pressure: dmgIn > 0 ? 1 : undefined,
       // v153: beating the hound or the handler keeps Valerius himself away for 10 quiet scenes (hunts still come).
-      flag: { encounterGrip: grip, ...(spec.kind === 'tick' && add.vial_drop ? { tickDropped: true } : {}), ...Object.fromEntries(ONCE_GEAR.filter((id) => add[id]).map((id) => [gearDropFlag(id), true])), ...(handlerWin ? { handlerInjured: true } : {}), ...(handlerWin || spec.kind === 'hound' ? { valeriusRest: true, valeriusQuiet: 0 } : {}), ...(state.sceneId === 'thresh:court-guard' && spec.kind === 'courtguard' ? { crucibleGuardBeaten: true } : {}), ...(spec.kind === 'sablewave' && f.sableFight ? { sableWon: true } : {}) },
+      flag: { encounterGrip: grip, ...(spec.kind === 'tick' && add.vial_drop ? { tickDropped: true } : {}), ...Object.fromEntries(ONCE_GEAR.filter((id) => add[id]).map((id) => [gearDropFlag(id), true])), ...(handlerWin ? { handlerInjured: true } : {}), ...(handlerWin || spec.kind === 'hound' ? { valeriusRest: true, valeriusQuiet: 0 } : {}), ...(state.sceneId === 'thresh:court-guard' && spec.kind === 'courtguard' ? { crucibleGuardBeaten: true } : {}), ...(spec.kind === 'sablewave' && f.sableFight ? { sableWon: true } : {}), ...(spec.kind === 'strayhunter' || spec.kind === 'strayhound' ? { strayLooted: true } : {}) },
     })
   }
 
