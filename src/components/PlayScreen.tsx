@@ -673,7 +673,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
       {kit ? <InventorySheet state={state} onClose={() => setKit(false)} onChange={onChange} /> : null}
       {mapOpen ? <MapSheet state={state} onClose={() => setMapOpen(false)} onChange={onChange} /> : null}
       {journalOpen ? <JournalSheet state={state} onClose={() => setJournalOpen(false)} /> : null}
-      {heatInfo ? <HeatExplainer faction={heatInfo} door={state.door} onClose={() => setHeatInfo(null)} /> : null}
+      {heatInfo ? <HeatExplainer faction={heatInfo} door={state.door} state={state} onClose={() => setHeatInfo(null)} /> : null}
       {!state.flags.heatTaught ? (
         <HeatTip door={state.door} onDismiss={() => onChange(applyEffect(state, { flag: { heatTaught: true } }))} />
       ) : null}

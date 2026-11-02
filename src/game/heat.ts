@@ -7,54 +7,35 @@ export const HEAT_TIP = {
 Tap a Heat number anytime to hear who is watching.`,
 }
 
+const CARTEL_BODY = 'Overseer Valerius hunts Sap thieves and unpermitted relic hoarders. Shard-Hounds follow the chip. Cartel Heat is patrol, paper, and a muzzle.'
+const SEEKERS_BODY = 'Seekers want a cup that holds. Sybella hunts what the sand should not have let walk — for the faith, not for you. Seeker Heat is hymns and a skiff. She does not aid Cartel. She does not aid Dune-Strays.'
+const STRAYS_BODY = 'Dune-Strays collect favors and shade. Stray Heat is being known. Known is not safe.'
+
+/** v202: watch lists name only who actually hunts you (heatNow.ts has the live answer). Road hunters stay unnamed. Prisoner is the default. */
 export const HEAT_FACTIONS: Record<
   Faction,
   { name: string; watch: string; body: string }
 > = {
-  cartel: {
-    name: 'Cartel',
-    watch: 'Ironwood, Valerius, Shard-Hounds',
-    body: 'Ironwood Break writes names in ledgers. Overseer Valerius hunts Sap thieves and unpermitted relic hoarders. Shard-Hounds follow the chip. Cartel Heat is patrol, paper, and a muzzle.',
-  },
-  seekers: {
-    name: 'Seekers',
-    watch: 'Sybella, Seeker skiffs',
-    body: 'Seekers want a cup that holds. Sybella hunts what the sand should not have let walk — for the faith, not for you. Seeker Heat is hymns and a skiff. She does not aid Cartel. She does not aid Dune-Strays.',
-  },
-  strays: {
-    name: 'Strays',
-    watch: 'Jaxson, Silas, the trader',
-    body: 'Dune-Strays collect favors and shade. Jaxson hotwires. Silas sells minutes. The trader sells rumors and funds a way out. Stray Heat is being known. Known is not safe.',
-  },
+  cartel: { name: 'Cartel', watch: 'Valerius, the Hound-handler, a paid ambusher on the roads', body: CARTEL_BODY },
+  seekers: { name: 'Seekers', watch: 'Sybella, Seeker runners on the roads', body: SEEKERS_BODY },
+  strays: { name: 'Strays', watch: 'the Stray Hunter, Stray collectors on the roads', body: STRAYS_BODY },
 }
 
 type HeatCard = { name: string; watch: string; body: string }
 
-/** Who is watching depends on the door: Jaxson and Kaelen are the Prisoner's people. */
+/** Camp-04 is the Prisoner's ground, the Spine the Outcast's, the Threshold the Vessel's. Red Maw and the roads are everyone's. */
 const BY_DOOR: Partial<Record<DoorId, Partial<Record<Faction, HeatCard>>>> = {
   outcast: {
-    seekers: {
-      name: 'Seekers',
-      watch: 'Sybella, Seeker skiffs',
-      body: 'Seekers want a cup that holds. Sybella hunts what the sand should not have let walk — for the faith, not for you. Seeker Heat is hymns and a skiff. She does not aid Cartel. She does not aid Dune-Strays.',
-    },
+    cartel: { name: 'Cartel', watch: 'a paid ambusher on the roads', body: CARTEL_BODY },
     strays: {
       name: 'Strays',
-      watch: 'Silas, Drennick Voss, Ossa, Nim',
-      body: 'Dune-Strays collect favors and shade. Silas sells minutes. Drennick Voss collects the shade-road fee. At Stray Heat 4, Nim the Carapace hunter takes the hunt on the Spine. Stray Heat is being known. Known is not safe.',
+      watch: 'Nim, a Stray collector, the Stray Hunter',
+      body: 'Dune-Strays collect favors and shade. At Stray Heat 4, Nim the Carapace hunter takes the hunt on the Spine. Stray Heat is being known. Known is not safe.',
     },
   },
   vessel: {
-    seekers: {
-      name: 'Seekers',
-      watch: 'Sybella, Thalia, Brin and Kesh, Seeker spears on the hymn-road',
-      body: 'Seekers want a cup that holds. Thalia loves a Vessel. Brin and Kesh walk the hymn-road with spears. Sybella hunts what the sand should not have let walk — for the faith, not for you. Seeker Heat is hymns, spears, and a skiff. She does not aid Cartel. She does not aid Dune-Strays.',
-    },
-    strays: {
-      name: 'Strays',
-      watch: 'Ossa, Dune-Strays',
-      body: 'Dune-Strays collect favors and shade. Ossa keeps to Red Maw. Stray Heat is being known. Known is not safe.',
-    },
+    cartel: { name: 'Cartel', watch: 'a paid ambusher on the roads', body: CARTEL_BODY },
+    seekers: { name: 'Seekers', watch: 'Sybella, Valerius at Seeker Command, a Court Guard, Seeker runners on the roads', body: SEEKERS_BODY },
   },
 }
 
