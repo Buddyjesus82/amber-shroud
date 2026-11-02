@@ -19,6 +19,8 @@ export type StockOffer = {
   tags: string[]
   /** v207: hidden while you already carry the item. */
   unlessHeld?: boolean
+  /** v208: offer shows only once this holds. */
+  when?: (state: GameState) => boolean
   /** Only sold in these doors. */
   doors?: DoorId[]
   /** Sells out after n buys on one visit (the counter flag clears when you walk off). */
@@ -104,6 +106,10 @@ const AUTH_PRODUCT = new Set([
   'sell-scrip',
 ])
 
+export function shimJobSettled(state: GameState): boolean {
+  return !!state.flags.kaelenEscape || state.chapterId != null
+}
+
 const KAELEN_STOCK: StockOffer[] = [
   // v207: the Prisoner who did Jaxson's job never got the grate shim. Kaelen sells one, once.
   {
@@ -114,6 +120,8 @@ const KAELEN_STOCK: StockOffer[] = [
     cost: { scrap: 4 },
     doors: ['prisoner'],
     unlessHeld: true,
+    // v208: on sale once the grate job is done (kaelenEscape) or passed up (left Camp-04 without it).
+    when: shimJobSettled,
     onceFlag: 'kaelenSoldShim',
     extraFlag: { kaelenSoldShim: true },
     flash: '"Filed it for the perimeter wire. It opens worse than wire."',
@@ -360,7 +368,7 @@ export function kaelenBuyFlash(state: GameState): string {
 
 export function offersFor(state: GameState, vendor: Vendor): StockOffer[] {
   const all = vendor.id === 'kaelen' ? kaelenOffers(state) : vendor.stock
-  return all.filter((o) => (!o.doors || o.doors.includes(state.door)) && !(o.unlessHeld && (state.items[o.item] ?? 0) > 0)).map((o) => {
+  return all.filter((o) => (!o.doors || o.doors.includes(state.door)) && !(o.unlessHeld && (state.items[o.item] ?? 0) > 0) && (!o.when || o.when(state))).map((o) => {
     const cost = seekerMarkup(state, o.cost)
     return cost === o.cost ? o : { ...o, cost, sub: [o.sub, SEEKER_MARKUP_NOTE].filter(Boolean).join('\n') }
   })
