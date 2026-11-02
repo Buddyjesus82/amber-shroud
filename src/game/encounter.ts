@@ -1328,12 +1328,14 @@ export function resolveEncounter(
   }
 
   if (theirHp <= 0 && spec.kind === 'overseer') {
-    const outcome = `${VALERIUS_ESCAPES} Cartel Heat -1.${mutualWin ? MUTUAL_WIN_LINE : ''}`
+    // v202: at Seeker Command he is the Seekers' commander, so the win cools Seeker Heat. Camp-04 wins are unchanged.
+    const command = state.sceneId === 'thresh:command'
+    const outcome = `${VALERIUS_ESCAPES} ${command ? 'Seeker' : 'Cartel'} Heat -1.${mutualWin ? MUTUAL_WIN_LINE : ''}`
     return holdCard(state, spec, `${hitCard}\n\n${outcome}`, outcome, {
       health: healthDelta,
       sap,
       // v152: beating him is a reward. Cartel -1 (was +2 in v145).
-      heat: { cartel: -1 },
+      heat: command ? { seekers: -1 } : { cartel: -1 },
       pressure: dmgIn > 0 ? 1 : undefined,
       flag: { encounterGrip: grip, valeriusBeaten: true, valeriusCool: true, huntQuiet: 0 },
     })

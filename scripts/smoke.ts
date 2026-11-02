@@ -3527,8 +3527,7 @@ function assertHelpResolves(s: GameState, where: string) {
   }
   assert(!ALL_SCENES.some((sc) => sc.id === 'spine:kaelen' || sc.id === 'spine:kaelen-rumors'), 'the Spine Kaelen counter scenes are gone')
   const outcastHeat = JSON.stringify(heatFactions('outcast'))
-  assert(!PRISONER_NAMES.test(outcastHeat) && /Silas sells minutes/.test(outcastHeat), 'Outcast Heat cards name no Prisoner NPC')
-  assert(/Jaxson/.test(heatFactions('prisoner').strays.watch), 'Prisoner Stray Heat still names Jaxson')
+  assert(!PRISONER_NAMES.test(outcastHeat), 'Outcast Heat cards name no Prisoner NPC')
   assert(!PRISONER_NAMES.test(JSON.stringify(heatFactions('vessel').strays)), 'Vessel Stray Heat names no Prisoner NPC')
   for (const rule of GLOBAL_INTENTS) {
     if (shutForOutcast(rule.show)) continue
@@ -4468,25 +4467,12 @@ function assertHelpResolves(s: GameState, where: string) {
   const oldSave = { ...newGame('outcast'), flags: { ...newGame('outcast').flags, metNim: true, nimMet: true, nimRun: true } } as GameState
   const moved = repairLoadedState(oldSave)
   assert(moved.flags.metDrennick && moved.flags.drennickMet && moved.flags.drennickRun && !('metNim' in moved.flags) && !('nimRun' in moved.flags), 'old Nim flags map to Drennick')
-  // Heat lists: names first and capitalized; then common nouns in lowercase (a proper adjective like "Seeker" may lead).
-  const NAMES = new Set([...Object.values(PEOPLE).map((p) => p.name), 'Jaxson', 'Silas', 'Ossa', 'Brin and Kesh', 'Kaelen the Sifter', 'Ironwood', 'Shard-Hounds', 'Dune-Strays'])
-  const PROPER_ADJ = ['Seeker', 'Cartel', 'Stray']
+  // v202: Heat lists name only real hunters (scripts/v202.ts holds the details).
   for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
-    for (const [f, card] of Object.entries(heatFactions(door))) {
-      let commonSeen = false
-      for (const part of card.watch.split(', ')) {
-        const name = NAMES.has(part)
-        const common = !name && (/^[a-z]/.test(part) || (PROPER_ADJ.includes(part.split(' ')[0]) && /^[a-z]/.test(part.split(' ')[1] ?? '')))
-        assert(name || common, `${door} ${f} watch entry is a known name or a lowercase common noun: ${part}`)
-        if (common) commonSeen = true
-        else assert(!commonSeen, `${door} ${f} watch list puts names first: ${card.watch}`)
-        if (common) assert(!/\b[A-Z]/.test(part.split(' ').slice(1).join(' ')) || /hymn-road/.test(part), `${door} ${f} common noun stays lowercase: ${part}`)
-      }
-      assert(!/\brunners?\b/i.test(f === 'seekers' ? card.watch + card.body : ''), `${door} Seekers line has no runners`)
+    for (const card of Object.values(heatFactions(door))) {
+      assert(!/Jaxson|Silas|Kaelen|Ironwood|Drennick|Ossa|Thalia|Brin|Kesh/.test(card.watch + card.body), `${door} Heat card names a non-hunter`)
     }
   }
-  assert(heatFactions('outcast').seekers.watch === 'Sybella, Seeker skiffs', 'Outcast Seekers list is Sybella, Seeker skiffs')
-  assert(/Drennick Voss/.test(heatFactions('outcast').strays.watch), 'Outcast Strays list names Drennick')
 }
 // Amber Husks: Seeker Spire constructs.
 {

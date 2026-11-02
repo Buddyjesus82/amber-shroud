@@ -32,7 +32,7 @@ ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v201'"),
 // 2. Wins.
 {
   const src = readFileSync('src/game/encounter.ts', 'utf8')
-  ok(src.includes('Cartel Heat -1.${mutualWin') && src.includes('heat: { cartel: -1 }'), 'Valerius win: Cartel Heat -1')
+  ok(src.includes("${command ? 'Seeker' : 'Cartel'} Heat -1.${mutualWin") && src.includes('{ cartel: -1 }'), 'Valerius win: Cartel Heat -1 (Seeker at Command, v202)')
   ok(src.includes("valeriusRest: true, valeriusQuiet: 0"), 'v153: hound and handler wins start the Valerius-only rest')
   ok(valeriusCooling({ flags: { valeriusCool: true, huntQuiet: 0 } }) && !valeriusCooling({ flags: { valeriusCool: true, huntQuiet: 10 } }), 'cooldown is 10 quiet scenes')
 }

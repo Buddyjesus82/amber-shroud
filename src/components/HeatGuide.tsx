@@ -1,5 +1,6 @@
 import { heatFactions, HEAT_TIP } from '../game/heat'
-import type { DoorId, Faction } from '../game/types'
+import { heatNow } from '../game/heatNow'
+import type { DoorId, Faction, GameState } from '../game/types'
 
 export function HeatTip({ onDismiss, door }: { onDismiss: () => void; door?: DoorId }) {
   const HEAT_FACTIONS = heatFactions(door)
@@ -28,7 +29,7 @@ export function HeatTip({ onDismiss, door }: { onDismiss: () => void; door?: Doo
   )
 }
 
-export function HeatExplainer({ faction, onClose, door }: { faction: Faction; onClose: () => void; door?: DoorId }) {
+export function HeatExplainer({ faction, onClose, door, state }: { faction: Faction; onClose: () => void; door?: DoorId; state?: GameState }) {
   const f = heatFactions(door)[faction]
   return (
     <div className="map-backdrop heat-guide" role="dialog" aria-label={`${f.name} Heat`} onClick={onClose}>
@@ -42,6 +43,16 @@ export function HeatExplainer({ faction, onClose, door }: { faction: Faction; on
             Close
           </button>
         </header>
+        {state ? (
+          <div className="heat-legend heat-now" data-heat-now>
+            <p>
+              <b>{f.name} Heat {state.heat[faction]}. After you now:</b>
+            </p>
+            {heatNow(state, faction).map((line) => (
+              <p key={line}>{line}</p>
+            ))}
+          </div>
+        ) : null}
         <p className="map-blurb">{f.body}</p>
       </div>
     </div>

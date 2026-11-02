@@ -68,7 +68,7 @@ const FIGHT_SECTIONS: HelpSection[] = [
       { key: 'Shard-pup', crit: true, text: 'Crits twice as often.' },
       { key: 'Vent patrol', text: 'The shock baton can numb your arm. Your next hit has no extra force.' },
       { key: 'Hound-handler', text: 'Running is harder. A failed run lets the hound bite too.' },
-      { key: 'Valerius', text: 'He never dies: beat him and he gets away, Cartel Heat -1, and the Camp-04 hunt stays quiet for 10 scenes.' },
+      { key: 'Valerius', text: 'He never dies: beat him and he gets away, Cartel Heat -1 (Seeker Heat -1 at Seeker Command), and the Camp-04 hunt stays quiet for 10 scenes.' },
       { key: 'Stray collector', text: 'Hurt, he offers to call it square: Stray Heat -1, no loot.' },
       { key: 'Nim', text: 'The Carapace hunter, at Stray Heat 4 or more on the Spine. Opens with the harpoon and you are pinned. No Run until you land a hit.' },
       { key: 'Amber Husk', text: 'Seeker Spire construct. No pain or fear: empty rounds do not make it leave. Sand almost never works. Shatter the amber core to drop it. A Seeker with an extractor can re-charge it once unless you cut the Seeker down first. Rarely, defeating a Seeker who walked a husk drops a Seeker Extractor.' },
