@@ -13,8 +13,8 @@ import type { GameState, ItemId } from '../src/game/types.ts'
 
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v208'"), 'SW cache v167')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v208'"), 'Build label v168')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v209'"), 'SW cache v167')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v209'"), 'Build label v168')
 
 // The Varro scene keeps its own literals (module load order); they must match the kit.
 {
@@ -148,7 +148,8 @@ for (const base of PLATE_BASES) {
     const n = applyEffect(s, row!.effects)
     ok((n.items.maw_plate ?? 0) === 0 && (n.items.scrap ?? 0) === 0 && (n.items.sinew_cord ?? 0) === 0 && (n.items.vial_drop ?? 0) === 0, `${base}: materials spent`)
     ok(!(n.items[base] ?? 0) && n.items[plated] === 1, `${base}: base consumed, plated made`)
-    ok(Object.keys(n.equipped ?? {}).length === 0 || !Object.values(n.equipped ?? {}).includes(plated), `${base}: unworn stays unworn`)
+    // v209: a new plated piece lands in its slot when that slot is empty; a worn piece is never swapped.
+    ok(s.equipped?.[slot] ? n.equipped?.[slot] === s.equipped[slot] : n.equipped?.[slot] === plated || !['weapon', 'armor'].includes(slot), `${base}: empty slot takes the plated piece`)
     const rt = JSON.parse(JSON.stringify(n)) as GameState
     ok(rt.items[plated] === 1 && !(rt.items[base] ?? 0), `${base}: save round-trip`)
     // Typed.

@@ -1,3 +1,4 @@
+import { SPARE_SAP_LOCK } from '../sapLock'
 import type { Choice, Scene } from '../types'
 import { SABLE_WAVE1 } from '../encounterLines'
 
@@ -121,7 +122,7 @@ export const phase1Scenes: Scene[] = [
     title: 'Dust-Eye Trading Post',
     body: 'Nomadic hunters swap storm reports, dried meats, and rare dune relics.',
     choices: [
-      { id: 'rest_dugout', label: 'Rest in the dugout', sub: '+2 Health. Costs 1 Sap. Once a visit.', tone: 'quiet', show: { flagUnset: 'dustEyeRested' }, enable: { sapMin: 2 }, locked: 'Needs: 2 Sap', effects: { health: 2, sap: -1, still: true, flag: { dustEyeRested: true } } },
+      { id: 'rest_dugout', label: 'Rest in the dugout', sub: '+2 Health. Costs 1 Sap. Once a visit.', tone: 'quiet', show: { flagUnset: 'dustEyeRested' }, enable: { sapMin: 2 }, locked: SPARE_SAP_LOCK, effects: { health: 2, sap: -1, still: true, flag: { dustEyeRested: true } } },
       // v205: Hester Ellery on the dugout ledge. Outcast only.
       { id: 'hester', label: 'Hester Ellery', show: { all: [{ door: 'outcast' }, ...recruitable('hester')] }, effects: { goto: 'spine:hester' } },
       houndRoad,
@@ -173,7 +174,7 @@ export const phase1Scenes: Scene[] = [
     title: 'Conduit Drain Breach',
     body: `${BREACH_BODY}\n\n"${BREACH_PLEA}"`,
     choices: [
-      { id: 'escort', label: 'Stabilize Wounds', sub: "Spend 1× Sap to stabilize his breath. Adds Kelt's Runner to party. Sets Health to 3, Timer to 6 scenes.", show: keltOpen, enable: { sapMin: 2 }, locked: 'Needs: 2 Sap', effects: { sap: -1, recruit: 'kelt', recruitHp: 3, flag: { keltStatus: 'active', keltScenes: 0, keltMax: 6, keltHpMax: 3 }, flash: q('Ahhh... the pulse... it\'s holding... Move fast... every second counts...') } },
+      { id: 'escort', label: 'Stabilize Wounds', sub: "Spend 1× Sap to stabilize his breath. Adds Kelt's Runner to party. Sets Health to 3, Timer to 6 scenes.", show: keltOpen, enable: { sapMin: 2 }, locked: SPARE_SAP_LOCK, effects: { sap: -1, recruit: 'kelt', recruitHp: 3, flag: { keltStatus: 'active', keltScenes: 0, keltMax: 6, keltHpMax: 3 }, flash: q('Ahhh... the pulse... it\'s holding... Move fast... every second counts...') } },
       { id: 'as_is', label: 'Take Him As-Is', sub: "Take him as-is. Adds Kelt's Runner to party. Sets Health to 2, Timer to 4 scenes.", show: keltOpen, effects: { recruit: 'kelt', recruitHp: 2, flag: { keltStatus: 'active', keltScenes: 0, keltMax: 4, keltHpMax: 2 }, flash: q("I'm on my feet... don't stop... whatever you do, don't stop...") } },
       { id: 'pry', label: 'Pry Cylinder from His Hands', sub: q("You're not going to make it. Give me the cylinder."), tone: 'danger', show: keltOpen, effects: { add: { sealed_data_cylinder: 1 }, heat: { cartel: 1, seekers: 1 }, flag: { keltStatus: 'failed', keltPried: true }, flash: `${q('No! Kelt... forgive me...')}\n\n${PRY_LINE}` } },
       { id: 'leave', label: 'Leave Him in the Sludge', tone: 'quiet', show: keltOpen, effects: { goto: 'thresh:conduits' } },

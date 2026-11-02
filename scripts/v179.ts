@@ -8,8 +8,8 @@ import { effectPills } from '../src/game/kit.ts'
 import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v208'"), 'SW cache v179')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v208'"), 'Build label v179')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v209'"), 'SW cache v179')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v209'"), 'Build label v179')
 const v = chapterTwoFromCode('vessel')
 ok((v.items.memory_siphon ?? 0) === 1 && v.flags.siphonGot, 'code start grants the Siphon')
 const at = (sceneId: string, extra: Partial<GameState> = {}, flags: object = {}): GameState => ({ ...v, sceneId, ...extra, flags: { ...v.flags, ...flags } }) as GameState
@@ -74,6 +74,6 @@ ok(!chapterTwoSummary({ gregStanding: 'worked' }, {}).includes('Miller') && chap
 // f pills
 ok(!effectPills({ heat: { strays: -1 } }, { cartel: 0, seekers: 0, strays: 0 }).length && effectPills({ heat: { strays: -1 } }, { cartel: 0, seekers: 0, strays: 2 }).length === 1, 'no cooling pill at 0')
 { const e = applyEffect(newGame('outcast'), { flag: { chapter1Done: true } }); ok(!e.items.memory_siphon, 'v187: Ch1 end alone does not grant the Siphon') }
-{ const e = applyEffect(newGame('outcast'), { flag: { chapter2Unlocked: true } }); ok((e.items.memory_siphon ?? 0) === 1, 'Chapter Two grants the Siphon') }
+{ const e = applyEffect(newGame('outcast'), { flag: { chapter2Unlocked: true } }); ok(!e.items.memory_siphon, 'v209: the Ch2 unlock alone does not grant the Siphon; it comes from the door spot') }
 if (fails) { console.log(`v179: ${fails} fail(s)`); process.exit(1) }
 console.log('v179 ok')

@@ -1,3 +1,4 @@
+import { SPARE_SAP_LOCK } from '../sapLock'
 import { HEAVY_TOOL, VEIN_KEY, VEIN_LOCKED, VEIN_LOCKED_NO_SHIM, hiddenExitChoice, tunnelsEntry } from './newPlaces'
 import type { Choice, Cond, DoorId, Scene } from '../types'
 import { crucibleEntry, rig04Entry, rustPocketsEntry } from './phase2Camps'
@@ -80,6 +81,11 @@ const unblown: Cond = { flagUnset: 'coverBlown' }
 
 /** v207 NEW: the Shaft Foot once Valerius is down. */
 export const SHAFT_FOOT_CLEAR = 'Valerius is down. The Shaft Foot is quiet.'
+/** v209 NEW */ export const VEX_CORD_LINE = "The cord parts. Vex doesn't run. He points down."
+
+/** v209: any Greg fight won. */
+const GREG_BEATEN: Cond = { any: [{ flag: 'ch2Won_jaws' }, { flag: 'ch2Won_reckoning' }, { flag: 'ch2Won_bounty' }] }
+
 /** v207: the ribs way down: the Spire Key, BLEED-CORE, Thalia's Clearance or Kaelen's Shim. */
 const RIBS_WAY: Cond = { any: [VEIN_KEY, { item: 'spire_key' }, { flag: 'bleedCore' }, { flag: 'airlockFreq' }] }
 
@@ -405,7 +411,7 @@ Vex stares at the cup on your belt. 'They hung one of those on me once. I think.
       { id: 'hand', label: 'Free him by hand', sub: 'Health −2. Your cover blows. Seeker Heat +2.', tone: 'danger', show: { all: [{ flagUnset: 'vexFreed' }, { not: weapon }] }, enable: { healthMin: 3 }, locked: 'Needs: 3 Health', effects: { health: -2, heat: { seekers: 2 }, flag: { vexFreed: true, vexLeft: false, coverBlown: true }, flash: 'The tube comes out. The cups stop filling. Somebody will notice.' } },
       { id: 'leave', label: 'Leave him filling', tone: 'quiet', show: { flagUnset: 'vexFreed' }, effects: { flag: { vexLeft: true }, goto: 'ch2:v-outpost' } },
       { id: 'gate', label: 'The back gate', show: { all: [{ flag: 'vexFreed' }, unblown, { flagUnset: 'gregDealt' }, { flagUnset: 'gregSold' }] }, effects: { goto: 'ch2:v-greg' } },
-      { id: 'smuggle', label: "Smuggler's Run", sub: '1 Sap.', tone: 'danger', show: { all: [{ flag: 'vexFreed' }, blown, { flagUnset: 'drillPast' }] }, enable: { sapMin: 2 }, locked: 'Needs: 2 Sap', effects: { sap: -1, flag: { drillPast: true }, goto: 'ch2:v-ribs' } },
+      { id: 'smuggle', label: "Smuggler's Run", sub: '1 Sap.', tone: 'danger', show: { all: [{ flag: 'vexFreed' }, blown, { flagUnset: 'drillPast' }] }, enable: { sapMin: 2 }, locked: SPARE_SAP_LOCK, effects: { sap: -1, flag: { drillPast: true }, goto: 'ch2:v-ribs' } },
       { id: 'smuggle', label: "Smuggler's Run", sub: '1 scrap.', tone: 'danger', show: { all: [{ flag: 'vexFreed' }, blown, { flagUnset: 'drillPast' }] }, enable: { item: 'scrap' }, locked: 'Needs: 1 scrap', effects: { remove: { scrap: 1 }, flag: { drillPast: true }, goto: 'ch2:v-ribs' } },
       { id: 'back', label: 'Back', tone: 'quiet', show: { flag: 'vexFreed' }, effects: { goto: 'ch2:v-outpost' } },
     ],
@@ -531,7 +537,7 @@ Murch doesn't look at you. He says to the skiff he's fixing: 'Lift's at the thir
     title: 'The Bounty',
     body: 'Greg\'s crew at a fire with two Stray Hunters, counting scrap into a hat. Your price. Greg is haggling. "Alive\'s worth more to Miller. Dead\'s easier to carry."',
     choices: [
-      { id: 'trail', label: 'Sell them a false trail', sub: '1 Sap.', show: { all: [{ flagUnset: 'bountyFooled' }, { flagUnset: 'bountyBroken' }] }, enable: { sapMin: 2 }, locked: 'Need Sap to spare.', effects: { sap: -1, flag: { bountyFooled: true }, goto: 'ch2:o-root', flash: 'You leave stakes of your own, pointing the wrong way. By dark, Greg is arguing with the Hunters about whose fault it was.' } },
+      { id: 'trail', label: 'Sell them a false trail', sub: '1 Sap.', show: { all: [{ flagUnset: 'bountyFooled' }, { flagUnset: 'bountyBroken' }] }, enable: { sapMin: 2 }, locked: SPARE_SAP_LOCK, effects: { sap: -1, flag: { bountyFooled: true }, goto: 'ch2:o-root', flash: 'You leave stakes of your own, pointing the wrong way. By dark, Greg is arguing with the Hunters about whose fault it was.' } },
       { id: 'fight', label: 'Fight', tone: 'danger', show: { all: [{ flagUnset: 'bountyFooled' }, { flagUnset: 'bountyBroken' }] }, effects: { flag: { ch2Fight: 'bounty', gregStanding: 'hostile' }, ambush: { kind: 'greg', line: "Greg's crew comes up off the fire." } } },
       BACK_TO('ch2:o-root'),
     ],
@@ -550,7 +556,7 @@ Vex touches his own face where your brand sits. 'Mine burned off. Or I don't rem
 From below, Valerius: 'The Stray who cost me Camp-04.'`,
     variants: [{ if: { heatMin: ['strays', 4] }, mode: 'append', body: "'Your friends rioted my pens. You'll pay for every one.'" }],
     choices: [
-      { id: 'cut', label: 'Cut the cord', sub: 'Needs a weapon.', show: { all: [{ flagUnset: 'vexFreed' }, { flagUnset: 'vexLeft' }] }, enable: weapon, locked: 'Needs: a weapon', effects: { ticks: 1, flag: { vexFreed: true } } },
+      { id: 'cut', label: 'Cut the cord', sub: 'Needs a weapon.', show: { all: [{ flagUnset: 'vexFreed' }, { flagUnset: 'vexLeft' }] }, enable: weapon, locked: 'Needs: a weapon', effects: { ticks: 1, flag: { vexFreed: true }, flash: VEX_CORD_LINE } },
       { id: 'leave', label: 'Leave him', tone: 'quiet', show: { all: [{ flagUnset: 'vexFreed' }, { flagUnset: 'vexLeft' }] }, effects: { flag: { vexLeft: true }, goto: 'ch2:o-root' } },
       { id: 'back', label: 'Back', tone: 'quiet', show: { any: [{ flag: 'vexFreed' }, { flag: 'vexLeft' }] }, effects: { goto: 'ch2:o-root' } },
     ],
@@ -563,7 +569,7 @@ From below, Valerius: 'The Stray who cost me Camp-04.'`,
     choices: [
       { id: 'reckon', label: 'Greg, at the water', tone: 'danger', show: { all: [outcastReckonDue, { flagUnset: 'spireKey' }] }, effects: { flag: { ch2Fight: 'reckoning', gregStanding: 'hostile' }, ambush: { kind: 'greg', line: "'Alive's worth more to Miller. Dead's easier to carry.'" } } },
       { id: 'lift', label: 'Ride the vertebra lift', tone: 'hunger', show: { all: [{ not: outcastReckonDue }, knot, { flag: 'murchScrap' }] }, effects: { ticks: 1, goto: 'ch2:cache' } },
-      { id: 'walk', label: 'Walk the gaps', sub: '1 Sap.', tone: 'hunger', show: { all: [{ not: outcastReckonDue }, knot, { flagUnset: 'murchScrap' }] }, enable: { sapMin: 2 }, locked: 'Need Sap to spare.', effects: { sap: -1, ticks: 1, goto: 'ch2:cache' } },
+      { id: 'walk', label: 'Walk the gaps', sub: '1 Sap.', tone: 'hunger', show: { all: [{ not: outcastReckonDue }, knot, { flagUnset: 'murchScrap' }] }, enable: { sapMin: 2 }, locked: SPARE_SAP_LOCK, effects: { sap: -1, ticks: 1, goto: 'ch2:cache' } },
       { id: 'vex', label: 'Follow Vex across', sub: '1 Sap.', tone: 'hunger', show: { all: [{ not: outcastReckonDue }, { not: knot }, { flag: 'vexFreed' }] }, effects: { sap: -1, ticks: 1, flag: { vexLed: true }, goto: 'ch2:cache' } },
       { id: 'wade', label: 'Wade in', tone: 'quiet', show: { all: [{ not: outcastReckonDue }, { not: knot }, { flagUnset: 'vexFreed' }] }, effects: { goto: 'ch2:trapped' } },
       BACK_TO('ch2:o-root'),
@@ -681,7 +687,7 @@ Past the pylon, an iron gate, latched.`,
 The Spire Key. A Pre-Collapse Crystalline Resonance Tuning Rod. It forces the lower Spire locks without tripping their purges. Everyone down here wants it. Now everyone down here wants you.`,
     choices: [
       { id: 'key', label: 'Take the Key', tone: 'hunger', show: { flagUnset: 'spireKey' }, effects: { add: { spire_key: 1 }, flag: { spireKey: true }, heat: { seekers: 2, cartel: 2 }, flash: KEY_TAKEN } },
-      { id: 'niche', label: 'Search the back of the niche', sub: 'Sap −1.', show: { flagUnset: 'fluidTaken' }, enable: { sapMin: 2 }, locked: 'Need Sap to spare.', effects: { sap: -1, add: { hydraulic_fluid: 1 }, flag: { fluidTaken: true }, flash: "Behind the rod, a sealed canister, cold and heavy, untouched since the old world fell. The label is gone. What's inside still sloshes." } },
+      { id: 'niche', label: 'Search the back of the niche', sub: 'Sap −1.', show: { flagUnset: 'fluidTaken' }, enable: { sapMin: 2 }, locked: SPARE_SAP_LOCK, effects: { sap: -1, add: { hydraulic_fluid: 1 }, flag: { fluidTaken: true }, flash: "Behind the rod, a sealed canister, cold and heavy, untouched since the old world fell. The label is gone. What's inside still sloshes." } },
       { id: 'back', label: 'Go on', tone: 'hunger', show: { all: [{ flag: 'spireKey' }, { door: 'prisoner' }] }, effects: { goto: 'ch2:p-drillrun' } },
       { id: 'back', label: 'Go on', tone: 'hunger', show: { all: [{ flag: 'spireKey' }, { door: 'vessel' }, { flagUnset: 'cupPassed' }] }, effects: { flag: { coverBlown: true }, goto: 'ch2:v-blown' } },
       // v185: the cup test passed, the cover holds. The drills still come.
@@ -707,7 +713,7 @@ Above you, Sybella's drill-rigs are breaking through. Every bite shakes grit dow
       { id: 'scrap', label: 'Give Murch 3 scrap', sub: 'The lift runs. Murch keeps his kit.', show: { all: [{ flagUnset: 'liftDone' }, { flag: 'murchProtected' }, { flagUnset: 'murchScrap' }] }, enable: { itemMin: ['scrap', 3] }, locked: 'Needs: 3 scrap', effects: { remove: { scrap: 3 }, flag: { liftDone: true, murchShop: 'full' }, flash: "He takes the scrap without looking. Three turns of the spanner and the platform shudders awake. 'Runs. It runs. Get on before it remembers it's dead.'" } },
       // v207: Murch was paid once already (the lift motor, or the scrap on the stone). He does not charge twice.
       { id: 'scrap', label: 'Let Murch run the lift', sub: 'Already paid. Murch keeps his kit.', show: { all: [{ flagUnset: 'liftDone' }, { flag: 'murchProtected' }, { flag: 'murchScrap' }] }, effects: { flag: { liftDone: true, murchShop: 'full' }, flash: "Three turns of the spanner and the platform shudders awake. 'Runs. It runs. Get on before it remembers it's dead.'" } },
-      { id: 'force', label: 'Force the gear by hand', sub: 'Sap −1. Health −1.', tone: 'danger', show: { flagUnset: 'liftDone' }, enable: { sapMin: 2 }, locked: 'Need Sap to spare.', effects: { sap: -1, health: -1, flag: { liftDone: true }, flash: 'You put your whole back into the crank. Something in your shoulder gives before the gear does. Then the gear gives.' } },
+      { id: 'force', label: 'Force the gear by hand', sub: 'Sap −1. Health −1.', tone: 'danger', show: { flagUnset: 'liftDone' }, enable: { sapMin: 2 }, locked: SPARE_SAP_LOCK, effects: { sap: -1, health: -1, flag: { liftDone: true }, flash: 'You put your whole back into the crank. Something in your shoulder gives before the gear does. Then the gear gives.' } },
       { id: 'ladder', label: 'Take the emergency ladder', sub: 'Murch dumps his tool-rig to climb down.', tone: 'quiet', show: { all: [{ flagUnset: 'liftDone' }, { flag: 'murchProtected' }] }, effects: { flag: { liftDone: true, liftLadder: true, murchShop: 'stripped' }, flash: "Murch heaves his tool-rig down the shaft so you can climb down. It hits bottom a long time later. 'That was everything,' he says. 'That was my whole shop.'" } },
       { id: 'ladder', label: 'Take the emergency ladder', tone: 'quiet', show: { all: [{ flagUnset: 'liftDone' }, { flagUnset: 'murchProtected' }] }, effects: { flag: { liftDone: true, liftLadder: true }, flash: 'Rung by rung, down the side of the rib. Some rungs hold.' } },
       { id: 'restrain', label: 'Restrain Vex', show: vexPending, effects: { flag: { vexFate: 'scout' }, flash: "You catch his arm and pull him off the vein. Vex blinks at the glow, then at you. Whatever he was, it stays in there. He stays with you. A scout for what comes next." } },
@@ -757,6 +763,8 @@ Above you, Sybella's drill-rigs are breaking through. Every bite shakes grit dow
     kind: 'story',
     title: 'The Bleached Heart',
     body: 'Light. The airlock opens onto a hollow of white bone, and through it runs a vein of glowing amber resin thick as a river: the Primary Amber Resin Vein. The Bleached Heart.\n\nThe door seals behind you. An alarm starts, low and endless. Barge horns answer it, echoing through the bone. Over them, a raspy voice: "Greg. We lost them."',
+    // v209: Greg beaten in a fight is not on the radio.
+    variants: [{ if: GREG_BEATEN, body: 'Light. The airlock opens onto a hollow of white bone, and through it runs a vein of glowing amber resin thick as a river: the Primary Amber Resin Vein. The Bleached Heart.\n\nThe door seals behind you. An alarm starts, low and endless. Barge horns answer it, echoing through the bone.' }],
     choices: [{ id: 'continue', label: 'Continue', tone: 'hunger', effects: { goto: 'ch2:end' } }],
   },
   {
@@ -771,7 +779,7 @@ Above you, Sybella's drill-rigs are breaking through. Every bite shakes grit dow
 
 /** The end screen summary, read from the run's flags. */
 export function chapterTwoSummary(f: Record<string, unknown>, items: Record<string, number | undefined>): string {
-  const key = f.keySurrendered ? 'surrendered to Greg' : 'kept'
+  const key = f.keySurrendered ? 'surrendered to Greg' : (items.spire_key ?? 0) > 0 ? 'kept' : 'never found'
   const statues = f.statueSiphoned ? 'freed' : 'sealed'
   const pearl = (items.deep_memory_pearl ?? 0) > 0 || f.statueSiphoned ? 'yes' : 'no'
   const vex = f.vexFate === 'scout' ? 'scout' : f.vexFate === 'burn' ? 'memory burned (BLEED-CORE)' : f.vexFate === 'siphoned' ? 'siphoned, no recovery' : f.vexFate === 'freq' ? 'gave the frequency' : 'left in chains'

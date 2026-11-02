@@ -1,3 +1,5 @@
+/** v209: gear auto-equips on pickup; fixtures that trade a picked-up piece take it off first. */
+const unworn = <T extends { equipped?: unknown }>(s: T): T => ({ ...s, equipped: {} })
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import {
@@ -815,7 +817,7 @@ assert(!ids(s).includes('hotwire'), 'hotwire stays off the bay until the station
   assert(!bare.flags.bayPikeTook && (bare.items.scrap ?? 0) === (s.items.scrap ?? 0), 'no wrench, no resin bolt')
   assert(/threaded tight/i.test(bare.flash ?? '') && /wrench/i.test(bare.flash ?? ''), 'the bolt says it needs a wrench')
   const before = s.items.scrap ?? 0
-  const stole = interpret(applyEffect(s, { add: { wrench: 1 } }), 'steal from pike')
+  const stole = interpret(unworn(applyEffect(s, { add: { wrench: 1 } })), 'steal from pike')
   assert((stole.items.scrap ?? 0) === before + 1 && stole.flags.bayPikeTook, 'steal from Pike pays a scrap')
   assert(stole.heat.cartel > s.heat.cartel, 'steal from Pike costs Cartel Heat')
   assert(stole.flags.cartelNotice, 'stealing on the bay is cartel notice')
@@ -1711,8 +1713,9 @@ for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
     assert(after.flags.encounterDone, `${door} scavenger kill holds the outcome`)
     assert(after.equipped?.weapon === 'ironwood_baton', `${door} scavenger gear stays in the pack`)
     assert(
-      (after.equipped?.armor ?? null) === (before.equipped?.armor ?? null),
-      `${door} scavenger armor drop is not auto-worn`,
+      // v209: an empty armor slot takes the drop; a worn piece is never swapped.
+      before.equipped?.armor ? after.equipped?.armor === before.equipped.armor : true,
+      `${door} scavenger armor drop does not swap worn armor`,
     )
     const gained = gearGained(before, after)
     for (const id of ROAD_EXCLUSIVE) {
@@ -2468,7 +2471,7 @@ s = pick(s, 'keep')
   }
 
   let bay = newGame('prisoner')
-  bay = applyEffect(bay, { sap: 6, goto: 'camp:bay', enterHub: 'camp04', add: { wrench: 1 }, flag: { encounterAt: 9999 } })
+  bay = unworn(applyEffect(bay, { sap: 6, goto: 'camp:bay', enterHub: 'camp04', add: { wrench: 1 }, flag: { encounterAt: 9999 } }))
   const bayLook = interpret(bay, 'look')
   assert(/sinew-bind/i.test(bayLook.flash ?? ''), 'Skiff Bay look points at the lash cord')
   assert(/resin bolt/i.test(bayLook.flash ?? ''), 'Skiff Bay look points at Pike’s bolt')
@@ -2741,7 +2744,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v208'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v209'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(!sw.includes('covers/camp04.jpg') && sw.includes('covers/yard.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -2827,7 +2830,7 @@ function assertHelpResolves(s: GameState, where: string) {
   const quiet = { encounterAt: 9999 }
   assertHelpResolves(newGame('prisoner'), 'prisoner opening')
   assertHelpResolves(applyEffect(newGame('prisoner'), { goto: 'camp:cages', flag: quiet }), 'pens')
-  const bay = applyEffect(newGame('prisoner'), { goto: 'camp:bay', add: { wrench: 1 }, flag: quiet })
+  const bay = unworn(applyEffect(newGame('prisoner'), { goto: 'camp:bay', add: { wrench: 1 }, flag: quiet }))
   assert(!bay.flags.encounterHere, 'bay help is not standing in a fight')
   assertHelpResolves(bay, 'bay before look')
   const bayHelp = helpEntries(bay, visibleChoices(bay).map((c) => c.label)).map((e) => e.command)
@@ -2869,7 +2872,8 @@ function assertHelpResolves(s: GameState, where: string) {
   const boltWith = interpret(pikeBay, 'steal the bolt')
   assert(boltWith.flags.bayPikeTook && (boltWith.items.scrap ?? 0) === (pikeBay.items.scrap ?? 0) + 1, 'wrench turns out the bolt')
   assert((boltWith.items.wrench ?? 0) === 1, 'turning the bolt keeps the wrench')
-  const afterBolt = interpret(boltWith, 'trade wrench to Pike')
+  // v209: the wrench auto-equips on pickup; a held weapon comes off in Gear before a trade.
+  const afterBolt = interpret({ ...boltWith, equipped: {} }, 'trade wrench to Pike')
   assert(afterBolt.flags.lashCord && !(afterBolt.items.wrench ?? 0), 'the cord trade still works after the bolt')
   const oil = applyEffect(newGame('prisoner'), { goto: 'camp:jaxson', flag: { encounterAt: 9999 } })
   const oilHelp = helpEntries(oil, visibleChoices(oil).map((c) => c.label)).map((e) => e.command)
@@ -2896,6 +2900,9 @@ function assertHelpResolves(s: GameState, where: string) {
 
 {
   let bay = applyEffect(newGame('prisoner'), { goto: 'camp:bay', add: { wrench: 1 }, flag: { encounterAt: 9999 } })
+  // v209: the wrench auto-equips; worn, it is not for trade until it comes off in Gear.
+  assert(bay.equipped?.weapon === 'wrench' && !interpret(bay, 'trade wrench to Pike').flags.lashCord, 'a worn wrench is not traded')
+  bay = { ...bay, equipped: {} }
   const cartel = bay.heat.cartel
   bay = interpret(bay, 'trade wrench to Pike')
   assert(bay.flags.lashCord, 'Pike trades the wrench for lash cord')
@@ -2907,7 +2914,7 @@ function assertHelpResolves(s: GameState, where: string) {
   const traded = applyEffect(bay, { goto: 'camp:bay-pike' })
   assert(!ids(traded).includes('bolt'), 'traded wrench hides the bolt button')
   assert(!/resin bolt/i.test(interpret(traded, 'look').flash ?? ''), 'traded wrench keeps the bolt out of look')
-  let vetch = applyEffect(newGame('prisoner'), { goto: 'camp:bay', add: { wrench: 1 }, flag: { encounterAt: 9999 } })
+  let vetch = unworn(applyEffect(newGame('prisoner'), { goto: 'camp:bay', add: { wrench: 1 }, flag: { encounterAt: 9999 } }))
   vetch = interpret(vetch, 'trade wrench to Vetch')
   assert((vetch.items.vial_drop ?? 0) >= 1, 'Vetch pays a Drop for the wrench')
   assert(!(vetch.items.wrench ?? 0), 'Vetch keeps the wrench')
@@ -2999,7 +3006,7 @@ function assertHelpResolves(s: GameState, where: string) {
   // Old saves parked at camp:jaxson land sensibly.
   const v61 = { ...applyEffect(newGame('prisoner'), { goto: 'camp:jaxson' }), flags: { ...applyEffect(newGame('prisoner'), { goto: 'camp:jaxson' }).flags, kaelenKnown: true } }
   assert(visibleChoices(v61).some((c) => c.id === 'plan') && /I have a plan/.test(bodyOf(v61)), 'v61 save at camp:jaxson (no plan flag) sees beat 1 + Ask about his plan')
-  const tookJob = applyEffect(newGame('prisoner'), { goto: 'camp:jaxson', flag: { jaxsonInside: true, metOilTooth: true }, add: { wrench: 1 } })
+  const tookJob = unworn(applyEffect(newGame('prisoner'), { goto: 'camp:jaxson', flag: { jaxsonInside: true, metOilTooth: true }, add: { wrench: 1 } }))
   assert(!visibleChoices(tookJob).some((c) => c.id === 'plan') && /sabotage the guard station/.test(bodyOf(tookJob)), 'older save that already took the job sees the plan, not the ask')
 }
 
@@ -3559,7 +3566,7 @@ function assertHelpResolves(s: GameState, where: string) {
   const bought = pick(pick(shelf, 'drop-scrap'), 'knife')
   assert((bought.items.vial_drop ?? 0) >= 1 && (bought.items.needle_knife ?? 0) === 1 && bought.items.scrap === 2, 'Silas sells a Drop for 2 scrap and the knife for 2 scrap')
   assert(!ids(openShop(bought, 'buy')).includes('knife'), 'Silas sells one knife')
-  const sold = openShop(applyEffect(shelf, { unsetFlag: ['shopShelf'], add: { shiv: 1 } }), 'sell')
+  const sold = openShop(unworn(applyEffect(shelf, { unsetFlag: ['shopShelf'], add: { shiv: 1 } })), 'sell')
   assert(ids(sold).some((i) => /shiv/.test(i)), 'Silas buys unequipped junk on the Sell shelf')
 
   // The Outcast opening states the brand plainly, and says nobody will tell him.
@@ -5965,7 +5972,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
     s = { ...s, flags: { ...s.flags, restedHere: false } }
     assert(!row(at({ health: v.healthMax, sap: 4 })), 'v115: Rest hidden at full Health')
     const dry = at({ health: 3, sap: 0 })
-    assert(!!row(dry) && !GE.isChoiceOn(dry, row(dry)!.enable) && row(dry)!.locked === 'Needs: 2 Sap', 'v115: Rest locked with Needs: Sap')
+    assert(!!row(dry) && !GE.isChoiceOn(dry, row(dry)!.enable) && row(dry)!.locked === "Costs 1 Sap. You can't spend your last one.", 'v115: Rest locked with Needs: Sap')
     assert(!row(at({ sceneId: 'thresh:kaelen', health: 3, sap: 4 })) && !row(at({ sceneId: 'camp:kaelen', hubId: 'camp04', health: 3, sap: 4 })), 'v115: no Rest at Kaelen')
     assert(!GE.restAllowed(at({ health: 3, flags: { ...v.flags, encounterHere: true, encounterKind: 'husk' } })), 'v115: no Rest mid-fight')
     assert(!!row({ ...v, chapterId: 'cache-run', sceneId: 'ch1:v-hymn', health: 3, sap: 4 }), 'v115: Rest on the road')
@@ -6090,7 +6097,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
     const v = newGame('vessel')
     const one: GameState = { ...v, sceneId: 'thresh:court', hubId: 'threshold', health: 3, sap: 1 }
     const r = GE.visibleChoices(one).find((c) => c.id === 'rest')!
-    assert(!GE.isChoiceOn(one, r.enable) && r.locked === 'Needs: 2 Sap', 'v116: Rest locked at 1 Sap')
+    assert(!GE.isChoiceOn(one, r.enable) && r.locked === "Costs 1 Sap. You can't spend your last one.", 'v116: Rest locked at 1 Sap')
     for (const id of ['ch1:v-zafir', 'ch1:v-runners', 'ch1:o-tax', 'ch1:p-clerk']) {
       const sc = getScene(id)!
       assert(GE.visibleChoices({ ...v, sceneId: id, chapterId: 'cache-run', hubId: sc.hubId, health: 3, sap: 4 }).some((c) => c.id === 'rest'), `v116: Rest on the road at ${id}`)

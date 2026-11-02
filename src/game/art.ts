@@ -15,6 +15,7 @@ export type CoverKey =
   | 'seeker_hound_handler'
   | 'turret_skiff'
   | 'foreman_rig_guards'
+  | 'rig_vent_patrol'
   | 'ch2_fight_drill_lead'
   | 'ch2_fight_patrol'
   | 'ch2_o_abyss'
@@ -181,6 +182,7 @@ const FILES: Record<CoverKey, string> = {
   seeker_hound_handler: 'seeker-hound-handler.jpg',
   turret_skiff: 'turret-skiff.jpg',
   foreman_rig_guards: 'foreman-rig-guards.jpg',
+  rig_vent_patrol: 'rig-vent-patrol.jpg',
   ch2_fight_drill_lead: 'ch2-fight-drill-lead.jpg',
   ch2_fight_patrol: 'ch2-fight-patrol.jpg',
   ch2_o_abyss: 'ch2-o-abyss.jpg',
@@ -356,6 +358,7 @@ export const COVER_BAND: Record<CoverKey, [number, number]> = {
   seeker_hound_handler: [0.05, 0.85],
   turret_skiff: [0.1, 0.85],
   foreman_rig_guards: [0.05, 0.85],
+  rig_vent_patrol: [0.05, 0.85],
   ch2_fight_drill_lead: [0.08, 0.72],
   ch2_fight_patrol: [0.08, 0.72],
   ch2_o_abyss: [0.08, 0.72],
@@ -632,7 +635,7 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
     if (kind === 'seekerhandler' || kind === 'packhound') return 'seeker_hound_handler'
     if (kind === 'skiff') return 'turret_skiff'
     if (kind === 'foreman' || kind === 'rigguard') return 'foreman_rig_guards'
-    if (kind === 'rigpatrol') return 'foreman_rig_guards'
+    if (kind === 'rigpatrol') return 'rig_vent_patrol'
     if (kind === 'dragoon') return 'courtguard'
     if (kind === 'patrol') return 'rell'
     if (kind === 'courtguard' || kind === 'thaliaguard') return 'courtguard'

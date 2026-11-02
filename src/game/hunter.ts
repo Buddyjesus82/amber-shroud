@@ -1,3 +1,4 @@
+import { SPARE_SAP_LOCK } from './sapLock'
 import { campHuntIsValerius } from './valeriusRest'
 import { CARAPACE_HUNTER_HEAT, SPINE_HUNTER, spineHunterFor } from './content/spineHunter'
 import { areaKey, beginEncounter, CLOAK_SKIP_SUB, CLOAK_USED_LOCK } from './encounter'
@@ -614,7 +615,7 @@ function cloakCost(state: GameState, c: Choice): Choice {
     ...c,
     sub: CLOAK_SKIP_SUB,
     enable: used ? { flag: '__never__' } : { sapMin: 2 },
-    locked: used ? CLOAK_USED_LOCK : 'Needs: 2 Sap',
+    locked: used ? CLOAK_USED_LOCK : SPARE_SAP_LOCK,
     effects: { ...c.effects, sap: (c.effects.sap ?? 0) - 1, flag: { ...(c.effects.flag ?? {}), cloakSkipArea: areaKey(state) } },
   }
 }

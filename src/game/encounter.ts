@@ -1,3 +1,4 @@
+import { SPARE_SAP_LOCK } from './sapLock'
 import { companionOf, LINES as PARTY_LINES } from './companions'
 import { STRAY_HUNTER_ENCOUNTERS } from './strayLines'
 import { MASKED_BLOCK_LINE, MASKED_ROUNDS, MASKED_STRIKE_LINE, MASKED_WALKS_OFF_LINE } from './maskedLines'
@@ -706,7 +707,7 @@ export function encounterChoices(state: GameState): Choice[] {
       tone: 'quiet',
       show: { all: [{ flagUnset: 'encounterRound' }, { flagUnset: 'encounterNoSkip' }] },
       enable: { sapMin: 2 },
-      locked: 'Needs: 2 Sap',
+      locked: SPARE_SAP_LOCK,
       effects: { resolveEncounter: 'skip', sap: -1 },
     },
     {
@@ -715,7 +716,7 @@ export function encounterChoices(state: GameState): Choice[] {
       sub: cloakUsed ? undefined : CLOAK_SKIP_SUB,
       show: { all: [{ any: [{ slot: 'armor' }, { slot: 'cloak' }] }, { flagUnset: 'encounterRound' }] },
       enable: cloakUsed ? { flag: '__never__' } : { sapMin: 2 },
-      locked: cloakUsed ? CLOAK_USED_LOCK : 'Needs: 2 Sap',
+      locked: cloakUsed ? CLOAK_USED_LOCK : SPARE_SAP_LOCK,
       effects: { resolveEncounter: 'skip', sap: -1, flag: { cloakSkipArea: areaKey(state) } },
     },
   ]
@@ -987,7 +988,12 @@ function roll(state: GameState, salt: string, n: number): number {
 }
 
 /** Named people: no "the" in front. */
-const PROPER_KINDS: EncounterKind[] = ['overseer', 'carapace']
+const PROPER_KINDS: EncounterKind[] = ['overseer', 'carapace', 'greg']
+/** v209: named as a group: "The Rig Guards hit back". */
+const PLURAL_KINDS: EncounterKind[] = ['rigguard', 'dragoon']
+function sv(spec: Spec, one: string, many: string): string {
+  return PLURAL_KINDS.includes(spec.kind) ? many : one
+}
 
 function whoOf(spec: Spec): string {
   if (spec.kind === 'masked') return 'the masked figure'
@@ -1055,10 +1061,10 @@ function resolveEncounterCore(
   const who = whoOf(spec)
   if (how === 'disguise') {
     if (roll(state, 'disguise', 4) > 0) {
-      const line = `${cap(who)} sees the gold thread and steps aside for a Vessel. You walk past. No loot.`
+      const line = `${cap(who)} ${sv(spec, 'sees', 'see')} the gold thread and steps aside for a Vessel. You walk past. No loot.`
       return holdCard(state, spec, line, line)
     }
-    const line = `${cap(who)} looks at the cloth, then at your hands and your boots. "That is no Vessel." The cloth will not fool the Cartel again. Cartel Heat rises by 2.`
+    const line = `${cap(who)} ${sv(spec, 'looks', 'look')} at the cloth, then at your hands and your boots. "That is no Vessel." The cloth will not fool the Cartel again. Cartel Heat rises by 2.`
     return {
       fx: {
         heat: { cartel: 2 },
@@ -1285,7 +1291,7 @@ function resolveEncounterCore(
           : `You throw sand in ${who}'s eyes. They miss this round and the next.`,
       )
     } else {
-      notes.push(spec.kind === 'husk' ? 'You throw sand. The husk has no eyes.' : `You throw sand. ${cap(who)} turns away.`)
+      notes.push(spec.kind === 'husk' ? 'You throw sand. The husk has no eyes.' : `You throw sand. ${cap(who)} ${sv(spec, 'turns', 'turn')} away.`)
     }
   } else if (move === 'pull' && latched) {
     latched = false
@@ -1294,14 +1300,14 @@ function resolveEncounterCore(
     if (pinned || latched) {
       notes.push(pinned ? 'The harpoon line holds you. You cannot run.' : 'The tick holds on. You cannot run with it on you.')
     } else if (roll(state, 'run', 100) < runChance(state)) {
-      const line = `You break away and run. ${cap(who)} does not follow. No loot.`
+      const line = `You break away and run. ${cap(who)} ${sv(spec, 'does', 'do')} not follow. No loot.`
       // v203: Suppressing Fire. Running from the skiff costs 1 more Sap, on its own line.
       // v205: Smoke Bomb round: running costs no extra Sap.
       if (spec.kind === 'skiff' && companionOf(state)?.id === 'orla' && round % 3 === 0) return holdCard(state, spec, `${line}\n\n${PARTY_LINES.smokeRun}`, line, { flag: { encounterFled: true } })
       if (spec.kind === 'skiff') return holdCard(state, spec, `${line}\n\n${SKIFF_RUN_LINE}`, line, { sap: -1, flag: { encounterFled: true } })
       return holdCard(state, spec, line, line, { flag: { encounterFled: true } })
     } else {
-      notes.push(`You try to run. ${cap(who)} catches you.`)
+      notes.push(`You try to run. ${cap(who)} ${sv(spec, 'catches', 'catch')} you.`)
       if (spec.kind === 'handler') {
         hitIn((d) => d + 1)
         inTags.push('Hound bite: they hit for 1 more.')
@@ -1388,15 +1394,17 @@ function resolveEncounterCore(
       : critOut
         ? `Critical Strike! You hit ${who} for ${dmgOut}.`
         : `You hit ${who} for ${dmgOut}.`
+  const pl = PLURAL_KINDS.includes(spec.kind)
+  const vb = (one: string, many: string) => (pl ? many : one)
   const themLine = f.encounterStun
-    ? `${cap(who)} misses. Sand in the eyes.`
+    ? `${cap(who)} ${vb('misses', 'miss')}. Sand in the eyes.`
     : lulled
-      ? `${cap(who)} goes for your Sap.`
+      ? `${cap(who)} ${vb('goes', 'go')} for your Sap.`
       : dmgIn <= 0
-      ? `${cap(who)} misses you.`
+      ? `${cap(who)} ${vb('misses', 'miss')} you.`
       : critIn && dmgIn > dmgInPlain
-        ? `Critical Strike! ${cap(who)} hits you for ${dmgIn}.`
-        : `${cap(who)} hits back for ${dmgIn}.`
+        ? `Critical Strike! ${cap(who)} ${vb('hits', 'hit')} you for ${dmgIn}.`
+        : `${cap(who)} ${vb('hits', 'hit')} back for ${dmgIn}.`
   const bonusLines = [...(attacking ? outTags : outTags.filter((t) => !/your hit/.test(t))), ...inTags]
   // v141: you kill them and drop to 0 in the same exchange: a win, not a Down. You stand at 1 Health, loot kept.
   // (The masked figure never dies, so his own rule, a hit that cannot take you below 1, is untouched.)

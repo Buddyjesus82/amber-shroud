@@ -1,3 +1,4 @@
+import { SPARE_SAP_LOCK } from '../sapLock'
 import { echoEntry } from './phase1Camps'
 import { gateCodeChoices, gateEntry } from './newPlaces'
 import type { Scene } from '../types'
@@ -268,7 +269,7 @@ Oram is here more often than he is in the Court. He prefers the animals to the h
         sub: 'Costs 1 Sap. When you ride into the Gullet, it carries the first stretch: 2 Sap saved.',
         show: { all: [{ item: 'strider_bit' }, { flagUnset: 'striderReady' }] },
         enable: { sapMin: 2 },
-        locked: 'Needs: 2 Sap',
+        locked: SPARE_SAP_LOCK,
         effects: {
           sap: -1,
           flag: { striderReady: true },

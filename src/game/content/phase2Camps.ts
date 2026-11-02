@@ -1,3 +1,4 @@
+import { SPARE_SAP_LOCK } from '../sapLock'
 import type { Choice, Cond, Scene } from '../types'
 import { HEAVY_TOOL, VEIN_KEY } from './newPlaces'
 import { FOREMAN_LINE, VALVE_GUARDS_LINE } from '../v203Lines'
@@ -20,6 +21,7 @@ import { FOREMAN_LINE, VALVE_GUARDS_LINE } from '../v203Lines'
 /** NEW */ export const OVERLOAD_LINE = 'The line shrieks and bursts. Amber sprays across the vats. Every lamp in the dig turns your way. Seeker Heat +2.'
 /** NEW */ export const BOSS_LINE = 'A heavy Seeker in full plate steps out of the lock alcove. A resin maul, runes cut into the shell.'
 /** NEW */ export const BOSS_WON = 'The heavy Seeker goes down against the frame. The lock gives under your weight.'
+/** v209 NEW */ export const VALERIUS_ROUTE = 'Beat him at the Shaft Foot first: Drill Line, then Go on.'
 /** NEW */ export const LOCK_RIBS = 'Valerius is still in the ribs behind you.'
 
 const VALERIUS_CLEAR: Cond = { any: [{ flag: 'ch2Won_valerius' }, { flag: 'ribsCollapsed' }] }
@@ -51,7 +53,7 @@ export const phase2Scenes: Scene[] = [
     title: 'Sinking Shanty',
     body: 'Lanterns glow dim in makeshift shelters suspended over a dark drop. The deep Strays eye you warily from the shadows.',
     choices: [
-      { id: 'rest', label: 'Rest by the Sifter Fire', sub: '+2 Health. Costs 1 Sap. Once a visit.', tone: 'quiet', show: { flagUnset: 'shantyRested' }, enable: { sapMin: 2 }, locked: 'Needs: 2 Sap', effects: { health: 2, sap: -1, still: true, flag: { shantyRested: true }, flash: SIFTER_REST } },
+      { id: 'rest', label: 'Rest by the Sifter Fire', sub: '+2 Health. Costs 1 Sap. Once a visit.', tone: 'quiet', show: { flagUnset: 'shantyRested' }, enable: { sapMin: 2 }, locked: SPARE_SAP_LOCK, effects: { health: 2, sap: -1, still: true, flag: { shantyRested: true }, flash: SIFTER_REST } },
       { id: 'anvil', label: 'Approach the Anvil', effects: { unsetFlag: ['shantyRested'], goto: 'deep:anvil' } },
     ],
   },
@@ -77,7 +79,7 @@ export const phase2Scenes: Scene[] = [
       { id: 'contract', label: 'Take High-Risk Rig Contract', sub: '3 scrap. Cartel Heat +2. Once.', tone: 'danger', show: { flagUnset: 'rigContract' }, effects: { add: { scrap: 3 }, heat: { cartel: 2 }, flag: { rigContract: true }, flash: CONTRACT_LINE } },
       // v203 (draft): no Operations Deck exists, so the Foreman comes when you double-cross the contract. NEW label and sub.
       { id: 'doublecross', label: 'Double-Cross the Rig Contract', sub: 'A fight: the foreman, then his Rig Guards. Win: 3 scrap. Once.', tone: 'danger', show: { all: [{ flag: 'rigContract' }, { flagUnset: 'rigCrossed' }] }, effects: { flag: { rigCrossed: true, foremanFought: true, ch2Fight: 'foreman' }, ambush: { kind: 'foreman', line: FOREMAN_LINE } } },
-      { id: 'passkey', label: 'Buy Rig Passage Key', sub: '1 Sap.', show: { not: { item: 'rig_passkey' } }, enable: { sapMin: 2 }, locked: 'Need Sap to spare.', effects: { sap: -1, add: { rig_passkey: 1 }, flash: PASSKEY_LINE } },
+      { id: 'passkey', label: 'Buy Rig Passage Key', sub: '1 Sap.', show: { not: { item: 'rig_passkey' } }, enable: { sapMin: 2 }, locked: SPARE_SAP_LOCK, effects: { sap: -1, add: { rig_passkey: 1 }, flash: PASSKEY_LINE } },
       { id: 'vents', label: 'Pressure Vents', effects: { goto: 'deep:vents' } },
       { id: 'approach', label: 'The Primary Vein approach', sub: 'The rig passage key.', tone: 'hunger', enable: { item: 'rig_passkey' }, locked: 'Needs: the rig passage key', effects: { goto: 'deep:vein-approach' } },
       { id: 'back', label: 'Back to the Drill Line', tone: 'quiet', effects: { goto: 'ch2:p-drillrun' } },
@@ -104,7 +106,7 @@ export const phase2Scenes: Scene[] = [
     body: VEIN_APPROACH_BODY,
     choices: [
       { id: 'vein', label: 'The Primary Vein', sub: "Thalia's code or Kaelen's shim.", tone: 'hunger', show: VALERIUS_CLEAR, enable: VEIN_KEY, locked: "Sealed. You need Thalia's code or Kaelen's shim.", effects: { goto: 'ch2:vein' } },
-      { id: 'vein-held', label: 'The Primary Vein', tone: 'hunger', show: { not: VALERIUS_CLEAR }, enable: VALERIUS_CLEAR, locked: VALERIUS_HOLDS, effects: { goto: 'ch2:vein' } },
+      { id: 'vein-held', label: 'The Primary Vein', tone: 'hunger', show: { not: VALERIUS_CLEAR }, enable: VALERIUS_CLEAR, locked: `${VALERIUS_HOLDS} ${VALERIUS_ROUTE}`, effects: { goto: 'ch2:vein' } },
       { id: 'back', label: 'Back to the Drill Deck', tone: 'quiet', effects: { goto: 'deep:drill-deck' } },
     ],
   },
