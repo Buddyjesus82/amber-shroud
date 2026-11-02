@@ -31,6 +31,8 @@ export function strayHunterArrives(before: GameState, next: GameState): boolean 
   // v168: the Outcast's Chapter Two route is Stray Hunter country too (the stake line has its own fixed arrival).
   const ch2 = next.chapterId === 'into-the-maw' && CH2_OUTCAST.test(next.sceneId) && next.sceneId !== 'ch2:o-stakes'
   if (!road && !ch2) return false
+  // v211: on the Chapter Two Outcast route, a beaten Hunter stays down (no respawn on Back).
+  if (ch2 && next.flags.strayHunterBeaten) return false
   if (next.flags.encounterHere || next.flags.hunterHere || next.flags.strayHunterHere || next.flags.downed) return false
   const sc = getScene(next.sceneId)
   const kind = sc.kind

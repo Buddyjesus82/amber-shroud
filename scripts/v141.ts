@@ -68,7 +68,7 @@ for (const door of ['prisoner', 'outcast', 'vessel'] as DoorId[]) {
     }
   }
 }
-ok(mutual > 100, `mutual-0 wins exercised (${mutual})`)
+ok(mutual === 0, `v211: a foe that drops never hits back, so no mutual-0 rounds (${mutual})`)
 ok(realLosses > 20, `real losses exercised (${realLosses})`)
 
 // A real loss, pinned: the enemy lives (Health 3, Shell 3), you are at 1 Health.

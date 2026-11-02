@@ -753,7 +753,7 @@ He looks at the brand once and then talks to the air beside your head. "Shade-ro
         body: `His eyes snag on the scratch in your palm. "Silas is still sending me thirsty people with his handwriting. That is almost a discount."`,
       },
       {
-        if: { item: 'vial_empty' },
+        if: { all: [{ item: 'vial_empty' }, { not: { item: 'vial_drop' } }] },
         mode: 'append',
         body: `He hears the empty vial tick. "Honesty about thirst is a Stray password. Spend it here, or save it for Ossa. Not both as a speech."`,
       },

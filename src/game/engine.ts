@@ -1229,6 +1229,8 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     if (!state.flags.encounterFled && !next.flags.downed && (next.health ?? 1) > 0) {
       next.heat = { ...next.heat, strays: Math.min(8, (next.heat.strays ?? 0) + 1) }
       next.flash = next.flash ? `${next.flash}\n\n${STRAY_KILL_LINE}` : STRAY_KILL_LINE
+      // v211: a beaten Stray Hunter stays beaten. Backing out of Murch's camp does not raise him again.
+      if (next.chapterId === 'into-the-maw') next.flags = { ...next.flags, strayHunterBeaten: true }
     }
   }
   // The Maw toll is once a visit: leaving the Maw resets it.
@@ -1572,6 +1574,8 @@ export function scavenge(state: GameState): GameState {
   const warm = amberFindSign(state, (next.items.glints ?? 0) > (state.items.glints ?? 0))
   if (warm) next = { ...next, flash: `${next.flash ?? ''} ${warm}`.trim(), flags: { ...next.flags, amberWarmSeen: true, sandSignAt: next.ticks } }
   next = scavengeNotice(state, next)
+  // v211: Hide Gloves, Shin Wraps and other road finds go on when their slot is empty.
+  next = autoEquip(state, next)
   return withVerb(
     persist({
       ...next,
@@ -2543,8 +2547,9 @@ function autoEquip(state: GameState, next: GameState): GameState {
   let changed = false
   for (const [id, n] of Object.entries(next.items) as [ItemId, number | undefined][]) {
     if ((n ?? 0) <= (state.items[id] ?? 0)) continue
-    const to = slotsFor(id)[0]
-    if (!to || !AUTO_SLOTS.includes(to) || equipped[to]) continue
+    // v211: a piece with two slots (Blood Shiv: Main hand or Off hand) takes the first empty one.
+    const to = slotsFor(id).find((sl) => AUTO_SLOTS.includes(sl) && !equipped[sl])
+    if (!to) continue
     if (Object.values(equipped).includes(id) && (n ?? 0) < 2) continue
     equipped = { ...equipped, [to]: id }
     changed = true

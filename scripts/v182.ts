@@ -5,8 +5,8 @@ import { fightStartFlags, resolveEncounter } from '../src/game/encounter.ts'
 import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v210'"), 'SW cache v182')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v210'"), 'Build label v182')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v211'"), 'SW cache v182')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v211'"), 'Build label v182')
 const v = chapterTwoFromCode('vessel')
 // v199: the Primary Vein lock needs the bargain or the shim; these checks hold the key.
 const at = (flags: object) => ({ ...v, sceneId: 'ch2:ribs', flags: { ...v.flags, hasBargainFlag: true, ...flags } }) as GameState
@@ -34,7 +34,7 @@ for (let t = 0; t < 200; t++) {
   const after = applyEffect(s, r.fx)
   if (/hits (back|you) for [1-9]/.test(card) && after.health > 0) { seen++; ok(/you drop .* first\./.test(card), `log matches survival t${t}`) }
 }
-ok(seen > 0, 'mutual win sampled')
+ok(seen === 0, 'v211: no mutual win; a dropped foe never hits back')
 // 6: the drill line alone is not held
 ok(/DRILL_LINES as readonly string\[\]\)\.includes\(next\.flash/.test(readFileSync('src/components/PlayScreen.tsx', 'utf8')), 'clock line not held')
 if (fails) { console.log(`${fails} FAILED`); process.exit(1) }

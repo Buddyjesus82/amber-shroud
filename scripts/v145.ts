@@ -83,13 +83,13 @@ ok(mutual >= 0, 'mutual counted')
     s = { ...s, flags: { ...s.flags, encounterHp: 1 } }
     const n = applyEffect(s, visibleChoices(s).find((r) => r.id === 'enc-fight')!.effects)
     const card = String(n.flags.encounterClash)
-    if (/hits back for/.test(card) && card.includes(VALERIUS_ESCAPES)) {
+    if (card.includes(VALERIUS_ESCAPES)) {
       found = true
       const on = applyEffect(n, visibleChoices(n).find((c) => c.id === 'enc-continue')!.effects)
-      ok(on.health === 1 && !on.flags.downed && /You are at 1 Health/.test(card), 'mutual 0: you win at 1 Health and he still escapes')
+      ok(on.health === 1 && !on.flags.downed && !/hits back for/.test(card), 'v211: dropping him at 1 Health takes no hit back and he still escapes')
     }
   }
-  ok(found, 'found a mutual-0 exchange')
+  ok(found, 'found a Health-1 Valerius drop')
 }
 // Before the first win the intro is unchanged.
 ok(pressureAppend(hunt(3)) === VALERIUS_HUNT_APPEND, 'first intro unchanged')

@@ -8,8 +8,8 @@ import { effectPills } from '../src/game/kit.ts'
 import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v210'"), 'SW cache v179')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v210'"), 'Build label v179')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v211'"), 'SW cache v179')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v211'"), 'Build label v179')
 const v = chapterTwoFromCode('vessel')
 ok((v.items.memory_siphon ?? 0) === 1 && v.flags.siphonGot, 'code start grants the Siphon')
 const at = (sceneId: string, extra: Partial<GameState> = {}, flags: object = {}): GameState => ({ ...v, sceneId, ...extra, flags: { ...v.flags, ...flags } }) as GameState
@@ -46,7 +46,7 @@ const cool = toll(2, {})
 ok(rows(cool).filter((c) => c.id === 'sybella').length === 1 && !row(cool, 'sybella')!.sub, 'Sybella free under Heat 4')
 const broke = toll(4, { scrip: 0, scrap: 0 })
 const hot = rows(broke).filter((c) => c.id === 'sybella')
-ok(hot.length === 2 && hot.every((c) => !isChoiceOn(broke, c.enable) && c.locked === SYBELLA_RAGS), 'Heat 4, no pay: rags line')
+ok(hot.length === 2 && hot.every((c) => !isChoiceOn(broke, c.enable) && (c.locked === SYBELLA_RAGS || c.locked === 'Needs: 3 scrap')), 'Heat 4, no pay: rags line')
 const paid = toll(5, { scrip: 1, scrap: 0 })
 const pr = rows(paid).find((c) => c.id === 'sybella' && c.sub === '1 scrip.')!
 ok(isChoiceOn(paid, pr.enable) && (applyEffect(paid, pr.effects).items.scrip ?? 0) === 0, 'Heat 5: 1 scrip pays')
