@@ -85,6 +85,9 @@ import {
   RUSE_FIGHT_LINE,
   RUSE_HEAT_LINE,
   type EncounterKind,
+  PACK_HOUND_LINE,
+  RIG_GUARDS_LINE,
+  OVERTIME_LINE,
 } from './encounter'
 import { talkFallback, talkIntentsFor } from './talk'
 import { answerAsk, answerLate, hintLine, readAsk, readLateAsk, sceneVoice, voiceOnScreen } from './politeAsk'
@@ -905,6 +908,8 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     if (fx.ambush) {
       next.flags = { ...next.flags, ...fightStartFlags(next, fx.ambush.kind as EncounterKind), encounterNoSkip: true }
       next.flash = fx.ambush.line
+      // v203: Rig Guards after the Foreman: Overtime, on its own line.
+      if (fx.ambush.kind === 'rigguard' && next.flags.foremanFought) next.flash = `${next.flash}\n\n${OVERTIME_LINE}`
     } else if (fx.sneak && sneakSpotted(next, fx.sneak.odds)) {
       next.flags = { ...next.flags, ...fightStartFlags(next, fx.sneak.kind as EncounterKind) }
       next.flash = fx.sneak.spotted
@@ -1186,6 +1191,8 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   if (!state.flags.chapter2Unlocked && next.flags.chapter2Unlocked && !next.flags.siphonGot) {
     next = { ...next, items: { ...next.items, memory_siphon: (next.items.memory_siphon ?? 0) + 1 }, flags: { ...next.flags, siphonGot: true } }
   }
+  // v203: chained fights. A Seeker Hound-Handler who called his pack, and the Foreman's escort, fight you as he falls.
+  next = chainedFight(state, next)
   if (next.flags.encounterFled && !next.flags.encounterHere) {
     const flags = { ...next.flags }
     delete flags.encounterFled
@@ -2511,3 +2518,19 @@ export function unequipSlot(state: GameState, slot: EquipSlot): GameState {
 }
 
 export { HUBS, DOORS, check, clamp, travelGate, canScavenge, canSkim }
+
+/** v203: the next fight in a chain opens when a won card closes. Running or going down ends the chain. */
+function chainedFight(state: GameState, next: GameState): GameState {
+  if (!state.flags.encounterHere || next.flags.encounterHere) return next
+  if (state.flags.encounterFled || next.flags.downed || (next.health ?? 1) <= 0) return next
+  const kind = state.flags.encounterKind
+  const chain: { kind: EncounterKind; line: string } | null =
+    kind === 'seekerhandler' && state.flags.packCalled
+      ? { kind: 'packhound', line: PACK_HOUND_LINE }
+      : kind === 'foreman'
+        ? { kind: 'rigguard', line: `${RIG_GUARDS_LINE}\n\n${OVERTIME_LINE}` }
+        : null
+  if (!chain) return next
+  const flags = { ...next.flags, ...fightStartFlags(next, chain.kind), encounterNoSkip: true }
+  return { ...next, flags, flash: next.flash ? `${next.flash}\n\n${chain.line}` : chain.line }
+}

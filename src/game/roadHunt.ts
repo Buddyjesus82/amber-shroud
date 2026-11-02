@@ -1,4 +1,4 @@
-import { turfFaction } from './encounter'
+import { SKIFF_HEAT, turfFaction } from './encounter'
 import { getScene } from './content'
 import type { EncounterKind } from './encounter'
 import type { GameState } from './types'
@@ -38,7 +38,8 @@ export function roadHunterKind(before: GameState, next: GameState): { kind: Enco
   const f = next.sceneId === 'ch1:leave' ? DOOR_FACTION[next.door] : turfFaction(next)
   const heat = next.heat[f]
   if (heat < (kind === 'talk' ? ROAD_HUNT_TALK_HEAT : ROAD_HUNT_HEAT)) return null
-  const k: EncounterKind = f === 'cartel' ? 'scavenger' : f === 'strays' ? 'collector' : heat >= ROAD_HUSK_HEAT ? 'husk' : 'runner'
+  // v203: at Cartel Heat 6+ the Cartel sends a Turreted Skiff down the open-sand road.
+  const k: EncounterKind = f === 'cartel' ? (heat >= SKIFF_HEAT ? 'skiff' : 'scavenger') : f === 'strays' ? 'collector' : heat >= ROAD_HUSK_HEAT ? 'husk' : 'runner'
   return { kind: k, line: ROAD_HUNT_LINES[f] }
 }
 
