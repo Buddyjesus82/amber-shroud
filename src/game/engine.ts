@@ -294,7 +294,8 @@ function huntHeat(state: GameState): number {
     state.hubId === 'threshold' ||
     state.sceneId.startsWith('maw:') ||
     state.sceneId.startsWith('thresh:')
-  return seekersGround ? state.heat.seekers : state.heat.cartel
+  // v199: owing Thalia a favor marks you. Seeker hunt checks count Seeker Heat 2 higher.
+  return seekersGround ? state.heat.seekers + (state.flags.thaliaFavor ? 2 : 0) : state.heat.cartel
 }
 
 /**

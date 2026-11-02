@@ -5,10 +5,11 @@ import { fightStartFlags, resolveEncounter } from '../src/game/encounter.ts'
 import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v198'"), 'SW cache v182')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v198'"), 'Build label v182')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v199'"), 'SW cache v182')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v199'"), 'Build label v182')
 const v = chapterTwoFromCode('vessel')
-const at = (flags: object) => ({ ...v, sceneId: 'ch2:ribs', flags: { ...v.flags, ...flags } }) as GameState
+// v199: the Primary Vein lock needs the bargain or the shim; these checks hold the key.
+const at = (flags: object) => ({ ...v, sceneId: 'ch2:ribs', flags: { ...v.flags, hasBargainFlag: true, ...flags } }) as GameState
 // 3: text follows the lift
 for (const f of [{ liftDone: true, murchProtected: true, murchShop: 'full', vexFreed: true }, { liftDone: true }, { liftDone: true, liftLadder: true }]) {
   const b = bodyOf(at(f))

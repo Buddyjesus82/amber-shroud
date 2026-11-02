@@ -6,8 +6,8 @@ import { CH2_ENTRY } from '../src/game/content/intoTheMaw.ts'
 import type { DoorId, GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v198'"), 'SW cache v192')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v198'"), 'Build label v192')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v199'"), 'SW cache v192')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v199'"), 'Build label v192')
 const cont = getScene('ch1:end').choices.find((c) => c.id === 'continue')!.effects
 const cases: [string, Record<string, unknown>, number][] = [
   ['fresh', {}, 0],
@@ -26,6 +26,8 @@ for (const door of ['prisoner', 'outcast', 'vessel'] as DoorId[]) {
     ok(n.flags.chapter2Unlocked && n.flags.ch2Started && n.flags.siphonGot, `${door} ${name}: flags`)
     ok(n.items.memory_siphon === 1, `${door} ${name}: exactly one Memory Siphon (got ${n.items.memory_siphon})`)
     for (const f of ['kalliksMark', 'thaliaDeal', 'sybellaSkiff']) ok(!(f in n.flags), `${door} ${name}: no ${f}`)
+    // v199: the bargain flag comes only from Thalia's Bargain (Pay or Favor).
+    ok(!('hasBargainFlag' in n.flags), `${door} ${name}: no hasBargainFlag`)
   }
 }
 // Scavenge the debris on the Stairs: once a run, 1 Scrap, 1 in 3 for a second.

@@ -1,3 +1,4 @@
+import { campPlaceChoices } from './newPlaces'
 import { FENCE_HOLE_BACK, HEAR_PLAN, PLAN_HEARD, PLAN_UNHEARD, TAKE_INSIDE_JOB } from '../campJob'
 import type { Cond, Scene } from '../types'
 
@@ -393,6 +394,7 @@ He is the one who can break you out. He hotwires Ironclad Skiff-Striders, and he
         show: { all: [{ flag: 'guardDown' }, JAX_HERE] },
         effects: { goto: 'camp:bay', ticks: 1 },
       },
+      ...campPlaceChoices('cages'),
     ],
     intents: [
       {
@@ -999,6 +1001,7 @@ Iron plating over a dust-cloak. The baton hisses steam. He hunts people who stea
         },
       },
       { id: 'back', label: 'Step out of his shade', tone: 'quiet', effects: { goto: 'camp:tower' } },
+      ...campPlaceChoices('valerius'),
     ],
     intents: [
       {
@@ -1067,6 +1070,7 @@ Ironclad Skiff-Striders patrol the far side of this line. Red Maw is past it. So
           flag: { sawMawHaze: true },
         },
       },
+      ...campPlaceChoices('wire'),
     ],
     intents: [
       {

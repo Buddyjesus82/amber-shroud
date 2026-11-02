@@ -6,8 +6,8 @@ import { playCoverKey } from '../src/game/art.ts'
 import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v198'"), 'SW cache v185')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v198'"), 'Build label v185')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v199'"), 'SW cache v185')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v199'"), 'Build label v185')
 const v = chapterTwoFromCode('vessel')
 const s = applyEffect(v, visibleChoices(v)[0].effects)
 const at = (sceneId: string, flags: object = {}) => ({ ...s, sceneId, flags: { ...s.flags, ...flags } }) as GameState
@@ -28,7 +28,7 @@ ok(!sceneOf(at('ch2:v-test', { valeriusMoved: true, cupFailed: true })).body.inc
 // #6 Ribs art
 ok(playCoverKey(at('ch2:ribs'), sceneOf(at('ch2:ribs'))) === 'ch2_s_ribs_lift_solo', 'solo art when nobody works')
 // #8 forced gear -> Descend
-const g = pick(at('ch2:ribs', { murchProtected: true }), 'force')
+const g = pick(at('ch2:ribs', { murchProtected: true, hasBargainFlag: true }), 'force')
 ok(ids(g).includes('ride') && !ids(g).includes('climb'), 'forced gear shows Descend the lift')
 if (fails) { console.log(`${fails} FAILED`); process.exit(1) }
 console.log('v185 ok')

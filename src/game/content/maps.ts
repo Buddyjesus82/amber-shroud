@@ -33,6 +33,11 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
     ],
     sceneNode: {
       'camp:cages': 'pens',
+      'camp:overlook': 'pens',
+      'camp:siftline': 'pens',
+      'camp:jammed': 'pens',
+      'camp:ration': 'pens',
+      'camp:genpop': 'pens',
       'camp:rumor-scrip': 'pens',
       'camp:rumor-valve': 'vents',
       'camp:rumor-crate': 'bay',
@@ -87,6 +92,8 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
     ],
     sceneNode: {
       'spine:ridge': 'ridge',
+      'spine:shattered': 'ridge',
+      'spine:ossuary': 'ridge',
       'spine:rumor-tally': 'ridge',
       'spine:rumor-well': 'well',
       'spine:rumor-corvin': 'hound',
@@ -131,6 +138,9 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
     ],
     sceneNode: {
       'thresh:court': 'court',
+      'thresh:gate': 'court',
+      'thresh:canyon': 'court',
+      'thresh:command': 'court',
       'thresh:rumor-reliquary': 'court',
       'thresh:rumor-ledger': 'court',
       'thresh:rumor-tack': 'paddock',

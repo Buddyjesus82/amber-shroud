@@ -1,3 +1,4 @@
+import { SCOUT_CAMP_LINE, spinePlaceChoice } from './newPlaces'
 import { WELL_SKIM_LOCKED } from '../scavenge'
 import type { Scene } from '../types'
 import { shadeHandChoices } from './shadeHands'
@@ -10,7 +11,9 @@ export const spineScenes: Scene[] = [
     title: 'Noon Spine',
     body: `The Bleached Spine is a ridge of bone-pale rock. Nothing casts a kind shadow.
 
-Down-slope: a tent the color of old teeth. Silas Vane sells shade by the minute. Farther, a well that has been an argument for thirty years. Hound tracks stitch the eastern wash — Cartel, or something wearing Cartel feet.`,
+Down-slope: a tent the color of old teeth. Silas Vane sells shade by the minute. Farther, a well that has been an argument for thirty years. Hound tracks stitch the eastern wash — Cartel, or something wearing Cartel feet.
+
+${SCOUT_CAMP_LINE}`,
     variants: [
       {
         // The vial line checks the vial.
@@ -85,6 +88,7 @@ Down-slope: a tent the color of old teeth. Silas Vane sells shade by the minute.
           flash: 'You spend the noon on a direction. The Spine lets you go like a debt it can collect later.',
         },
       },
+      spinePlaceChoice,
     ],
     intents: [
       {
