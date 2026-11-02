@@ -4,8 +4,8 @@ import { chapterTwoFromCode, bodyOf, visibleChoices, applyEffect, interpret } fr
 import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v201'"), 'SW cache v183')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v201'"), 'Build label v183')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v202'"), 'SW cache v183')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v202'"), 'Build label v183')
 const v = chapterTwoFromCode('vessel')
 const at = (sceneId: string, items: object = {}, flags: object = {}) => ({ ...v, sceneId, health: 10, items: { ...v.items, ...items }, flags: { ...v.flags, ...flags } }) as GameState
 const pick = (s: GameState, id: string) => applyEffect(s, visibleChoices(s).find((c) => c.id === id)!.effects)

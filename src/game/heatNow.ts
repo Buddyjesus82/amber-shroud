@@ -19,14 +19,17 @@ const onThresh = (s: Where) => s.hubId === 'threshold' || s.sceneId.startsWith('
  */
 export function heatNow(state: Pick<GameState, 'heat' | 'flags' | 'hubId' | 'sceneId'>, f: Faction): string[] {
   const h = state.heat[f] ?? 0
-  if (h <= 0) return ['No one is after you.']
+  // v202: Red Maw and the Threshold hunt on effective Seeker Heat (engine.ts huntHeat: Thalia's favor adds 2).
+  const favorGround = f === 'seekers' && (onMaw(state) || onThresh(state))
+  const eff = favorGround && state.flags.thaliaFavor ? h + 2 : h
+  if (eff <= 0) return ['No one is after you.']
   const out: string[] = []
   if (f === 'cartel') {
     if (onCamp(state)) out.push(campHuntIsValerius(state) ? 'At Camp-04: Valerius himself.' : 'At Camp-04: the Hound-handler.')
     if (h >= ROAD_HUNT_HEAT) out.push('On the roads: a paid ambusher.')
   } else if (f === 'seekers') {
-    if (onMaw(state)) out.push('At Red Maw: Sybella.')
-    if (onThresh(state)) out.push('At the Threshold: a Court Guard.')
+    if (onMaw(state) && eff >= 1) out.push('At Red Maw: Sybella.')
+    if (onThresh(state) && eff >= 1) out.push('At the Threshold: a Court Guard.')
     if (onThresh(state) && h >= COMMAND_VALERIUS_HEAT) out.push('At Seeker Command: Valerius.')
     if (h >= ROAD_HUSK_HEAT) out.push('On the roads: a husk.')
     else if (h >= ROAD_HUNT_HEAT) out.push('On the roads: Seeker runners.')

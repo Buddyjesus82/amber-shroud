@@ -32,6 +32,9 @@ ok(heatNow(g('vessel', 'threshold', 'thresh:court', { seekers: 6 }), 'seekers').
 ok(heatNow(g('prisoner', 'redmaw', 'maw:hub', { seekers: 1 }), 'seekers')[0] === 'At Red Maw: Sybella.', 'maw Sybella')
 ok(heatNow(g('prisoner', 'camp04', 'camp:yard', { seekers: 1 }), 'seekers')[0] === 'No one on this ground yet.', 'off-ground')
 
+ok(heatNow(g('prisoner', 'redmaw', 'maw:hub', { seekers: 0 }, { thaliaFavor: true }), 'seekers')[0] === 'At Red Maw: Sybella.', 'favor: Maw counts +2')
+ok(heatNow(g('vessel', 'threshold', 'thresh:court', { seekers: 0 }, { thaliaFavor: true }), 'seekers')[0] === 'At the Threshold: a Court Guard.', 'favor: Threshold counts +2')
+ok(heatNow(g('prisoner', 'camp04', 'camp:yard', { seekers: 0 }, { thaliaFavor: true }), 'seekers')[0] === 'No one is after you.', 'favor: no effect off those grounds')
 const enc = readFileSync('src/game/encounter.ts', 'utf8')
 ok(enc.includes("state.sceneId === 'thresh:command'") && enc.includes('heat: command ? { seekers: -1 } : { cartel: -1 }'), 'Command win: Seeker Heat -1, Camp-04 unchanged')
 // Live: the command-hot choice starts the fight on thresh:command.
