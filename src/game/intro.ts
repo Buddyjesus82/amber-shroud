@@ -10,6 +10,8 @@ export type IntroCard = {
   title: string
   /** File under public/intro/. The full image is always shown; the text sits below it. */
   img: string
+  /** v201: a tall portrait map. Shown whole (no pan or zoom) and given more of the screen. */
+  tall?: boolean
   alt: string
   text: string
 }
@@ -18,8 +20,9 @@ export const INTRO_CARDS: IntroCard[] = [
   {
     id: 'world',
     title: 'The Amber Shroud',
-    img: 'world.jpg',
-    alt: 'Parchment map: Camp-04 far west, Bleached Spine north, sealed Spire in the east, Outer Threshold in a fallen spire to the southeast, roads meeting at Red Maw',
+    img: 'great-bleed.jpg',
+    tall: true,
+    alt: 'Painted map of the Great Bleed: Ironwood Camp-04 and the Bleached Spine in the north, the Maw in the middle, the Threshold Garrison and the Fallen Spire below it, roads down to the First Active Spire',
     text: 'The sand is ground amber, holding the stagnant memories of a dead civilization. The Great Bleed uncovered the ruins of the First Spires. The greatest of them, in the east, is sealed. Camp-04 sits far west, the Bleached Spine north, the Outer Threshold southeast. All three roads run to Red Maw, the only way to the Spire.',
   },
   {

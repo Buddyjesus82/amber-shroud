@@ -2290,3 +2290,20 @@ h2 {
   font-size: 0.8rem;
   line-height: 1;
 }
+
+/* v201: Jeramie's tall Great Bleed map. Whole map visible (contain, no Ken Burns), more of the screen; text scrolls below. */
+.intro-tall .intro-art .intro-img {
+  max-height: 55vh;
+  width: auto;
+  max-width: 100%;
+}
+@supports (height: 1cqh) {
+  .intro-tall .intro-art .intro-img {
+    max-height: 55cqh;
+  }
+}
+.intro-layer.intro-tall.on .intro-img,
+.intro-layer.intro-tall.was .intro-img {
+  animation: none;
+  transform: none;
+}
