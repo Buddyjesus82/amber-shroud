@@ -9,6 +9,12 @@ import type { GameState, Scene } from './types'
 
 export type CoverKey =
   | 'ch2_fight_dragoon'
+  | 'heavy_seeker'
+  | 'patrol_squad'
+  | 'drill_crew'
+  | 'seeker_hound_handler'
+  | 'turret_skiff'
+  | 'foreman_rig_guards'
   | 'ch2_fight_drill_lead'
   | 'ch2_fight_patrol'
   | 'ch2_o_abyss'
@@ -165,6 +171,13 @@ export type CoverKey =
 
 const FILES: Record<CoverKey, string> = {
   ch2_fight_dragoon: 'ch2-fight-dragoon.jpg',
+  // v203: Jeramie's Red Maw roster art.
+  heavy_seeker: 'heavy-seeker.jpg',
+  patrol_squad: 'patrol-squad.jpg',
+  drill_crew: 'drill-crew.jpg',
+  seeker_hound_handler: 'seeker-hound-handler.jpg',
+  turret_skiff: 'turret-skiff.jpg',
+  foreman_rig_guards: 'foreman-rig-guards.jpg',
   ch2_fight_drill_lead: 'ch2-fight-drill-lead.jpg',
   ch2_fight_patrol: 'ch2-fight-patrol.jpg',
   ch2_o_abyss: 'ch2-o-abyss.jpg',
@@ -331,6 +344,12 @@ const FILES: Record<CoverKey, string> = {
 export const COVER_BAND: Record<CoverKey, [number, number]> = {
   // v168: Chapter Two door art. Faces sit high; wide shots keep the middle band.
   ch2_fight_dragoon: [0.08, 0.72],
+  heavy_seeker: [0.05, 0.85],
+  patrol_squad: [0.05, 0.85],
+  drill_crew: [0.05, 0.85],
+  seeker_hound_handler: [0.05, 0.85],
+  turret_skiff: [0.1, 0.85],
+  foreman_rig_guards: [0.05, 0.85],
   ch2_fight_drill_lead: [0.08, 0.72],
   ch2_fight_patrol: [0.08, 0.72],
   ch2_o_abyss: [0.08, 0.72],
@@ -596,8 +615,16 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
       if (kind === 'seekerpatrol') return 'ch2_fight_patrol'
       if (kind === 'strayhunter' || kind === 'strayhound') return STRAY_HUNTER_COVER as CoverKey
     }
-    if (kind === 'dragoon' || kind === 'seekerpatrol') return 'courtguard'
-    if (kind === 'drilllead') return 'extraction_rig'
+    // v203: roster art. Seeker Patrol and Drill Lead fights off Into the Maw get their own covers.
+    if (kind === 'lockboss') return 'heavy_seeker'
+    if (kind === 'seekerpatrol') return 'patrol_squad'
+    if (kind === 'drilllead') return 'drill_crew'
+    if (kind === 'packhound' && state.flags.packCartel) return 'handler'
+    if (kind === 'seekerhandler' || kind === 'packhound') return 'seeker_hound_handler'
+    if (kind === 'skiff') return 'turret_skiff'
+    if (kind === 'foreman' || kind === 'rigguard') return 'foreman_rig_guards'
+    if (kind === 'rigpatrol') return 'foreman_rig_guards'
+    if (kind === 'dragoon') return 'courtguard'
     if (kind === 'patrol') return 'rell'
     if (kind === 'courtguard' || kind === 'thaliaguard') return 'courtguard'
     if (kind === 'collector') return SPINE_HUNTER.art

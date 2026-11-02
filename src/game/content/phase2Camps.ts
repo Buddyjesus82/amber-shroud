@@ -1,5 +1,6 @@
 import type { Choice, Cond, Scene } from '../types'
 import { HEAVY_TOOL, VEIN_KEY } from './newPlaces'
+import { FOREMAN_LINE, VALVE_GUARDS_LINE } from '../v203Lines'
 
 // v200 DRAFT: Phase 2 deep camps (Jeramie's spec). Descriptions verbatim.
 // Flash lines marked NEW await approval. Numbers marked PROPOSED map his 100-scale to Health 6 / Sap 8 / Heat 8.
@@ -74,6 +75,8 @@ export const phase2Scenes: Scene[] = [
     body: 'Piston rams hammer into the subterranean rock wall. High-pressure steam whistles through cracked iron piping.',
     choices: [
       { id: 'contract', label: 'Take High-Risk Rig Contract', sub: '3 scrap. Cartel Heat +2. Once.', tone: 'danger', show: { flagUnset: 'rigContract' }, effects: { add: { scrap: 3 }, heat: { cartel: 2 }, flag: { rigContract: true }, flash: CONTRACT_LINE } },
+      // v203 (draft): no Operations Deck exists, so the Foreman comes when you double-cross the contract. NEW label and sub.
+      { id: 'doublecross', label: 'Double-Cross the Rig Contract', sub: 'A fight: the foreman, then his Rig Guards. Win: 3 scrap. Once.', tone: 'danger', show: { all: [{ flag: 'rigContract' }, { flagUnset: 'rigCrossed' }] }, effects: { flag: { rigCrossed: true, foremanFought: true, ch2Fight: 'foreman' }, ambush: { kind: 'foreman', line: FOREMAN_LINE } } },
       { id: 'passkey', label: 'Buy Rig Passage Key', sub: '1 Sap.', show: { not: { item: 'rig_passkey' } }, enable: { sapMin: 2 }, locked: 'Need Sap to spare.', effects: { sap: -1, add: { rig_passkey: 1 }, flash: PASSKEY_LINE } },
       { id: 'vents', label: 'Pressure Vents', effects: { goto: 'deep:vents' } },
       { id: 'approach', label: 'The Primary Vein approach', sub: 'The rig passage key.', tone: 'hunger', enable: { item: 'rig_passkey' }, locked: 'Needs: the rig passage key', effects: { goto: 'deep:vein-approach' } },
@@ -86,9 +89,11 @@ export const phase2Scenes: Scene[] = [
     title: 'Pressure Vents',
     body: 'Superheated steam valves holding back toxic gas from the lower shafts.',
     choices: [
-      { id: 'valve', label: 'Blow Steam Valve', sub: 'Cartel Heat −1. Once.', show: { flagUnset: 'rigDistracted' }, effects: { heat: { cartel: -1 }, flag: { rigDistracted: true }, flash: VALVE_LINE } },
-      { id: 'bypass', label: 'Bypass Vents', sub: 'A sneak. If seen, a fight.', tone: 'danger', show: { flagUnset: 'rigDistracted' }, effects: { flag: { ventBypass: true }, goto: 'deep:vein-approach', flash: VENTS_THROUGH, sneak: { odds: 4, kind: 'patrol', spotted: VENTS_SPOTTED, forfeit: true } } },
-      { id: 'bypass', label: 'Bypass Vents', sub: 'The guards are at the valve. A sneak. If seen, a fight.', tone: 'danger', show: { flag: 'rigDistracted' }, effects: { flag: { ventBypass: true }, goto: 'deep:vein-approach', flash: VENTS_THROUGH, sneak: { odds: 2, kind: 'patrol', spotted: VENTS_SPOTTED, forfeit: true } } },
+      { id: 'valve', label: 'Blow Steam Valve', sub: 'Cartel Heat −1. Once.', show: { all: [{ flagUnset: 'rigDistracted' }, { heatMax: ['cartel', 3] }] }, effects: { heat: { cartel: -1 }, flag: { rigDistracted: true }, flash: VALVE_LINE } },
+      // v203: at Cartel Heat 4+ the valve brings the Rig Guards. NEW sub.
+      { id: 'valve', label: 'Blow Steam Valve', sub: 'Cartel Heat −1. Once. Rig Guards answer it: a fight.', tone: 'danger', show: { all: [{ flagUnset: 'rigDistracted' }, { heatMin: ['cartel', 4] }] }, effects: { heat: { cartel: -1 }, flag: { rigDistracted: true }, ambush: { kind: 'rigguard', line: `${VALVE_LINE}\n\n${VALVE_GUARDS_LINE}` } } },
+      { id: 'bypass', label: 'Bypass Vents', sub: 'A sneak. If seen, a fight.', tone: 'danger', show: { flagUnset: 'rigDistracted' }, effects: { flag: { ventBypass: true }, goto: 'deep:vein-approach', flash: VENTS_THROUGH, sneak: { odds: 4, kind: 'rigpatrol', spotted: VENTS_SPOTTED, forfeit: true } } },
+      { id: 'bypass', label: 'Bypass Vents', sub: 'The guards are at the valve. A sneak. If seen, a fight.', tone: 'danger', show: { flag: 'rigDistracted' }, effects: { flag: { ventBypass: true }, goto: 'deep:vein-approach', flash: VENTS_THROUGH, sneak: { odds: 2, kind: 'rigpatrol', spotted: VENTS_SPOTTED, forfeit: true } } },
       { id: 'back', label: 'Back to the Drill Deck', tone: 'quiet', effects: { goto: 'deep:drill-deck' } },
     ],
   },

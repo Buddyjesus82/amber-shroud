@@ -5,10 +5,12 @@ import { getScene } from './content'
 import { check } from './logic'
 import { disguiseActive, equippedShell, equippedStrike, wearsCloth } from './kit'
 import { CARAPACE_HUNTER, SPINE_HUNTER } from './content/spineHunter'
+import { FOREMAN_LINE, PACK_CALL_LINE, PACK_HOUND_LINE, RIG_GUARDS_LINE, RIG_PATROL_LINE, SEEKER_HANDLER_LINE, SKIFF_LINE, SKIFF_RUN_LINE, SKIFF_RUN_SUB } from './v203Lines'
+export { OVERTIME_LINE, PACK_HOUND_LINE, RIG_GUARDS_LINE } from './v203Lines'
 import type { Choice, Effect, FlagMap, GameState, ItemId } from './types'
 import { hash, OPENERS, sandAnswers, PAIR_LINE, HUSK_CONTROLLER_LINE, sandGripLine, TERRAINS, terrainPool, type Terrain, type TerrainId } from './fightTricks'
 
-export type EncounterKind = 'jackal' | 'cutter' | 'courtguard' | 'tick' | 'pup' | 'scavenger' | 'patrol' | 'handler' | 'hound' | 'overseer' | 'collector' | 'carapace' | 'husk' | 'runner' | 'strayhunter' | 'strayhound' | 'masked' | 'ribworm' | 'greg' | 'dragoon' | 'seekerpatrol' | 'drilllead' | 'leech' | 'moth' | 'thaliaguard' | 'lockboss'
+export type EncounterKind = 'jackal' | 'cutter' | 'courtguard' | 'tick' | 'pup' | 'scavenger' | 'patrol' | 'handler' | 'hound' | 'overseer' | 'collector' | 'carapace' | 'husk' | 'runner' | 'strayhunter' | 'strayhound' | 'masked' | 'ribworm' | 'greg' | 'dragoon' | 'seekerpatrol' | 'drilllead' | 'leech' | 'moth' | 'thaliaguard' | 'lockboss' | 'rigpatrol' | 'seekerhandler' | 'packhound' | 'skiff' | 'foreman' | 'rigguard'
 
 export const RIBWORM_LINE = 'The dune breathes. A rib-worm noses up through the sand, ringed like an old spine, mouth all grit and grinding plates.'
 export const RIBWORM_WIN = 'It sinks and does not come back up. The sand settles over it.'
@@ -26,6 +28,14 @@ export const LEECH_WEIGHT = 2
 export const LEECH_GROUND: readonly string[] = ['camp:yard', 'camp:vats']
 /** Seeker ground: the moth's weight beside the Seeker pool. */
 export const MOTH_WEIGHT = 1
+
+/** Seeker Heat for the Hound-Handler on Seeker ground; Cartel Heat for the skiff on the road. */
+export const SEEKER_HANDLER_HEAT = 4
+export const SKIFF_HEAT = 6
+/** Threshold ground and the Red Maw rim. */
+export function handlerGround(state: GameState): boolean {
+  return state.hubId === 'threshold' || state.sceneId.startsWith('thresh:') || state.sceneId === 'maw:rim'
+}
 
 /** Fight hits. Sap stays thirst/travel. */
 export const HEALTH_MAX = 6
@@ -143,9 +153,9 @@ const SPECS: Spec[] = [
   },
   // v166: Chapter Two.
   { kind: 'greg', name: 'Greg Ambergrin', strike: 3, shell: 2, hp: 4, line: "Greg Ambergrin. Grease-stained coat, Miller's iron brand on the lapel, a skiff crew at his back." },
-  { kind: 'dragoon', name: 'Seeker Dragoons', strike: 3, shell: 1, hp: 3, line: 'Seeker dragoons. Gold trim, resin-shod mounts, lances down.' },
+  { kind: 'dragoon', name: 'Seeker Dragoons', strike: 4, shell: 2, hp: 4, line: 'Seeker dragoons. Gold trim, resin-shod mounts, lances down.' },
   { kind: 'seekerpatrol', name: 'Seeker Patrol', strike: 2, shell: 1, hp: 2, line: 'A Seeker patrol. Two lamps, two batons.' },
-  { kind: 'drilllead', name: 'Drill Team Lead', strike: 3, shell: 2, hp: 3, line: "Sybella's drill team lead. Goggles down, a hand-drill on a strap." },
+  { kind: 'drilllead', name: 'Drill Team Lead', strike: 3, shell: 2, hp: 4, line: "Sybella's drill team lead. Goggles down, a hand-drill on a strap." },
   {
     kind: 'overseer',
     name: 'Overseer Valerius',
@@ -157,6 +167,14 @@ const SPECS: Spec[] = [
   },
   // v200 DRAFT (PROPOSED): the Containment Lock brute-force boss. Heavier than Valerius: Shell 4.
   { kind: 'lockboss', name: 'Heavy Seeker', strike: 4, shell: 4, hp: 6, line: 'A heavy Seeker in full plate steps out of the lock alcove. A resin maul, runes cut into the shell.' },
+  // v203 (draft): Jeramie's Chapter Two roster. Lines marked NEW await approval.
+  // Rig 04 vents only. The shared Vent patrol (Sift Gate, rumor job, Maw toll) stays 3/0/1.
+  { kind: 'rigpatrol', name: 'Vent patrol', strike: 3, shell: 1, hp: 3, line: RIG_PATROL_LINE },
+  { kind: 'seekerhandler', name: 'Seeker Hound-Handler', strike: 3, shell: 2, hp: 4, line: SEEKER_HANDLER_LINE },
+  { kind: 'packhound', name: 'Shard-Hound', strike: 3, shell: 2, hp: 3, line: PACK_HOUND_LINE },
+  { kind: 'skiff', name: 'Turreted Skiff', strike: 4, shell: 3, hp: 5, line: SKIFF_LINE },
+  { kind: 'foreman', name: 'Mercenary Foreman', strike: 4, shell: 2, hp: 5, line: FOREMAN_LINE },
+  { kind: 'rigguard', name: 'Rig Guards', strike: 3, shell: 2, hp: 3, line: RIG_GUARDS_LINE },
   // Spine hunter fight. Copy and stats live in content/spineHunter.ts.
   { kind: 'collector', ...SPINE_HUNTER.encounter },
   { kind: 'carapace', ...CARAPACE_HUNTER.encounter },
@@ -228,6 +246,8 @@ export function encounterSpec(state: GameState): Spec {
   const named = SPECS.find((s) => s.kind === kind)
   // v180: carrying the Spire Key, the Maw's Seekers and drill crews come harder.
   if (named && state.flags.spireKey && state.chapterId === 'into-the-maw' && KEY_HUNTERS.includes(named.kind)) return { ...named, strike: named.strike + 1 }
+  // v203: Foreman's Overtime. Rig Guards fought alongside or after him hit harder.
+  if (named && named.kind === 'rigguard' && state.flags.foremanFought) return { ...named, strike: named.strike + 1 }
   if (named) return named
   return SPECS[seed(state) % SPECS.length]
 }
@@ -318,6 +338,8 @@ export function pickEncounterKind(state: GameState): EncounterKind {
       state.heat.seekers >= 2
         ? ['husk', 'husk', 'cutter', 'jackal', 'tick', 'scavenger', 'pup']
         : ['cutter', 'cutter', 'jackal', 'tick', 'scavenger', 'pup']
+    // v203: Seeker Hound-Handler, 1 in 4 on Threshold ground and the Red Maw rim at Seeker Heat 4+.
+    if (handlerGround(state) && state.heat.seekers >= SEEKER_HANDLER_HEAT && ribwormRoll(state, 'seekerhandler', 4) === 0) return 'seekerhandler'
     if (ribwormRoll(state, 'moth', pool.length + MOTH_WEIGHT) < MOTH_WEIGHT) return 'moth'
     return pool[n % pool.length]
   }
@@ -661,7 +683,7 @@ export function encounterChoices(state: GameState): Choice[] {
     {
       id: 'enc-run',
       label: 'Run',
-      sub: `${oddsWord(runChance(state))} to get away, no loot. If not, they hit you.`,
+      sub: `${oddsWord(runChance(state))} to get away, no loot. If not, they hit you.${spec.kind === 'skiff' ? ` ${SKIFF_RUN_SUB}` : ''}`,
       enable: runLock ? { flag: '__never__' } : { healthMin: 1 },
       locked: runLock || 'Too hurt to fight.',
       effects: { resolveEncounter: 'run', ticks: 1 },
@@ -732,8 +754,8 @@ function pocket(state: GameState): number {
  * Fauna pay scrap or sap. People sometimes pay with a knife, a scav wrap, or a cloak.
  */
 /** People carry salve sometimes. Beasts never do. */
-export const HUMAN_KINDS: readonly EncounterKind[] = ['cutter', 'courtguard', 'scavenger', 'patrol', 'handler', 'overseer', 'collector', 'carapace', 'strayhunter', 'strayhound', 'greg', 'dragoon', 'seekerpatrol', 'drilllead', 'thaliaguard', 'lockboss']
-export const BEAST_KINDS: readonly EncounterKind[] = ['jackal', 'tick', 'pup', 'hound', 'ribworm', 'leech', 'moth']
+export const HUMAN_KINDS: readonly EncounterKind[] = ['cutter', 'courtguard', 'scavenger', 'patrol', 'handler', 'overseer', 'collector', 'carapace', 'strayhunter', 'strayhound', 'greg', 'dragoon', 'seekerpatrol', 'drilllead', 'thaliaguard', 'lockboss', 'rigpatrol', 'seekerhandler', 'foreman', 'rigguard']
+export const BEAST_KINDS: readonly EncounterKind[] = ['jackal', 'tick', 'pup', 'hound', 'ribworm', 'leech', 'moth', 'packhound']
 /** Percent chance a downed human also carries a Resin Salve. */
 export const HUMAN_SALVE_PCT = 18
 
@@ -785,7 +807,9 @@ function pocketLoot(state: GameState, kind: EncounterKind): Partial<Record<ItemI
   if (kind === 'tick') return state.flags.tickDropped ? { scrap: 1 } : { vial_drop: 1 }
   if (kind === 'pup') return { glints: 1, scrap: 1 }
   // Grown Shard-Hound: the pup's pocket, plus the resin off its jaw.
-  if (kind === 'hound') return { glints: 1, scrap: 2 }
+  if (kind === 'hound' || kind === 'packhound') return { glints: 1, scrap: 2 }
+  // v203: the double-crossed contract pays when the foreman goes down.
+  if (kind === 'foreman') return { scrap: 3 }
   // v160: the rib-worm always leaves its mouth-plate.
   if (kind === 'ribworm') return { glints: 1, scrap: 2, maw_plate: 1 }
   // v172: scrap 1, plus a Drop 1 time in 3. Hymn-moth: Resin Salve 1 time in 2, otherwise scrap 1.
@@ -847,6 +871,8 @@ export const ENCOUNTER_FLAGS = [
   'encounterDone',
   'encounterFlash',
   'encounterRound',
+  'packCalled',
+  'packCartel',
   'encounterStall',
   'encounterTerrain',
   'encounterOpen',
@@ -884,7 +910,7 @@ export function dismissEncounter(state: GameState): Effect {
 }
 
 /** He/him for named men on the fight card. Everyone else stays they/them. */
-const HE_KINDS: readonly EncounterKind[] = ['courtguard', 'runner', 'masked', 'greg', 'drilllead']
+const HE_KINDS: readonly EncounterKind[] = ['courtguard', 'runner', 'masked', 'greg', 'drilllead', 'seekerhandler', 'foreman']
 const HE_SWAPS: [RegExp, string][] = [
   [/\bThey still stand\b/g, 'He still stands'],
   [/\bThey drop\b/g, 'He drops'],
@@ -1218,6 +1244,8 @@ export function resolveEncounter(
       notes.push(pinned ? 'The harpoon line holds you. You cannot run.' : 'The tick holds on. You cannot run with it on you.')
     } else if (roll(state, 'run', 100) < runChance(state)) {
       const line = `You break away and run. ${cap(who)} does not follow. No loot.`
+      // v203: Suppressing Fire. Running from the skiff costs 1 more Sap, on its own line.
+      if (spec.kind === 'skiff') return holdCard(state, spec, `${line}\n\n${SKIFF_RUN_LINE}`, line, { sap: -1, flag: { encounterFled: true } })
       return holdCard(state, spec, line, line, { flag: { encounterFled: true } })
     } else {
       notes.push(`You try to run. ${cap(who)} catches you.`)
@@ -1429,6 +1457,11 @@ export function resolveEncounter(
     encounterController: !!f.encounterController,
   }
   const remove: Partial<Record<ItemId, number>> = {}
+  // v203: Pack Call. Still standing at the end of round 2, the handler calls his hound: it fights you when he falls.
+  if ((spec.kind === 'seekerhandler' || spec.kind === 'handler') && round >= 2 && !f.packCalled) {
+    flag.packCalled = true
+    events.push(PACK_CALL_LINE)
+  }
   if (spec.kind === 'tick' && !latched && move !== 'pull' && dmgIn > 0) {
     flag.encounterLatched = true
     events.push('The tick latches onto your arm. It drinks 1 Sap every round until you pull it off or kill it.')
