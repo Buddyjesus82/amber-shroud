@@ -124,7 +124,7 @@ export function IntroCards({ onDone }: Props) {
           return (
             <section
               key={c.id}
-              className={`intro-layer ${state}`}
+              className={`intro-layer ${state}${c.tall ? ' intro-tall' : ''}`}
               style={style}
               aria-hidden={n !== i}
               data-intro-layer={c.id}
