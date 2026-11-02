@@ -4,7 +4,6 @@ import { IntroCards } from './components/IntroCards'
 import { PlayScreen } from './components/PlayScreen'
 import { TitleScreen } from './components/TitleScreen'
 import { chapterTwoFromCode, newGame } from './game/engine'
-import { isChapterTwoCode } from './game/ch2'
 import {
   clearAllSaves,
   clearSave,
@@ -169,13 +168,6 @@ export default function App() {
       lastDoor={saved.last}
       lastWhen={saved.when}
       booting={booting}
-      onCode={(code: string) => {
-        if (!isChapterTwoCode(code)) return false
-        refreshSaves()
-        setCodeStart(true)
-        setView('doors')
-        return true
-      }}
       onNew={() => {
         setCodeStart(false)
         refreshSaves()

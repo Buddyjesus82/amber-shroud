@@ -810,7 +810,7 @@ Above you, Sybella's drill-rigs are breaking through. Every bite shakes grit dow
     kind: 'ending',
     title: 'End of Chapter Two',
     body: 'END OF CHAPTER TWO',
-    choices: [{ id: 'title', label: 'Back to the title', sub: 'Your game is saved.', tone: 'quiet', effects: { flag: { chapter2Done: true } } }],
+    choices: [{ id: 'continue', label: 'Continue', tone: 'hunger', effects: { flag: { chapter2Done: true }, goto: 'ch3:capture' } }, { id: 'title', label: 'Back to the title', sub: 'Your game is saved.', tone: 'quiet', effects: { flag: { chapter2Done: true } } }],
   },
 ]
 

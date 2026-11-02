@@ -145,6 +145,14 @@ export type CoverKey =
   | 'p1_conduits'
   | 'p1_parade'
   | 'v205_breach'
+  | 'ch3_capture'
+  | 'ch3_wagon'
+  | 'ch3_supply'
+  | 'ch3_tent'
+  | 'ch3_crosshaven'
+  | 'ch3_vault_fight'
+  | 'ch3_vex_fight'
+  | 'ch3_ash_fight'
   | 'v205_subdrain'
   | 'v205_oasis'
   | 'p2_rubble'
@@ -306,6 +314,14 @@ const FILES: Record<CoverKey, string> = {
   p1_conduits: 'p1-conduits.jpg',
   p1_parade: 'p1-parade.jpg',
   v205_breach: 'conduit-breach.jpg',
+  ch3_capture: 'ch3-capture.jpg',
+  ch3_wagon: 'ch3-wagon.jpg',
+  ch3_supply: 'ch3-supply.jpg',
+  ch3_tent: 'ch3-tent.jpg',
+  ch3_crosshaven: 'ch3-crosshaven.jpg',
+  ch3_vault_fight: 'ch3-vault-fight.jpg',
+  ch3_vex_fight: 'ch3-vex-fight.jpg',
+  ch3_ash_fight: 'ch3-ash-fight.jpg',
   v205_subdrain: 'sub-drain.jpg',
   v205_oasis: 'oasis-reserve.jpg',
   p2_rubble: 'p2-rubble.jpg',
@@ -510,6 +526,14 @@ export const COVER_BAND: Record<CoverKey, [number, number]> = {
   p1_conduits: [0.08, 0.72],
   p1_parade: [0.08, 0.72],
   v205_breach: [0.08, 0.72],
+  ch3_capture: [0.1, 0.8],
+  ch3_wagon: [0.1, 0.8],
+  ch3_supply: [0.1, 0.8],
+  ch3_tent: [0.1, 0.8],
+  ch3_crosshaven: [0.1, 0.8],
+  ch3_vault_fight: [0.1, 0.8],
+  ch3_vex_fight: [0.05, 0.85],
+  ch3_ash_fight: [0.05, 0.85],
   v205_subdrain: [0.08, 0.72],
   v205_oasis: [0.08, 0.72],
   p2_rubble: [0.08, 0.72],
@@ -631,6 +655,8 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
       if (kind === 'strayhunter' || kind === 'strayhound') return STRAY_HUNTER_COVER as CoverKey
     }
     // v203: roster art. Seeker Patrol and Drill Lead fights off Into the Maw get their own covers.
+    if (kind === 'vex') return 'ch3_vex_fight'
+    if (kind === 'ash') return 'ch3_ash_fight'
     if (kind === 'lockboss') return 'heavy_seeker'
     if (kind === 'seekerpatrol') return 'patrol_squad'
     if (kind === 'drilllead') return 'drill_crew'
@@ -708,6 +734,9 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   // v199: the new places.
   const NEW_PLACE_ART: Record<string, CoverKey> = {'deep:rubble': 'p2_rubble', 'deep:shanty': 'p2_shanty', 'deep:anvil': 'p2_anvil', 'deep:drill-deck': 'p2_drill_deck', 'deep:vents': 'p2_vents', 'deep:vein-approach': 'p2_vein_approach', 'deep:crucible': 'p2_crucible', 'deep:lock': 'p2_lock', 'camp:sift-gate': 'p1_sift_gate', 'camp:log-vents': 'p1_log_vents', 'camp:log-deck': 'p1_log_deck', 'spine:dugouts': 'p1_dugouts', 'spine:skimmer': 'p1_skimmer', 'spine:dusteye': 'p1_dusteye', 'thresh:echo-gate': 'p1_echo_gate', 'thresh:conduits': 'p1_conduits', 'thresh:parade': 'p1_parade', 'thresh:breach': 'v205_breach', 'thresh:subdrain': 'v205_subdrain', 'thresh:oasis': 'v205_oasis', 'thresh:canyon': 'np_canyon', 'thresh:gate': 'np_gate', 'thresh:command': 'np_command', 'camp:overlook': 'np_overlook', 'camp:siftline': 'np_siftline', 'camp:ration': 'np_ration', 'camp:genpop': 'np_genpop', 'spine:shattered': 'np_shattered', 'spine:ossuary': 'np_ossuary', 'maw:tunnels': 'np_tunnels', 'maw:gullet': 'np_gullet', 'maw:bargain': 'np_bargain', 'ch2:v-hidden': 'np_hidden', 'maw:mill': 'np_mill', 'camp:jammed': 'np_shim'}
   if (NEW_PLACE_ART[id]) return NEW_PLACE_ART[id]
+  // v206 DRAFT: Chapter Three covers.
+  const CH3_ART: Record<string, CoverKey> = { 'ch3:capture': 'ch3_capture', 'ch3:wagon': 'ch3_wagon', 'ch3:supply': 'ch3_supply', 'ch3:tent': 'ch3_tent', 'ch3:crosshaven': 'ch3_crosshaven' }
+  if (CH3_ART[id]) return CH3_ART[id]
   const CH2_ART: Record<string, CoverKey> = {'ch2:greg-toll': 'greg', 'ch2:gate': 'ch2_s_gate', 'ch2:cache': 'ch2_s_cache', 'ch2:trapped': 'ch2_s_trapped', 'ch2:heart': 'ch2_s_heart', 'ch2:end': 'ch2_s_end', 'ch2:o-abyss': 'ch2_o_abyss', 'ch2:o-bounty': 'ch2_o_bounty', 'ch2:o-cage': 'ch2_o_cage', 'ch2:o-hounds': 'ch2_o_hounds', 'ch2:o-hermit': 'ch2_o_hermit', 'ch2:o-root': 'ch2_o_root', 'ch2:o-stakes': 'ch2_o_stakes', 'ch2:o-stilts': 'ch2_o_stilts', 'ch2:o-strays': 'ch2_o_strays', 'ch2:o-wash': 'ch2_o_wash', 'ch2:p-abyss': 'ch2_p_abyss', 'ch2:p-bays': 'ch2_p_bays', 'ch2:p-bilge': 'ch2_p_bilge', 'ch2:p-haul': 'ch2_p_haul', 'ch2:p-jaws': 'ch2_p_jaws', 'ch2:p-shaft': 'ch2_p_shaft', 'ch2:p-sift': 'ch2_p_sift', 'ch2:v-bleed': 'ch2_v_bleed', 'ch2:v-blown': 'ch2_v_blown', 'ch2:v-garden': 'ch2_v_garden', 'ch2:v-greg': 'ch2_v_greg', 'ch2:v-murch': 'ch2_v_murch', 'ch2:v-outpost': 'ch2_v_outpost', 'ch2:v-ribs': 'ch2_v_ribs', 'ch2:v-scar': 'ch2_v_scar', 'ch2:v-stair': 'ch2_v_stair', 'ch2:v-test': 'ch2_v_test', 'ch2:p-supply': 'ch2_s_p_supply', 'ch2:p-drillrun': 'ch2_s_p_drillrun', 'ch2:survivor': 'ch2_s_survivor', 'ch2:approach': 'ch2_s_approach', 'ch2:ditch': 'ch2_s_ditch', 'ch2:gully': 'ch2_s_gully', 'ch2:irongut': 'ch2_s_irongut', 'ch2:ribs': 'ch2_s_ribs', 'ch2:vein': 'ch2_s_vein'}
   // v179: Valerius has moved on; the test chamber shows the outpost, not him.
   if (id === 'ch2:v-test' && state.flags.valeriusMoved) return 'ch2_v_outpost'
