@@ -669,7 +669,7 @@ assert(s.equipped.weapon === 'rusted_dagger' && s.equipped.garment === 'ceremoni
 assert(equippedShell(s) === 0, 'worn Vessel Cloth does not add Shell')
 assert(s.heat.seekers >= 4, 'opening + start heat = thalia pressure')
 assert(s.items.oram_map === 1 && s.items.rusted_dagger === 1)
-s = travelTo(s, 'thresh:guard')
+s = applyEffect(s, { goto: 'thresh:guard' }) // v200: no Court<->Guard Post road
 s = pick(s, 'talk')
 assert(ids(s).includes('dagger'), 'guard dagger verb')
 s = applyEffect(s, { startChapter: 'cache-run', goto: 'ch1:leave', ticks: 1 })
