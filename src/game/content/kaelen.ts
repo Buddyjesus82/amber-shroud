@@ -70,6 +70,8 @@ export const campKaelenScenes: Scene[] = [
             { flagUnset: 'chapter1Done' },
             { flagUnset: 'guardDown' },
             { flagUnset: 'striderHot' },
+            // v199: Kaelen's jammed-line task comes first.
+            { flag: 'kaelenJob' },
             { any: [{ pressureMin: 8 }, { flag: 'hunterHere' }, { flag: 'campLockdown' }, { flag: 'campForcedSeen' }, PLAN_HEARD] },
           ],
         },

@@ -1,3 +1,4 @@
+import { VEIN_KEY, VEIN_LOCKED, VEIN_LOCKED_NO_SHIM, hiddenExitChoice, tunnelsEntry } from './newPlaces'
 import type { Choice, Cond, DoorId, Scene } from '../types'
 import { STRAY_ARRIVAL_LINE, STRAY_OUTCAST_LINE } from '../strayLines'
 
@@ -323,6 +324,7 @@ Greg sees the gold dust on you and steps back. 'Seeker business goes through. Se
       { tags: ['ossa', 'stilt', 'where is ossa'], reply: '', effects: { flag: { ch2TownFrom: 'ch2:v-outpost' }, goto: 'maw:stilt' } },
     ],
     choices: [
+      { ...hiddenExitChoice, show: { all: [{ flag: 'hasBargainFlag' }, unblown] } },
       { id: 'test', label: 'Submit to the test', show: { all: [unblown, { flagUnset: 'cupPassed' }] }, effects: { goto: 'ch2:v-test' } },
       { id: 'murch', label: 'The transport bay', show: { all: [unblown, { flagUnset: 'murchProtected' }, { flagUnset: 'murchCaptured' }] }, effects: { goto: 'ch2:v-murch' } },
       { id: 'garden', label: 'Walk the garden rite', show: { flagUnset: 'statueSiphoned' }, effects: { goto: 'ch2:v-garden' } },
@@ -588,6 +590,7 @@ To the west ridge, a fissure: the Decoy Gully. A Cartel signal-pylon stands over
 Off the road, smoke rises from a drainage ditch.`,
     choices: [
       ...(Object.entries(CH2_STARTS) as [DoorId, string][]).map(([door]) => ({ id: 'gate', label: 'The Main Gate', sub: "Greg's toll.", tone: 'hunger' as const, show: { door }, effects: { goto: GREG_TOLL } })),
+      tunnelsEntry(true),
       { id: 'gully', label: 'The Decoy Gully', effects: { goto: 'ch2:gully' } },
       { id: 'ditch', label: 'The ditch camp', show: { any: [{ flagUnset: 'kipCodes' }, { flagUnset: 'kipFate' }] }, effects: { goto: 'ch2:ditch' } },
     ],
@@ -698,8 +701,12 @@ Above you, Sybella's drill-rigs are breaking through. Every bite shakes grit dow
       { id: 'allow', label: 'Let him touch the vein', tone: 'danger', show: vexPending, effects: { flag: { vexFate: 'burn', bleedCore: true }, flash: "Vex puts both hands on the vein. The light goes into him and something goes out. When he turns, he doesn't know your face. He knows one thing. 'BLEED-CORE,' he says. 'Tell the airlock BLEED-CORE. It shuts behind you. It shuts on her.'" } },
       { id: 'siphon', label: 'Siphon the vein first', sub: 'Memory Siphon. Seeker Heat +1.', tone: 'danger', show: vexPending, enable: { item: 'memory_siphon' }, locked: 'Needs: the Memory Siphon', effects: { add: { deep_memory_pearl: 1 }, heat: { seekers: 1 }, flag: { vexFate: 'siphoned', veinSiphoned: true }, flash: "You set the Siphon in the vein before he can touch it. The reservoir fills gold. The archway above you cracks down its length. Vex makes a sound like you took something from him. You did. He won't get it back now.\n\nSomewhere above, a Seeker lamp turns your way." } },
       { id: 'vein', label: 'Siphon the vein', sub: 'Memory Siphon. Seeker Heat +1.', show: { all: [{ not: vexPending }, { item: 'memory_siphon' }] }, enable: { flagUnset: 'veinSiphoned' }, locked: 'The vein is already dry.', effects: { add: { deep_memory_pearl: 1 }, heat: { seekers: 1 }, flag: { veinSiphoned: true }, flash: 'The reservoir fills gold. Images that are not yours. Somewhere above, a Seeker lamp turns your way.' } },
-      { id: 'ride', label: 'Descend the lift', tone: 'hunger', show: { all: [{ flag: 'liftDone' }, { flagUnset: 'liftLadder' }] }, enable: { not: vexPending }, locked: VEX_FIRST, effects: { goto: 'ch2:vein', flash: RIBS_CLIMAX } },
-      { id: 'climb', label: 'Climb down', tone: 'hunger', show: { flag: 'liftLadder' }, enable: { not: vexPending }, locked: VEX_FIRST, effects: { goto: 'ch2:vein', flash: RIBS_CLIMAX_LADDER } },
+      { id: 'ride', label: 'Descend the lift', tone: 'hunger', show: { all: [{ flag: 'liftDone' }, { flagUnset: 'liftLadder' }, VEIN_KEY] }, enable: { not: vexPending }, locked: VEX_FIRST, effects: { goto: 'ch2:vein', flash: RIBS_CLIMAX } },
+      { id: 'climb', label: 'Climb down', tone: 'hunger', show: { all: [{ flag: 'liftLadder' }, VEIN_KEY] }, enable: { not: vexPending }, locked: VEX_FIRST, effects: { goto: 'ch2:vein', flash: RIBS_CLIMAX_LADDER } },
+      { id: 'ride-sealed', label: 'Descend the lift', tone: 'hunger', show: { all: [{ flag: 'liftDone' }, { flagUnset: 'liftLadder' }, { not: VEIN_KEY }, { door: 'prisoner' }] }, enable: { not: vexPending }, locked: VEX_FIRST, effects: { goto: 'ch2:trapped', flash: VEIN_LOCKED } },
+      { id: 'ride-sealed-x', label: 'Descend the lift', tone: 'hunger', show: { all: [{ flag: 'liftDone' }, { flagUnset: 'liftLadder' }, { not: VEIN_KEY }, { not: { door: 'prisoner' } }] }, enable: { not: vexPending }, locked: VEX_FIRST, effects: { goto: 'ch2:trapped', flash: VEIN_LOCKED_NO_SHIM } },
+      { id: 'climb-sealed', label: 'Climb down', tone: 'hunger', show: { all: [{ flag: 'liftLadder' }, { not: VEIN_KEY }, { door: 'prisoner' }] }, enable: { not: vexPending }, locked: VEX_FIRST, effects: { goto: 'ch2:trapped', flash: VEIN_LOCKED } },
+      { id: 'climb-sealed-x', label: 'Climb down', tone: 'hunger', show: { all: [{ flag: 'liftLadder' }, { not: VEIN_KEY }, { not: { door: 'prisoner' } }] }, enable: { not: vexPending }, locked: VEX_FIRST, effects: { goto: 'ch2:trapped', flash: VEIN_LOCKED_NO_SHIM } },
     ],
     intents: [
       { tags: LIFT_DO, show: { all: [{ flagUnset: 'liftDone' }, HEAVY_TOOL] }, reply: 'You jam it into the gear teeth and lean. The housing groans, then turns. No blood this time.', effects: { flag: { liftDone: true } } },

@@ -1,3 +1,4 @@
+import { tunnelsEntry } from './newPlaces'
 import { ROADS } from '../roads'
 import { SIPHON_PRISONER, siphonSpotRows } from './intoTheMaw'
 import type { Choice, Cond, ItemId, Scene } from '../types'
@@ -107,6 +108,7 @@ The ground out here takes more than the camp ever did. Sap goes faster. Hunters 
         show: { flag: 'ribOpen' },
         effects: { goto: 'ch2:stub', ticks: 1 },
       },
+      tunnelsEntry(false),
     ],
     intents: [
       {

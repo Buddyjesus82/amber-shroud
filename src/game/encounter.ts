@@ -8,7 +8,7 @@ import { CARAPACE_HUNTER, SPINE_HUNTER } from './content/spineHunter'
 import type { Choice, Effect, FlagMap, GameState, ItemId } from './types'
 import { hash, OPENERS, sandAnswers, PAIR_LINE, HUSK_CONTROLLER_LINE, sandGripLine, TERRAINS, terrainPool, type Terrain, type TerrainId } from './fightTricks'
 
-export type EncounterKind = 'jackal' | 'cutter' | 'courtguard' | 'tick' | 'pup' | 'scavenger' | 'patrol' | 'handler' | 'hound' | 'overseer' | 'collector' | 'carapace' | 'husk' | 'runner' | 'strayhunter' | 'strayhound' | 'masked' | 'ribworm' | 'greg' | 'dragoon' | 'seekerpatrol' | 'drilllead' | 'leech' | 'moth'
+export type EncounterKind = 'jackal' | 'cutter' | 'courtguard' | 'tick' | 'pup' | 'scavenger' | 'patrol' | 'handler' | 'hound' | 'overseer' | 'collector' | 'carapace' | 'husk' | 'runner' | 'strayhunter' | 'strayhound' | 'masked' | 'ribworm' | 'greg' | 'dragoon' | 'seekerpatrol' | 'drilllead' | 'leech' | 'moth' | 'thaliaguard'
 
 export const RIBWORM_LINE = 'The dune breathes. A rib-worm noses up through the sand, ringed like an old spine, mouth all grit and grinding plates.'
 export const RIBWORM_WIN = 'It sinks and does not come back up. The sand settles over it.'
@@ -74,6 +74,15 @@ const SPECS: Spec[] = [
     shell: 2,
     hp: 3,
     line: 'The court guard raises his curved falchion. Sunburn and belief. He was told to keep Vessels inside.',
+  },
+  {
+    // v199: Thalia's Guard, when you refuse her bargain.
+    kind: 'thaliaguard',
+    name: "Thalia's Guard",
+    strike: 4,
+    shell: 3,
+    hp: 5,
+    line: 'Refusing her is a breach. Her guard is already moving.',
   },
   {
     // Vessel Cache Run: a hymn-road runner who caught you. Early weight, his own name.
@@ -721,7 +730,7 @@ function pocket(state: GameState): number {
  * Fauna pay scrap or sap. People sometimes pay with a knife, a scav wrap, or a cloak.
  */
 /** People carry salve sometimes. Beasts never do. */
-export const HUMAN_KINDS: readonly EncounterKind[] = ['cutter', 'courtguard', 'scavenger', 'patrol', 'handler', 'overseer', 'collector', 'carapace', 'strayhunter', 'strayhound', 'greg', 'dragoon', 'seekerpatrol', 'drilllead']
+export const HUMAN_KINDS: readonly EncounterKind[] = ['cutter', 'courtguard', 'scavenger', 'patrol', 'handler', 'overseer', 'collector', 'carapace', 'strayhunter', 'strayhound', 'greg', 'dragoon', 'seekerpatrol', 'drilllead', 'thaliaguard']
 export const BEAST_KINDS: readonly EncounterKind[] = ['jackal', 'tick', 'pup', 'hound', 'ribworm', 'leech', 'moth']
 /** Percent chance a downed human also carries a Resin Salve. */
 export const HUMAN_SALVE_PCT = 18

@@ -5,14 +5,14 @@ import { ITEMS } from '../src/game/content/index.ts'
 import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v198'"), 'SW cache v195')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v199'"), 'SW cache v195')
 ok(readFileSync('public/sw.js', 'utf8').includes('covers/jaxson-reunion.jpg'), 'reunion cover precached')
 ok(existsSync('public/covers/jaxson-reunion.jpg'), 'reunion cover file')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v198'"), 'Build label v195')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v199'"), 'Build label v195')
 ok(ITEMS.wire_cutter_shim?.desc === 'An improvised scrap shim Kaelen filed down for the perimeter wire.', 'shim desc')
 const at = (sceneId: string, flags: Record<string, unknown>, door: 'prisoner' | 'outcast' = 'prisoner', pressure = 0): GameState => {
   const g = newGame(door)
-  return { ...g, hubId: 'camp04', sceneId, pressure, flags: { ...g.flags, noMasked: true, ...flags } } as GameState
+  return { ...g, hubId: 'camp04', sceneId, pressure, flags: { ...g.flags, noMasked: true, kaelenJob: true, ...flags } } as GameState
 }
 const ids = (s: GameState) => visibleChoices(s).map((c) => c.id)
 const pick = (s: GameState, id: string) => { const c = visibleChoices(s).find((x) => x.id === id); ok(c, `${s.sceneId}: ${id} visible (${ids(s)})`); return c ? applyEffect(s, c.effects) : s }

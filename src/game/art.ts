@@ -127,6 +127,21 @@ export type CoverKey =
   | 'prisoner_opening'
   | 'rim_pilgrims_scar'
   | 'courtguard'
+  | 'np_canyon'
+  | 'np_gate'
+  | 'np_command'
+  | 'np_overlook'
+  | 'np_siftline'
+  | 'np_ration'
+  | 'np_genpop'
+  | 'np_shattered'
+  | 'np_ossuary'
+  | 'np_tunnels'
+  | 'np_gullet'
+  | 'np_bargain'
+  | 'np_hidden'
+  | 'np_mill'
+  | 'np_shim'
   | 'down'
   | 'resin_vault'
   | 'extraction_rig'
@@ -244,6 +259,21 @@ const FILES: Record<CoverKey, string> = {
   prisoner_opening: 'prisoner-opening.jpg',
   rim_pilgrims_scar: 'rim-pilgrims-scar.jpg',
   courtguard: 'courtguard.jpg',
+  np_canyon: 'np-approach-canyon.jpg',
+  np_gate: 'np-threshold-gate.jpg',
+  np_command: 'np-seeker-command.jpg',
+  np_overlook: 'np-wardens-overlook.jpg',
+  np_siftline: 'np-resin-sift-line.jpg',
+  np_ration: 'np-ration-line.jpg',
+  np_genpop: 'np-general-population.jpg',
+  np_shattered: 'np-shattered-spine.jpg',
+  np_ossuary: 'np-ossuary.jpg',
+  np_tunnels: 'np-tunnels-below.jpg',
+  np_gullet: 'np-gullet-descent.jpg',
+  np_bargain: 'np-thalias-bargain.jpg',
+  np_hidden: 'np-thalias-hidden-exit.jpg',
+  np_mill: 'np-mill-line.jpg',
+  np_shim: 'np-kaelens-shim.jpg',
   down: 'down.jpg',
   resin_vault: 'resin-vault.jpg',
   extraction_rig: 'extraction-rig.jpg',
@@ -405,6 +435,21 @@ export const COVER_BAND: Record<CoverKey, [number, number]> = {
   rim_pilgrims_scar: [0.15, 0.9],
   // Court Guard: face, coat, and the curved blade.
   courtguard: [0.05, 0.85],
+  np_canyon: [0.08, 0.72],
+  np_gate: [0.08, 0.72],
+  np_command: [0.08, 0.72],
+  np_overlook: [0.08, 0.72],
+  np_siftline: [0.08, 0.72],
+  np_ration: [0.08, 0.72],
+  np_genpop: [0.08, 0.72],
+  np_shattered: [0.08, 0.72],
+  np_ossuary: [0.08, 0.72],
+  np_tunnels: [0.08, 0.72],
+  np_gullet: [0.08, 0.72],
+  np_bargain: [0.08, 0.72],
+  np_hidden: [0.08, 0.72],
+  np_mill: [0.08, 0.72],
+  np_shim: [0.08, 0.72],
   // Approach Dry: the fallen figure and the empty glass, center-lower.
   down: [0.35, 0.95],
   // The newest amber figure in the light, the Seeker chalking below it.
@@ -503,7 +548,7 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
     if (kind === 'dragoon' || kind === 'seekerpatrol') return 'courtguard'
     if (kind === 'drilllead') return 'extraction_rig'
     if (kind === 'patrol') return 'rell'
-    if (kind === 'courtguard') return 'courtguard'
+    if (kind === 'courtguard' || kind === 'thaliaguard') return 'courtguard'
     if (kind === 'collector') return SPINE_HUNTER.art
     if (kind === 'carapace') return CARAPACE_HUNTER.art
     if (kind === 'runner') return 'brin'
@@ -567,6 +612,9 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   if (id === 'ch1:end') return 'ch1_end'
   if (id === 'ch2:stub') return 'under_jaw'
   // v166: Chapter Two covers.
+  // v199: the new places.
+  const NEW_PLACE_ART: Record<string, CoverKey> = {'thresh:canyon': 'np_canyon', 'thresh:gate': 'np_gate', 'thresh:command': 'np_command', 'camp:overlook': 'np_overlook', 'camp:siftline': 'np_siftline', 'camp:ration': 'np_ration', 'camp:genpop': 'np_genpop', 'spine:shattered': 'np_shattered', 'spine:ossuary': 'np_ossuary', 'maw:tunnels': 'np_tunnels', 'maw:gullet': 'np_gullet', 'maw:bargain': 'np_bargain', 'ch2:v-hidden': 'np_hidden', 'maw:mill': 'np_mill', 'camp:jammed': 'np_shim'}
+  if (NEW_PLACE_ART[id]) return NEW_PLACE_ART[id]
   const CH2_ART: Record<string, CoverKey> = {'ch2:greg-toll': 'greg', 'ch2:gate': 'ch2_s_gate', 'ch2:cache': 'ch2_s_cache', 'ch2:trapped': 'ch2_s_trapped', 'ch2:heart': 'ch2_s_heart', 'ch2:end': 'ch2_s_end', 'ch2:o-abyss': 'ch2_o_abyss', 'ch2:o-bounty': 'ch2_o_bounty', 'ch2:o-cage': 'ch2_o_cage', 'ch2:o-hounds': 'ch2_o_hounds', 'ch2:o-root': 'ch2_o_root', 'ch2:o-stakes': 'ch2_o_stakes', 'ch2:o-stilts': 'ch2_o_stilts', 'ch2:o-strays': 'ch2_o_strays', 'ch2:o-wash': 'ch2_o_wash', 'ch2:p-abyss': 'ch2_p_abyss', 'ch2:p-bays': 'ch2_p_bays', 'ch2:p-bilge': 'ch2_p_bilge', 'ch2:p-haul': 'ch2_p_haul', 'ch2:p-jaws': 'ch2_p_jaws', 'ch2:p-shaft': 'ch2_p_shaft', 'ch2:p-sift': 'ch2_p_sift', 'ch2:v-bleed': 'ch2_v_bleed', 'ch2:v-blown': 'ch2_v_blown', 'ch2:v-garden': 'ch2_v_garden', 'ch2:v-greg': 'ch2_v_greg', 'ch2:v-murch': 'ch2_v_murch', 'ch2:v-outpost': 'ch2_v_outpost', 'ch2:v-ribs': 'ch2_v_ribs', 'ch2:v-scar': 'ch2_v_scar', 'ch2:v-stair': 'ch2_v_stair', 'ch2:v-test': 'ch2_v_test', 'ch2:p-supply': 'ch2_s_p_supply', 'ch2:p-drillrun': 'ch2_s_p_drillrun', 'ch2:survivor': 'ch2_s_survivor', 'ch2:approach': 'ch2_s_approach', 'ch2:ditch': 'ch2_s_ditch', 'ch2:gully': 'ch2_s_gully', 'ch2:irongut': 'ch2_s_irongut', 'ch2:ribs': 'ch2_s_ribs', 'ch2:vein': 'ch2_s_vein'}
   // v179: Valerius has moved on; the test chamber shows the outpost, not him.
   if (id === 'ch2:v-test' && state.flags.valeriusMoved) return 'ch2_v_outpost'

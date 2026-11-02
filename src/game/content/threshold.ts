@@ -1,3 +1,4 @@
+import { gateCodeChoices, gateEntry } from './newPlaces'
 import type { Scene } from '../types'
 
 export const thresholdScenes: Scene[] = [
@@ -92,6 +93,8 @@ Thalia stands at the dais. The gold on her cheeks might be kohl and might be sap
           flash: 'Heads bow a half-inch. Belief is a muscle. You flex it. Seeker Heat ticks. Thalia weeps like a countdown.',
         },
       },
+      gateEntry,
+      ...gateCodeChoices('court'),
     ],
     intents: [
       {
@@ -357,6 +360,7 @@ Oram is here more often than he is in the Court. He prefers the animals to the h
         sub: 'He was told to keep Vessels inside and strangers out.',
         effects: { goto: 'thresh:guard-talk', ticks: 1 },
       },
+      ...gateCodeChoices('guard'),
     ],
   },
   {

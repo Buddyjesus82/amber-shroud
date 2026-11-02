@@ -1,4 +1,4 @@
-const CACHE = 'amber-shroud-v198'
+const CACHE = 'amber-shroud-v199'
 const SCOPE = self.location.pathname.replace(/sw\.js$/, '')
 
 self.addEventListener('install', (event) => {
@@ -61,6 +61,21 @@ self.addEventListener('install', (event) => {
         `${SCOPE}covers/hunger.png`,
         `${SCOPE}covers/spine.jpg`,
         `${SCOPE}covers/threshold.jpg`,
+        `${SCOPE}covers/np-approach-canyon.jpg`,
+        `${SCOPE}covers/np-threshold-gate.jpg`,
+        `${SCOPE}covers/np-seeker-command.jpg`,
+        `${SCOPE}covers/np-wardens-overlook.jpg`,
+        `${SCOPE}covers/np-resin-sift-line.jpg`,
+        `${SCOPE}covers/np-ration-line.jpg`,
+        `${SCOPE}covers/np-general-population.jpg`,
+        `${SCOPE}covers/np-shattered-spine.jpg`,
+        `${SCOPE}covers/np-ossuary.jpg`,
+        `${SCOPE}covers/np-tunnels-below.jpg`,
+        `${SCOPE}covers/np-gullet-descent.jpg`,
+        `${SCOPE}covers/np-thalias-bargain.jpg`,
+        `${SCOPE}covers/np-thalias-hidden-exit.jpg`,
+        `${SCOPE}covers/np-mill-line.jpg`,
+        `${SCOPE}covers/np-kaelens-shim.jpg`,
         `${SCOPE}covers/valerius.jpg`,
         `${SCOPE}covers/hound.jpg`,
         `${SCOPE}covers/sybella.jpg`,
