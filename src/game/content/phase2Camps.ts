@@ -124,7 +124,7 @@ export const phase2Scenes: Scene[] = [
     choices: [
       { id: 'bargain', label: "Present Thalia's Clearance", sub: "Thalia's Bargain.", tone: 'hunger', show: { flag: 'hasBargainFlag' }, enable: VALERIUS_CLEAR, locked: LOCK_RIBS, effects: { goto: 'ch2:heart' } },
       { id: 'shim', label: 'Bypass Lock with Wire-Cutter Shim', sub: "Kaelen's Shim.", tone: 'hunger', show: { item: 'wire_cutter_shim' }, enable: VALERIUS_CLEAR, locked: LOCK_RIBS, effects: { goto: 'ch2:heart' } },
-      { id: 'force', label: 'Brute-Force Lock', sub: 'A heavy Seeker fight. After Valerius.', tone: 'danger', show: { flagUnset: 'ch2Won_lockboss' }, enable: VALERIUS_CLEAR, locked: LOCK_RIBS, effects: { flag: { ch2Fight: 'lockboss' }, ambush: { kind: 'lockboss', line: BOSS_LINE } } },
+      { id: 'force', label: 'Brute-Force Lock', sub: 'A heavy Seeker fight. After Valerius.', tone: 'danger', show: { flagUnset: 'ch2Won_lockboss' }, enable: { flag: 'ch2Won_valerius' }, locked: LOCK_RIBS, effects: { flag: { ch2Fight: 'lockboss' }, ambush: { kind: 'lockboss', line: BOSS_LINE } } },
       { id: 'through', label: 'Through the lock', tone: 'hunger', show: { flag: 'ch2Won_lockboss' }, effects: { goto: 'ch2:heart', flash: BOSS_WON } },
       { id: 'back', label: 'Back to the Crucible', tone: 'quiet', effects: { goto: 'deep:crucible' } },
     ],

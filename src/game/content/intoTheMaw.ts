@@ -65,6 +65,8 @@ export const TEST_FAIL = "It rings. 'Hollow. Like you.'"
 export const BREACH_SCENES = ['ch2:p-drillrun', 'ch2:v-blown', 'ch2:o-hounds']
 export const DRILL_SCENES = ['ch2:v-outpost', 'ch2:o-root', 'ch2:gully']
 const drillVariants = [1, 2, 3].map((n) => ({ if: { flagEq: ['drillStage', n] } as Cond, mode: 'append' as const, body: DRILL_LINES[n] }))
+/** v200 NEW: the vein airlock, no key and no code. */
+export const VEIN_SHUT = 'The pressure door remains unyielding without a valid code or physical key.'
 const vexPending: Cond = { all: [{ flag: 'vexFreed' }, { flagUnset: 'vexFate' }] }
 const abyssClear: Cond = { any: [{ flag: 'ch2Won_valerius' }, { flag: 'ribsCollapsed' }] }
 const knot: Cond = { equipped: 'ossa_token' }
@@ -724,7 +726,7 @@ Above you, Sybella's drill-rigs are breaking through. Every bite shakes grit dow
       { id: 'key', label: 'Set the Spire Key to the vein', tone: 'hunger', show: { item: 'spire_key' }, effects: { goto: 'ch2:heart', flash: 'The Key finds the pitch. The airlock opens.' } },
       { id: 'code', label: 'Speak BLEED-CORE', tone: 'hunger', show: { all: [{ not: { item: 'spire_key' } }, { any: [{ flag: 'bleedCore' }, { flag: 'airlockFreq' }] }] }, effects: { flag: { airlockSealed: true }, goto: 'ch2:heart', flash: 'The airlock takes the code, opens, and slams shut behind you. Through the bone, a drill stalls against the seal.' } },
       { id: 'seal', label: 'Speak BLEED-CORE behind you', show: { all: [{ item: 'spire_key' }, { flag: 'bleedCore' }, { flagUnset: 'airlockSealed' }] }, effects: { flag: { airlockSealed: true }, flash: "You say it to the bone. The airlock hums lower. Whatever comes down after you will find it shut." } },
-      { id: 'sealed', label: 'Try the lock', tone: 'quiet', show: { all: [{ not: { item: 'spire_key' } }, { flagUnset: 'bleedCore' }, { flagUnset: 'airlockFreq' }] }, effects: { goto: 'ch2:trapped' } },
+      { id: 'sealed', label: 'Try the lock', tone: 'quiet', show: { all: [{ not: { item: 'spire_key' } }, { flagUnset: 'bleedCore' }, { flagUnset: 'airlockFreq' }] }, effects: { goto: 'ch2:trapped', flash: VEIN_SHUT } },
     ],
   },
   {

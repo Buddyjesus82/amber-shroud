@@ -53,10 +53,23 @@ const c = pick(at('vessel', 'ch2:v-blown', {}, { drillPast: true }), 'crucible')
 const ov = pick(c, 'overload'); ok(ov.heat.seekers === c.heat.seekers + 2 && !ids(ov).includes('overload'), 'overload Seeker +2 once')
 const l = pick(c, 'lock')
 ok(ids(l).includes('force') && !ids(l).includes('through'), 'lock: force only')
-ok(JSON.stringify(getScene('deep:lock').choices!.find((c) => c.id === 'force')!.enable) === JSON.stringify({ any: [{ flag: 'ch2Won_valerius' }, { flag: 'ribsCollapsed' }] }), 'force gated on Valerius')
+ok(JSON.stringify(getScene('deep:lock').choices!.find((c) => c.id === 'force')!.enable) === JSON.stringify({ flag: 'ch2Won_valerius' }), 'force gated on Valerius only')
 const lf = pick({ ...l, flags: { ...l.flags, ch2Won_valerius: true } }, 'force'); ok(lf.flags.ch2Fight === 'lockboss', 'force starts lockboss fight')
 ok(pick({ ...l, flags: { ...l.flags, ch2Won_lockboss: true } }, 'through').sceneId === 'ch2:heart', 'boss won → heart')
 ok(ids({ ...l, items: { ...l.items, wire_cutter_shim: 1 } }).includes('shim'), 'shim row shows')
 for (const id of NEW) { const k = playCoverKey(at('prisoner', id), getScene(id)); ok(k && String(k).startsWith('p2_'), `${id} cover (${k})`) }
 for (const f of ['rubble','shanty','anvil','drill-deck','vents','vein-approach','crucible','lock']) ok(existsSync(`public/covers/p2-${f}.jpg`), `art ${f}`)
+
+{
+  const { chapterTwoAfter, LOCK_LOST } = await import('../src/game/ch2')
+  const inFight = { ...lf, flags: { ...lf.flags, encounterHere: true, ch2Fight: 'lockboss' }, heat: { ...lf.heat, seekers: 2 } }
+  const fl = { ...inFight.flags, downed: true, downedNote: 'x' } as Record<string, unknown>; delete fl.encounterHere
+  const lost = chapterTwoAfter(inFight as never, { ...inFight, health: 0, flags: fl } as never)
+  ok(lost.sceneId === 'deep:crucible' && lost.health === 1 && lost.heat.seekers === 3 && !lost.flags.downed && lost.flash === LOCK_LOST, 'lock lost → crucible, Health 1, Seeker Heat +1')
+  ok(ids({ ...lost, sceneId: 'deep:lock' } as never).includes('force'), 'lock retry allowed')
+  const { VEIN_SHUT } = await import('../src/game/content/intoTheMaw')
+  const v = pick({ ...l, sceneId: 'ch2:vein', items: {}, flags: { ch2Won_valerius: true } } as never, 'sealed')
+  ok(v.sceneId === 'ch2:trapped' && String(v.flash).includes(VEIN_SHUT), 'vein no key/code → trapped, telegraphed')
+  console.log('extra checks OK')
+}
 console.log(fails ? `${fails} FAIL` : 'v200-phase2 OK'); process.exit(fails ? 1 : 0)

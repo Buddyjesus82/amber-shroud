@@ -40,6 +40,8 @@ function openFight(next: GameState, kind: Parameters<typeof fightStartFlags>[1],
 }
 
 /** Runs after every applied effect. Only touches Chapter Two state. */
+export const LOCK_LOST = 'The Seeker throws you back up the line. You come to at the Crucible.'
+
 export function chapterTwoAfter(state: GameState, next: GameState, _fx?: Effect): GameState {
   const onGround = isChapterTwoGround(next.sceneId)
   if (!onGround && !state.flags.ch2Fight) return next
@@ -153,6 +155,14 @@ export function chapterTwoAfter(state: GameState, next: GameState, _fx?: Effect)
             f.keySurrendered = true
             addFlash(next, RECKONING_LOST)
           } else f.keyOwed = true
+        }
+        if (tag === 'lockboss' && !f.runOver) {
+          // v200: a lost Lock fight throws you back to the Crucible at Health 1, Seeker Heat +1. Retry allowed.
+          for (const k of ['downed', 'downedNote', 'downedKind', 'downLost']) delete f[k]
+          next.health = 1
+          next.sceneId = 'deep:crucible'
+          next.heat = { ...next.heat, seekers: Math.min(8, (next.heat.seekers ?? 0) + 1) }
+          next.flash = LOCK_LOST
         }
         if (tag === 'garden') next.heat = { ...next.heat, seekers: Math.min(8, (next.heat.seekers ?? 0) + 1) }
       }
