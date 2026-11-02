@@ -1,3 +1,4 @@
+import { SPARE_SAP_LOCK } from './sapLock'
 import { companionOf, keltStep, LINES as PARTY_LINES, recruitFx, sneakOdds } from './companions'
 import { STAIRS, STAIRS_CLEARED, STAIRS_TO } from './content/crucible'
 import { hash as hashRoll } from './fightTricks'
@@ -172,7 +173,9 @@ export function newGame(door: DoorId): GameState {
 export function chapterTwoFromCode(door: DoorId): GameState {
   const base = openingState(door)
   const next = applyEffect({ ...base, sceneId: CHAPTER_ONE_END }, chapterTwoUnlock())
-  return persist({ ...next, flash: undefined, flags: { ...next.flags, ch2FromCode: true } })
+  // v209: a code start skipped every Siphon spot in Chapter One, so it starts with one.
+  const items = { ...next.items, memory_siphon: Math.max(1, next.items.memory_siphon ?? 0) }
+  return persist({ ...next, items, flash: undefined, flags: { ...next.flags, ch2FromCode: true, siphonGot: true } })
 }
 
 function openingState(door: DoorId): GameState {
@@ -535,9 +538,9 @@ function stubForward(state: GameState, fx: Effect): Effect {
 
 /** v192: Continue on the End of Chapter One card. */
 function endCardContinue(state: GameState): Effect {
-  const fx: Effect = { goto: CH2_ENTRY, flag: { chapter2Unlocked: true, chapter1Done: true, siphonGot: true } }
-  if (!state.flags.siphonGot) fx.add = { memory_siphon: 1 }
-  return fx
+  // v209: no free Siphon at the card. It comes from the door's own spot (the Prisoner's cairn stash).
+  void state
+  return { goto: CH2_ENTRY, flag: { chapter2Unlocked: true, chapter1Done: true } }
 }
 
 export const WIRE_BLOCKED =
@@ -1200,9 +1203,9 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   next = chapterTwoAfter(state, next, fx)
   // v179: the Memory Siphon comes with Chapter Two (Continue at the End of Chapter One card, or the code), every door.
   // v187: keyed on chapter2Unlocked, not chapter1Done, so finishing Chapter One alone does not grant it.
-  if (!state.flags.chapter2Unlocked && next.flags.chapter2Unlocked && !next.flags.siphonGot) {
-    next = { ...next, items: { ...next.items, memory_siphon: (next.items.memory_siphon ?? 0) + 1 }, flags: { ...next.flags, siphonGot: true } }
-  }
+  // v209: new weapons and armor land in an empty slot, so nobody walks into a fight barehanded.
+  next = autoEquip(state, next)
+  // v209: the Siphon is no longer handed out when Chapter Two opens; a chapter-code start still gets it (chapterTwoFromCode).
   // v203: chained fights. A Seeker Hound-Handler who called his pack, and the Foreman's escort, fight you as he falls.
   next = chainedFight(state, next)
   if (next.flags.encounterFled && !next.flags.encounterHere) {
@@ -2404,7 +2407,7 @@ function withRest(state: GameState, rows: Choice[]): Choice[] {
         sub: hurt ? '+2 Health, Heat -1. Costs 1 Sap. Heat drops once every 4 scenes.' : 'Heat -1. Costs 1 Sap. Heat drops once every 4 scenes.',
         tone: 'quiet',
         enable: state.flags.restedHere ? { flag: '__never__' } : { sapMin: 2 },
-        locked: state.flags.restedHere ? REST_DONE_LOCK : 'Needs: 2 Sap',
+        locked: state.flags.restedHere ? REST_DONE_LOCK : SPARE_SAP_LOCK,
         effects: {
           health: hurt ? 2 : undefined,
           sap: -1,
@@ -2426,7 +2429,7 @@ function withRest(state: GameState, rows: Choice[]): Choice[] {
       tone: 'quiet',
       // Resting on your last Sap would empty you into the collapse, so it takes 2.
       enable: state.flags.restedHere ? { flag: '__never__' } : { sapMin: 2 },
-      locked: state.flags.restedHere ? REST_DONE_LOCK : 'Needs: 2 Sap',
+      locked: state.flags.restedHere ? REST_DONE_LOCK : SPARE_SAP_LOCK,
       effects: { health: 2, sap: -1, still: true, flag: { restedHere: true }, flash: REST_LINE },
     },
   ]
@@ -2531,6 +2534,22 @@ export function equipItem(state: GameState, id: ItemId, slot?: EquipSlot): GameS
     flash: `${def.name} ${SLOT_ON[to]}.`,
     updatedAt: Date.now(),
   })
+}
+
+const AUTO_SLOTS: readonly EquipSlot[] = ['weapon', 'armor']
+/** v209: a weapon or armor piece just gained goes on if its slot is empty. Bonus lines and the Strike/Shell rows are untouched. */
+function autoEquip(state: GameState, next: GameState): GameState {
+  let equipped = next.equipped ?? {}
+  let changed = false
+  for (const [id, n] of Object.entries(next.items) as [ItemId, number | undefined][]) {
+    if ((n ?? 0) <= (state.items[id] ?? 0)) continue
+    const to = slotsFor(id)[0]
+    if (!to || !AUTO_SLOTS.includes(to) || equipped[to]) continue
+    if (Object.values(equipped).includes(id) && (n ?? 0) < 2) continue
+    equipped = { ...equipped, [to]: id }
+    changed = true
+  }
+  return changed ? { ...next, equipped } : next
 }
 
 export function unequipSlot(state: GameState, slot: EquipSlot): GameState {

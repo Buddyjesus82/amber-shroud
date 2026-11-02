@@ -7,8 +7,8 @@ import { gearLookLine } from '../src/game/kit.ts'
 import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v208'"), 'SW cache v187')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v208'"), 'Build label v187')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v209'"), 'SW cache v187')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v209'"), 'Build label v187')
 ok(RELEASED_CHAPTERS.two === true, 'Chapter Two released')
 const pick = (x: GameState, id: string) => applyEffect(x, visibleChoices(x).find((c) => c.id === id)!.effects)
 // Release: Continue opens Chapter Two in place, every door; siphon comes with it
@@ -17,7 +17,7 @@ for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
   const end = { ...g, sceneId: CHAPTER_ONE_END, flags: { ...g.flags, chapter1Done: true, chapter1EndSeen: true } } as GameState
   const c = pick(end, 'continue')
   ok(c.flags.chapter2Unlocked && c.sceneId !== 'maw:rim', `${door}: Continue opens Chapter Two (${c.sceneId})`)
-  ok((c.items.memory_siphon ?? 0) === 1, `${door}: siphon with Chapter Two`)
+  ok(!(c.items.memory_siphon ?? 0), `${door}: v209: no free Siphon at the card; it comes from the door spot`)
 }
 // #2 siphon not granted by finishing Chapter One alone
 {

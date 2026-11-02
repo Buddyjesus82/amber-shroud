@@ -6,8 +6,8 @@ import { CH2_ENTRY } from '../src/game/content/intoTheMaw.ts'
 import type { DoorId, GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v208'"), 'SW cache v192')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v208'"), 'Build label v192')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v209'"), 'SW cache v192')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v209'"), 'Build label v192')
 const cont = getScene('ch1:end').choices.find((c) => c.id === 'continue')!.effects
 const cases: [string, Record<string, unknown>, number][] = [
   ['fresh', {}, 0],
@@ -23,8 +23,9 @@ for (const door of ['prisoner', 'outcast', 'vessel'] as DoorId[]) {
     const s: GameState = { ...g, sceneId: 'ch1:end', hubId: 'redmaw', flags: { ...g.flags, ...flags } as GameState['flags'], items: { ...g.items, ...(had ? { memory_siphon: 1 } : {}) } }
     const n = applyEffect(s, cont)
     ok(n.sceneId === CH2_ENTRY, `${door} ${name}: lands on ${CH2_ENTRY} (got ${n.sceneId})`)
-    ok(n.flags.chapter2Unlocked && n.flags.ch2Started && n.flags.siphonGot, `${door} ${name}: flags`)
-    ok(n.items.memory_siphon === 1, `${door} ${name}: exactly one Memory Siphon (got ${n.items.memory_siphon})`)
+    // v209: the card no longer hands out a Siphon; a held one is kept, never doubled.
+    ok(n.flags.chapter2Unlocked && n.flags.ch2Started, `${door} ${name}: flags`)
+    ok((n.items.memory_siphon ?? 0) === had, `${door} ${name}: Siphon count unchanged (got ${n.items.memory_siphon})`)
     for (const f of ['kalliksMark', 'thaliaDeal', 'sybellaSkiff']) ok(!(f in n.flags), `${door} ${name}: no ${f}`)
     // v199: the bargain flag comes only from Thalia's Bargain (Pay or Favor).
     ok(!('hasBargainFlag' in n.flags), `${door} ${name}: no hasBargainFlag`)

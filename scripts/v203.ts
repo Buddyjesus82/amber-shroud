@@ -108,7 +108,7 @@ const cov2 = (s: GameState) => playCoverKey(s, getScene(s.sceneId))
   ok(hf.cartel.watch.includes('Turreted Skiff') && hf.seekers.watch.includes('Seeker Hound-Handler') && heatFactions('vessel').seekers.watch.includes('Seeker Hound-Handler'), 'Heat card names')
   ok(heatNow(g('vessel', 'threshold', 'thresh:paddock', { seekers: 4 }), 'seekers').includes('At the Threshold: a Seeker Hound-Handler.'), 'live handler line')
   ok(heatNow(g('prisoner', 'redmaw', 'deep:rubble', { cartel: 6 }), 'cartel').includes('In the rig: a Turreted Skiff.'), 'live skiff line')
-  ok(cov('rigpatrol', 'deep:vents') === 'foreman_rig_guards', 'vent patrol art')
+  ok(cov('rigpatrol', 'deep:vents') === 'rig_vent_patrol', 'v209: vent patrol has its own art')
 }
 console.log(fails ? `v203: ${fails} FAIL` : 'v203: all ok')
 process.exit(fails ? 1 : 0)

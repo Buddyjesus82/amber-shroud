@@ -265,8 +265,10 @@ export function maskedPass(state: GameState, next: GameState, fx: { ambush?: unk
   }
   // Threat: he takes a scrap and leaves a Drop, or he blocks the way for one scene.
   const scrap = next.items.scrap ?? 0
-  if (scrap > 0 && roll(next, 'threat', 2) === 0 && !firstDropPending(next)) {
+  // v209: the scrap-for-Drop swap happens once a run.
+  if (scrap > 0 && !next.flags.maskedTolled && roll(next, 'threat', 2) === 0 && !firstDropPending(next)) {
     next.items = { ...next.items, scrap: scrap - 1, vial_drop: (next.items.vial_drop ?? 0) + 1 }
+    next.flags = { ...next.flags, maskedTolled: true }
     next.flash = appendFlash(next, MASKED_TOLL_LINE)
     return stamp(next, 'toll')
   }

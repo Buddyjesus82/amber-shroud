@@ -1,3 +1,4 @@
+import { SPARE_SAP_LOCK } from '../sapLock'
 import { tunnelsEntry } from './newPlaces'
 import { ROADS } from '../roads'
 import { SIPHON_PRISONER, siphonSpotRows } from './intoTheMaw'
@@ -493,7 +494,7 @@ She is here, and she is hunting. Walk up and she will talk. You can also slip pa
         sub: 'Costs 1 Sap. Walk when the Maw opens.',
         show: { all: [{ door: 'vessel' }, { flag: 'sybellaHelpAsked' }] },
         enable: { sapMin: 2 },
-        locked: 'Needs: 2 Sap',
+        locked: SPARE_SAP_LOCK,
         effects: sybellaOn({
           sap: -1,
           flash: SYBELLA_ASKED_AGAIN,

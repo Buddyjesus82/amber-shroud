@@ -361,7 +361,7 @@ export const ITEMS: Record<ItemId, ItemDef> = {
     id: 'cipher_key',
     name: 'Cipher Key',
     kind: 'key',
-    desc: 'Dropped by Valerius at the Abyssal Rib.',
+    desc: 'Dropped by Valerius at the Abyssal Ribs.',
   },
   valerius_baton: {
     id: 'valerius_baton',
@@ -369,7 +369,7 @@ export const ITEMS: Record<ItemId, ItemDef> = {
     kind: 'weapon',
     slot: 'weapon',
     strike: 3,
-    desc: 'The Overseer\'s shock-baton, dropped at the Abyssal Rib. Main hand, Strike 3.',
+    desc: 'The Overseer\'s shock-baton, dropped at the Abyssal Ribs. Main hand, Strike 3.',
   },
 }
 

@@ -35,7 +35,7 @@ const BY_DOOR: Partial<Record<DoorId, Partial<Record<Faction, HeatCard>>>> = {
   },
   vessel: {
     cartel: { name: 'Cartel', watch: 'a paid ambusher on the roads, a Turreted Skiff at Cartel Heat 6+', body: CARTEL_BODY },
-    seekers: { name: 'Seekers', watch: 'Sybella, Valerius at Seeker Command, a Court Guard, a Seeker Hound-Handler at Seeker Heat 4+, Seeker runners on the roads', body: SEEKERS_BODY },
+    seekers: { name: 'Seekers', watch: 'Sybella, Commander Valerius, a Court Guard, a Seeker Hound-Handler at Seeker Heat 4+, Seeker runners on the roads', body: SEEKERS_BODY },
   },
 }
 
