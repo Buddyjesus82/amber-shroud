@@ -16,8 +16,8 @@ export const HEAT_FACTIONS: Record<
   Faction,
   { name: string; watch: string; body: string }
 > = {
-  cartel: { name: 'Cartel', watch: 'Valerius, the Hound-handler, a paid ambusher on the roads, a Turreted Skiff at Cartel Heat 6', body: CARTEL_BODY },
-  seekers: { name: 'Seekers', watch: 'Sybella, a Seeker Hound-Handler at Seeker Heat 4, Seeker runners on the roads', body: SEEKERS_BODY },
+  cartel: { name: 'Cartel', watch: 'Valerius, the Hound-handler, a paid ambusher on the roads, a Turreted Skiff at Cartel Heat 6+', body: CARTEL_BODY },
+  seekers: { name: 'Seekers', watch: 'Sybella, a Seeker Hound-Handler at Seeker Heat 4+, Seeker runners on the roads', body: SEEKERS_BODY },
   strays: { name: 'Strays', watch: 'the Stray Hunter, Stray collectors on the roads', body: STRAYS_BODY },
 }
 
@@ -26,7 +26,7 @@ type HeatCard = { name: string; watch: string; body: string }
 /** Camp-04 is the Prisoner's ground, the Spine the Outcast's, the Threshold the Vessel's. Red Maw and the roads are everyone's. */
 const BY_DOOR: Partial<Record<DoorId, Partial<Record<Faction, HeatCard>>>> = {
   outcast: {
-    cartel: { name: 'Cartel', watch: 'a paid ambusher on the roads, a Turreted Skiff at Cartel Heat 6', body: CARTEL_BODY },
+    cartel: { name: 'Cartel', watch: 'a paid ambusher on the roads, a Turreted Skiff at Cartel Heat 6+', body: CARTEL_BODY },
     strays: {
       name: 'Strays',
       watch: 'Nim, a Stray collector, the Stray Hunter',
@@ -34,8 +34,8 @@ const BY_DOOR: Partial<Record<DoorId, Partial<Record<Faction, HeatCard>>>> = {
     },
   },
   vessel: {
-    cartel: { name: 'Cartel', watch: 'a paid ambusher on the roads, a Turreted Skiff at Cartel Heat 6', body: CARTEL_BODY },
-    seekers: { name: 'Seekers', watch: 'Sybella, Valerius at Seeker Command, a Court Guard, a Seeker Hound-Handler at Seeker Heat 4, Seeker runners on the roads', body: SEEKERS_BODY },
+    cartel: { name: 'Cartel', watch: 'a paid ambusher on the roads, a Turreted Skiff at Cartel Heat 6+', body: CARTEL_BODY },
+    seekers: { name: 'Seekers', watch: 'Sybella, Valerius at Seeker Command, a Court Guard, a Seeker Hound-Handler at Seeker Heat 4+, Seeker runners on the roads', body: SEEKERS_BODY },
   },
 }
 

@@ -14,7 +14,7 @@ for (const door of ['prisoner', 'outcast', 'vessel'] as DoorId[]) {
   }
 }
 ok(!NON.test(HEAT_TIP.body + HEAT_TIP.title), 'tip clean')
-ok(heatFactions('prisoner').cartel.watch === 'Valerius, the Hound-handler, a paid ambusher on the roads, a Turreted Skiff at Cartel Heat 6', 'Prisoner Cartel list')
+ok(heatFactions('prisoner').cartel.watch === 'Valerius, the Hound-handler, a paid ambusher on the roads, a Turreted Skiff at Cartel Heat 6+', 'Prisoner Cartel list')
 ok(!/Valerius|Hound/.test(heatFactions('outcast').cartel.watch + heatFactions('vessel').cartel.watch), 'no Camp-04 hunters off the Prisoner door')
 ok(/Nim/.test(heatFactions('outcast').strays.watch) && !/Nim/.test(heatFactions('prisoner').strays.watch), 'Nim only for Outcast')
 ok(/Seeker Command/.test(heatFactions('vessel').seekers.watch), 'Vessel lists Valerius at Command')

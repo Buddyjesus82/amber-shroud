@@ -11,3 +11,4 @@
 /** NEW */ export const VALVE_GUARDS_LINE = 'Rig Guards come out of the steam.'
 /** NEW */ export const OVERTIME_LINE = 'Overtime: Rig Guards Strike +1.'
 /** NEW */ export const SKIFF_RUN_SUB = 'Suppressing Fire: getting away costs 1 Sap.'
+/** v204 */ export const SKIFF_RIG_LINE = 'A Cartel skiff in the rig. A turret on its deck.'
