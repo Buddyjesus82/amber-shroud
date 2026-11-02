@@ -14,7 +14,7 @@ for (const door of ['prisoner', 'outcast', 'vessel'] as DoorId[]) {
   }
 }
 ok(!NON.test(HEAT_TIP.body + HEAT_TIP.title), 'tip clean')
-ok(heatFactions('prisoner').cartel.watch === 'Valerius, the Hound-handler, a paid ambusher on the roads', 'Prisoner Cartel list')
+ok(heatFactions('prisoner').cartel.watch === 'Valerius, the Hound-handler, a paid ambusher on the roads, a Turreted Skiff at Cartel Heat 6', 'Prisoner Cartel list')
 ok(!/Valerius|Hound/.test(heatFactions('outcast').cartel.watch + heatFactions('vessel').cartel.watch), 'no Camp-04 hunters off the Prisoner door')
 ok(/Nim/.test(heatFactions('outcast').strays.watch) && !/Nim/.test(heatFactions('prisoner').strays.watch), 'Nim only for Outcast')
 ok(/Seeker Command/.test(heatFactions('vessel').seekers.watch), 'Vessel lists Valerius at Command')
@@ -25,10 +25,10 @@ const g = (door: DoorId, hubId: string, sceneId: string, heat: Partial<GameState
 }
 ok(heatNow(g('prisoner', 'camp04', 'camp:yard', {}), 'cartel')[0] === 'No one is after you.', 'heat 0 = no one')
 ok(heatNow(g('prisoner', 'camp04', 'camp:yard', { cartel: 2 }), 'cartel').join('|') === 'At Camp-04: the Hound-handler.', 'camp handler')
-ok(heatNow(g('prisoner', 'camp04', 'camp:yard', { cartel: 8 }), 'cartel').join('|') === 'At Camp-04: Valerius himself.|On the roads: a paid ambusher.', 'camp Valerius')
+ok(heatNow(g('prisoner', 'camp04', 'camp:yard', { cartel: 8 }), 'cartel').join('|') === 'At Camp-04: Valerius himself.|On the roads: a Turreted Skiff.', 'camp Valerius')
 ok(heatNow(g('outcast', 'spine', 'spine:hub', { strays: 2 }), 'strays')[0] === 'On the Spine: a Stray collector.', 'spine collector')
 ok(heatNow(g('outcast', 'spine', 'spine:hub', { strays: 5 }), 'strays').join('|') === 'On the Spine: Nim.|On the roads: the Stray Hunter, with a shard-hound.|On the roads: a Stray collector.', 'spine Nim')
-ok(heatNow(g('vessel', 'threshold', 'thresh:court', { seekers: 6 }), 'seekers').join('|') === 'At the Threshold: a Court Guard.|At Seeker Command: Valerius.|On the roads: Seeker runners.', 'threshold')
+ok(heatNow(g('vessel', 'threshold', 'thresh:court', { seekers: 6 }), 'seekers').join('|') === 'At the Threshold: a Court Guard.|At the Threshold: a Seeker Hound-Handler.|At Seeker Command: Valerius.|On the roads: Seeker runners.', 'threshold')
 ok(heatNow(g('prisoner', 'redmaw', 'maw:hub', { seekers: 1 }), 'seekers')[0] === 'At Red Maw: Sybella.', 'maw Sybella')
 ok(heatNow(g('prisoner', 'camp04', 'camp:yard', { seekers: 1 }), 'seekers')[0] === 'No one on this ground yet.', 'off-ground')
 

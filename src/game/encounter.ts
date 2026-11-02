@@ -872,6 +872,7 @@ export const ENCOUNTER_FLAGS = [
   'encounterFlash',
   'encounterRound',
   'packCalled',
+  'packCartel',
   'encounterStall',
   'encounterTerrain',
   'encounterOpen',
@@ -1457,7 +1458,7 @@ export function resolveEncounter(
   }
   const remove: Partial<Record<ItemId, number>> = {}
   // v203: Pack Call. Still standing at the end of round 2, the handler calls his hound: it fights you when he falls.
-  if (spec.kind === 'seekerhandler' && round >= 2 && !f.packCalled) {
+  if ((spec.kind === 'seekerhandler' || spec.kind === 'handler') && round >= 2 && !f.packCalled) {
     flag.packCalled = true
     events.push(PACK_CALL_LINE)
   }

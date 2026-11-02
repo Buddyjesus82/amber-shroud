@@ -53,7 +53,7 @@ import { markFirstDrop } from './firstDrop'
 import { amberFindSign, downedSign, lowHealthSign, sandTouchReply } from './sandSign'
 import { campFightVerb, isPressureOverlay, isSybellaOverlay, pressureAppend, pressureChoices, pressureVerb, spineGround, spineHunterKindAt, straysHeard } from './hunter'
 import { bareFightIsRoad, offButton } from './verbs'
-import { roadHunterKind, secondStopRunner } from './roadHunt'
+import { ch2SkiffHunt, roadHunterKind, secondStopRunner } from './roadHunt'
 import { noticeFaction, noticeGround, noticeLine, SCAVENGE_NOTICE_MAX, SCAVENGE_NOTICE_STEP } from './noticeHeat'
 import {
   canEncounter,
@@ -1080,6 +1080,12 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     next.flags = { ...next.flags, ...fightStartFlags(next, roadHunt.kind), encounterNoSkip: true, roadHuntDone: true, roadFightSeen: true }
     const carried = (state.sceneId === 'ch1:storm' || state.sceneId === 'ch1:p-reunion') && next.sceneId === 'ch1:leave' ? next.flash : undefined
     next.flash = [carried, roadHunt.line].filter(Boolean).join(' ')
+  }
+  // v203: the Turreted Skiff hunts Chapter Two Cartel ground at Cartel Heat 6+.
+  const skiffHunt = !roadHunt ? ch2SkiffHunt(state, next) : null
+  if (skiffHunt) {
+    next.flags = { ...next.flags, ...fightStartFlags(next, skiffHunt.kind), encounterNoSkip: true, ch2SkiffDone: true }
+    next.flash = skiffHunt.line
   }
   // Vessel's second road stop: one fixed runner, once per run, whatever came before. Ignores Health.
   const secondStop = !roadHunt ? secondStopRunner(state, next) : null
@@ -2525,12 +2531,12 @@ function chainedFight(state: GameState, next: GameState): GameState {
   if (state.flags.encounterFled || next.flags.downed || (next.health ?? 1) <= 0) return next
   const kind = state.flags.encounterKind
   const chain: { kind: EncounterKind; line: string } | null =
-    kind === 'seekerhandler' && state.flags.packCalled
+    (kind === 'seekerhandler' || kind === 'handler') && state.flags.packCalled
       ? { kind: 'packhound', line: PACK_HOUND_LINE }
       : kind === 'foreman'
         ? { kind: 'rigguard', line: `${RIG_GUARDS_LINE}\n\n${OVERTIME_LINE}` }
         : null
   if (!chain) return next
-  const flags = { ...next.flags, ...fightStartFlags(next, chain.kind), encounterNoSkip: true }
+  const flags = { ...next.flags, ...fightStartFlags(next, chain.kind), encounterNoSkip: true, packCartel: kind === 'handler' }
   return { ...next, flags, flash: next.flash ? `${next.flash}\n\n${chain.line}` : chain.line }
 }

@@ -2,6 +2,8 @@ import { campHuntIsValerius } from './valeriusRest'
 import { spineHunterFor } from './content/spineHunter'
 import { ROAD_HUNT_HEAT, ROAD_HUSK_HEAT } from './roadHunt'
 import { STRAY_HOUND_HEAT, STRAY_HUNT_HEAT } from './strayHunter'
+import { SEEKER_HANDLER_HEAT, SKIFF_HEAT } from './encounter'
+import { ch2CartelGround } from './roadHunt'
 import type { Faction, GameState } from './types'
 
 /** Seeker Heat at which Valerius waits at Seeker Command (content/newPlaces.ts command-hot). */
@@ -26,10 +28,13 @@ export function heatNow(state: Pick<GameState, 'heat' | 'flags' | 'hubId' | 'sce
   const out: string[] = []
   if (f === 'cartel') {
     if (onCamp(state)) out.push(campHuntIsValerius(state) ? 'At Camp-04: Valerius himself.' : 'At Camp-04: the Hound-handler.')
-    if (h >= ROAD_HUNT_HEAT) out.push('On the roads: a paid ambusher.')
+    if (h >= SKIFF_HEAT) out.push(ch2CartelGround(state) ? 'In the rig: a Turreted Skiff.' : 'On the roads: a Turreted Skiff.')
+    else if (h >= ROAD_HUNT_HEAT) out.push('On the roads: a paid ambusher.')
   } else if (f === 'seekers') {
     if (onMaw(state) && eff >= 1) out.push('At Red Maw: Sybella.')
     if (onThresh(state) && eff >= 1) out.push('At the Threshold: a Court Guard.')
+    if (onThresh(state) && h >= SEEKER_HANDLER_HEAT) out.push('At the Threshold: a Seeker Hound-Handler.')
+    if (state.sceneId === 'maw:rim' && h >= SEEKER_HANDLER_HEAT) out.push('On the Red Maw rim: a Seeker Hound-Handler.')
     if (onThresh(state) && h >= COMMAND_VALERIUS_HEAT) out.push('At Seeker Command: Valerius.')
     if (h >= ROAD_HUSK_HEAT) out.push('On the roads: a husk.')
     else if (h >= ROAD_HUNT_HEAT) out.push('On the roads: Seeker runners.')

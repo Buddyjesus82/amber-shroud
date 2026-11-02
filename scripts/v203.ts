@@ -2,7 +2,9 @@
 import { applyEffect, newGame, visibleChoices } from '../src/game/engine.ts'
 import { encounterSpec, fightStartFlags, pickEncounterKind } from '../src/game/encounter.ts'
 import { playCoverKey } from '../src/game/art.ts'
-import { roadHunterKind } from '../src/game/roadHunt.ts'
+import { ch2SkiffHunt, roadHunterKind } from '../src/game/roadHunt.ts'
+import { heatFactions } from '../src/game/heat.ts'
+import { heatNow } from '../src/game/heatNow.ts'
 import { getScene } from '../src/game/content/index.ts'
 import { OVERTIME_LINE, PACK_CALL_LINE, PACK_HOUND_LINE, SKIFF_RUN_LINE } from '../src/game/v203Lines.ts'
 import type { DoorId, GameState } from '../src/game/types.ts'
@@ -89,5 +91,24 @@ ok(cov('lockboss', 'deep:lock') === 'heavy_seeker', 'lock boss art')
 ok(cov('seekerpatrol', 'thresh:sift') === 'patrol_squad', 'patrol squad art')
 ok(cov('drilllead', 'deep:drill-deck') === 'drill_crew', 'drill crew art')
 ok(cov('skiff', 'ch1:p-pipe') === 'turret_skiff' && cov('foreman', 'deep:drill-deck') === 'foreman_rig_guards', 'skiff + foreman art')
+
+const cov2 = (s: GameState) => playCoverKey(s, getScene(s.sceneId))
+// Follow-ups: Cartel handler Pack Call, ch2 skiff hunt, Heat card names, vent patrol art.
+{
+  const s0 = g('prisoner', 'camp04', 'camp:wire', { cartel: 3 }, {}, { health: 6 })
+  let c = { ...s0, flags: { ...s0.flags, ...fightStartFlags(s0, 'handler'), encounterNoSkip: true } } as GameState
+  c = applyEffect(c, { resolveEncounter: 'guard', ticks: 1 })
+  c = applyEffect(c, { resolveEncounter: 'guard', ticks: 1 })
+  ok(c.flags.packCalled, 'Cartel handler Pack Call')
+  const cw = applyEffect({ ...c, flags: { ...c.flags, encounterDone: true } }, { unsetFlag: ['encounterHere', 'encounterDone', 'encounterKind', 'encounterHp', 'packCalled'] })
+  ok(cw.flags.encounterKind === 'packhound' && cov2(cw) === 'handler', 'Cartel handler hound follows, Cartel art')
+  const sk = (heat: number, scene: string, ch = 'into-the-maw') => ch2SkiffHunt(g('prisoner', 'redmaw', 'ch2:gate', { cartel: heat }, {}, { chapterId: ch } as never), g('prisoner', 'redmaw', scene, { cartel: heat }, {}, { chapterId: ch } as never))?.kind
+  ok(sk(6, 'deep:rubble') === 'skiff' && sk(5, 'deep:rubble') === undefined && sk(6, 'ch2:v-scar') === undefined && sk(6, 'deep:rubble', 'cache-run') === undefined, 'ch2 skiff hunt')
+  const hf = heatFactions()
+  ok(hf.cartel.watch.includes('Turreted Skiff') && hf.seekers.watch.includes('Seeker Hound-Handler') && heatFactions('vessel').seekers.watch.includes('Seeker Hound-Handler'), 'Heat card names')
+  ok(heatNow(g('vessel', 'threshold', 'thresh:paddock', { seekers: 4 }), 'seekers').includes('At the Threshold: a Seeker Hound-Handler.'), 'live handler line')
+  ok(heatNow(g('prisoner', 'redmaw', 'deep:rubble', { cartel: 6 }), 'cartel').includes('In the rig: a Turreted Skiff.'), 'live skiff line')
+  ok(cov('rigpatrol', 'deep:vents') === 'foreman_rig_guards', 'vent patrol art')
+}
 console.log(fails ? `v203: ${fails} FAIL` : 'v203: all ok')
 process.exit(fails ? 1 : 0)

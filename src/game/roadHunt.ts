@@ -1,4 +1,5 @@
 import { SKIFF_HEAT, turfFaction } from './encounter'
+import { SKIFF_LINE } from './v203Lines'
 import { getScene } from './content'
 import type { EncounterKind } from './encounter'
 import type { GameState } from './types'
@@ -50,4 +51,18 @@ export function secondStopRunner(before: GameState, next: GameState): { kind: En
   if (next.flags.secondStopDone || next.flags.encounterHere || next.flags.hunterHere || next.flags.downed) return null
   if (next.heat.seekers < ROAD_HUNT_HEAT) return null
   return { kind: 'runner', line: ROAD_HUNT_LINES.seekers }
+}
+
+/** v203: Chapter Two Cartel ground: the Prisoner's rig path into the Maw and the Rig 04 deep. */
+export function ch2CartelGround(s: Pick<GameState, 'sceneId'>): boolean {
+  return s.sceneId.startsWith('ch2:p-') || s.sceneId.startsWith('deep:')
+}
+/** v203: at Cartel Heat 6+ a Turreted Skiff hunts Chapter Two Cartel ground. One arrival per run, like a road hunter. */
+export function ch2SkiffHunt(before: GameState, next: GameState): { kind: EncounterKind; line: string } | null {
+  if (next.chapterId === 'cache-run' || next.flags.ch2SkiffDone) return null
+  if (next.sceneId === before.sceneId || !ch2CartelGround(next)) return null
+  if (next.flags.encounterHere || next.flags.hunterHere || next.flags.downed) return null
+  if (getScene(next.sceneId).kind !== 'story') return null
+  if ((next.heat.cartel ?? 0) < SKIFF_HEAT) return null
+  return { kind: 'skiff', line: SKIFF_LINE }
 }
