@@ -51,6 +51,7 @@ export type ItemId =
   | 'cartel_pass'
   | 'skimmer_plating'
   | 'seeker_rations'
+  | 'rig_passkey'
   | 'cartel_transponder'
   | 'deep_memory_pearl'
   | 'cipher_key'

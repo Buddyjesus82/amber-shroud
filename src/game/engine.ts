@@ -1977,7 +1977,7 @@ export function interpret(state: GameState, raw: string): GameState {
   {
     const norm = (t: string) => t.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
     const own = visibleChoices(state).find((c) => (c.id === 'rest' || c.id === 'rest_dugout') && norm(c.label) === norm(bare))
-    if (own && state.sceneId === 'spine:dusteye') {
+    if (own && (state.sceneId === 'spine:dusteye' || state.sceneId === 'deep:shanty')) {
       if (!isChoiceOn(state, own.enable)) return withVerb(persist({ ...state, flash: own.locked, updatedAt: Date.now() }), 'rest')
       return withVerb(applyEffect(state, own.effects), 'rest')
     }

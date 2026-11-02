@@ -13,6 +13,7 @@ import { spineScenes } from './spine'
 import { thresholdScenes } from './threshold'
 import { newPlaceScenes } from './newPlaces'
 import { phase1Scenes } from './phase1Camps'
+import { phase2Scenes } from './phase2Camps'
 
 export { DOORS, HUBS, ITEMS } from './catalog'
 
@@ -33,6 +34,7 @@ const all: Scene[] = [
   ...crisisScenes,
   ...newPlaceScenes,
   ...phase1Scenes,
+  ...phase2Scenes,
 ]
 
 const byId = new Map(all.map((s) => [s.id, s]))

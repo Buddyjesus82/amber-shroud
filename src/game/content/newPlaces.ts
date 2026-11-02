@@ -5,6 +5,8 @@ import type { Choice, Cond, Scene } from '../types'
 export const VEIN_LOCKED = "Sealed. You need Thalia's code or Kaelen's shim."
 /** Outcast and Vessel never meet Kaelen: the same line without his name. */
 export const VEIN_LOCKED_NO_SHIM = "Sealed. You need Thalia's code."
+/** Heavy enough to turn the lift gear: Scrap Buckler, Maw Plate (or plated pieces), iron scrap. v200: moved here for the Rubble Crawl. */
+export const HEAVY_TOOL: Cond = { any: [{ item: 'scrap_buckler' }, { item: 'plated_buckler' }, { item: 'maw_plate' }, { item: 'plated_scav_wrap' }, { item: 'scrap' }] }
 export const VEIN_KEY: Cond = { any: [{ flag: 'hasBargainFlag' }, { item: 'wire_cutter_shim' }] }
 export const GATE_FOUND_GUARD = 'A scrawled maintenance log. The gate code is on it. Seeker Heat +1.'
 export const GATE_FOUND_COURT = 'A discarded slate. The gate code is scratched into it. Seeker Heat +1.'

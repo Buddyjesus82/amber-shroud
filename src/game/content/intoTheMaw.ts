@@ -1,5 +1,6 @@
-import { VEIN_KEY, VEIN_LOCKED, VEIN_LOCKED_NO_SHIM, hiddenExitChoice, tunnelsEntry } from './newPlaces'
+import { HEAVY_TOOL, VEIN_KEY, VEIN_LOCKED, VEIN_LOCKED_NO_SHIM, hiddenExitChoice, tunnelsEntry } from './newPlaces'
 import type { Choice, Cond, DoorId, Scene } from '../types'
+import { crucibleEntry, rig04Entry, rustPocketsEntry } from './phase2Camps'
 import { STRAY_ARRIVAL_LINE, STRAY_OUTCAST_LINE } from '../strayLines'
 
 /**
@@ -81,6 +82,7 @@ function abyssChoices(collapseLabel: string): Choice[] {
     { id: 'fight', label: 'Fight Valerius', tone: 'danger', show: { not: abyssClear }, effects: { flag: { ch2Fight: 'valerius' }, ambush: { kind: 'overseer', line: 'Overseer Valerius. Shock-baton up, the squad at his back, the rig glowing behind them.' } } },
     { id: 'collapse', label: collapseLabel, tone: 'hunger', show: { all: [{ not: abyssClear }, { item: 'spire_key' }] }, effects: { flag: { ribsCollapsed: true }, goto: 'ch2:ribs' } },
     { id: 'on', label: 'Into the Abyssal Ribs', tone: 'hunger', show: abyssClear, effects: { goto: 'ch2:ribs' } },
+    rustPocketsEntry,
   ]
 }
 
@@ -151,7 +153,6 @@ export const RIBS_CLIMAX_LADDER = "The drill breaks through the rib above. Seeke
 /** Typed Do on the jammed lift gear. */
 const LIFT_DO = ['use', 'wrench', 'kick', 'lever', 'gear', 'crank', 'pry', 'jam', 'bash', 'shove', 'hammer', 'buckler', 'plate']
 /** Heavy enough to turn the lift gear: Scrap Buckler, Maw Plate (or plated pieces), iron scrap. */
-const HEAVY_TOOL: Cond = { any: [{ item: 'scrap_buckler' }, { item: 'plated_buckler' }, { item: 'maw_plate' }, { item: 'plated_scav_wrap' }, { item: 'scrap' }] }
 /** v186: the cup test failed and nothing left can pass it. */
 const NO_PASS: Cond = { all: [{ flag: 'cupFailed' }, { flagUnset: 'cupPassed' }, { not: { any: [{ item: 'vial_drop' }, { item: 'ossa_token' }, { item: 'knotted_wrap' }, { item: 'kallik_mark' }] } }] }
 /** v186: the Ribs crank's heavy gear, without loose scrap (scrap is the vent's price). */
@@ -277,7 +278,7 @@ Vex looks at the tags on you, then at your shaved head. 'Pens. They tagged me to
     kind: 'story',
     title: 'The Drill Line',
     body: `The shaft shakes. A drill-head comes through the wall above the cage, Sybella's team on the other side of it.\n\n${DRILL_BREACH}`,
-    choices: drillChoices('ch2:p-abyss', 'drilllead', 'Fight the drill lead', 'drill'),
+    choices: [...drillChoices('ch2:p-abyss', 'drilllead', 'Fight the drill lead', 'drill'), rig04Entry({ flag: 'drillPast' })],
   },
   {
     id: 'ch2:p-abyss',
@@ -287,7 +288,7 @@ Vex looks at the tags on you, then at your shaved head. 'Pens. They tagged me to
     variants: [
       { if: { flag: 'overseerChip' }, mode: 'append', body: "His hand goes to the chipped baton. 'You marked it. At the camp. I remember the sound.'" },
     ],
-    choices: abyssChoices('Collapse the shaft with the Key'),
+    choices: [...abyssChoices('Collapse the shaft with the Key'), rig04Entry({ flag: 'drillPast' })],
   },
 
   // ── Vessel: "The False Cup Inside" ──
@@ -447,7 +448,7 @@ Vex stares at the cup on your belt. 'They hung one of those on me once. I think.
     title: 'Cover Blown',
     body: `The lamps that bowed to you turn. 'False cup!' Sybella's drill team comes down the stair after you.\n\n${DRILL_BREACH}`,
     variants: [{ if: { flagUnset: 'coverBlown' }, body: `Sybella's drill team comes down the stair after you.\n\n${DRILL_BREACH}` }],
-    choices: drillChoices('ch2:v-ribs', 'dragoon', 'Fight the dragoons', 'dragoons'),
+    choices: [...drillChoices('ch2:v-ribs', 'dragoon', 'Fight the dragoons', 'dragoons'), crucibleEntry],
   },
   {
     id: 'ch2:v-ribs',
