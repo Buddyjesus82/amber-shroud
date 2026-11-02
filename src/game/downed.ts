@@ -98,7 +98,8 @@ export function wakeEffect(state: GameState): Effect {
   if (nearCorvin(state)) {
     return {
       health: 2,
-      sap: state.sap > 0 ? -1 : undefined,
+      // v211: getting up never empties the last Sap (that fired a second rescue: a second Hand and a Glint).
+      sap: state.sap > 1 ? -1 : undefined,
       unsetFlag: ['downed', 'downedNote', 'downedKind', 'downedWon', 'gateZap', 'hunterHere', 'hunterFrom'],
       flag: { corvinPulled: true },
       flash: 'Corvin gets you upright behind the rock. Health returns. The minute on the ground cost sap. "Walk soft," he says.',
@@ -130,7 +131,8 @@ export function wakeEffect(state: GameState): Effect {
   }
   return {
     health: 1,
-    sap: state.sap > 0 ? -1 : undefined,
+    // v211: getting up never empties the last Sap (that fired a second rescue: a second Hand and a Glint).
+      sap: state.sap > 1 ? -1 : undefined,
     unsetFlag: ['downed', 'downedNote', 'downedKind', 'downedWon', 'gateZap', 'hunterHere', 'hunterFrom'],
     flash: 'You get up. Health is a thread. The minute on the ground cost sap. Too hurt to fight until it holds.',
   }

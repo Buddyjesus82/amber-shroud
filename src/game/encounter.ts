@@ -1332,7 +1332,7 @@ function resolveEncounterCore(
 
   // Outcast only, once a fight: when it is going badly, the sand takes the hit for him. Never explained.
   let grip = !!f.encounterGrip
-  if (sandAnswers(state) && !grip && c.yourHp <= 2 && dmgIn > 0 && roll(state, 'grip', 10) < 6) {
+  if (sandAnswers(state) && !grip && c.yourHp <= 2 && dmgIn > 0 && c.theirHp - dmgOut > 0 && roll(state, 'grip', 10) < 6) {
     hitIn(() => 0)
     grip = true
     notes.push(sandGripLine(spec.name, BEAST_KINDS.includes(spec.kind), roll(state, 'gripForm', 2) ? 'mirage' : 'slide', PROPER_KINDS.includes(spec.kind)))
@@ -1367,6 +1367,17 @@ function resolveEncounterCore(
     if (lens) mateHits.push(PARTY_LINES.lens)
   }
   if (mate) out.mateHp = mateHp
+  // v211: a dead enemy never hits back. Your strike (and the party's) lands first; a fallen foe deals nothing.
+  const fellFirst = theirHp <= 0 && spec.kind !== 'masked' && !(spec.kind === 'husk' && f.encounterController && !controllerDown && !huskRevived)
+  if (fellFirst && dmgIn > 0) {
+    if (spec.kind === 'leech' && !f.encounterStun) {
+      sapLoss = Math.max(0, sapLoss - 1)
+      const at = notes.indexOf('The vat-leech drinks. Sap -1.')
+      if (at >= 0) notes.splice(at, 1)
+    }
+    dmgIn = 0
+    inTags.length = 0
+  }
   let yourHp = Math.max(0, c.yourHp - dmgIn)
   let healthDelta = yourHp - c.yourHp
   if (dmgOut > 0) pinned = false
@@ -1416,8 +1427,8 @@ function resolveEncounterCore(
   const bare = statRows(yourHp, c.strike, c.shell, spec, theirHp)
   const top = mate ? bare.replace('\n\n', `\n\n${statRow(mate.name.toUpperCase(), mateHp, mate.strike, mate.shell)}\n\n`) : bare
   // v182: the hit that would have dropped you lands after they fall. The line says so.
-  const themSaid = mutualWin && dmgIn > 0 ? themLine.replace(/\.$/, `, but you drop ${who} first.`) : themLine
-  const hitCard = [top, youLine, ...mateHits, themSaid, ...bonusLines, ...mateTags, ...(notes.length ? [notes.join(' ')] : [])].join('\n\n')
+  const themSaid = fellFirst ? '' : mutualWin && dmgIn > 0 ? themLine.replace(/\.$/, `, but you drop ${who} first.`) : themLine
+  const hitCard = [top, youLine, ...mateHits, ...(themSaid ? [themSaid] : []), ...bonusLines, ...mateTags, ...(notes.length ? [notes.join(' ')] : [])].join('\n\n')
   const sap = sapLoss ? -sapLoss : undefined
 
   // He cannot be killed. A strike ends it, and so does the third round: he walks off. No loot, no Heat.

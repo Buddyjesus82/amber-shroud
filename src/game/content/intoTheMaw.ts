@@ -72,6 +72,8 @@ const vexPending: Cond = { all: [{ flag: 'vexFreed' }, { flagUnset: 'vexFate' }]
 const abyssClear: Cond = { any: [{ flag: 'ch2Won_valerius' }, { flag: 'ribsCollapsed' }] }
 const knot: Cond = { equipped: 'ossa_token' }
 const weapon: Cond = { slot: 'weapon' }
+/** v211: Pry the Seal. A wrench, a baton, a buckler or a Maw Plate. */
+const PRY_TOOL: Cond = { any: (['wrench', 'ironwood_baton', 'valerius_baton', 'scrap_buckler', 'plated_buckler', 'maw_plate'] as const).flatMap((id) => [{ item: id }, { equipped: id }]) }
 const vesselGarb: Cond = { any: [{ equipped: 'ceremonial_cloth' }, { flag: 'fakeVessel' }] }
 const reckonDue: Cond = { all: [{ flagUnset: 'reckoningDone' }, { flagUnset: 'gullyBypass' }, { any: [{ heatMin: ['cartel', 5] }, { flag: 'millerHeard' }] }] }
 const outcastReckonDue: Cond = { all: [{ flagUnset: 'reckoningDone' }, { flagUnset: 'bountyFooled' }, { flagUnset: 'bountyBroken' }] }
@@ -108,6 +110,13 @@ function drillChoices(next: string, kind: 'drilllead' | 'dragoon', fightLabel: s
 }
 
 export const GREG_TOLL = 'ch2:greg-toll'
+/** v211: shown on a Greg fight row when Health is low. */
+export const GREG_LAST_STAND = 'Greg readies a desperate last stand—engaging now will be fatal if injured'
+const GREG_LOW: Cond = { not: { healthMin: 3 } }
+const gregWarn = (c: Choice): Choice[] => [
+  { ...c, show: c.show ? { all: [c.show, { not: GREG_LOW }] } : { not: GREG_LOW } },
+  { ...c, sub: c.sub ? `${GREG_LAST_STAND}. ${c.sub}` : GREG_LAST_STAND, show: c.show ? { all: [c.show, GREG_LOW] } : GREG_LOW },
+]
 export const GREG_TOLL_BODY = `Horn static, then a long low whistle. Greg Ambergrin stands on his elevated steel platform: oil-stained optics, an iron chain.
 
 Greg, over the horn: "Tell that runner down in the dirt to stop staring up at my brass. The price is fifteen scraps or two vials of refined sap—no credit, no speeches. If they haven't dropped the weight into the bucket by the count of three... paint the sand with 'em and haul their skiff to the scrap heap."`
@@ -126,11 +135,11 @@ export const RING_LINE = 'The cup is chosen, not filled. The mark carries the we
 const sybellaCool: Cond = { heatMax: ['seekers', 3] }
 const sybellaHot: Cond = { heatMin: ['seekers', 4] }
 /** Name Sybella: free under Seeker Heat 4; at 4 or more it costs 1 scrip or 1 scrap. */
-function sybellaRows(id: string, label: string, show: Cond, fx: Choice['effects']): Choice[] {
+function sybellaRows(id: string, label: string, show: Cond, fx: Choice['effects'], scrapCost = 1): Choice[] {
   return [
     { id, label, show: { all: [show, sybellaCool] }, effects: fx },
     { id, label, sub: '1 scrip.', show: { all: [show, sybellaHot] }, enable: { item: 'scrip' }, locked: SYBELLA_RAGS, effects: { ...fx, remove: { scrip: 1 } } },
-    { id, label, sub: '1 scrap.', show: { all: [show, sybellaHot] }, enable: { item: 'scrap' }, locked: SYBELLA_RAGS, effects: { ...fx, remove: { scrap: 1 } } },
+    { id, label, sub: `${scrapCost} scrap.`, show: { all: [show, sybellaHot] }, enable: scrapCost > 1 ? { itemMin: ['scrap', scrapCost] } : { item: 'scrap' }, locked: scrapCost > 1 ? `Needs: ${scrapCost} scrap` : SYBELLA_RAGS, effects: { ...fx, remove: { scrap: scrapCost } } },
   ]
 }
 export const SIPHON_PRISONER = "Under a tarp at the cairn, someone's stash from the last run: cord, a dead lamp, and a Seeker blade with a glass reservoir in the grip. Nobody's coming back for it. You take the Memory Siphon."
@@ -204,7 +213,7 @@ Greg unhooks a chain from his belt. "No toll for stock. Stock goes back in the p
       { id: 'through', label: 'Climb into the haul', tone: 'hunger', show: { flag: 'ch2Won_jaws' }, effects: { goto: 'ch2:p-haul' } },
       { id: 'haul', label: 'Bury yourself in the scrap haul', sub: 'The haul skiffs go in under the platform.', show: { flagUnset: 'ch2Won_jaws' }, effects: { flag: { gregStanding: 'bypassed' }, goto: 'ch2:p-haul' } },
       { id: 'scrip', label: 'Pay in Cartel Scrip', sub: '2 scrip.', show: { flagUnset: 'ch2Won_jaws' }, enable: { itemMin: ['scrip', 2] }, locked: 'Needs: 2 Cartel Scrip', effects: { remove: { scrip: 2 }, flag: { gregStanding: 'paid' }, goto: 'ch2:p-haul', flash: "Greg turns the scrip over. 'Miller's own paper, coming home.' He looks away while you climb into the haul." } },
-      { id: 'fight', label: "Fight Greg's chain", tone: 'danger', show: { flagUnset: 'ch2Won_jaws' }, effects: { flag: { gregStanding: 'hostile', ch2Fight: 'jaws' }, ambush: { kind: 'greg', line: "Greg swings the chain like he's done it a thousand times. He has." } } },
+      ...gregWarn({ id: 'fight', label: "Fight Greg's chain", tone: 'danger', show: { flagUnset: 'ch2Won_jaws' }, effects: { flag: { gregStanding: 'hostile', ch2Fight: 'jaws' }, ambush: { kind: 'greg', line: "Greg swings the chain like he's done it a thousand times. He has." } } }),
     ],
   },
   {
@@ -280,7 +289,7 @@ Vex looks at the tags on you, then at your shaved head. 'Pens. They tagged me to
 "'Down is easy. Up is the problem. Don't think about up.'"`,
     variants: [{ if: { flagUnset: 'murchScrap' }, body: "Murch's lift: a cage on cables, older than Miller, older than the Bleed." }],
     choices: [
-      { id: 'reckon', label: 'Face Greg at the cage', tone: 'danger', show: { all: [reckonDue, { flagUnset: 'spireKey' }] }, effects: { flag: { ch2Fight: 'reckoning', gregStanding: 'hostile' }, ambush: { kind: 'greg', line: "'Pen stock riding Miller's lift. He'll want to watch.'" } } },
+      ...gregWarn({ id: 'reckon', label: 'Face Greg at the cage', tone: 'danger', show: { all: [reckonDue, { flagUnset: 'spireKey' }] }, effects: { flag: { ch2Fight: 'reckoning', gregStanding: 'hostile' }, ambush: { kind: 'greg', line: "'Pen stock riding Miller's lift. He'll want to watch.'" } } }),
       { id: 'ride', label: 'Ride it down', tone: 'hunger', show: { all: [{ flag: 'murchScrap' }, { not: reckonDue }] }, effects: { ticks: 1, flag: { ch2LiftRoll: true }, goto: 'ch2:cache' } },
       { id: 'vex', label: 'Let Vex lead down the dead stops', sub: '1 Sap.', tone: 'hunger', show: { all: [{ flagUnset: 'murchScrap' }, { flag: 'vexFreed' }, { not: reckonDue }] }, effects: { ticks: 1, sap: -1, flag: { vexLed: true }, goto: 'ch2:cache' } },
       { id: 'sealed', label: 'Try the cage', tone: 'quiet', show: { all: [{ flagUnset: 'murchScrap' }, { flagUnset: 'vexFreed' }] }, effects: { goto: 'ch2:trapped' } },
@@ -451,7 +460,7 @@ Vex stares at the cup on your belt. 'They hung one of those on me once. I think.
       { tags: ['ossa', 'stilt', 'where is ossa'], reply: '', effects: { flag: { ch2TownFrom: 'ch2:v-stair' }, goto: 'maw:stilt' } },
     ],
     choices: [
-      { id: 'greg', label: 'Greg, in the stairwell', tone: 'danger', show: stairGreg, effects: { flag: { stairGregDone: true, ch2Fight: 'stairgreg' }, ambush: { kind: 'greg', line: "'You sold me to the lamps. Now I sell you to the dark.'" } } },
+      ...gregWarn({ id: 'greg', label: 'Greg, in the stairwell', tone: 'danger', show: stairGreg, effects: { flag: { stairGregDone: true, ch2Fight: 'stairgreg' }, ambush: { kind: 'greg', line: "'You sold me to the lamps. Now I sell you to the dark.'" } } }),
       { id: 'down', label: 'Open the seal', tone: 'hunger', show: { not: stairGreg }, enable: { any: [{ flag: 'vexFreed' }, { flag: 'crateKey' }] }, locked: 'Needs: Vex or the crate key', effects: { goto: 'ch2:cache' } },
       { id: 'back', label: 'Back', tone: 'quiet', show: { all: [{ not: stairGreg }, unblown] }, effects: { goto: 'ch2:v-outpost' } },
       { id: 'market', label: 'Bone Market', tone: 'quiet', show: { not: stairGreg }, effects: { flag: { ch2TownFrom: 'ch2:v-stair' }, goto: 'maw:market' } },
@@ -515,6 +524,21 @@ The horn rasps again: "Not that one, Greg. The Strays want that one. Hold it for
       { id: 'bounty', label: "Where Greg's crew waits", show: { all: [{ flagUnset: 'bountyFooled' }, { flagUnset: 'bountyBroken' }] }, effects: { goto: 'ch2:o-bounty' } },
       ...siphonSpotRows({ id: 'scout', label: 'The dying scout' }, { door: 'outcast' }, SIPHON_OUTCAST, 'corpse'),
       { id: 'stilts', label: 'Down the flooded gaps', tone: 'hunger', effects: { goto: 'ch2:o-stilts' } },
+      // v211: the Sifter Hermit, the first road stop past the Stake Line (no Blighted Wastes node on this route).
+      { id: 'hermit', label: 'The Sifter Hermit', show: { flagUnset: 'hermitTraded' }, effects: { goto: 'ch2:o-hermit' } },
+    ],
+  },
+  {
+    id: 'ch2:o-hermit',
+    kind: 'story',
+    title: 'The Sifter Hermit',
+    body: `An old man in bleached rags kneels in the blight between two vertebrae, shaking red sand through a wooden sieve. What stays in the mesh he lays on a cloth: cord, a tooth, a bone token cut with Kallik's mark.
+
+He doesn't look up. 'Sand gives. Sand takes back. You pay the difference.'`,
+    choices: [
+      { id: 'mark-glint', label: "Trade a Glint for Kallik's Mark", sub: '1 Glint. Once.', show: { flagUnset: 'hermitTraded' }, enable: { item: 'glints' }, locked: 'Needs: 1 Glint', effects: { remove: { glints: 1 }, add: { kallik_mark: 1 }, flag: { hermitTraded: true }, ticks: 1, flash: "He holds the Glint to the light, then drops the token in your palm. Kallik's Mark +1." } },
+      { id: 'mark-scrap', label: "Trade 3 scrap for Kallik's Mark", sub: '3 scrap. Once.', show: { flagUnset: 'hermitTraded' }, enable: { itemMin: ['scrap', 3] }, locked: 'Needs: 3 scrap', effects: { remove: { scrap: 3 }, add: { kallik_mark: 1 }, flag: { hermitTraded: true }, ticks: 1, flash: "He weighs the scrap in one hand and drops the token in your palm. Kallik's Mark +1." } },
+      BACK_TO('ch2:o-root'),
     ],
   },
   {
@@ -538,7 +562,7 @@ Murch doesn't look at you. He says to the skiff he's fixing: 'Lift's at the thir
     body: 'Greg\'s crew at a fire with two Stray Hunters, counting scrap into a hat. Your price. Greg is haggling. "Alive\'s worth more to Miller. Dead\'s easier to carry."',
     choices: [
       { id: 'trail', label: 'Sell them a false trail', sub: '1 Sap.', show: { all: [{ flagUnset: 'bountyFooled' }, { flagUnset: 'bountyBroken' }] }, enable: { sapMin: 2 }, locked: SPARE_SAP_LOCK, effects: { sap: -1, flag: { bountyFooled: true }, goto: 'ch2:o-root', flash: 'You leave stakes of your own, pointing the wrong way. By dark, Greg is arguing with the Hunters about whose fault it was.' } },
-      { id: 'fight', label: 'Fight', tone: 'danger', show: { all: [{ flagUnset: 'bountyFooled' }, { flagUnset: 'bountyBroken' }] }, effects: { flag: { ch2Fight: 'bounty', gregStanding: 'hostile' }, ambush: { kind: 'greg', line: "Greg's crew comes up off the fire." } } },
+      ...gregWarn({ id: 'fight', label: 'Fight', tone: 'danger', show: { all: [{ flagUnset: 'bountyFooled' }, { flagUnset: 'bountyBroken' }] }, effects: { flag: { ch2Fight: 'bounty', gregStanding: 'hostile' }, ambush: { kind: 'greg', line: "Greg's crew comes up off the fire." } } }),
       BACK_TO('ch2:o-root'),
     ],
   },
@@ -556,7 +580,7 @@ Vex touches his own face where your brand sits. 'Mine burned off. Or I don't rem
 From below, Valerius: 'The Stray who cost me Camp-04.'`,
     variants: [{ if: { heatMin: ['strays', 4] }, mode: 'append', body: "'Your friends rioted my pens. You'll pay for every one.'" }],
     choices: [
-      { id: 'cut', label: 'Cut the cord', sub: 'Needs a weapon.', show: { all: [{ flagUnset: 'vexFreed' }, { flagUnset: 'vexLeft' }] }, enable: weapon, locked: 'Needs: a weapon', effects: { ticks: 1, flag: { vexFreed: true }, flash: VEX_CORD_LINE } },
+      { id: 'cut', label: 'Cut the cord', show: { all: [{ flagUnset: 'vexFreed' }, { flagUnset: 'vexLeft' }] }, enable: weapon, locked: 'Needs: a weapon', effects: { ticks: 1, flag: { vexFreed: true }, flash: VEX_CORD_LINE } },
       { id: 'leave', label: 'Leave him', tone: 'quiet', show: { all: [{ flagUnset: 'vexFreed' }, { flagUnset: 'vexLeft' }] }, effects: { flag: { vexLeft: true }, goto: 'ch2:o-root' } },
       { id: 'back', label: 'Back', tone: 'quiet', show: { any: [{ flag: 'vexFreed' }, { flag: 'vexLeft' }] }, effects: { goto: 'ch2:o-root' } },
     ],
@@ -566,12 +590,17 @@ From below, Valerius: 'The Stray who cost me Camp-04.'`,
     kind: 'story',
     title: "Ossa's Stilt-Walk",
     body: "Flooded gaps between the vertebrae, resin-black water. Ossa's cord at your brow. You remember how she walked: weight forward, never stop. You don't stop.",
+    // v211: no Knot, no cord at the brow.
+    variants: [{ if: { not: knot }, mode: 'replace', body: 'Flooded gaps between the vertebrae, resin-black water.' }],
     choices: [
-      { id: 'reckon', label: 'Greg, at the water', tone: 'danger', show: { all: [outcastReckonDue, { flagUnset: 'spireKey' }] }, effects: { flag: { ch2Fight: 'reckoning', gregStanding: 'hostile' }, ambush: { kind: 'greg', line: "'Alive's worth more to Miller. Dead's easier to carry.'" } } },
+      ...gregWarn({ id: 'reckon', label: 'Greg, at the water', tone: 'danger', show: { all: [outcastReckonDue, { flagUnset: 'spireKey' }] }, effects: { flag: { ch2Fight: 'reckoning', gregStanding: 'hostile' }, ambush: { kind: 'greg', line: "'Alive's worth more to Miller. Dead's easier to carry.'" } } }),
       { id: 'lift', label: 'Ride the vertebra lift', tone: 'hunger', show: { all: [{ not: outcastReckonDue }, knot, { flag: 'murchScrap' }] }, effects: { ticks: 1, goto: 'ch2:cache' } },
       { id: 'walk', label: 'Walk the gaps', sub: '1 Sap.', tone: 'hunger', show: { all: [{ not: outcastReckonDue }, knot, { flagUnset: 'murchScrap' }] }, enable: { sapMin: 2 }, locked: SPARE_SAP_LOCK, effects: { sap: -1, ticks: 1, goto: 'ch2:cache' } },
       { id: 'vex', label: 'Follow Vex across', sub: '1 Sap.', tone: 'hunger', show: { all: [{ not: outcastReckonDue }, { not: knot }, { flag: 'vexFreed' }] }, effects: { sap: -1, ticks: 1, flag: { vexLed: true }, goto: 'ch2:cache' } },
       { id: 'wade', label: 'Wade in', tone: 'quiet', show: { all: [{ not: outcastReckonDue }, { not: knot }, { flagUnset: 'vexFreed' }] }, effects: { goto: 'ch2:trapped' } },
+      // v211: no Knot, no Vex: a heavy tool forces the seal. It costs blood and the noise carries.
+      { id: 'pry', label: 'Pry the Seal', sub: 'Health −2. Seeker Heat +1.', tone: 'danger', show: { all: [{ not: outcastReckonDue }, { not: knot }, { flagUnset: 'vexFreed' }, PRY_TOOL] }, enable: { healthMin: 3 }, locked: 'Needs: 3 Health', effects: { health: -2, heat: { seekers: 1 }, ticks: 1, goto: 'ch2:cache', flash: 'The seal gives with a crack that carries down the gaps. You squeeze through.' } },
+      { id: 'pry', label: 'Pry the Seal', sub: 'Health −2. Seeker Heat +1.', tone: 'danger', show: { all: [{ not: outcastReckonDue }, { not: knot }, { flagUnset: 'vexFreed' }, { not: PRY_TOOL }] }, enable: PRY_TOOL, locked: 'Needs: a heavy tool (wrench, baton or buckler)', effects: {} },
       BACK_TO('ch2:o-root'),
     ],
   },
@@ -623,9 +652,9 @@ Off the road, smoke rises from a drainage ditch.`,
       { id: 'iron', label: GREG_TOLL_IRON, sub: '15 scrap.', show: GREG_OPEN, enable: { itemMin: ['scrap', 15] }, locked: 'Needs: 15 scrap', effects: { remove: { scrap: 15 }, flag: { gregStanding: 'paid' }, goto: 'ch2:irongut', flash: 'The winch opens the gate.' } },
       { id: 'resin', label: GREG_TOLL_RESIN, sub: '2 vials.', show: GREG_OPEN, enable: { itemMin: ['vial_drop', 2] }, locked: 'Needs: 2 vials', effects: { remove: { vial_drop: 2 }, flag: { gregStanding: 'paid' }, goto: 'ch2:irongut', flash: 'Greg checks the seals and waves you through.' } },
       { id: 'skiff', label: 'Hide in the haul skiff under the platform', show: { all: [GREG_OPEN, { door: 'prisoner' }] }, effects: { flag: { gregStanding: 'bypassed' }, goto: 'ch2:p-haul', flash: 'The skiff grinds into the subterranean repair bays.' } },
-      ...sybellaRows('sybella', GREG_TOLL_SYBELLA, { all: [GREG_OPEN, { any: [{ door: 'vessel' }, { door: 'outcast' }] }] }, { flag: { ch2SybellaNamed: true }, goto: 'ch2:irongut', flash: "'Through. Fast. I never saw you.'" }),
+      ...sybellaRows('sybella', GREG_TOLL_SYBELLA, { all: [GREG_OPEN, { any: [{ door: 'vessel' }, { door: 'outcast' }] }] }, { flag: { ch2SybellaNamed: true }, goto: 'ch2:irongut', flash: "'Through. Fast. I never saw you.'" }, 3),
       { id: 'knot', label: "Show Ossa's Knot", show: { all: [GREG_OPEN, { door: 'outcast' }, knot] }, effects: { goto: 'ch2:irongut', flash: "'Ossa's. Huh.' He lets you go, for now." } },
-      { id: 'fight', label: 'Fight Greg and the gate guard', sub: 'Cartel Heat +2.', tone: 'danger', show: GREG_OPEN, effects: { heat: { cartel: 2 }, flag: { gregStanding: 'hostile', ch2Fight: 'tollgate' }, ambush: { kind: 'greg', line: "Greg swings the chain like he's done it a thousand times. He has." } } },
+      ...gregWarn({ id: 'fight', label: 'Fight Greg and the gate guard', sub: 'Cartel Heat +2.', tone: 'danger', show: GREG_OPEN, effects: { heat: { cartel: 2 }, flag: { gregStanding: 'hostile', ch2Fight: 'tollgate' }, ambush: { kind: 'greg', line: "Greg swings the chain like he's done it a thousand times. He has." } } }),
       { id: 'guard', label: 'Fight the gate guard', tone: 'danger', show: { all: [{ flag: 'ch2Won_tollgate' }, { flagUnset: 'ch2Won_tollguard' }] }, effects: { flag: { ch2Fight: 'tollguard' }, ambush: { kind: 'patrol', line: 'The gate guard comes at you.' } } },
       { id: 'through', label: 'Go through the gate', tone: 'hunger', show: { all: [{ flag: 'ch2Won_tollgate' }, { flag: 'ch2Won_tollguard' }] }, effects: { goto: 'ch2:irongut' } },
       BACK_TO('ch2:approach'),
@@ -719,7 +748,7 @@ Above you, Sybella's drill-rigs are breaking through. Every bite shakes grit dow
       { id: 'restrain', label: 'Restrain Vex', show: vexPending, effects: { flag: { vexFate: 'scout' }, flash: "You catch his arm and pull him off the vein. Vex blinks at the glow, then at you. Whatever he was, it stays in there. He stays with you. A scout for what comes next." } },
       { id: 'allow', label: 'Let him touch the vein', tone: 'danger', show: vexPending, effects: { flag: { vexFate: 'burn', bleedCore: true }, flash: "Vex puts both hands on the vein. The light goes into him and something goes out. When he turns, he doesn't know your face. He knows one thing. 'BLEED-CORE,' he says. 'Tell the airlock BLEED-CORE. It shuts behind you. It shuts on her.'" } },
       { id: 'siphon', label: 'Siphon the vein first', sub: 'Memory Siphon. Seeker Heat +1.', tone: 'danger', show: vexPending, enable: { item: 'memory_siphon' }, locked: 'Needs: the Memory Siphon', effects: { add: { deep_memory_pearl: 1 }, heat: { seekers: 1 }, flag: { vexFate: 'siphoned', veinSiphoned: true }, flash: "You set the Siphon in the vein before he can touch it. The reservoir fills gold. The archway above you cracks down its length. Vex makes a sound like you took something from him. You did. He won't get it back now.\n\nSomewhere above, a Seeker lamp turns your way." } },
-      { id: 'vein', label: 'Siphon the vein', sub: 'Memory Siphon. Seeker Heat +1.', show: { all: [{ not: vexPending }, { item: 'memory_siphon' }] }, enable: { flagUnset: 'veinSiphoned' }, locked: 'The vein is already dry.', effects: { add: { deep_memory_pearl: 1 }, heat: { seekers: 1 }, flag: { veinSiphoned: true }, flash: 'The reservoir fills gold. Images that are not yours. Somewhere above, a Seeker lamp turns your way.' } },
+      { id: 'vein', label: 'Siphon the vein', sub: 'Memory Siphon. Seeker Heat +1.', show: { all: [{ not: vexPending }, { item: 'memory_siphon' }, { flagUnset: 'veinSiphoned' }] }, effects: { add: { deep_memory_pearl: 1 }, heat: { seekers: 1 }, flag: { veinSiphoned: true }, flash: 'The reservoir fills gold. Images that are not yours. Somewhere above, a Seeker lamp turns your way.' } },
       { id: 'ride', label: 'Descend the lift', tone: 'hunger', show: { all: [{ flag: 'liftDone' }, { flagUnset: 'liftLadder' }, RIBS_WAY] }, enable: { not: vexPending }, locked: VEX_FIRST, effects: { goto: 'ch2:vein', flash: RIBS_CLIMAX } },
       { id: 'climb', label: 'Climb down', tone: 'hunger', show: { all: [{ flag: 'liftLadder' }, RIBS_WAY] }, enable: { not: vexPending }, locked: VEX_FIRST, effects: { goto: 'ch2:vein', flash: RIBS_CLIMAX_LADDER } },
       { id: 'ride-sealed', label: 'Descend the lift', tone: 'hunger', show: { all: [{ flag: 'liftDone' }, { flagUnset: 'liftLadder' }, { not: RIBS_WAY }, { door: 'prisoner' }] }, enable: { not: vexPending }, locked: VEX_FIRST, effects: { goto: 'ch2:trapped', flash: VEIN_LOCKED } },

@@ -1543,10 +1543,10 @@ const fought = pick(s, 'enc-fight')
 assert(fought.sceneId === 'camp:yard', 'fight stays in the Yard')
 assert(fought.flags.encounterHere && fought.flags.encounterDone, 'win holds the outcome card')
 assert((fought.items.scrap ?? 0) >= 2, 'winning a jackal yields saleable scrap')
-assert(fought.health < 6, 'Health takes the incoming hit, not Sap')
+assert(fought.health <= 6 && fought.sap === 6, 'v211: Health, not Sap, takes a hit; a foe that drops in the exchange never hits back')
 assert(fought.sap === 6, 'Sap is unchanged by a win')
 assert(/You hit the [^\n]+ for [1-9]/.test(bodyOf(fought)), 'fight result says plainly what you hit for')
-assert(/The [^\n]+ (?:hits back|hits you) for [1-9]|misses you\./.test(bodyOf(fought)), `fight result says plainly what they hit you for: ${bodyOf(fought)}`)
+assert(/The [^\n]+ (?:hits back|hits you) for [1-9]|misses you\.|^[A-Z-]+ ♥ 0 /m.test(bodyOf(fought)), `fight result says plainly what they hit you for: ${bodyOf(fought)}`)
 assert(!/→|\bvs\b|Strike \d+\+\d+|\(\+\d|\(−\d|for \d+ \(/.test(bodyOf(fought)), 'fight result has no maths')
 assert(!bodyOf(fought).includes('cooked resin'), 'outcome card does not bleed Yard prose')
 assert(!(fought.flash ?? '').includes('Strike'), 'compares live on the card, not a stacked flash')
@@ -2744,7 +2744,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v210'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v211'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(!sw.includes('covers/camp04.jpg') && sw.includes('covers/yard.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -3326,7 +3326,7 @@ function assertHelpResolves(s: GameState, where: string) {
       const card = String(f.flags.encounterClash ?? '')
       if (f.flags.encounterHere) {
         assert(/You hit [^\n]+ for [1-9]/.test(card), `round log says what you hit for (${card.slice(0, 80)})`)
-        assert(/(hits back|hits you) for [1-9]/.test(card), 'round log says what they hit you for')
+        assert(/(hits back|hits you) for [1-9]/.test(card) || !!f.flags.encounterDone, 'round log says what they hit you for (v211: not once they drop)')
       }
       if (!f.flags.encounterDone && f.flags.encounterHere) {
         assert(Number(f.flags.encounterHp) < lastHp && f.health < lastHealth, 'both sides lose at least 1 Health every round')
@@ -3479,7 +3479,7 @@ function assertHelpResolves(s: GameState, where: string) {
 
 // ── Outcast rework: Kaelen and Jaxson are cameos only; the brand; Korvan, Mira, Corvin; salve finds ──
 {
-  const PRISONER_NAMES = /Kaelen|Sifter|Jaxson|\bVance\b/
+  const PRISONER_NAMES = /Kaelen|Sifter(?! Hermit)|Jaxson|\bVance\b/
   // Kaelen's roaming pack passing by is the one cameo allowed on the Outcast road.
   const CAMEO_ALLOW = new Set(['roam:kaelen', 'roam:kaelen-rumors', 'spine:rumor-well', 'spine:rumor-corvin', 'spine:rumor-tally'])
   const PRISONER_FLAGS = new Set(['oilRide', 'oilRoad', 'oilTag', 'jaxsonInside', 'oilRefused', 'oilResentful', 'oilMended', 'oilAlly', 'oilJob', 'leftCamp', 'guardDown', 'wireCut', 'campLockdown', 'quietFence', 'bayLooked'])
@@ -3790,7 +3790,7 @@ function assertHelpResolves(s: GameState, where: string) {
 
   // (a) Health 1 in a fight on sand ground.
   let lowSeen = 0
-  for (let t = 0; t < 40 && !lowSeen; t++) {
+  for (let t = 0; t < 400 && !lowSeen; t++) {
     let f = { ...ridge(), ticks: 40 + t, health: 6 }
     f = applyEffect(f, { flag: { encounterAt: f.ticks } })
     f = applyEffect(f, beginEncounter(f, 'collector'))
@@ -3969,6 +3969,7 @@ function assertHelpResolves(s: GameState, where: string) {
     const plain = resolveEncounter(s, 'fight').fx
     const guard = resolveEncounter(s, 'guard').fx
     if (CRIT_THEM.test(String(plain.flag?.encounterClash ?? ''))) continue
+    if (plain.flag?.encounterDone || Number(plain.flag?.encounterHp ?? 1) <= 0) continue // v211: a kill round takes no hit back
     const pin = -(plain.health ?? 0)
     assert(-(guard.health ?? 0) === (pin > 0 ? Math.max(1, pin - 2) : 0), 'Guard takes 2 off the hit')
     assert(guard.flag?.encounterHp === 3, 'Guard does not hit back')
@@ -3978,6 +3979,7 @@ function assertHelpResolves(s: GameState, where: string) {
     const a = resolveEncounter(s, 'fight').fx
     const b = resolveEncounter(s, 'guard').fx
     if (CRIT_THEM.test(String(a.flag?.encounterClash ?? '')) || a.flag == null || b.flag == null) continue
+    if (a.flag?.encounterDone || Number(a.flag?.encounterHp ?? 1) <= 0) continue // v211: a kill round takes no hit back
     assert(-(b.health ?? 0) === (-(a.health ?? 0) > 0 ? Math.max(1, -(a.health ?? 0) - 1) : 0), 'Valerius: Guard takes only 1 off')
   }
   // Feint: 1 lighter now, +2 swing next.
@@ -4051,7 +4053,7 @@ function assertHelpResolves(s: GameState, where: string) {
 
   // Dust-jackal pair flanks for +1 while both stand.
   let flank = false
-  for (let t = 0; t < 20 && !flank; t++) flank = /^Second jackal: they hit for 1 more\.$/m.test(bodyOf(go(fv('prisoner', t, 'jackal', { encounterPair: true }, 2), 'fight')))
+  for (let t = 0; t < 60 && !flank; t++) flank = /^Second jackal: they hit for 1 more\.$/m.test(bodyOf(go(fv('prisoner', t, 'jackal', { encounterPair: true }, 6), 'fight')))
   assert(flank, 'the jackal pair flanks')
 
   // Scavenger snatch, return on a kill, escape otherwise, and the deal.
@@ -5445,6 +5447,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
         const inn = card.match(/(?:hits back|hits you) for (\d+)\./)
         const iOut = paras.findIndex((p) => /^(Critical Strike! )?You (hit|miss)/.test(p))
         const iIn = paras.findIndex((p) => /hits back for|hits you for|misses you|misses\. Sand/.test(p))
+        if (themHp === 0 && iIn === -1 && iOut === 2) continue // v211: a foe that drops does not hit back
         assert(iOut === 2 && iIn === 3, `v97 ${door} ${kind}: stats, your blow, then theirs (${paras.slice(0, 4).join(' | ')})`)
         const plainRound = !/drop|sand|Seeker|harpoon|grip|mirage|slide|jackal drops|stands again/i.test(paras.slice(4).join(' '))
         if (plainRound && kind !== 'husk') {

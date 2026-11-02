@@ -8,8 +8,8 @@ import { DRILL_BREACH, DRILL_LINES, GULLY_SCRAP, LIFT_HUMS } from '../src/game/c
 import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v210'"), 'SW cache v180')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v210'"), 'Build label v180')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v211'"), 'SW cache v180')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v211'"), 'Build label v180')
 const v = chapterTwoFromCode('vessel')
 const at = (sceneId: string, extra: Partial<GameState> = {}, flags: object = {}): GameState => ({ ...v, sceneId, ...extra, flags: { ...v.flags, ...flags } }) as GameState
 const row = (s: GameState, id: string) => visibleChoices(s).find((c) => c.id === id)
@@ -38,11 +38,11 @@ ok(lift.sap === 3 && lift.items.hydraulic_fluid === 1, 'canister costs 1 Sap')
 // 5 vein
 const r = at('ch2:ribs', { items: { ...v.items, memory_siphon: 1 } })
 const once = applyEffect(r, row(r, 'vein')!.effects)
-const again = row(once, 'vein')!
-ok(!isChoiceOn(once, again.enable) && again.locked === 'The vein is already dry.', 'vein once; repeat is dry')
+const again = row(once, 'vein')
+ok(!again, 'v211: vein once; the row is gone after')
 const vx = at('ch2:ribs', { items: { ...v.items, memory_siphon: 1 } }, { vexFreed: true })
 const vs = applyEffect(vx, row(vx, 'siphon')!.effects)
-ok(vs.flags.veinSiphoned && !isChoiceOn(vs, row(vs, 'vein')!.enable), 'siphon-first also dries the vein')
+ok(vs.flags.veinSiphoned && !row(vs, 'vein'), 'siphon-first also dries the vein')
 // 6 drill lines once
 for (const st of [0, 1, 2, 3]) {
   const b = bodyOf(at('ch2:v-blown', {}, { drillStage: st }))
