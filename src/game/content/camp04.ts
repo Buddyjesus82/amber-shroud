@@ -1102,6 +1102,7 @@ The storm is a clock. You sabotage the west steam-vent here. Jaxson hotwires a C
       },
     ],
     choices: [
+      cartelEntry,
       {
         id: 'inside',
         label: 'Take Jaxson\'s inside job',
@@ -1252,7 +1253,6 @@ Pike works the north bay on your left, Sarn counts bolts in the east bay ahead, 
       },
     ],
     choices: [
-      cartelEntry,
       {
         id: 'north-bay',
         label: 'Walk to Pike in the north bay',
