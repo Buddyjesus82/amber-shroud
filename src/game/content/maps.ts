@@ -134,7 +134,6 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
       { a: 'court', b: 'sift' },
       { a: 'paddock', b: 'sift' },
       { a: 'paddock', b: 'guard' },
-      { a: 'court', b: 'guard', sap: 2 },
     ],
     sceneNode: {
       'thresh:court': 'court',
