@@ -127,6 +127,23 @@ export type CoverKey =
   | 'prisoner_opening'
   | 'rim_pilgrims_scar'
   | 'courtguard'
+  | 'p1_sift_gate'
+  | 'p1_log_vents'
+  | 'p1_log_deck'
+  | 'p1_dugouts'
+  | 'p1_skimmer'
+  | 'p1_dusteye'
+  | 'p1_echo_gate'
+  | 'p1_conduits'
+  | 'p1_parade'
+  | 'p2_rubble'
+  | 'p2_shanty'
+  | 'p2_anvil'
+  | 'p2_drill_deck'
+  | 'p2_vents'
+  | 'p2_vein_approach'
+  | 'p2_crucible'
+  | 'p2_lock'
   | 'np_canyon'
   | 'np_gate'
   | 'np_command'
@@ -259,6 +276,23 @@ const FILES: Record<CoverKey, string> = {
   prisoner_opening: 'prisoner-opening.jpg',
   rim_pilgrims_scar: 'rim-pilgrims-scar.jpg',
   courtguard: 'courtguard.jpg',
+  p1_sift_gate: 'p1-sift-gate.jpg',
+  p1_log_vents: 'p1-log-vents.jpg',
+  p1_log_deck: 'p1-log-deck.jpg',
+  p1_dugouts: 'p1-dugouts.jpg',
+  p1_skimmer: 'p1-skimmer.jpg',
+  p1_dusteye: 'p1-dusteye.jpg',
+  p1_echo_gate: 'p1-echo-gate.jpg',
+  p1_conduits: 'p1-conduits.jpg',
+  p1_parade: 'p1-parade.jpg',
+  p2_rubble: 'p2-rubble.jpg',
+  p2_shanty: 'p2-shanty.jpg',
+  p2_anvil: 'p2-anvil.jpg',
+  p2_drill_deck: 'p2-drill-deck.jpg',
+  p2_vents: 'p2-vents.jpg',
+  p2_vein_approach: 'p2-vein-approach.jpg',
+  p2_crucible: 'p2-crucible.jpg',
+  p2_lock: 'p2-lock.jpg',
   np_canyon: 'np-approach-canyon.jpg',
   np_gate: 'np-threshold-gate.jpg',
   np_command: 'np-seeker-command.jpg',
@@ -435,6 +469,23 @@ export const COVER_BAND: Record<CoverKey, [number, number]> = {
   rim_pilgrims_scar: [0.15, 0.9],
   // Court Guard: face, coat, and the curved blade.
   courtguard: [0.05, 0.85],
+  p1_sift_gate: [0.08, 0.72],
+  p1_log_vents: [0.08, 0.72],
+  p1_log_deck: [0.08, 0.72],
+  p1_dugouts: [0.08, 0.72],
+  p1_skimmer: [0.08, 0.72],
+  p1_dusteye: [0.08, 0.72],
+  p1_echo_gate: [0.08, 0.72],
+  p1_conduits: [0.08, 0.72],
+  p1_parade: [0.08, 0.72],
+  p2_rubble: [0.08, 0.72],
+  p2_shanty: [0.08, 0.72],
+  p2_anvil: [0.08, 0.72],
+  p2_drill_deck: [0.08, 0.72],
+  p2_vents: [0.08, 0.72],
+  p2_vein_approach: [0.08, 0.72],
+  p2_crucible: [0.08, 0.72],
+  p2_lock: [0.08, 0.72],
   np_canyon: [0.08, 0.72],
   np_gate: [0.08, 0.72],
   np_command: [0.08, 0.72],
@@ -613,7 +664,7 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   if (id === 'ch2:stub') return 'under_jaw'
   // v166: Chapter Two covers.
   // v199: the new places.
-  const NEW_PLACE_ART: Record<string, CoverKey> = {'thresh:canyon': 'np_canyon', 'thresh:gate': 'np_gate', 'thresh:command': 'np_command', 'camp:overlook': 'np_overlook', 'camp:siftline': 'np_siftline', 'camp:ration': 'np_ration', 'camp:genpop': 'np_genpop', 'spine:shattered': 'np_shattered', 'spine:ossuary': 'np_ossuary', 'maw:tunnels': 'np_tunnels', 'maw:gullet': 'np_gullet', 'maw:bargain': 'np_bargain', 'ch2:v-hidden': 'np_hidden', 'maw:mill': 'np_mill', 'camp:jammed': 'np_shim'}
+  const NEW_PLACE_ART: Record<string, CoverKey> = {'deep:rubble': 'p2_rubble', 'deep:shanty': 'p2_shanty', 'deep:anvil': 'p2_anvil', 'deep:drill-deck': 'p2_drill_deck', 'deep:vents': 'p2_vents', 'deep:vein-approach': 'p2_vein_approach', 'deep:crucible': 'p2_crucible', 'deep:lock': 'p2_lock', 'camp:sift-gate': 'p1_sift_gate', 'camp:log-vents': 'p1_log_vents', 'camp:log-deck': 'p1_log_deck', 'spine:dugouts': 'p1_dugouts', 'spine:skimmer': 'p1_skimmer', 'spine:dusteye': 'p1_dusteye', 'thresh:echo-gate': 'p1_echo_gate', 'thresh:conduits': 'p1_conduits', 'thresh:parade': 'p1_parade', 'thresh:canyon': 'np_canyon', 'thresh:gate': 'np_gate', 'thresh:command': 'np_command', 'camp:overlook': 'np_overlook', 'camp:siftline': 'np_siftline', 'camp:ration': 'np_ration', 'camp:genpop': 'np_genpop', 'spine:shattered': 'np_shattered', 'spine:ossuary': 'np_ossuary', 'maw:tunnels': 'np_tunnels', 'maw:gullet': 'np_gullet', 'maw:bargain': 'np_bargain', 'ch2:v-hidden': 'np_hidden', 'maw:mill': 'np_mill', 'camp:jammed': 'np_shim'}
   if (NEW_PLACE_ART[id]) return NEW_PLACE_ART[id]
   const CH2_ART: Record<string, CoverKey> = {'ch2:greg-toll': 'greg', 'ch2:gate': 'ch2_s_gate', 'ch2:cache': 'ch2_s_cache', 'ch2:trapped': 'ch2_s_trapped', 'ch2:heart': 'ch2_s_heart', 'ch2:end': 'ch2_s_end', 'ch2:o-abyss': 'ch2_o_abyss', 'ch2:o-bounty': 'ch2_o_bounty', 'ch2:o-cage': 'ch2_o_cage', 'ch2:o-hounds': 'ch2_o_hounds', 'ch2:o-root': 'ch2_o_root', 'ch2:o-stakes': 'ch2_o_stakes', 'ch2:o-stilts': 'ch2_o_stilts', 'ch2:o-strays': 'ch2_o_strays', 'ch2:o-wash': 'ch2_o_wash', 'ch2:p-abyss': 'ch2_p_abyss', 'ch2:p-bays': 'ch2_p_bays', 'ch2:p-bilge': 'ch2_p_bilge', 'ch2:p-haul': 'ch2_p_haul', 'ch2:p-jaws': 'ch2_p_jaws', 'ch2:p-shaft': 'ch2_p_shaft', 'ch2:p-sift': 'ch2_p_sift', 'ch2:v-bleed': 'ch2_v_bleed', 'ch2:v-blown': 'ch2_v_blown', 'ch2:v-garden': 'ch2_v_garden', 'ch2:v-greg': 'ch2_v_greg', 'ch2:v-murch': 'ch2_v_murch', 'ch2:v-outpost': 'ch2_v_outpost', 'ch2:v-ribs': 'ch2_v_ribs', 'ch2:v-scar': 'ch2_v_scar', 'ch2:v-stair': 'ch2_v_stair', 'ch2:v-test': 'ch2_v_test', 'ch2:p-supply': 'ch2_s_p_supply', 'ch2:p-drillrun': 'ch2_s_p_drillrun', 'ch2:survivor': 'ch2_s_survivor', 'ch2:approach': 'ch2_s_approach', 'ch2:ditch': 'ch2_s_ditch', 'ch2:gully': 'ch2_s_gully', 'ch2:irongut': 'ch2_s_irongut', 'ch2:ribs': 'ch2_s_ribs', 'ch2:vein': 'ch2_s_vein'}
   // v179: Valerius has moved on; the test chamber shows the outpost, not him.

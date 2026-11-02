@@ -48,6 +48,10 @@ export type ItemId =
   | 'memory_siphon'
   | 'offering_bowl'
   | 'wire_cutter_shim'
+  | 'cartel_pass'
+  | 'skimmer_plating'
+  | 'seeker_rations'
+  | 'rig_passkey'
   | 'cartel_transponder'
   | 'deep_memory_pearl'
   | 'cipher_key'
@@ -123,7 +127,7 @@ export type Effect = {
   /** Self-care in place (drink, bind). Time passes, but no road fight or hunt rolls. */
   still?: boolean
   /** A sneak that can fail: on a spotted roll (odds in 10) a real fight opens on the ground you reach. */
-  sneak?: { odds: number; kind: string; spotted: string }
+  sneak?: { odds: number; kind: string; spotted: string; forfeit?: boolean }
   /** A Vessel lie or the cloth at the Threshold: at Seeker Heat 6+ it can be seen through (Heat +1, or a Court Guard fight at 8+). */
   ruse?: boolean
   /** An ambush that opens on arrival and cannot be skipped (Run still can). Ignores Health. */
@@ -251,6 +255,8 @@ export type HubMapEdge = {
   a: string
   b: string
   sap?: number
+  /** v200: travel only from a to b. */
+  oneWay?: boolean
 }
 
 export type HubMapDef = {

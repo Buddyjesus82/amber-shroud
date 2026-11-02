@@ -8,7 +8,7 @@ import { CARAPACE_HUNTER, SPINE_HUNTER } from './content/spineHunter'
 import type { Choice, Effect, FlagMap, GameState, ItemId } from './types'
 import { hash, OPENERS, sandAnswers, PAIR_LINE, HUSK_CONTROLLER_LINE, sandGripLine, TERRAINS, terrainPool, type Terrain, type TerrainId } from './fightTricks'
 
-export type EncounterKind = 'jackal' | 'cutter' | 'courtguard' | 'tick' | 'pup' | 'scavenger' | 'patrol' | 'handler' | 'hound' | 'overseer' | 'collector' | 'carapace' | 'husk' | 'runner' | 'strayhunter' | 'strayhound' | 'masked' | 'ribworm' | 'greg' | 'dragoon' | 'seekerpatrol' | 'drilllead' | 'leech' | 'moth' | 'thaliaguard'
+export type EncounterKind = 'jackal' | 'cutter' | 'courtguard' | 'tick' | 'pup' | 'scavenger' | 'patrol' | 'handler' | 'hound' | 'overseer' | 'collector' | 'carapace' | 'husk' | 'runner' | 'strayhunter' | 'strayhound' | 'masked' | 'ribworm' | 'greg' | 'dragoon' | 'seekerpatrol' | 'drilllead' | 'leech' | 'moth' | 'thaliaguard' | 'lockboss'
 
 export const RIBWORM_LINE = 'The dune breathes. A rib-worm noses up through the sand, ringed like an old spine, mouth all grit and grinding plates.'
 export const RIBWORM_WIN = 'It sinks and does not come back up. The sand settles over it.'
@@ -155,6 +155,8 @@ const SPECS: Spec[] = [
     hp: 6,
     line: 'Overseer Valerius. Bald, scarred, steam baton in the fist. He came himself.',
   },
+  // v200 DRAFT (PROPOSED): the Containment Lock brute-force boss. Heavier than Valerius: Shell 4.
+  { kind: 'lockboss', name: 'Heavy Seeker', strike: 4, shell: 4, hp: 6, line: 'A heavy Seeker in full plate steps out of the lock alcove. A resin maul, runes cut into the shell.' },
   // Spine hunter fight. Copy and stats live in content/spineHunter.ts.
   { kind: 'collector', ...SPINE_HUNTER.encounter },
   { kind: 'carapace', ...CARAPACE_HUNTER.encounter },
@@ -730,7 +732,7 @@ function pocket(state: GameState): number {
  * Fauna pay scrap or sap. People sometimes pay with a knife, a scav wrap, or a cloak.
  */
 /** People carry salve sometimes. Beasts never do. */
-export const HUMAN_KINDS: readonly EncounterKind[] = ['cutter', 'courtguard', 'scavenger', 'patrol', 'handler', 'overseer', 'collector', 'carapace', 'strayhunter', 'strayhound', 'greg', 'dragoon', 'seekerpatrol', 'drilllead', 'thaliaguard']
+export const HUMAN_KINDS: readonly EncounterKind[] = ['cutter', 'courtguard', 'scavenger', 'patrol', 'handler', 'overseer', 'collector', 'carapace', 'strayhunter', 'strayhound', 'greg', 'dragoon', 'seekerpatrol', 'drilllead', 'thaliaguard', 'lockboss']
 export const BEAST_KINDS: readonly EncounterKind[] = ['jackal', 'tick', 'pup', 'hound', 'ribworm', 'leech', 'moth']
 /** Percent chance a downed human also carries a Resin Salve. */
 export const HUMAN_SALVE_PCT = 18

@@ -1,3 +1,4 @@
+import { cartelEntry } from './phase1Camps'
 import { campPlaceChoices } from './newPlaces'
 import { FENCE_HOLE_BACK, HEAR_PLAN, PLAN_HEARD, PLAN_UNHEARD, TAKE_INSIDE_JOB } from '../campJob'
 import type { Cond, Scene } from '../types'
@@ -1101,6 +1102,7 @@ The storm is a clock. You sabotage the west steam-vent here. Jaxson hotwires a C
       },
     ],
     choices: [
+      cartelEntry,
       {
         id: 'inside',
         label: 'Take Jaxson\'s inside job',

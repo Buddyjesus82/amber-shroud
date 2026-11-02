@@ -669,7 +669,7 @@ assert(s.equipped.weapon === 'rusted_dagger' && s.equipped.garment === 'ceremoni
 assert(equippedShell(s) === 0, 'worn Vessel Cloth does not add Shell')
 assert(s.heat.seekers >= 4, 'opening + start heat = thalia pressure')
 assert(s.items.oram_map === 1 && s.items.rusted_dagger === 1)
-s = travelTo(s, 'thresh:guard')
+s = applyEffect(s, { goto: 'thresh:guard' }) // v200: no Court<->Guard Post road
 s = pick(s, 'talk')
 assert(ids(s).includes('dagger'), 'guard dagger verb')
 s = applyEffect(s, { startChapter: 'cache-run', goto: 'ch1:leave', ticks: 1 })
@@ -2741,7 +2741,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v199'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v200'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(!sw.includes('covers/camp04.jpg') && sw.includes('covers/yard.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')

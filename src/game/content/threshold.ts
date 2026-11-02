@@ -1,3 +1,4 @@
+import { echoEntry } from './phase1Camps'
 import { gateCodeChoices, gateEntry } from './newPlaces'
 import type { Scene } from '../types'
 
@@ -354,6 +355,7 @@ Oram is here more often than he is in the Court. He prefers the animals to the h
     title: 'Guard Post',
     body: `The guard is sunburn and belief. His falchion has never met the person who made it. Past him are the dunes, and the idea of leaving.`,
     choices: [
+      echoEntry,
       {
         id: 'talk',
         label: 'Address the guard as a Vessel',
@@ -420,7 +422,7 @@ Oram is here more often than he is in the Court. He prefers the animals to the h
             '"Smuggler. Buried sin at Red Maw. The hymns say the Vessel will retrieve it and become the desert\'s mouth. I think it is a hole full of knives. The hymn did not ask me to."',
         },
       },
-      { id: 'back', label: 'Return to the Court', tone: 'quiet', effects: { goto: 'thresh:court' } },
+      { id: 'back', label: 'Back to the Guard Post', tone: 'quiet', effects: { goto: 'thresh:guard' } },
     ],
     intents: [
       {

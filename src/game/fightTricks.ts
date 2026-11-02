@@ -81,6 +81,7 @@ export const OPENERS: Record<EncounterKind, string[]> = {
   moth: [],
   courtguard: [],
   thaliaguard: [],
+  lockboss: [],
   runner: [],
   jackal: [
     'A dust-jackal blocks the grit — ribs like wire, eyes like spent Glints. It will take a hand or a skip.',

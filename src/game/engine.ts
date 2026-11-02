@@ -908,6 +908,19 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     } else if (fx.sneak && sneakSpotted(next, fx.sneak.odds)) {
       next.flags = { ...next.flags, ...fightStartFlags(next, fx.sneak.kind as EncounterKind) }
       next.flash = fx.sneak.spotted
+      // v200: a spotted sneak keeps nothing it would have taken.
+      if (fx.sneak.forfeit) {
+        const items = { ...next.items }
+        for (const k of Object.keys(fx.add ?? {}) as (keyof typeof items)[]) {
+          if (state.items[k] === undefined) delete items[k]
+          else items[k] = state.items[k]
+        }
+        next.items = items
+        for (const k of Object.keys(fx.flag ?? {})) {
+          if (k in state.flags) next.flags[k] = state.flags[k]
+          else delete next.flags[k]
+        }
+      }
     }
   }
   // Threshold lies at high Seeker Heat: seen through.
@@ -1958,6 +1971,15 @@ export function interpret(state: GameState, raw: string): GameState {
     if (row) {
       if (!isChoiceOn(state, row.enable)) return withVerb(persist({ ...state, flash: row.locked, updatedAt: Date.now() }), 'rest')
       return withVerb(applyEffect(state, row.effects), 'rest')
+    }
+  }
+  // v200 DRAFT: a scene's own Rest row (Dust-Eye's rest_dugout) answers its typed label.
+  {
+    const norm = (t: string) => t.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
+    const own = visibleChoices(state).find((c) => (c.id === 'rest' || c.id === 'rest_dugout') && norm(c.label) === norm(bare))
+    if (own && (state.sceneId === 'spine:dusteye' || state.sceneId === 'deep:shanty')) {
+      if (!isChoiceOn(state, own.enable)) return withVerb(persist({ ...state, flash: own.locked, updatedAt: Date.now() }), 'rest')
+      return withVerb(applyEffect(state, own.effects), 'rest')
     }
   }
   if (!/sinew.?bind/.test(bare) && /\b(rest|sleep|bind|bandage|heal)\b/.test(bare) && (REST_SCENES.has(state.sceneId) || (state.items.salve ?? 0) > 0)) {

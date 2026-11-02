@@ -1,4 +1,4 @@
-const CACHE = 'amber-shroud-v199'
+const CACHE = 'amber-shroud-v200'
 const SCOPE = self.location.pathname.replace(/sw\.js$/, '')
 
 self.addEventListener('install', (event) => {
@@ -62,6 +62,23 @@ self.addEventListener('install', (event) => {
         `${SCOPE}covers/spine.jpg`,
         `${SCOPE}covers/threshold.jpg`,
         `${SCOPE}covers/np-approach-canyon.jpg`,
+        `${SCOPE}covers/p1-sift-gate.jpg`,
+        `${SCOPE}covers/p1-log-vents.jpg`,
+        `${SCOPE}covers/p1-log-deck.jpg`,
+        `${SCOPE}covers/p1-dugouts.jpg`,
+        `${SCOPE}covers/p1-skimmer.jpg`,
+        `${SCOPE}covers/p1-dusteye.jpg`,
+        `${SCOPE}covers/p1-echo-gate.jpg`,
+        `${SCOPE}covers/p1-conduits.jpg`,
+        `${SCOPE}covers/p1-parade.jpg`,
+        `${SCOPE}covers/p2-rubble.jpg`,
+        `${SCOPE}covers/p2-shanty.jpg`,
+        `${SCOPE}covers/p2-anvil.jpg`,
+        `${SCOPE}covers/p2-drill-deck.jpg`,
+        `${SCOPE}covers/p2-vents.jpg`,
+        `${SCOPE}covers/p2-vein-approach.jpg`,
+        `${SCOPE}covers/p2-crucible.jpg`,
+        `${SCOPE}covers/p2-lock.jpg`,
         `${SCOPE}covers/np-threshold-gate.jpg`,
         `${SCOPE}covers/np-seeker-command.jpg`,
         `${SCOPE}covers/np-wardens-overlook.jpg`,
