@@ -1,3 +1,4 @@
+import { STRAY_OUTCAST_LINE } from './strayLines'
 import { knotWorn } from './kit'
 import type { Effect, GameState } from './types'
 
@@ -52,6 +53,12 @@ export function downedNote(state: GameState): string {
   }
   if (kind === 'overseer' || state.sceneId.includes('valerius')) {
     return `You collapse at Valerius's feet. Too hurt to fight. He does not waste the baton twice. "Useful men scrape. Dead men do not."`
+  }
+  // v207: a Stray Hunter is not the skiff. The Outcast hears the Strays' own line.
+  if (kind === 'strayhunter' || kind === 'strayhound') {
+    return state.door === 'outcast'
+      ? `You collapse. Too hurt to fight. ${STRAY_OUTCAST_LINE}`
+      : `You collapse. Too hurt to fight. The ground keeps you a minute, then lets you up poorer in blood and sap.`
   }
   // v175: Sybella's line is hers alone. A Court Guard loss takes the plain line.
   if (kind !== 'courtguard' && (state.hubId === 'redmaw' || state.flags.sybellaHunting)) {

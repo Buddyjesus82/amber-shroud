@@ -2,7 +2,7 @@ import { companionOf, keltStep, LINES as PARTY_LINES, recruitFx, sneakOdds } fro
 import { STAIRS, STAIRS_CLEARED, STAIRS_TO } from './content/crucible'
 import { hash as hashRoll } from './fightTricks'
 import { isMaskedBlock, MASKED_BLOCK_LINE, maskedBody, maskedChoices, maskedPass, maskedPickup } from './masked'
-import { isStrayHunt, STRAY_ARRIVAL_LINE, STRAY_CUT_FAIL_LINE, STRAY_CUT_LINE, STRAY_CUT_ODDS, STRAY_HOUND_HEAT, STRAY_HOUND_LINE, STRAY_KILL_LINE, strayHuntBody, strayHuntChoices, strayHunterArrives } from './strayHunter'
+import { isStrayHunt, STRAY_ARRIVAL_LINE, STRAY_CUT_LINE, STRAY_HOUND_HEAT, STRAY_HOUND_LINE, STRAY_KILL_LINE, strayHuntBody, strayHuntChoices, strayHunterArrives } from './strayHunter'
 import { HUB_MAPS } from './content/maps'
 import { DOORS, HUBS, ITEMS, getScene, hasScene, resolveBody } from './content'
 import { applyDelta, check, clamp } from './logic'
@@ -238,15 +238,15 @@ export function bodyOf(state: GameState): string {
   }
   if (isMaskedBlock(state)) return maskedBody()
   if (isStrayHunt(state)) return strayHuntBody(state)
+  if (state.flags.kaelenIntroNow && state.sceneId.includes('kaelen')) return `${sceneProse(state)}\n\n${KAELEN_INTRO}`
   const knock = pressureAppend(state)
   if (knock) return knock
-  if (state.flags.kaelenIntroNow && state.sceneId.includes('kaelen')) return `${sceneProse(state)}\n\n${KAELEN_INTRO}`
   return sceneProse(state)
 }
 
 /** The first time you meet him, he says his name. Until then every line calls him "the trader". */
 export { KAELEN_INTRO } from './roads'
-import { KAELEN_INTRO, ROADS } from './roads'
+import { KAELEN_INTRO, kaelenNamed, ROADS } from './roads'
 
 function pickCrisis(state: GameState): string {
   if (state.chapterId === 'cache-run') return 'crisis:dunes'
@@ -1025,7 +1025,7 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     next.flags = flags
   }
   // First meeting on any door: he says his name, even when the step that brought you set kaelenKnown.
-  if ((next.sceneId === 'camp:kaelen' || next.sceneId === 'thresh:kaelen' || next.sceneId === 'roam:kaelen') && !state.flags.kaelenKnown && !state.flags.kaelenIntroSeen) {
+  if ((next.sceneId === 'camp:kaelen' || next.sceneId === 'thresh:kaelen' || next.sceneId === 'roam:kaelen') && !state.flags.kaelenIntroSeen) {
     next.flags = { ...next.flags, kaelenKnown: true, kaelenIntroNow: true, kaelenIntroSeen: true }
   }
   // He stops at one roadside spot. Walk on without visiting and he is gone; he does not follow you scene to scene.
@@ -1117,13 +1117,8 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     const flags = { ...next.flags }
     delete flags.strayCut
     next.flags = flags
-    if (sneakSpotted(next, 10 - STRAY_CUT_ODDS)) {
-      const kind: EncounterKind = state.flags.strayHunterHound ? 'strayhound' : 'strayhunter'
-      next.flags = { ...next.flags, ...fightStartFlags(next, kind), encounterNoSkip: true, strayHuntFight: true }
-      next.flash = STRAY_CUT_FAIL_LINE
-    } else {
-      next.flash = STRAY_CUT_LINE
-    }
+    // v207: cutting your trail loses them. The Sap is the price.
+    next.flash = STRAY_CUT_LINE
   }
   // Heat comes due: count fight-free danger scenes; any fight or hunt clears the count.
   if (next.flags.encounterHere || next.flags.hunterHere) {
@@ -2347,9 +2342,16 @@ function bagChoices(state: GameState): Choice[] {
 export const REST_LINE = 'You sit in what shade there is and let the cut close a little. Health returns. Sap pays for it.'
 
 /** Road and hub ground only: no fight, no trade, no Kaelen, not facing a hunter. */
+/** v207: where Valerius waits. Rest is allowed here until he is beaten or the ribs come down. */
+export const VALERIUS_FOOT = ['ch2:p-abyss', 'ch2:v-ribs', 'ch2:o-abyss']
+
 export function restAllowed(state: GameState): boolean {
   const id = state.sceneId
   const sc = getScene(id)
+  // v207: the Valerius foot of each route. Rest before the fight, so a 1-Health runner is not stuck going down.
+  if (VALERIUS_FOOT.includes(id) && !state.flags.ch2Won_valerius && !state.flags.ribsCollapsed) {
+    return !(state.flags.encounterHere || state.flags.hunterHere || state.flags.downed || Object.keys(heldOf(state.flags)).length)
+  }
   // Hubs: place screens. The road (Cache Run): every walking beat, including the people met on it.
   if (sc.kind !== 'place' && !((sc.kind === 'story' || sc.kind === 'talk') && sc.chapterId === 'cache-run')) return false
   if (id.startsWith('open:') || id.startsWith('roam:') || id.startsWith('ch2:') || id === CHAPTER_ONE_END || id === 'ch1:sybella' || id === 'ch1:storm') return false
@@ -2435,7 +2437,7 @@ function withKaelenPass(state: GameState, rows: Choice[]): Choice[] {
   if (interruptActive(state)) return rows
   const k = getScene(state.sceneId).kind
   if (k === 'crisis' || k === 'ending') return rows
-  const known = !!state.flags.kaelenKnown
+  const known = kaelenNamed(state.flags)
   const visit = {
     goto: 'roam:kaelen',
     unsetFlag: ['kaelenPassing'],

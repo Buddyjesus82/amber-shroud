@@ -46,6 +46,11 @@ export function roadWords(door: DoorId | undefined): RegExp {
 /** The first time you meet him, he says his name. Until then every line calls him "the trader". */
 export const KAELEN_INTRO = '"Kaelen," he says, and taps his chest with a gloved thumb. "The Sifter. Now you know who to pay."'
 
+/** v207: his name is heard only when his intro line has played. */
+export function kaelenNamed(flags: Record<string, unknown>): boolean {
+  return !!flags.kaelenIntroSeen && !flags.kaelenIntroNow
+}
+
 /** Before the player hears Kaelen's name, every line calls him "the trader". */
 export function traderText(known: boolean, text: string): string
 export function traderText(known: boolean, text: string | undefined): string | undefined
@@ -67,5 +72,5 @@ export function shownText(state: { door?: DoorId; flags: Record<string, unknown>
   if (state.flags.kaelenIntroNow && road?.includes(KAELEN_INTRO)) {
     return road.split(KAELEN_INTRO).map((part) => traderText(false, part)).join(KAELEN_INTRO)
   }
-  return traderText(!!state.flags.kaelenKnown && !state.flags.kaelenIntroNow, road)
+  return traderText(kaelenNamed(state.flags), road)
 }

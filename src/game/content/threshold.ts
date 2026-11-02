@@ -191,6 +191,7 @@ A niche in the wall holds a sacrament Drop behind a lattice. Taking it from a ch
       {
         id: 'play',
         label: 'Play Vessel. Take the hymn as a map.',
+        show: { flagUnset: 'thaliaBelieves' },
         effects: {
           flag: { hungerKnown: true, sybellaNamed: true, thaliaBelieves: true },
           add: { kallik_mark: 1 },
