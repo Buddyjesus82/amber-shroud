@@ -1,3 +1,4 @@
+import { cartelEntry } from './phase1Camps'
 import { campPlaceChoices } from './newPlaces'
 import { FENCE_HOLE_BACK, HEAR_PLAN, PLAN_HEARD, PLAN_UNHEARD, TAKE_INSIDE_JOB } from '../campJob'
 import type { Cond, Scene } from '../types'
@@ -1251,6 +1252,7 @@ Pike works the north bay on your left, Sarn counts bolts in the east bay ahead, 
       },
     ],
     choices: [
+      cartelEntry,
       {
         id: 'north-bay',
         label: 'Walk to Pike in the north bay',

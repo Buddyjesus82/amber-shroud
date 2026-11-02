@@ -1960,6 +1960,15 @@ export function interpret(state: GameState, raw: string): GameState {
       return withVerb(applyEffect(state, row.effects), 'rest')
     }
   }
+  // v200 DRAFT: a scene's own Rest row (Dust-Eye's 'Rest in shelter (Heal)') answers its typed label.
+  {
+    const norm = (t: string) => t.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
+    const own = visibleChoices(state).find((c) => c.id === 'rest' && norm(c.label) === norm(bare))
+    if (own && state.sceneId === 'spine:dusteye') {
+      if (!isChoiceOn(state, own.enable)) return withVerb(persist({ ...state, flash: own.locked, updatedAt: Date.now() }), 'rest')
+      return withVerb(applyEffect(state, own.effects), 'rest')
+    }
+  }
   if (!/sinew.?bind/.test(bare) && /\b(rest|sleep|bind|bandage|heal)\b/.test(bare) && (REST_SCENES.has(state.sceneId) || (state.items.salve ?? 0) > 0)) {
     if ((state.items.salve ?? 0) > 0 && /\b(bind|bandage|salve|heal)\b/.test(bare)) {
       return withVerb(bindSalve(state), 'heal')

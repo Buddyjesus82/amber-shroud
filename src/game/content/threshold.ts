@@ -1,3 +1,4 @@
+import { echoEntry } from './phase1Camps'
 import { gateCodeChoices, gateEntry } from './newPlaces'
 import type { Scene } from '../types'
 
@@ -354,6 +355,7 @@ Oram is here more often than he is in the Court. He prefers the animals to the h
     title: 'Guard Post',
     body: `The guard is sunburn and belief. His falchion has never met the person who made it. Past him are the dunes, and the idea of leaving.`,
     choices: [
+      echoEntry,
       {
         id: 'talk',
         label: 'Address the guard as a Vessel',

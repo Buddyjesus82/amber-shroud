@@ -1,3 +1,4 @@
+import { dustEyeEntry } from './phase1Camps'
 import { SCOUT_CAMP_LINE, spinePlaceChoice } from './newPlaces'
 import { WELL_SKIM_LOCKED } from '../scavenge'
 import type { Scene } from '../types'
@@ -343,6 +344,7 @@ A heading costs a Glint. Or I put it on your tab, and the Spine hears that you o
 
 You can lower a hope into it. There is no bucket here that still believes in water.`,
     choices: [
+      dustEyeEntry,
       {
         id: 'skim',
         label: 'Scrape a Drop out of the well-throat',
