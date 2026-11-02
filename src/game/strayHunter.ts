@@ -1,3 +1,4 @@
+import { HESTER_HUNT_BONUS } from './companions'
 import type { Choice, GameState } from './types'
 import { getScene } from './content'
 
@@ -36,7 +37,7 @@ export function strayHunterArrives(before: GameState, next: GameState): boolean 
   // Not on a beat that already has someone in it (Nim, Ossa, the trader): the open road only.
   if (kind === 'crisis' || kind === 'ending' || kind === 'talk' || sc.speaker) return false
   // v205: riding with Hester Ellery, the Stray Hunters need 1 more Stray Heat to come. They still come.
-  if ((next.heat.strays ?? 0) < STRAY_HUNT_HEAT + (next.flags.companion === 'hester' ? 1 : 0)) return false
+  if ((next.heat.strays ?? 0) < STRAY_HUNT_HEAT + (next.flags.companion === 'hester' ? HESTER_HUNT_BONUS : 0)) return false
   const steps = Number(next.flags.sceneSteps ?? 0)
   return steps - Number(next.flags.strayHuntStep ?? -99) >= STRAY_HUNT_GAP
 }

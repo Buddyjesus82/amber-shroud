@@ -16,6 +16,13 @@ export interface CompanionDef {
   portrait: string
 }
 
+/** v205: Hester's vouch. Stray ambushes need this much more Stray Heat while she rides with you. Pending Jeramie: set to Infinity for a full block. */
+export const HESTER_HUNT_BONUS = 1
+/** Perk text shown in Gear. Jeramie's wording (t1044u). */
+export const PERKS: Partial<Record<CompanionId, string>> = {
+  hester: "Hester's presence keeps the perimeter watches hesitant. Stray ambushes require +1 higher Stray Heat to trigger.",
+}
+
 export const COMPANIONS: Record<CompanionId, CompanionDef> = {
   orla: { id: 'orla', name: 'Orla Lusk', strike: 2, shell: 0, hp: 4, portrait: 'portraits/orla.jpg' },
   hester: { id: 'hester', name: 'Hester Ellery', strike: 2, shell: 2, hp: 5, portrait: 'portraits/hester.jpg' },
@@ -40,7 +47,7 @@ export const LINES = {
   keltTick: 'Kelt\'s Runner stumbles, leaning heavily against the cavern wall. "Keep moving... the pulse on this cylinder is fading..."',
   keltFail: "Kelt's Runner drops to his knees in the dust, his hand slipping from the cylinder. He doesn't get back up.",
   /** NEW (result lines under Jeramie's banner) */ keltFailResult: 'Event Failed\n\nKelt\'s Runner is lost. Damaged Data Cylinder +1.',
-  keltArrive: "We made it... didn't think my legs had another mile in 'em. Here—plug the cylinder directly into the bypass housing. Kelt's coordinates are live.",
+  keltArrive: "We made it... didn't think my legs had another mile in 'em. Here—plug the cylinder directly into the bypass housing. Kelt's coordinates are live...",
   /** NEW (result line) */ keltReward: 'Sap +10. The Oasis Sap Reserve is a safe place to rest now.',
 }
 

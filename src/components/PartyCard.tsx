@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { companionMaxHp, companionOf, dismissCompanion } from '../game/companions'
+import { PERKS, companionMaxHp, companionOf, dismissCompanion } from '../game/companions'
 import type { GameState } from '../game/types'
 
 /** v205: the one party slot. Compact in the HUD; with Dismiss in Gear. */
@@ -19,6 +19,7 @@ export function PartyCard({ state, onChange, full = false, onOpen }: { state: Ga
           ♥ {mate.hp}/{max} · ⚔ {mate.strike} · 🛡 {mate.shell}
           {kelt ? ` · ${left} scene${left === 1 ? '' : 's'} left` : ''}
         </span>
+        {full && PERKS[mate.id] ? <span className="party-perk">{PERKS[mate.id]}</span> : null}
         {full && onChange ? (
           ask ? (
             <span className="party-ask">

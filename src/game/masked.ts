@@ -52,7 +52,7 @@ export function isMaskedFlash(flash: string | undefined | null): boolean {
  */
 const OFFER_IDS = new Set(['job', 'inside', 'station', 'sabotage', 'accept'])
 /** Talk-like scenes that are not marked as talk in the data: the skiff bay's three crews and the two guard stops. */
-const MASKED_QUIET_EXTRA = new Set(['camp:bay', 'thresh:guard', 'thresh:court-guard', 'camp:forced', 'spine:hunter', 'thresh:hunter', 'thresh:breach', 'thresh:oasis'])
+const MASKED_QUIET_EXTRA = new Set(['camp:bay', 'thresh:guard', 'thresh:court-guard', 'camp:forced', 'spine:hunter', 'thresh:hunter', 'thresh:breach', 'thresh:oasis', 'camp:orla', 'spine:hester', 'spine:sable'])
 
 /** A choice that only walks you to another scene (it may spend a tick). Not an offer on this scene. */
 function isHintButton(c: Choice): boolean {

@@ -13,8 +13,8 @@ import { hash, OPENERS, sandAnswers, PAIR_LINE, HUSK_CONTROLLER_LINE, sandGripLi
 
 export type EncounterKind = 'jackal' | 'cutter' | 'courtguard' | 'tick' | 'pup' | 'scavenger' | 'patrol' | 'handler' | 'hound' | 'overseer' | 'collector' | 'carapace' | 'husk' | 'runner' | 'strayhunter' | 'strayhound' | 'masked' | 'ribworm' | 'greg' | 'dragoon' | 'seekerpatrol' | 'drilllead' | 'leech' | 'moth' | 'thaliaguard' | 'lockboss' | 'rigpatrol' | 'seekerhandler' | 'packhound' | 'skiff' | 'foreman' | 'rigguard' | 'sablewave'
 
-export const SABLE_WAVE1 = 'The first wave: a Stray Collector drops into the trench.'
-export const SABLE_WAVE2 = 'The second wave: another Stray Collector drops in behind it.'
+export { SABLE_WAVE1, SABLE_WAVE2 } from './encounterLines'
+import { SABLE_WAVE1, SABLE_WAVE2, SABLE_WON_LINE } from './encounterLines'
 export const RIBWORM_LINE = 'The dune breathes. A rib-worm noses up through the sand, ringed like an old spine, mouth all grit and grinding plates.'
 export const RIBWORM_WIN = 'It sinks and does not come back up. The sand settles over it.'
 /** v160: round 1, your first swing hits half as hard: it is still under the sand. */
@@ -1013,6 +1013,11 @@ export function resolveEncounter(
     const flag: FlagMap = { ...r.fx.flag, sableWave: 2 }
     delete flag.sableWon
     r = { ...r, fx: { ...r.fx, flag, ambush: { kind: 'sablewave', line: SABLE_WAVE2 } } }
+  } else if (r.fx.flag?.sableWon) {
+    const add = (t?: string) => (t ? `${t}\n\n${SABLE_WON_LINE}` : t)
+    const fl: FlagMap = { ...r.fx.flag }
+    for (const k of ['encounterClash', 'encounterFlash']) if (typeof fl[k] === 'string') fl[k] = `${fl[k]}\n\n${SABLE_WON_LINE}`
+    r = { flash: add(r.flash) ?? r.flash, fx: { ...r.fx, flash: add(r.fx.flash), flag: fl } }
   }
   const mate = companionOf(state)
   if (!mate || out.mateHp === undefined || out.mateHp === mate.hp) return r
