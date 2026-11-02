@@ -2536,8 +2536,8 @@ export function equipItem(state: GameState, id: ItemId, slot?: EquipSlot): GameS
   })
 }
 
-const AUTO_SLOTS: readonly EquipSlot[] = ['weapon', 'armor']
-/** v209: a weapon or armor piece just gained goes on if its slot is empty. Bonus lines and the Strike/Shell rows are untouched. */
+const AUTO_SLOTS: readonly EquipSlot[] = ['weapon', 'armor', 'head', 'legs', 'hands', 'cloak', 'garment', 'offhand']
+/** v209, v210 all slots: a piece just gained goes on if its slot is empty. Bonus lines and the Strike/Shell rows are untouched. */
 function autoEquip(state: GameState, next: GameState): GameState {
   let equipped = next.equipped ?? {}
   let changed = false

@@ -2156,7 +2156,7 @@ s = applyEffect(s, {
   add: { dust_cloak: 1, hide_wrap: 1, cache_map: 1, glints: 2, scrap: 2 },
   flag: { zafirSoldHide: true },
 })
-s = equipItem(s, 'hide_wrap')
+s = equipItem(unworn(s), 'hide_wrap')
 s = openShop(s, 'sell')
 assert(ids(s).includes('sell-dust_cloak'), 'unequipped Dust Cloak can be sold')
 assert(!ids(s).includes('sell-hide_wrap'), 'equipped Hound Hide stays off Sell until unequipped')
@@ -2744,7 +2744,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v209'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v210'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(!sw.includes('covers/camp04.jpg') && sw.includes('covers/yard.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
