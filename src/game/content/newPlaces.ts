@@ -1,3 +1,4 @@
+import { SABLE_AMBUSH } from './phase1Camps'
 import type { Choice, Cond, Scene } from '../types'
 
 // v199: the new places (plan.md, approved "Ship it"). Reached by choices; roads cost Sap on the choice.
@@ -178,6 +179,9 @@ export const newPlaceScenes: Scene[] = [
     title: 'The Shattered Spine',
     body: 'The Shattered Spine. The ruin you pulled yourself out of. Vertebrae lie scattered in the sand.',
     choices: [
+      // v205: Sable Varn. Defend her from a Stray collector, then she will ride with you.
+      { id: 'sable_defend', label: 'Defend the woman from the collector', sub: 'A fight.', tone: 'danger', show: { all: [{ flagUnset: 'sableWon' }, { flagUnset: 'companionLost_sable' }] }, effects: { flag: { sableFight: true }, ambush: { kind: 'collector', line: SABLE_AMBUSH } } },
+      { id: 'sable_recruit', label: 'Take Sable Varn into the party', sub: 'Sable Varn joins the party.', show: { all: [{ flag: 'sableWon' }, { not: { flagEq: ['companion', 'sable'] } }, { flagUnset: 'companionLost_sable' }] }, effects: { recruit: 'sable' } },
       { id: 'ossuary', label: 'The Ossuary', sub: '1 Sap.', effects: { ...sapRoad(1), goto: 'spine:ossuary' } },
       { id: 'ridge', label: 'Noon Spine', sub: '1 Sap.', tone: 'quiet', effects: { ...sapRoad(1), goto: 'spine:ridge' } },
     ],

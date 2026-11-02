@@ -347,6 +347,9 @@ export const ITEMS: Record<ItemId, ItemDef> = {
   cartel_pass: { id: 'cartel_pass', name: 'Cartel Pass', kind: 'key', desc: 'A stolen duty manifest from the Sift-Works Gate. It reads as a Cartel pass.' },
   skimmer_plating: { id: 'skimmer_plating', name: 'Skimmer Plating', kind: 'key', desc: 'A sheet of heat shielding pried from the Skimmer Wreckage.' },
   seeker_rations: { id: 'seeker_rations', name: 'Seeker Rations', kind: 'key', desc: 'A ration crate from under the tarps at Garrison Parade.' },
+  // v205 DRAFT. Descriptions NEW, for approval.
+  sealed_data_cylinder: { id: 'sealed_data_cylinder', name: 'Sealed Data Cylinder', kind: 'key', desc: "A sealed silver data cylinder. It was meant for Kelt's Oasis reserve." },
+  damaged_data_cylinder: { id: 'damaged_data_cylinder', name: 'Damaged Data Cylinder', kind: 'key', desc: "Kelt's Runner's data cylinder, dented and dark." },
   rig_passkey: { id: 'rig_passkey', name: 'Rig Passage Key', kind: 'key', desc: 'A foreman-stamped passage key for Rig 04.' },
   cartel_transponder: {
     id: 'cartel_transponder',

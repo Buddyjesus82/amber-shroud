@@ -1,3 +1,4 @@
+import { companionOf, LINES as PARTY_LINES } from './companions'
 import { STRAY_HUNTER_ENCOUNTERS } from './strayLines'
 import { MASKED_BLOCK_LINE, MASKED_ROUNDS, MASKED_STRIKE_LINE, MASKED_WALKS_OFF_LINE } from './maskedLines'
 import { ITEMS } from './content/catalog'
@@ -10,8 +11,10 @@ export { OVERTIME_LINE, PACK_HOUND_LINE, RIG_GUARDS_LINE } from './v203Lines'
 import type { Choice, Effect, FlagMap, GameState, ItemId } from './types'
 import { hash, OPENERS, sandAnswers, PAIR_LINE, HUSK_CONTROLLER_LINE, sandGripLine, TERRAINS, terrainPool, type Terrain, type TerrainId } from './fightTricks'
 
-export type EncounterKind = 'jackal' | 'cutter' | 'courtguard' | 'tick' | 'pup' | 'scavenger' | 'patrol' | 'handler' | 'hound' | 'overseer' | 'collector' | 'carapace' | 'husk' | 'runner' | 'strayhunter' | 'strayhound' | 'masked' | 'ribworm' | 'greg' | 'dragoon' | 'seekerpatrol' | 'drilllead' | 'leech' | 'moth' | 'thaliaguard' | 'lockboss' | 'rigpatrol' | 'seekerhandler' | 'packhound' | 'skiff' | 'foreman' | 'rigguard'
+export type EncounterKind = 'jackal' | 'cutter' | 'courtguard' | 'tick' | 'pup' | 'scavenger' | 'patrol' | 'handler' | 'hound' | 'overseer' | 'collector' | 'carapace' | 'husk' | 'runner' | 'strayhunter' | 'strayhound' | 'masked' | 'ribworm' | 'greg' | 'dragoon' | 'seekerpatrol' | 'drilllead' | 'leech' | 'moth' | 'thaliaguard' | 'lockboss' | 'rigpatrol' | 'seekerhandler' | 'packhound' | 'skiff' | 'foreman' | 'rigguard' | 'sablewave'
 
+export const SABLE_WAVE1 = 'The first wave: a Stray Collector drops into the trench.'
+export const SABLE_WAVE2 = 'The second wave: another Stray Collector drops in behind it.'
 export const RIBWORM_LINE = 'The dune breathes. A rib-worm noses up through the sand, ringed like an old spine, mouth all grit and grinding plates.'
 export const RIBWORM_WIN = 'It sinks and does not come back up. The sand settles over it.'
 /** v160: round 1, your first swing hits half as hard: it is still under the sand. */
@@ -178,6 +181,8 @@ const SPECS: Spec[] = [
   // Spine hunter fight. Copy and stats live in content/spineHunter.ts.
   { kind: 'collector', ...SPINE_HUNTER.encounter },
   { kind: 'carapace', ...CARAPACE_HUNTER.encounter },
+  // v205 DRAFT: Sable Varn's trench. Two waves, back to back: one Stray Collector at 3/1/2 each.
+  { kind: 'sablewave', name: 'Stray Collector', strike: 3, shell: 1, hp: 2, line: SABLE_WAVE1 },
   {
     kind: 'husk',
     name: 'Amber Husk',
@@ -307,6 +312,8 @@ const HOME = new Set([
 ])
 
 export function encounterGround(state: GameState): boolean {
+  // v205: the Oasis Sap Reserve is a safe zone.
+  if (state.sceneId === 'thresh:oasis') return false
   if (state.sceneId.startsWith('open:') || state.sceneId.startsWith('crisis:')) return false
   if (HOME.has(state.sceneId) && !(state.sceneId === 'spine:ridge' && Number(state.flags.ridgeVisits ?? 0) >= 2)) return false
   const scene = getScene(state.sceneId)
@@ -999,6 +1006,37 @@ export function resolveEncounter(
   how: FightMove | 'skip' | 'disguise',
   opts: { floor?: number; cloak?: boolean } = {},
 ): { fx: Effect; flash: string } {
+  const out: { mateHp?: number } = {}
+  let r = resolveEncounterCore(state, how, opts, out)
+  // v205: Sable's first wave down, the second drops in at once.
+  if (r.fx.flag?.sableWon && state.flags.sableWave !== 2) {
+    const flag: FlagMap = { ...r.fx.flag, sableWave: 2 }
+    delete flag.sableWon
+    r = { ...r, fx: { ...r.fx, flag, ambush: { kind: 'sablewave', line: SABLE_WAVE2 } } }
+  }
+  const mate = companionOf(state)
+  if (!mate || out.mateHp === undefined || out.mateHp === mate.hp) return r
+  // v205: the companion's Health rides on the fight's own effect. At 0 they are downed: out of the party for this run.
+  if (out.mateHp > 0) return { ...r, fx: { ...r.fx, flag: { ...(r.fx.flag ?? {}), companionHp: out.mateHp } } }
+  const line = PARTY_LINES.downed(mate.name)
+  const clash = r.fx.flag?.encounterClash
+  return {
+    flash: r.flash ? `${r.flash}\n\n${line}` : r.flash,
+    fx: {
+      ...r.fx,
+      flash: r.fx.flash ? `${r.fx.flash}\n\n${line}` : r.fx.flash,
+      unsetFlag: [...(r.fx.unsetFlag ?? []), 'companion', 'companionHp'],
+      flag: { ...(r.fx.flag ?? {}), [`companionLost_${mate.id}`]: true, ...(typeof clash === 'string' ? { encounterClash: `${clash}\n\n${line}` } : {}) },
+    },
+  }
+}
+
+function resolveEncounterCore(
+  state: GameState,
+  how: FightMove | 'skip' | 'disguise',
+  opts: { floor?: number; cloak?: boolean },
+  out: { mateHp?: number },
+): { fx: Effect; flash: string } {
   const spec = encounterSpec(state)
   const f = state.flags
   const who = whoOf(spec)
@@ -1245,6 +1283,8 @@ export function resolveEncounter(
     } else if (roll(state, 'run', 100) < runChance(state)) {
       const line = `You break away and run. ${cap(who)} does not follow. No loot.`
       // v203: Suppressing Fire. Running from the skiff costs 1 more Sap, on its own line.
+      // v205: Smoke Bomb round: running costs no extra Sap.
+      if (spec.kind === 'skiff' && companionOf(state)?.id === 'orla' && round % 3 === 0) return holdCard(state, spec, `${line}\n\n${PARTY_LINES.smokeRun}`, line, { flag: { encounterFled: true } })
       if (spec.kind === 'skiff') return holdCard(state, spec, `${line}\n\n${SKIFF_RUN_LINE}`, line, { sap: -1, flag: { encounterFled: true } })
       return holdCard(state, spec, line, line, { flag: { encounterFled: true } })
     } else {
@@ -1254,6 +1294,21 @@ export function resolveEncounter(
         inTags.push('Hound bite: they hit for 1 more.')
       }
     }
+  }
+
+  // v205: the companion. Smoke Bomb (Orla, every 3rd round) and Guard Duty (Hester, above 2 Health).
+  const mate = spec.kind === 'masked' ? null : companionOf(state)
+  let mateHp = mate?.hp ?? 0
+  const mateTags: string[] = []
+  const mateHits: string[] = []
+  if (mate && mate.id === 'orla' && round % 3 === 0 && dmgIn > 0) {
+    hitIn(() => 0)
+    mateTags.push(PARTY_LINES.smoke)
+  }
+  if (mate && mate.id === 'hester' && mateHp > 2 && dmgIn > 0) {
+    hitIn((d) => Math.max(0, d - 1))
+    mateHp -= 1
+    mateTags.push(PARTY_LINES.guard(mate.name))
   }
 
   // Outcast only, once a fight: when it is going badly, the sand takes the hit for him. Never explained.
@@ -1284,6 +1339,15 @@ export function resolveEncounter(
   }
 
   let theirHp = Math.max(0, c.theirHp - dmgOut)
+  // v205: the companion attacks after you. Lens Beam (Sable, every 2nd round) ignores 2 of their Shell.
+  if (mate && theirHp > 0 && mateHp > 0) {
+    const lens = mate.id === 'sable' && round % 2 === 0
+    const d = exchangeDamage(mate.strike, 0, Math.max(0, spec.shell - (lens ? 2 : 0)), floor)
+    theirHp = Math.max(0, theirHp - d)
+    mateHits.push(PARTY_LINES.mateHit(mate.name, who, d))
+    if (lens) mateHits.push(PARTY_LINES.lens)
+  }
+  if (mate) out.mateHp = mateHp
   let yourHp = Math.max(0, c.yourHp - dmgIn)
   let healthDelta = yourHp - c.yourHp
   if (dmgOut > 0) pinned = false
@@ -1328,10 +1392,11 @@ export function resolveEncounter(
     yourHp = 1
     healthDelta = 1 - c.yourHp
   }
-  const top = statRows(yourHp, c.strike, c.shell, spec, theirHp)
+  const bare = statRows(yourHp, c.strike, c.shell, spec, theirHp)
+  const top = mate ? bare.replace('\n\n', `\n\n${statRow(mate.name.toUpperCase(), mateHp, mate.strike, mate.shell)}\n\n`) : bare
   // v182: the hit that would have dropped you lands after they fall. The line says so.
   const themSaid = mutualWin && dmgIn > 0 ? themLine.replace(/\.$/, `, but you drop ${who} first.`) : themLine
-  const hitCard = [top, youLine, themSaid, ...bonusLines, ...(notes.length ? [notes.join(' ')] : [])].join('\n\n')
+  const hitCard = [top, youLine, ...mateHits, themSaid, ...bonusLines, ...mateTags, ...(notes.length ? [notes.join(' ')] : [])].join('\n\n')
   const sap = sapLoss ? -sapLoss : undefined
 
   // He cannot be killed. A strike ends it, and so does the third round: he walks off. No loot, no Heat.
@@ -1384,7 +1449,10 @@ export function resolveEncounter(
     const creatureWin = spec.kind === 'leech' ? LEECH_WIN : spec.kind === 'moth' ? MOTH_WIN : ''
     // The Hound-handler is never killed: he is beaten and limps off.
     const handlerWin = spec.kind === 'handler'
-    const won = mutualWin ? MUTUAL_WIN_LINE : ''
+    // v205: Orla Lusk: Scrap +1 on a win on Cartel ground or over a scavenger, on its own line.
+    const orlaScrap = mate?.id === 'orla' && (spec.kind === 'scavenger' || state.hubId === 'camp04' || state.sceneId.startsWith('camp:'))
+    if (orlaScrap) add.scrap = (add.scrap ?? 0) + 1
+    const won = `${mutualWin ? MUTUAL_WIN_LINE : ''}${orlaScrap ? `\n\n${PARTY_LINES.orlaScrap}` : ''}`
     const outcome = handlerWin
       ? `${HANDLER_BEATEN} ${loot}.${back}${won}`
       : wormWin
@@ -1403,7 +1471,7 @@ export function resolveEncounter(
       heat: spec.kind === 'hound' ? { cartel: 1 } : handlerWin ? { cartel: 2 } : undefined,
       pressure: dmgIn > 0 ? 1 : undefined,
       // v153: beating the hound or the handler keeps Valerius himself away for 10 quiet scenes (hunts still come).
-      flag: { encounterGrip: grip, ...(spec.kind === 'tick' && add.vial_drop ? { tickDropped: true } : {}), ...Object.fromEntries(ONCE_GEAR.filter((id) => add[id]).map((id) => [gearDropFlag(id), true])), ...(handlerWin ? { handlerInjured: true } : {}), ...(handlerWin || spec.kind === 'hound' ? { valeriusRest: true, valeriusQuiet: 0 } : {}), ...(state.sceneId === 'thresh:court-guard' && spec.kind === 'courtguard' ? { crucibleGuardBeaten: true } : {}) },
+      flag: { encounterGrip: grip, ...(spec.kind === 'tick' && add.vial_drop ? { tickDropped: true } : {}), ...Object.fromEntries(ONCE_GEAR.filter((id) => add[id]).map((id) => [gearDropFlag(id), true])), ...(handlerWin ? { handlerInjured: true } : {}), ...(handlerWin || spec.kind === 'hound' ? { valeriusRest: true, valeriusQuiet: 0 } : {}), ...(state.sceneId === 'thresh:court-guard' && spec.kind === 'courtguard' ? { crucibleGuardBeaten: true } : {}), ...(spec.kind === 'sablewave' && f.sableFight ? { sableWon: true } : {}) },
     })
   }
 

@@ -1,3 +1,4 @@
+import { PartyCard } from './PartyCard'
 import { useState } from 'react'
 import { bindSalve, canCraftScavPack, canTieKnot, craftScavPack, tieKnot, discardAsk, DISCARD_KEEP, drinkDrop, dropItem, dropStack, equipBlock, equipItem, sapLabel, unequipSlot } from '../game/engine'
 import { heatFactions } from '../game/heat'
@@ -70,6 +71,7 @@ export function InventorySheet({ state, onClose, onChange }: Props) {
           </b>
           {load > cap ? ' Over the limit: nothing new fits until slots free up. More of a stack you carry still fits.' : ''}
         </p>
+        <PartyCard state={state} onChange={onChange} full />
         {heldText ? (
           <p className="bag-held">
             On the ground: {heldText}. Your bag is full. Drop something below to free a slot and pick it up.
