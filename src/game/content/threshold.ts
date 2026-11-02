@@ -422,7 +422,7 @@ Oram is here more often than he is in the Court. He prefers the animals to the h
             '"Smuggler. Buried sin at Red Maw. The hymns say the Vessel will retrieve it and become the desert\'s mouth. I think it is a hole full of knives. The hymn did not ask me to."',
         },
       },
-      { id: 'back', label: 'Return to the Court', tone: 'quiet', effects: { goto: 'thresh:court' } },
+      { id: 'back', label: 'Back to the Guard Post', tone: 'quiet', effects: { goto: 'thresh:guard' } },
     ],
     intents: [
       {

@@ -133,7 +133,7 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
       { a: 'court', b: 'paddock' },
       { a: 'court', b: 'sift' },
       { a: 'paddock', b: 'sift' },
-      { a: 'paddock', b: 'guard' },
+      { a: 'paddock', b: 'guard', oneWay: true }, // v200: out to the Guard Post only; back is through Post Echo
     ],
     sceneNode: {
       'thresh:court': 'court',

@@ -119,13 +119,13 @@ export function adjacency(map: HubMapDef): Map<string, { id: string; sap: number
   for (const e of map.edges) {
     const sap = e.sap ?? 1
     g.get(e.a)?.push({ id: e.b, sap })
-    g.get(e.b)?.push({ id: e.a, sap })
+    if (!e.oneWay) g.get(e.b)?.push({ id: e.a, sap })
   }
   return g
 }
 
 export function edgeBetween(map: HubMapDef, a: string, b: string): HubMapEdge | null {
-  return map.edges.find((e) => (e.a === a && e.b === b) || (e.a === b && e.b === a)) ?? null
+  return map.edges.find((e) => (e.a === a && e.b === b) || (!e.oneWay && e.a === b && e.b === a)) ?? null
 }
 
 export function edgeSap(map: HubMapDef, a: string, b: string): number | null {

@@ -40,7 +40,7 @@ export const phase1Scenes: Scene[] = [
     choices: [
       { id: 'pass', label: 'Show the Cartel pass', show: { item: 'cartel_pass' }, effects: { goto: 'camp:log-deck', flash: PASS_LINE } },
       { id: 'bribe_foreman', label: 'Bribe the Foreman', sub: '1 Sap.', show: { not: { item: 'cartel_pass' } }, effects: { sap: -1, goto: 'camp:log-deck', flash: BRIBE_FOREMAN } },
-      { id: 'steal_manifest', label: 'Steal Duty Manifest', sub: 'A sneak. If seen, a fight.', tone: 'danger', show: { not: { item: 'cartel_pass' } }, effects: { add: { cartel_pass: 1 }, goto: 'camp:log-deck', flash: MANIFEST_TAKEN, sneak: { odds: 4, kind: 'patrol', spotted: MANIFEST_SPOTTED } } },
+      { id: 'steal_manifest', label: 'Steal Duty Manifest', sub: 'A sneak. If seen, a fight.', tone: 'danger', show: { not: { item: 'cartel_pass' } }, effects: { add: { cartel_pass: 1 }, goto: 'camp:log-deck', flash: MANIFEST_TAKEN, sneak: { odds: 4, kind: 'patrol', spotted: MANIFEST_SPOTTED, forfeit: true } } },
       { id: 'vents', label: 'Logging Vents', effects: { goto: 'camp:log-vents' } },
       { id: 'back', label: 'Back to the Guard Station', sub: '1 Sap.', tone: 'quiet', effects: { sap: -1, goto: 'camp:guard' } },
     ],
@@ -131,7 +131,7 @@ export const phase1Scenes: Scene[] = [
     title: 'Garrison Parade',
     body: 'Seeker squads drill under strict officer supervision. Supply crates sit stacked under canvas tarps.',
     choices: [
-      { id: 'scavenge_supplies', label: 'Scavenge Supplies', sub: 'A sneak. If seen, a fight.', tone: 'danger', show: { flagUnset: 'rationsStolen' }, effects: { add: { seeker_rations: 1 }, flag: { rationsStolen: true }, flash: RATIONS_LINE, sneak: { odds: 3, kind: 'seekerpatrol', spotted: RATIONS_SPOTTED } } },
+      { id: 'scavenge_supplies', label: 'Scavenge Supplies', sub: 'A sneak. If seen, a fight.', tone: 'danger', show: { flagUnset: 'rationsStolen' }, effects: { add: { seeker_rations: 1 }, flag: { rationsStolen: true }, flash: RATIONS_LINE, sneak: { odds: 6, kind: 'seekerpatrol', spotted: RATIONS_SPOTTED, forfeit: true } } },
       courtRoad,
     ],
   },

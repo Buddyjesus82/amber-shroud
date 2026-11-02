@@ -908,6 +908,19 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     } else if (fx.sneak && sneakSpotted(next, fx.sneak.odds)) {
       next.flags = { ...next.flags, ...fightStartFlags(next, fx.sneak.kind as EncounterKind) }
       next.flash = fx.sneak.spotted
+      // v200: a spotted sneak keeps nothing it would have taken.
+      if (fx.sneak.forfeit) {
+        const items = { ...next.items }
+        for (const k of Object.keys(fx.add ?? {}) as (keyof typeof items)[]) {
+          if (state.items[k] === undefined) delete items[k]
+          else items[k] = state.items[k]
+        }
+        next.items = items
+        for (const k of Object.keys(fx.flag ?? {})) {
+          if (k in state.flags) next.flags[k] = state.flags[k]
+          else delete next.flags[k]
+        }
+      }
     }
   }
   // Threshold lies at high Seeker Heat: seen through.

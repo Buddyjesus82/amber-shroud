@@ -46,4 +46,16 @@ ok(getScene('thresh:parade').choices!.find((c) => c.id === 'scavenge_supplies')!
 ok(pick(pb, 'court').sceneId === 'thresh:court', 'parade -> court')
 for (const id of NEW) { const k = playCoverKey(at('prisoner', id), getScene(id)); ok(k && String(k).startsWith('p1_'), `${id} cover (${k})`) }
 for (const f of ['sift-gate','log-vents','log-deck','dugouts','skimmer','dusteye','echo-gate','conduits','parade']) ok(existsSync(`public/covers/p1-${f}.jpg`), `art ${f}`)
+// v200 final: rations odds 6; spotted sneaks keep nothing.
+ok(getScene('thresh:parade').choices!.find((c) => c.id === 'scavenge_supplies')!.effects.sneak?.odds === 6, 'rations odds 6')
+const trySneak = (base: GameState, id: string, want: boolean) => { for (let t = 0; t < 200; t++) { const r = pick({ ...base, ticks: t }, id); if (!!r.flags.encounterHere === want) return r } return null }
+for (const [door, scene, id, item, flag] of [['prisoner', 'camp:sift-gate', 'steal_manifest', 'cartel_pass', ''], ['vessel', 'thresh:parade', 'scavenge_supplies', 'seeker_rations', 'rationsStolen']] as const) {
+  const b = at(door, scene)
+  const caught = trySneak(b, id, true); ok(caught && !(caught.items as Record<string, number>)[item] && (!flag || !caught.flags[flag]), `${id} spotted: fight, no ${item}`)
+  const clean = trySneak(b, id, false); ok(clean && (clean.items as Record<string, number>)[item] === 1, `${id} unseen: ${item}`)
+}
+{ const { adjacency } = await import('../src/game/map.ts'); const { HUB_MAPS } = await import('../src/game/content/maps.ts') as never as { HUB_MAPS: Record<string, never> }
+  const m = Object.values(HUB_MAPS ?? {}).find((x: { nodes: { sceneId: string }[] }) => x.nodes.some((n) => n.sceneId === 'thresh:guard'))
+  if (m) { const g = adjacency(m); ok((g.get('guard') ?? []).length === 0, 'no map road out of the Guard Post'); ok((g.get('paddock') ?? []).some((n) => n.id === 'guard'), 'paddock -> guard one way') } else ok(false, 'threshold map found') }
+ok(getScene('thresh:guard-talk').choices!.find((c) => c.id === 'back')!.effects.goto === 'thresh:guard', 'guard talk back -> guard post, not court')
 console.log(fails ? `${fails} FAIL` : 'v200-phase1 OK'); process.exit(fails ? 1 : 0)
