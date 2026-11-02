@@ -72,4 +72,13 @@ for (const f of ['rubble','shanty','anvil','drill-deck','vents','vein-approach',
   ok(v.sceneId === 'ch2:trapped' && String(v.flash).includes(VEIN_SHUT), 'vein no key/code → trapped, telegraphed')
   console.log('extra checks OK')
 }
+{
+  for (const pre of [{}, { rigDistracted: true }]) {
+    const b = at('prisoner', 'deep:vents', {}, pre)
+    let caught: GameState | null = null, clean: GameState | null = null
+    for (let t = 0; t < 300 && (!caught || !clean); t++) { const r = pick({ ...b, ticks: t }, 'bypass'); if (r.flags.encounterHere) caught ??= r; else clean ??= r }
+    ok(caught && !caught.flags.ventBypass, 'vent bypass spotted: fight, no ventBypass')
+    ok(clean && clean.flags.ventBypass && clean.sceneId === 'deep:vein-approach', 'vent bypass unseen: flag set')
+  }
+}
 console.log(fails ? `${fails} FAIL` : 'v200-phase2 OK'); process.exit(fails ? 1 : 0)

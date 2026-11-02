@@ -87,8 +87,8 @@ export const phase2Scenes: Scene[] = [
     body: 'Superheated steam valves holding back toxic gas from the lower shafts.',
     choices: [
       { id: 'valve', label: 'Blow Steam Valve', sub: 'Cartel Heat −1. Once.', show: { flagUnset: 'rigDistracted' }, effects: { heat: { cartel: -1 }, flag: { rigDistracted: true }, flash: VALVE_LINE } },
-      { id: 'bypass', label: 'Bypass Vents', sub: 'A sneak. If seen, a fight.', tone: 'danger', show: { flagUnset: 'rigDistracted' }, effects: { flag: { ventBypass: true }, goto: 'deep:vein-approach', flash: VENTS_THROUGH, sneak: { odds: 4, kind: 'patrol', spotted: VENTS_SPOTTED } } },
-      { id: 'bypass', label: 'Bypass Vents', sub: 'The guards are at the valve. A sneak. If seen, a fight.', tone: 'danger', show: { flag: 'rigDistracted' }, effects: { flag: { ventBypass: true }, goto: 'deep:vein-approach', flash: VENTS_THROUGH, sneak: { odds: 2, kind: 'patrol', spotted: VENTS_SPOTTED } } },
+      { id: 'bypass', label: 'Bypass Vents', sub: 'A sneak. If seen, a fight.', tone: 'danger', show: { flagUnset: 'rigDistracted' }, effects: { flag: { ventBypass: true }, goto: 'deep:vein-approach', flash: VENTS_THROUGH, sneak: { odds: 4, kind: 'patrol', spotted: VENTS_SPOTTED, forfeit: true } } },
+      { id: 'bypass', label: 'Bypass Vents', sub: 'The guards are at the valve. A sneak. If seen, a fight.', tone: 'danger', show: { flag: 'rigDistracted' }, effects: { flag: { ventBypass: true }, goto: 'deep:vein-approach', flash: VENTS_THROUGH, sneak: { odds: 2, kind: 'patrol', spotted: VENTS_SPOTTED, forfeit: true } } },
       { id: 'back', label: 'Back to the Drill Deck', tone: 'quiet', effects: { goto: 'deep:drill-deck' } },
     ],
   },
