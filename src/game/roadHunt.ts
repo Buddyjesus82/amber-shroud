@@ -1,5 +1,5 @@
 import { SKIFF_HEAT, turfFaction } from './encounter'
-import { SKIFF_LINE } from './v203Lines'
+import { SKIFF_RIG_LINE } from './v203Lines'
 import { getScene } from './content'
 import type { EncounterKind } from './encounter'
 import type { GameState } from './types'
@@ -64,5 +64,5 @@ export function ch2SkiffHunt(before: GameState, next: GameState): { kind: Encoun
   if (next.flags.encounterHere || next.flags.hunterHere || next.flags.downed) return null
   if (getScene(next.sceneId).kind !== 'story') return null
   if ((next.heat.cartel ?? 0) < SKIFF_HEAT) return null
-  return { kind: 'skiff', line: SKIFF_LINE }
+  return { kind: 'skiff', line: SKIFF_RIG_LINE }
 }

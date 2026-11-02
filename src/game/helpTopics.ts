@@ -67,7 +67,7 @@ const FIGHT_SECTIONS: HelpSection[] = [
       { key: 'Rim cutter', text: 'Hurt, it runs for the shade. Hit it that exchange or it gets away.' },
       { key: 'Shard-pup', crit: true, text: 'Crits twice as often.' },
       { key: 'Vent patrol', text: 'The shock baton can numb your arm. Your next hit has no extra force.' },
-      { key: 'Hound-handler', text: 'Running is harder. A failed run lets the hound bite too.' },
+      { key: 'Hound-handler', text: 'Running is harder. A failed run lets the hound bite too. Pack Call: if he lasts past round 2, his Shard-Hound comes at you when he falls.' },
       { key: 'Valerius', text: 'He never dies: beat him and he gets away, Cartel Heat -1 (Seeker Heat -1 at Seeker Command), and the Camp-04 hunt stays quiet for 10 scenes.' },
       { key: 'Stray collector', text: 'Hurt, he offers to call it square: Stray Heat -1, no loot.' },
       { key: 'Nim', text: 'The Carapace hunter, at Stray Heat 4 or more on the Spine. Opens with the harpoon and you are pinned. No Run until you land a hit.' },
