@@ -157,7 +157,7 @@ function WornTab({ state, chips, onChange }: { state: GameState; chips: KitChip[
                     <button
                       key={slot}
                       type="button"
-                      className="btn btn-tiny btn-ghost"
+                      className="btn btn-tiny equip-btn"
                       disabled={!!block}
                       title={block ?? undefined}
                       onClick={() => onChange(equipItem(state, c.id, slot))}
@@ -188,7 +188,7 @@ function Slot({ state, slot, onClear }: { state: GameState; slot: EquipSlot; onC
         {stat ? <span className="gear-stat">{stat}</span> : null}
       </strong>
       {item ? (
-        <button type="button" className="btn btn-tiny unequip-btn" onClick={onClear}>
+        <button type="button" className="btn btn-tiny btn-ghost unequip-btn" onClick={onClear}>
           Unequip
         </button>
       ) : (
@@ -231,15 +231,17 @@ function ListTab({
                   {c.name}
                   {c.n > 1 || c.id === 'scrap' ? ` ×${c.n}` : ''}
                   {slotNote(state, c.id)}
+                  {gearStat(c) === 'Relic' ? <span className="gear-stat relic-tag">Relic</span> : null}
                 </strong>
                 <span>{c.desc}</span>
+                {gearStat(c) === 'Relic' && ITEMS[c.id].perk ? <span>{ITEMS[c.id].perk}</span> : null}
               </div>
               <div className="item-acts">
                 {c.n > wornCount(state, c.id)
                   ? slotsFor(c.id).map((slot) => {
                       const block = equipBlock(state, c.id, slot)
                       return (
-                        <button key={slot} type="button" className="btn btn-tiny btn-ghost" disabled={!!block} title={block ?? undefined} onClick={() => onChange(equipItem(state, c.id, slot))}>
+                        <button key={slot} type="button" className="btn btn-tiny equip-btn" disabled={!!block} title={block ?? undefined} onClick={() => onChange(equipItem(state, c.id, slot))}>
                           Equip
                         </button>
                       )

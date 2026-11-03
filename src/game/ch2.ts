@@ -7,6 +7,9 @@ import { HANDS_MAX, snapshot } from './hands'
 import type { Effect, GameState } from './types'
 
 /** v166: the vault code, any case, trimmed. */
+/** v213: ch2Fight tags whose foe is Greg Ambergrin. */
+const GREG_FIGHT_TAGS = ['sift', 'jaws', 'reckoning', 'stairgreg', 'bounty', 'tollgate']
+
 export function isChapterTwoCode(raw: string): boolean {
   return raw.trim().toUpperCase() === CH2_CODE
 }
@@ -137,6 +140,11 @@ export function chapterTwoAfter(state: GameState, next: GameState, _fx?: Effect)
       }
       if (won) {
         f[`ch2Won_${tag}`] = true
+        // v213: a won Greg fight kills him. He never fights again this run.
+        if (GREG_FIGHT_TAGS.includes(tag)) {
+          f.gregDead = true
+          f.reckoningDone = true
+        }
         if (tag === 'reckoning') f.reckoningDone = true
         if (tag === 'bounty') {
           f.bountyBroken = true
@@ -179,7 +187,7 @@ export function chapterTwoAfter(state: GameState, next: GameState, _fx?: Effect)
   }
   // Arrival beats that open a fight or a hunt.
   if (moved && !next.flags.encounterHere && !next.flags.downed) {
-    if (next.sceneId === 'ch2:p-sift' && (next.heat.cartel ?? 0) >= 4 && !f.siftChecked) {
+    if (next.sceneId === 'ch2:p-sift' && (next.heat.cartel ?? 0) >= 4 && !f.siftChecked && !f.gregDead) {
       f.siftChecked = true
       if (roll(state, 'sift', 2) === 0) openFight(next, 'greg', 'sift', SIFT_SPOTTED)
     } else if (next.sceneId === 'ch2:o-strays' && (next.heat.strays ?? 0) >= 4 && !f.straysThrown) {

@@ -113,9 +113,11 @@ export const GREG_TOLL = 'ch2:greg-toll'
 /** v211: shown on a Greg fight row when Health is low. */
 export const GREG_LAST_STAND = 'Greg readies a desperate last stand—engaging now will be fatal if injured'
 const GREG_LOW: Cond = { not: { healthMin: 3 } }
+// v213: Greg stays dead. Once a Greg fight is won (ch2.ts sets gregDead), no Greg fight row shows again this run.
+const GREG_ALIVE: Cond = { flagUnset: 'gregDead' }
 const gregWarn = (c: Choice): Choice[] => [
-  { ...c, show: c.show ? { all: [c.show, { not: GREG_LOW }] } : { not: GREG_LOW } },
-  { ...c, sub: c.sub ? `${GREG_LAST_STAND}. ${c.sub}` : GREG_LAST_STAND, show: c.show ? { all: [c.show, GREG_LOW] } : GREG_LOW },
+  { ...c, show: c.show ? { all: [c.show, GREG_ALIVE, { not: GREG_LOW }] } : { all: [GREG_ALIVE, { not: GREG_LOW }] } },
+  { ...c, sub: c.sub ? `${GREG_LAST_STAND}. ${c.sub}` : GREG_LAST_STAND, show: c.show ? { all: [c.show, GREG_ALIVE, GREG_LOW] } : { all: [GREG_ALIVE, GREG_LOW] } },
 ]
 export const GREG_TOLL_BODY = `Horn static, then a long low whistle. Greg Ambergrin stands on his elevated steel platform: oil-stained optics, an iron chain.
 
@@ -374,12 +376,12 @@ Greg sees the gold dust on you and steps back. 'Seeker business goes through. Se
       { id: 'drop', label: 'Bleed a Drop into it', sub: '1 vial.', show: { flagUnset: 'cupPassed' }, enable: { item: 'vial_drop' }, locked: 'Needs: a vial', effects: { remove: { vial_drop: 1 }, flag: { cupPassed: true }, flash: 'The cup goes quiet. Valerius frowns, and lets it go.' } },
       // v192: the Offering Bowl from the Stairs, holding a Drop, passes for a cup. The Drop is spent into it.
       { id: 'bowl', label: 'Hold out the Offering Bowl', sub: 'A Drop poured into it. 1 vial.', show: { all: [{ flagUnset: 'cupPassed' }, { item: 'offering_bowl' }] }, enable: { item: 'vial_drop' }, locked: 'Needs: a vial', effects: { remove: { vial_drop: 1 }, flag: { cupPassed: true }, flash: 'The cup goes quiet. Valerius frowns, and lets it go.' } },
-      { id: 'bluff', label: 'Bluff', tone: 'danger', show: { all: [{ flagUnset: 'cupPassed' }, { flagUnset: 'cupFailed' }] }, effects: { flag: { cupPassed: true, ch2Fight: 'test' }, sneak: { odds: 5, kind: 'overseer', spotted: TEST_FAIL } } },
-      { id: 'ring', label: 'Bluff the Ring', sub: "Show Ossa's Knot or Kallik's Mark.", show: { flagUnset: 'cupPassed' }, enable: { any: [{ item: 'ossa_token' }, { item: 'knotted_wrap' }, { item: 'kallik_mark' }] }, locked: "Needs: Ossa's Knot or Kallik's Mark", effects: { flag: { cupPassed: true }, goto: 'ch2:v-stair', flash: RING_LINE } },
+      { id: 'bluff', label: 'Bluff', tone: 'danger', show: { all: [{ flagUnset: 'cupPassed' }, { flagUnset: 'cupFailed' }] }, effects: { flag: { cupPassed: true, valeriusCheated: true, ch2Fight: 'test' }, sneak: { odds: 5, kind: 'overseer', spotted: TEST_FAIL } } },
+      { id: 'ring', label: 'Bluff the Ring', sub: "Show Ossa's Knot or Kallik's Mark.", show: { flagUnset: 'cupPassed' }, enable: { any: [{ item: 'ossa_token' }, { item: 'knotted_wrap' }, { item: 'kallik_mark' }] }, locked: "Needs: Ossa's Knot or Kallik's Mark", effects: { flag: { cupPassed: true, valeriusCheated: true }, goto: 'ch2:v-stair', flash: RING_LINE } },
       // v186: no pass route left (test failed, no vial, no Knot or Mark). Two hard ways on.
-      { id: 'vent', label: 'Maintenance Vent', sub: 'Your heavy gear pries the grate.', tone: 'quiet', show: { all: [NO_PASS, VENT_TOOL] }, effects: { flag: { cupPassed: true }, goto: 'ch2:v-stair', flash: VENT_LINE } },
-      { id: 'vent', label: 'Maintenance Vent', sub: 'Scrap −1. Health −2.', tone: 'danger', show: { all: [NO_PASS, { not: VENT_TOOL }] }, enable: { itemMin: ['scrap', 1] }, locked: 'Needs: 1 scrap', effects: { remove: { scrap: 1 }, health: -2, flag: { cupPassed: true }, goto: 'ch2:v-stair', flash: VENT_HURT_LINE } },
-      { id: 'siphon-trick', label: 'Siphoned Trick', sub: 'Seeker Heat +1.', tone: 'danger', show: NO_PASS, effects: { heat: { seekers: 1 }, flag: { cupPassed: true }, flash: SIPHON_TRICK_LINE } },
+      { id: 'vent', label: 'Maintenance Vent', sub: 'Your heavy gear pries the grate.', tone: 'quiet', show: { all: [NO_PASS, VENT_TOOL] }, effects: { flag: { cupPassed: true, valeriusCheated: true }, goto: 'ch2:v-stair', flash: VENT_LINE } },
+      { id: 'vent', label: 'Maintenance Vent', sub: 'Scrap −1. Health −2.', tone: 'danger', show: { all: [NO_PASS, { not: VENT_TOOL }] }, enable: { itemMin: ['scrap', 1] }, locked: 'Needs: 1 scrap', effects: { remove: { scrap: 1 }, health: -2, flag: { cupPassed: true, valeriusCheated: true }, goto: 'ch2:v-stair', flash: VENT_HURT_LINE } },
+      { id: 'siphon-trick', label: 'Siphoned Trick', sub: 'Seeker Heat +1.', tone: 'danger', show: NO_PASS, effects: { heat: { seekers: 1 }, flag: { cupPassed: true, valeriusCheated: true }, flash: SIPHON_TRICK_LINE } },
       BACK_TO('ch2:v-outpost'),
     ],
   },
@@ -820,6 +822,13 @@ export function chapterTwoSummary(f: Record<string, unknown>, items: Record<stri
   const murch = f.murchProtected ? 'safe: vendor ahead' : f.murchCaptured ? 'captured' : 'left behind'
   const g = f.gregStanding
   const greg = g === 'hostile' ? 'enemies' : g === 'paid' ? 'paid' : g === 'worked' ? 'worked for them' : g === 'bypassed' ? 'slipped past' : g === 'sold' ? 'sold out' : 'never settled'
+  // v213: run-state rows, read from existing flags only.
+  const sybella = f.sybellaBargain ? 'bargain struck' : f.sybellaHunting ? 'hunting you' : 'not met'
+  const ossa = f.ossaRobbed ? 'robbed' : f.ossaAlly ? 'ally' : f.ossaMet ? 'met' : 'not met'
+  const pike = f.bayPikeTook ? 'took from his bay' : 'left alone'
+  const thalia = f.thaliaFavor ? 'favor taken' : f.thaliaCalledOff ? 'called off' : 'not met'
+  const kaelen = f.kaelenKnown ? 'met' : 'not met'
+  const cheated = f.valeriusCheated && !f.cupFailed ? 'yes' : 'no'
   return [
     'END OF CHAPTER TWO',
     `Spire Key: ${key}`,
@@ -828,6 +837,12 @@ export function chapterTwoSummary(f: Record<string, unknown>, items: Record<stri
     `Murch "The Socket": ${murch}${shop}`,
     `Kip and Mara: ${kip}${f.kipDistrust ? ' (trust lost)' : ''}`,
     `${f.millerHeard || f.millerLogged ? 'Greg and Miller' : 'Greg'}: ${greg}`,
+    `Sybella: ${sybella}`,
+    `Ossa: ${ossa}`,
+    `Pike: ${pike}`,
+    `Thalia: ${thalia}`,
+    `Kaelen: ${kaelen}`,
+    `Valerius cheated: ${cheated}`,
     `Chapter Three code: ${CH3_CODE}`,
   ].join('\n\n')
 }

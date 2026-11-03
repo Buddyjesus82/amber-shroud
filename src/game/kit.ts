@@ -45,8 +45,10 @@ export type KitChip = {
   shell?: number
 }
 
-export function gearStat(item: Pick<ItemDef, 'strike' | 'shell'> | null | undefined): string | null {
+export function gearStat(item: (Pick<ItemDef, 'strike' | 'shell'> & { id?: ItemId }) | null | undefined): string | null {
   if (!item) return null
+  // v213: Ossa's Knot is a relic. No Shell readout; it shows a Relic tag and its perk instead.
+  if (item.id === 'ossa_token') return 'Relic'
   if (item.strike != null) return `Strike ${item.strike}`
   if (item.shell != null) return `Shell ${item.shell}`
   return null
