@@ -8,8 +8,8 @@ import type { DoorId, GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 const sw = readFileSync('public/sw.js', 'utf8')
-ok(sw.includes("CACHE = 'amber-shroud-v211'"), 'SW cache v199')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v211'"), 'Build v199')
+ok(sw.includes("CACHE = 'amber-shroud-v212'"), 'SW cache v199')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v212'"), 'Build v199')
 const at = (door: DoorId, sceneId: string, extra: Partial<GameState> = {}, flags: Record<string, unknown> = {}): GameState => {
   const g = newGame(door)
   return { ...g, sceneId, sap: 9, health: 6, ...extra, flags: { ...g.flags, noMasked: true, ...flags } } as GameState
@@ -50,7 +50,7 @@ ok(pick(g, 'back').sceneId === 'thresh:court', 'back to court')
 
 // B. Camp-04 (Prisoner).
 const p = at('prisoner', 'camp:cages', { hubId: 'camp04' })
-for (const id of ['overlook', 'siftline', 'ration', 'genpop']) { const n = walk(p, id); ok(n.sceneId === `camp:${id}` && n.sap === p.sap - 1, `pens → ${id} Sap 1`) }
+for (const id of ['overlook', 'siftline', 'ration', 'genpop']) { const n = walk(p, id); ok(n.sceneId === `camp:${id}` && n.sap === p.sap, `v212: pens → ${id} is free`) }
 ok(walk(at('prisoner', 'camp:valerius', { hubId: 'camp04' }), 'overlook').sceneId === 'camp:overlook', 'overseer → overlook')
 ok(walk(at('prisoner', 'camp:wire', { hubId: 'camp04' }), 'ration').sceneId === 'camp:ration', 'wire → ration')
 const ov = pick(at('prisoner', 'camp:overlook'), 'watch')

@@ -136,6 +136,9 @@ const sybellaCool: Cond = { heatMax: ['seekers', 3] }
 const sybellaHot: Cond = { heatMin: ['seekers', 4] }
 /** Name Sybella: free under Seeker Heat 4; at 4 or more it costs 1 scrip or 1 scrap. */
 function sybellaRows(id: string, label: string, show: Cond, fx: Choice['effects'], scrapCost = 1): Choice[] {
+  // v212: a flat scrap price ignores Heat.
+  if (scrapCost > 1)
+    return [{ id, label, sub: `${scrapCost} scrap.`, show, enable: { itemMin: ['scrap', scrapCost] }, locked: `Needs: ${scrapCost} scrap`, effects: { ...fx, remove: { scrap: scrapCost } } }]
   return [
     { id, label, show: { all: [show, sybellaCool] }, effects: fx },
     { id, label, sub: '1 scrip.', show: { all: [show, sybellaHot] }, enable: { item: 'scrip' }, locked: SYBELLA_RAGS, effects: { ...fx, remove: { scrip: 1 } } },
@@ -479,7 +482,7 @@ Vex stares at the cup on your belt. 'They hung one of those on me once. I think.
     id: 'ch2:v-ribs',
     kind: 'story',
     title: 'The Collapse',
-    body: `Valerius is ahead of you in the ribs, not behind. "She'll know I let you through. Unless I bring you back."`,
+    body: "Valerius's trail turns back toward the inner garrison, leaving the forward path clear.",
     variants: [
       { if: { flag: 'ch2SybellaNamed' }, mode: 'append', body: "'You used her name at the gate. She'll know. So will I.'" },
     ],

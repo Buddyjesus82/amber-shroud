@@ -8,8 +8,8 @@ import { effectPills } from '../src/game/kit.ts'
 import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v211'"), 'SW cache v179')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v211'"), 'Build label v179')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v212'"), 'SW cache v179')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v212'"), 'Build label v179')
 const v = chapterTwoFromCode('vessel')
 ok((v.items.memory_siphon ?? 0) === 1 && v.flags.siphonGot, 'code start grants the Siphon')
 const at = (sceneId: string, extra: Partial<GameState> = {}, flags: object = {}): GameState => ({ ...v, sceneId, ...extra, flags: { ...v.flags, ...flags } }) as GameState
@@ -43,13 +43,14 @@ ok(row({ ...left, sceneId: 'ch2:v-bleed' } as GameState, 'rite'), 'rite still th
 // 2 Name Sybella
 const toll = (heat: number, items: object) => at('ch2:greg-toll', { heat: { ...v.heat, seekers: heat }, items: { ...v.items, ...items } })
 const cool = toll(2, {})
-ok(rows(cool).filter((c) => c.id === 'sybella').length === 1 && !row(cool, 'sybella')!.sub, 'Sybella free under Heat 4')
-const broke = toll(4, { scrip: 0, scrap: 0 })
-const hot = rows(broke).filter((c) => c.id === 'sybella')
-ok(hot.length === 2 && hot.every((c) => !isChoiceOn(broke, c.enable) && (c.locked === SYBELLA_RAGS || c.locked === 'Needs: 3 scrap')), 'Heat 4, no pay: rags line')
-const paid = toll(5, { scrip: 1, scrap: 0 })
-const pr = rows(paid).find((c) => c.id === 'sybella' && c.sub === '1 scrip.')!
-ok(isChoiceOn(paid, pr.enable) && (applyEffect(paid, pr.effects).items.scrip ?? 0) === 0, 'Heat 5: 1 scrip pays')
+for (const h of [2, 4, 5]) {
+  const none = toll(h, { scrip: 1, scrap: 2 })
+  const rs = rows(none).filter((c) => c.id === 'sybella')
+  ok(rs.length === 1 && rs[0].sub === '3 scrap.' && !isChoiceOn(none, rs[0].enable) && rs[0].locked === 'Needs: 3 scrap', `v212: Heat ${h}: the bluff is a flat 3 scrap`)
+  const rich = toll(h, { scrap: 3 })
+  const r3 = rows(rich).find((c) => c.id === 'sybella')!
+  ok(isChoiceOn(rich, r3.enable) && (applyEffect(rich, r3.effects).items.scrap ?? 0) === 0, `v212: Heat ${h}: 3 scrap pays`)
+}
 // 4 fight help
 ok(!fightHelpAuto({ flags: { encounterHere: true } } as any), 'help never opens by itself')
 const help = readFileSync('src/game/helpTopics.ts', 'utf8')
