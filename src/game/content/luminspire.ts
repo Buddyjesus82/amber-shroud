@@ -82,8 +82,7 @@ export const chapterThreeScenes: Scene[] = [
     id: 'ch3:crosshaven',
     kind: 'ending',
     title: 'Crosshaven Fringe',
-    // DRAFT, NEW stub line: awaiting approval.
-    body: 'Chapter Three continues soon.',
+    body: 'The Spire Key is cold against your palm, heavy with stolen brass. Behind you, the horn static of the Citadel perimeter fades into the freezing mist; ahead, the rot and oil-smoke of Crosshaven begin to take shape.',
     choices: [{ id: 'title', label: 'Back to the title', sub: 'Your game is saved.', tone: 'quiet', effects: { flag: { ch3StubSeen: true } } }],
   },
 ]

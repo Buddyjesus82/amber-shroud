@@ -33,5 +33,6 @@ ok(readFileSync('src/version.ts', 'utf8').includes("'v216'") && readFileSync('pu
 ok(coverFor({ ...base, sceneId: 'ch3:wagon', flags: { ch3Helper: 'wren' } } as GameState) === 'ch3_wagon_wren' && coverFor({ ...base, sceneId: 'ch3:wagon', flags: { ch3Helper: 'corvus' } } as GameState) === 'ch3_wagon', 'wren wagon art')
 ok(coverFor({ ...base, sceneId: 'ch3:tent', flags: { wrenPromise: true } } as GameState) === 'ch3_wren_deal', 'wren deal art')
 ok(readFileSync('public/sw.js', 'utf8').includes('covers/ch3-wren-deal.jpg'), 'wren art precached')
+ok(getScene('ch3:crosshaven').body.startsWith('The Spire Key is cold against your palm, heavy with stolen brass.'), 'crosshaven line')
 console.log(fails ? `v216: ${fails} FAIL` : 'v216: all pass')
 process.exit(fails ? 1 : 0)
