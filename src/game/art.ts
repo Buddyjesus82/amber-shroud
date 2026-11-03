@@ -153,6 +153,8 @@ export type CoverKey =
   | 'ch3_vault_fight'
   | 'ch3_vex_fight'
   | 'ch3_ash_fight'
+  | 'ch3_wagon_wren'
+  | 'ch3_wren_deal'
   | 'v205_subdrain'
   | 'v205_oasis'
   | 'p2_rubble'
@@ -322,6 +324,8 @@ const FILES: Record<CoverKey, string> = {
   ch3_vault_fight: 'ch3-vault-fight.jpg',
   ch3_vex_fight: 'ch3-vex-fight.jpg',
   ch3_ash_fight: 'ch3-ash-fight.jpg',
+  ch3_wagon_wren: 'ch3-wagon-wren.jpg',
+  ch3_wren_deal: 'ch3-wren-deal.jpg',
   v205_subdrain: 'sub-drain.jpg',
   v205_oasis: 'oasis-reserve.jpg',
   p2_rubble: 'p2-rubble.jpg',
@@ -526,7 +530,7 @@ export const COVER_BAND: Record<CoverKey, [number, number]> = {
   p1_conduits: [0.08, 0.72],
   p1_parade: [0.08, 0.72],
   v205_breach: [0.08, 0.72],
-  ch3_capture: [0.1, 0.8],
+  ch3_capture: [0.15, 0.9],
   ch3_wagon: [0.1, 0.8],
   ch3_supply: [0.1, 0.8],
   ch3_tent: [0.1, 0.8],
@@ -534,6 +538,8 @@ export const COVER_BAND: Record<CoverKey, [number, number]> = {
   ch3_vault_fight: [0.1, 0.8],
   ch3_vex_fight: [0.05, 0.85],
   ch3_ash_fight: [0.05, 0.85],
+  ch3_wagon_wren: [0.05, 0.75],
+  ch3_wren_deal: [0.05, 0.85],
   v205_subdrain: [0.08, 0.72],
   v205_oasis: [0.08, 0.72],
   p2_rubble: [0.08, 0.72],
@@ -736,6 +742,9 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   if (NEW_PLACE_ART[id]) return NEW_PLACE_ART[id]
   // v206 DRAFT: Chapter Three covers.
   const CH3_ART: Record<string, CoverKey> = { 'ch3:capture': 'ch3_capture', 'ch3:wagon': 'ch3_wagon', 'ch3:supply': 'ch3_supply', 'ch3:tent': 'ch3_tent', 'ch3:crosshaven': 'ch3_crosshaven' }
+  // v216: Wren's own art (from her portrait card) when she is the helper.
+  if (id === 'ch3:wagon' && state.flags.ch3Helper === 'wren') return 'ch3_wagon_wren'
+  if (id === 'ch3:tent' && state.flags.wrenPromise) return 'ch3_wren_deal'
   if (CH3_ART[id]) return CH3_ART[id]
   const CH2_ART: Record<string, CoverKey> = {'ch2:greg-toll': 'greg', 'ch2:gate': 'ch2_s_gate', 'ch2:cache': 'ch2_s_cache', 'ch2:trapped': 'ch2_s_trapped', 'ch2:heart': 'ch2_s_heart', 'ch2:end': 'ch2_s_end', 'ch2:o-abyss': 'ch2_o_abyss', 'ch2:o-bounty': 'ch2_o_bounty', 'ch2:o-cage': 'ch2_o_cage', 'ch2:o-hounds': 'ch2_o_hounds', 'ch2:o-hermit': 'ch2_o_hermit', 'ch2:o-root': 'ch2_o_root', 'ch2:o-stakes': 'ch2_o_stakes', 'ch2:o-stilts': 'ch2_o_stilts', 'ch2:o-strays': 'ch2_o_strays', 'ch2:o-wash': 'ch2_o_wash', 'ch2:p-abyss': 'ch2_p_abyss', 'ch2:p-bays': 'ch2_p_bays', 'ch2:p-bilge': 'ch2_p_bilge', 'ch2:p-haul': 'ch2_p_haul', 'ch2:p-jaws': 'ch2_p_jaws', 'ch2:p-shaft': 'ch2_p_shaft', 'ch2:p-sift': 'ch2_p_sift', 'ch2:v-bleed': 'ch2_v_bleed', 'ch2:v-blown': 'ch2_v_blown', 'ch2:v-garden': 'ch2_v_garden', 'ch2:v-greg': 'ch2_v_greg', 'ch2:v-murch': 'ch2_v_murch', 'ch2:v-outpost': 'ch2_v_outpost', 'ch2:v-ribs': 'ch2_v_ribs', 'ch2:v-scar': 'ch2_v_scar', 'ch2:v-stair': 'ch2_v_stair', 'ch2:v-test': 'ch2_v_test', 'ch2:p-supply': 'ch2_s_p_supply', 'ch2:p-drillrun': 'ch2_s_p_drillrun', 'ch2:survivor': 'ch2_s_survivor', 'ch2:approach': 'ch2_s_approach', 'ch2:ditch': 'ch2_s_ditch', 'ch2:gully': 'ch2_s_gully', 'ch2:irongut': 'ch2_s_irongut', 'ch2:ribs': 'ch2_s_ribs', 'ch2:vein': 'ch2_s_vein'}
   // v179: Valerius has moved on; the test chamber shows the outpost, not him.

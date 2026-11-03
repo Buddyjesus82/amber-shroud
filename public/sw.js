@@ -20,6 +20,8 @@ self.addEventListener('install', (event) => {
         `${SCOPE}covers/ch3-tent.jpg`,
         `${SCOPE}covers/ch3-vex-fight.jpg`,
         `${SCOPE}covers/ch3-ash-fight.jpg`,
+        `${SCOPE}covers/ch3-wagon-wren.jpg`,
+        `${SCOPE}covers/ch3-wren-deal.jpg`,
         `${SCOPE}covers/ch3-crosshaven.jpg`,
         `${SCOPE}covers/ch2-p-supply.jpg`,
         `${SCOPE}covers/ch2-p-drillrun.jpg`,
