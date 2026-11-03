@@ -13,8 +13,8 @@ const pick = (s: GameState, id: string) => visibleChoices(s).find((c) => c.id ==
 const go = (s: GameState, id: string) => { const c = pick(s, id); if (!c) throw new Error(`no choice ${id} at ${s.sceneId}`); return applyEffect(s, c.effects) }
 
 const base = (): GameState => { const g = newGame('prisoner' as never); return { ...g, sceneId: 'ch2:heart', hubId: null, chapterId: 'into-the-maw', sap: 5, items: { ...g.items, spire_key: 1, salve: 2 }, flags: { ...g.flags, noMasked: true, companion: 'orla', companionHp: 3 } } as GameState }
-let s = go(base(), 'continue')
-ok(s.sceneId === 'ch3:capture' && s.flags.chapter2Done, 'ch2 heart flows into ch3 capture')
+let s = go(go(base(), 'continue'), 'continue')
+ok(s.sceneId === 'ch3:capture' && s.flags.chapter2Done, 'ch2 heart -> end card -> ch3 capture')
 for (const how of ['fight', 'run']) {
   const c = go(s, how)
   ok(c.sceneId === 'ch3:wagon', `${how} lands at wagon`)
@@ -44,10 +44,10 @@ ok(!pick({ ...w, flags: { ...w.flags, ch3Helper: 'corvus' } }, 'wren'), 'no wren
 // Forced fight: vex then ash.
 let f = go(w, 'fight')
 ok(f.flags.encounterHere && f.flags.encounterKind === 'vex', 'vex fight opens')
-ok(coverFor(f) === 'ch3_vault_fight', 'fight art')
+ok(coverFor(f) === 'ch3_vex_fight', 'fight art')
 for (const id of ['ch3:capture', 'ch3:wagon', 'ch3:supply', 'ch3:tent', 'ch3:crosshaven']) ok(String(coverFor({ ...w, sceneId: id, flags: {} } as GameState)).startsWith('ch3_'), `art ${id}`)
 const sw = readFileSync('public/sw.js', 'utf8')
-ok(sw.includes('amber-shroud-v206') && sw.includes('covers/ch3-tent.jpg'), 'sw')
+ok(sw.includes('amber-shroud-v216') && sw.includes('covers/ch3-tent.jpg'), 'sw')
 // Win both: strong player, strike until done.
 let g: GameState = { ...f, health: 99, healthMax: 99, items: { ...f.items, valerius_baton: 1 } }
 const kinds: string[] = []

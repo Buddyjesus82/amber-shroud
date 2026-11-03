@@ -53,5 +53,5 @@ for (const d of ['prisoner', 'vessel', 'outcast'] as const) {
   ok(s.sceneId === 'ch2:gate' && s.door === d && s.flags.chapter1Done && s.flags.chapter2Unlocked, `${d} code start at gate`)
 }
 const t = readFileSync('src/components/TitleScreen.tsx', 'utf8')
-ok(t.includes('Chapter code') && readFileSync('src/App.tsx', 'utf8').includes('chapterTwoFromCode'), 'title code box wired')
+ok(!t.includes('Chapter code'), 'title code box removed (v206)')
 if (fails) { console.log(`v172: ${fails} fail`); process.exit(1) } else console.log('v172 ok')
