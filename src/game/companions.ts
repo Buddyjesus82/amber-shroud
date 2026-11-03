@@ -1,3 +1,4 @@
+import { vaultSneakOdds } from './ch3'
 import type { Effect, FlagMap, GameState, ItemId } from './types'
 import { CONDUITS_SPOTTED, RATIONS_SPOTTED } from './content/phase1Camps'
 
@@ -66,7 +67,9 @@ export function companionMaxHp(state: Pick<GameState, 'flags'>): number {
 }
 
 /** Sneak odds after the party: Kelt shaves 1 off every sneak, Orla off the Rations and Conduits sneaks. */
-export function sneakOdds(state: Pick<GameState, 'flags'>, sneak: { odds: number; spotted: string }): number {
+export function sneakOdds(state: Pick<GameState, 'flags'> & { heat?: GameState['heat'] }, sneak: { odds: number; spotted: string; kind?: string }): number {
+  // v206 DRAFT: the Chapter Three vault sneak is solo and reads Seeker Heat.
+  if (sneak.kind === 'vex') return vaultSneakOdds(state.heat?.seekers ?? 0)
   const c = companionOf(state)
   if (!c) return sneak.odds
   if (c.id === 'kelt') return Math.max(0, sneak.odds - 1)

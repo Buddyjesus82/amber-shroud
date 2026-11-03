@@ -71,6 +71,8 @@ export function terrainPool(state: Pick<GameState, 'hubId' | 'sceneId'>): Terrai
 export const OPENERS: Record<EncounterKind, string[]> = {
   masked: [],
   sablewave: [],
+  vex: [],
+  ash: [],
   greg: [],
   dragoon: [],
   seekerpatrol: [],

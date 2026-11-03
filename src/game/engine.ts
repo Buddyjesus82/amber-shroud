@@ -27,6 +27,7 @@ import { isBayScene } from './content/bayHands'
 import { classifyLook, directedLookFlash, pressureLookFlash, roomLookEffect } from './look'
 import { matchCompass, travelGate } from './map'
 import { isChapterReleased } from './chapters'
+import { chapterThreeAfter } from './ch3'
 import { chapterTwoAfter, chapterTwoUnlock, isChapterTwoCode } from './ch2'
 import { CH2_ENTRY, chapterTwoSummary } from './content/intoTheMaw'
 import { ROAD_NOT_NOW, roadChoice, isTravelText, roadPhrase, roadToMaw, roadHome } from './returnRoad'
@@ -752,6 +753,9 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     destScene?.kind === 'crisis' ||
     // Last Fence: a 1-Sap walk on your last Sap arrives at 0; the rescue waits for the next step.
     state.sceneId === 'ch1:p-pipe' ||
+    // v206 DRAFT: Chapter Three opens stripped to Sap 0 on purpose. No Sap collapse on its opening ground.
+    state.sceneId.startsWith('ch3:') ||
+    !!dest?.startsWith('ch3:') ||
     recovering
 
   if (dest) {
@@ -1201,6 +1205,7 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   }
   // v166: Chapter Two upkeep (chapter, checkpoint, fights, drill clock).
   next = chapterTwoAfter(state, next, fx)
+  next = chapterThreeAfter(state, next, fx)
   // v179: the Memory Siphon comes with Chapter Two (Continue at the End of Chapter One card, or the code), every door.
   // v187: keyed on chapter2Unlocked, not chapter1Done, so finishing Chapter One alone does not grant it.
   // v209: new weapons and armor land in an empty slot, so nobody walks into a fight barehanded.
@@ -2361,7 +2366,7 @@ export function restAllowed(state: GameState): boolean {
   }
   // Hubs: place screens. The road (Cache Run): every walking beat, including the people met on it.
   if (sc.kind !== 'place' && !((sc.kind === 'story' || sc.kind === 'talk') && sc.chapterId === 'cache-run')) return false
-  if (id.startsWith('open:') || id.startsWith('roam:') || id.startsWith('ch2:') || id === CHAPTER_ONE_END || id === 'ch1:sybella' || id === 'ch1:storm') return false
+  if (id.startsWith('open:') || id.startsWith('roam:') || id.startsWith('ch2:') || id.startsWith('ch3:') || id === CHAPTER_ONE_END || id === 'ch1:sybella' || id === 'ch1:storm') return false
   if (id.includes('kaelen') || id === 'thresh:sift' || isVendorScene(id)) return false
   if (state.flags.encounterHere || state.flags.hunterHere || state.flags.downed || state.flags.kaelenIntroNow) return false
   if (state.flags.shopShelf || state.flags.rumorShelf) return false

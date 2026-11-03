@@ -5,8 +5,8 @@ import { fightStartFlags, pickEncounterKind, resolveEncounter, encounterSpec, LE
 import { isChapterTwoCode } from '../src/game/ch2.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v215'"), 'SW cache v172')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v215'"), 'Build label v172')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v216'"), 'SW cache v172')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v216'"), 'Build label v172')
 const sw = readFileSync('public/sw.js', 'utf8')
 ok(sw.includes('covers/vat-leech.jpg') && sw.includes('covers/hymn-moth.jpg'), 'covers precached')
 const kinds = (sceneId: string, hubId: string | null, door: 'prisoner' | 'vessel' = 'prisoner') => {
@@ -53,5 +53,5 @@ for (const d of ['prisoner', 'vessel', 'outcast'] as const) {
   ok(s.sceneId === 'ch2:gate' && s.door === d && s.flags.chapter1Done && s.flags.chapter2Unlocked, `${d} code start at gate`)
 }
 const t = readFileSync('src/components/TitleScreen.tsx', 'utf8')
-ok(t.includes('Chapter code') && readFileSync('src/App.tsx', 'utf8').includes('chapterTwoFromCode'), 'title code box wired')
+ok(!t.includes('Chapter code'), 'title code box removed (v206)')
 if (fails) { console.log(`v172: ${fails} fail`); process.exit(1) } else console.log('v172 ok')

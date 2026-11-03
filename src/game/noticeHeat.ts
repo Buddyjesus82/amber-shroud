@@ -41,7 +41,7 @@ const SAFE_SCENES = new Set([
 /** Danger ground only: never trade, Kaelen, rest shade, cutscenes, crises, endings, Down, or a fight or hunt already running. */
 export function noticeGround(state: GameState, opts: { vendor: (id: string) => boolean; kind: (id: string) => string | undefined }): boolean {
   const id = state.sceneId
-  if (!id || id.startsWith('open:') || id.startsWith('crisis:') || id.startsWith('ch2:') || id.startsWith('roam:')) return false
+  if (!id || id.startsWith('open:') || id.startsWith('crisis:') || id.startsWith('ch2:') || id.startsWith('ch3:') || id.startsWith('roam:')) return false
   if (id.includes('kaelen') || id === 'thresh:sift' || SAFE_SCENES.has(id) || opts.vendor(id)) return false
   const k = opts.kind(id)
   if (k === 'crisis' || k === 'ending') return false

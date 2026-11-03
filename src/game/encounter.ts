@@ -12,7 +12,7 @@ export { OVERTIME_LINE, PACK_HOUND_LINE, RIG_GUARDS_LINE } from './v203Lines'
 import type { Choice, Effect, FlagMap, GameState, ItemId } from './types'
 import { hash, OPENERS, sandAnswers, PAIR_LINE, HUSK_CONTROLLER_LINE, sandGripLine, TERRAINS, terrainPool, type Terrain, type TerrainId } from './fightTricks'
 
-export type EncounterKind = 'jackal' | 'cutter' | 'courtguard' | 'tick' | 'pup' | 'scavenger' | 'patrol' | 'handler' | 'hound' | 'overseer' | 'collector' | 'carapace' | 'husk' | 'runner' | 'strayhunter' | 'strayhound' | 'masked' | 'ribworm' | 'greg' | 'dragoon' | 'seekerpatrol' | 'drilllead' | 'leech' | 'moth' | 'thaliaguard' | 'lockboss' | 'rigpatrol' | 'seekerhandler' | 'packhound' | 'skiff' | 'foreman' | 'rigguard' | 'sablewave'
+export type EncounterKind = 'jackal' | 'cutter' | 'courtguard' | 'tick' | 'pup' | 'scavenger' | 'patrol' | 'handler' | 'hound' | 'overseer' | 'collector' | 'carapace' | 'husk' | 'runner' | 'strayhunter' | 'strayhound' | 'masked' | 'ribworm' | 'greg' | 'dragoon' | 'seekerpatrol' | 'drilllead' | 'leech' | 'moth' | 'thaliaguard' | 'lockboss' | 'rigpatrol' | 'seekerhandler' | 'packhound' | 'skiff' | 'foreman' | 'rigguard' | 'sablewave' | 'vex' | 'ash'
 
 export { SABLE_WAVE1, SABLE_WAVE2 } from './encounterLines'
 import { SABLE_WAVE1, SABLE_WAVE2, SABLE_WON_LINE } from './encounterLines'
@@ -184,6 +184,9 @@ const SPECS: Spec[] = [
   { kind: 'carapace', ...CARAPACE_HUNTER.encounter },
   // v205 DRAFT: Sable Varn's trench. Two waves, back to back: one Stray Collector at 3/1/2 each.
   { kind: 'sablewave', name: 'Stray Collector', strike: 3, shell: 1, hp: 2, line: SABLE_WAVE1 },
+  // v206 DRAFT: Chapter Three vault fight, back to back. Stats approved (pt1052u).
+  { kind: 'vex', name: 'Vex Ironhand', strike: 4, shell: 2, hp: 6, line: 'The first: Vex Ironhand.' },
+  { kind: 'ash', name: 'Ash Vane', strike: 4, shell: 3, hp: 5, line: 'The second: Ash Vane steps in behind him.' },
   {
     kind: 'husk',
     name: 'Amber Husk',
@@ -771,7 +774,7 @@ function pocket(state: GameState): number {
  * Fauna pay scrap or sap. People sometimes pay with a knife, a scav wrap, or a cloak.
  */
 /** People carry salve sometimes. Beasts never do. */
-export const HUMAN_KINDS: readonly EncounterKind[] = ['cutter', 'courtguard', 'scavenger', 'patrol', 'handler', 'overseer', 'collector', 'carapace', 'strayhunter', 'strayhound', 'greg', 'dragoon', 'seekerpatrol', 'drilllead', 'thaliaguard', 'lockboss', 'rigpatrol', 'seekerhandler', 'foreman', 'rigguard']
+export const HUMAN_KINDS: readonly EncounterKind[] = ['cutter', 'courtguard', 'scavenger', 'patrol', 'handler', 'overseer', 'collector', 'carapace', 'strayhunter', 'strayhound', 'greg', 'dragoon', 'seekerpatrol', 'drilllead', 'thaliaguard', 'lockboss', 'rigpatrol', 'seekerhandler', 'foreman', 'rigguard', 'vex', 'ash']
 export const BEAST_KINDS: readonly EncounterKind[] = ['jackal', 'tick', 'pup', 'hound', 'ribworm', 'leech', 'moth', 'packhound']
 /** Percent chance a downed human also carries a Resin Salve. */
 export const HUMAN_SALVE_PCT = 18
@@ -993,7 +996,7 @@ function roll(state: GameState, salt: string, n: number): number {
 }
 
 /** Named people: no "the" in front. */
-const PROPER_KINDS: EncounterKind[] = ['overseer', 'carapace', 'greg']
+const PROPER_KINDS: EncounterKind[] = ['overseer', 'carapace', 'greg', 'vex', 'ash']
 /** v209: named as a group: "The Rig Guards hit back". */
 const PLURAL_KINDS: EncounterKind[] = ['rigguard', 'dragoon']
 function sv(spec: Spec, one: string, many: string): string {
@@ -1508,7 +1511,7 @@ function resolveEncounterCore(
       heat: spec.kind === 'hound' ? { cartel: 1 } : handlerWin ? { cartel: 2 } : undefined,
       pressure: dmgIn > 0 ? 1 : undefined,
       // v153: beating the hound or the handler keeps Valerius himself away for 10 quiet scenes (hunts still come).
-      flag: { encounterGrip: grip, ...(spec.kind === 'tick' && add.vial_drop ? { tickDropped: true } : {}), ...Object.fromEntries(ONCE_GEAR.filter((id) => add[id]).map((id) => [gearDropFlag(id), true])), ...(handlerWin ? { handlerInjured: true } : {}), ...(handlerWin || spec.kind === 'hound' ? { valeriusRest: true, valeriusQuiet: 0 } : {}), ...(state.sceneId === 'thresh:court-guard' && spec.kind === 'courtguard' ? { crucibleGuardBeaten: true } : {}), ...(spec.kind === 'sablewave' && f.sableFight ? { sableWon: true } : {}), ...(spec.kind === 'strayhunter' || spec.kind === 'strayhound' ? { strayLooted: true } : {}) },
+      flag: { encounterGrip: grip, ...(spec.kind === 'tick' && add.vial_drop ? { tickDropped: true } : {}), ...Object.fromEntries(ONCE_GEAR.filter((id) => add[id]).map((id) => [gearDropFlag(id), true])), ...(handlerWin ? { handlerInjured: true } : {}), ...(handlerWin || spec.kind === 'hound' ? { valeriusRest: true, valeriusQuiet: 0 } : {}), ...(state.sceneId === 'thresh:court-guard' && spec.kind === 'courtguard' ? { crucibleGuardBeaten: true } : {}), ...(spec.kind === 'sablewave' && f.sableFight ? { sableWon: true } : {}), ...(spec.kind === 'vex' ? { ch3VexWon: true } : {}), ...(spec.kind === 'ash' ? { ch3AshWon: true } : {}), ...(spec.kind === 'strayhunter' || spec.kind === 'strayhound' ? { strayLooted: true } : {}) },
     })
   }
 
