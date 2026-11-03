@@ -1,3 +1,4 @@
+import { kaelenNamed } from '../roads'
 import { SPARE_SAP_LOCK } from '../sapLock'
 import { HEAVY_TOOL, VEIN_KEY, VEIN_LOCKED, VEIN_LOCKED_NO_SHIM, hiddenExitChoice, tunnelsEntry } from './newPlaces'
 import type { Choice, Cond, DoorId, Scene } from '../types'
@@ -297,7 +298,9 @@ Vex looks at the tags on you, then at your shaved head. 'Pens. They tagged me to
       ...gregWarn({ id: 'reckon', label: 'Face Greg at the cage', tone: 'danger', show: { all: [reckonDue, { flagUnset: 'spireKey' }] }, effects: { flag: { ch2Fight: 'reckoning', gregStanding: 'hostile' }, ambush: { kind: 'greg', line: "'Pen stock riding Miller's lift. He'll want to watch.'" } } }),
       { id: 'ride', label: 'Ride it down', tone: 'hunger', show: { all: [{ flag: 'murchScrap' }, { not: reckonDue }] }, effects: { ticks: 1, flag: { ch2LiftRoll: true }, goto: 'ch2:cache' } },
       { id: 'vex', label: 'Let Vex lead down the dead stops', sub: '1 Sap.', tone: 'hunger', show: { all: [{ flagUnset: 'murchScrap' }, { flag: 'vexFreed' }, { not: reckonDue }] }, effects: { ticks: 1, sap: -1, flag: { vexLed: true }, goto: 'ch2:cache' } },
-      { id: 'sealed', label: 'Try the cage', tone: 'quiet', show: { all: [{ flagUnset: 'murchScrap' }, { flagUnset: 'vexFreed' }] }, effects: { goto: 'ch2:trapped' } },
+      // v214: the cage stays hidden until Murch's lift motor is paid. Unpaid, the way back to his bays stays open.
+      { id: 'back', label: 'Back to the bays', tone: 'quiet', show: { all: [{ flagUnset: 'murchScrap' }, { flagUnset: 'vexFreed' }, { flagUnset: 'murchAbandoned' }] }, effects: { goto: 'ch2:p-bays' } },
+      { id: 'sealed', label: 'Try the cage', tone: 'quiet', show: { all: [{ flagUnset: 'murchScrap' }, { flagUnset: 'vexFreed' }, { flag: 'murchAbandoned' }] }, effects: { goto: 'ch2:trapped' } },
     ],
   },
   {
@@ -652,7 +655,8 @@ Off the road, smoke rises from a drainage ditch.`,
     kind: 'story',
     title: 'The Main Gate',
     body: GREG_TOLL_BODY,
-    variants: [{ if: { door: 'prisoner' }, mode: 'append', body: GREG_TOLL_PENS }],
+    // v214: Greg dead, the gate is only its horn. The lines about him on his platform are cut (no new text).
+    variants: [{ if: { door: 'prisoner' }, mode: 'append', body: GREG_TOLL_PENS }, { if: { flag: 'gregDead' }, body: 'Horn static, then a long low whistle.' }],
     choices: [
       { id: 'iron', label: GREG_TOLL_IRON, sub: '15 scrap.', show: GREG_OPEN, enable: { itemMin: ['scrap', 15] }, locked: 'Needs: 15 scrap', effects: { remove: { scrap: 15 }, flag: { gregStanding: 'paid' }, goto: 'ch2:irongut', flash: 'The winch opens the gate.' } },
       { id: 'resin', label: GREG_TOLL_RESIN, sub: '2 vials.', show: GREG_OPEN, enable: { itemMin: ['vial_drop', 2] }, locked: 'Needs: 2 vials', effects: { remove: { vial_drop: 2 }, flag: { gregStanding: 'paid' }, goto: 'ch2:irongut', flash: 'Greg checks the seals and waves you through.' } },
@@ -827,7 +831,9 @@ export function chapterTwoSummary(f: Record<string, unknown>, items: Record<stri
   const ossa = f.ossaRobbed ? 'robbed' : f.ossaAlly ? 'ally' : f.ossaMet ? 'met' : 'not met'
   const pike = f.bayPikeTook ? 'took from his bay' : 'left alone'
   const thalia = f.thaliaFavor ? 'favor taken' : f.thaliaCalledOff ? 'called off' : 'not met'
-  const kaelen = f.kaelenKnown ? 'met' : 'not met'
+  // v214: the row says Kaelen once his name is learned, the trader before.
+  const kaelenLabel = kaelenNamed(f) ? 'Kaelen' : 'The trader'
+  const kaelen = f.kaelenKnown || f.metKaelen ? 'met' : 'not met'
   const cheated = f.valeriusCheated && !f.cupFailed ? 'yes' : 'no'
   return [
     'END OF CHAPTER TWO',
@@ -841,7 +847,7 @@ export function chapterTwoSummary(f: Record<string, unknown>, items: Record<stri
     `Ossa: ${ossa}`,
     `Pike: ${pike}`,
     `Thalia: ${thalia}`,
-    `Kaelen: ${kaelen}`,
+    `${kaelenLabel}: ${kaelen}`,
     `Valerius cheated: ${cheated}`,
     `Chapter Three code: ${CH3_CODE}`,
   ].join('\n\n')

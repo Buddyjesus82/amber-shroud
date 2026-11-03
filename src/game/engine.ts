@@ -2521,8 +2521,7 @@ export function equipBlock(state: GameState, id: ItemId, slot: EquipSlot): strin
     if (slot === 'offhand') return 'The Off hand takes a short blade, a club, or a shield.'
     return `${def.name} goes in the ${SLOT_LABEL[def.slot]} slot.`
   }
-  const other: EquipSlot | null = slot === 'weapon' ? 'offhand' : slot === 'offhand' ? 'weapon' : null
-  if (other && state.equipped?.[other] === id && (state.items[id] ?? 0) < 2) return `Your only ${def.name} is already in the other hand.`
+  // v214: your only one in the other hand is moved across by equipItem, not blocked.
   return null
 }
 
@@ -2532,6 +2531,9 @@ export function equipItem(state: GameState, id: ItemId, slot?: EquipSlot): GameS
   const block = to ? equipBlock(state, id, to) : 'That does not wear. Carry it.'
   if (block || !to || !def) return persist({ ...state, flash: block ?? 'That does not wear. Carry it.' })
   const equipped = { ...(state.equipped ?? {}), [to]: id }
+  // v214: your only one already in the other hand moves across (Shock Baton from Off hand to Main hand).
+  const other: EquipSlot | null = to === 'weapon' ? 'offhand' : to === 'offhand' ? 'weapon' : null
+  if (other && equipped[other] === id && (state.items[id] ?? 0) < 2) delete equipped[other]
   return persist({
     ...state,
     equipped,

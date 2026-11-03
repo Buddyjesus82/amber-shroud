@@ -155,6 +155,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
   const prevHeat = useRef(state.heat)
   const prevToastScene = useRef(state.sceneId)
   const toastTimer = useRef<number | undefined>(undefined)
+  const toastAt = useRef(0)
   // No Map in the Crucible Chambers: the only way up is the stairs.
   // Map on every hub and road screen, but not in a crisis, a fight, Down, or the Crucible Chambers (the only way up is the stairs).
   const showNav =
@@ -237,6 +238,9 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
   }, [state.sceneId, state.flash, heldRaw])
   function continueOn() {
     setHeld(null)
+    // v214: the Heat banner belongs to the result it came with. Continue leaves both behind (Rig into The Stairs).
+    window.clearTimeout(toastTimer.current)
+    setToast(null)
     onChange({ ...state, flash: undefined })
   }
   const coverKey = playCoverKey(state, scene)
@@ -430,10 +434,12 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     const moved = prevToastScene.current !== state.sceneId
     prevToastScene.current = state.sceneId
     // v213: a Heat banner belongs to the scene it fired in. A new action must not cancel its timer and strand it.
+    // v214: a follow-up step of the same action (arrival, a ruse fight) must not wipe the banner it just raised.
     if (!bits.length) {
-      if (moved) setToast(null)
+      if (moved && Date.now() - toastAt.current > 900) setToast(null)
       return
     }
+    toastAt.current = Date.now()
     setToast(bits.join(' '))
     window.clearTimeout(toastTimer.current)
     toastTimer.current = window.setTimeout(() => setToast(null), 3200)

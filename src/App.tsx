@@ -112,9 +112,10 @@ export default function App() {
         state={state}
         onChange={onChange}
         onTitle={() => {
-          void flushSave(state)
+          // v214: refresh after the write lands, so the title and door picker never show the pre-overwrite save.
           refreshSaves()
           setView('title')
+          void flushSave(state).then(() => refreshSaves())
         }}
         savedCue={savedCue}
         saveToast={saveToast}

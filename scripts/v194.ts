@@ -4,8 +4,8 @@ import { applyEffect, interpret, newGame, visibleChoices, WIRE_BLOCKED } from '.
 import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v213'"), 'SW cache v194')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v213'"), 'Build label v194')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v214'"), 'SW cache v194')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v214'"), 'Build label v194')
 ok(WIRE_BLOCKED === "The Overseer's tower is still live—searchlights cut the sand to ribbons. You can't break the wire until that station is dropped.", 'block line verbatim')
 const at = (sceneId: string, flags: Record<string, unknown>): GameState => {
   const g = newGame('prisoner')
