@@ -22,7 +22,7 @@ function edgeSap(map: HubMapDef, a: string, b: string, state: GameState): number
 }
 
 function subFor(mine: boolean, sap: number | null): string {
-  return mine ? 'you' : sap ? `−${sap} sap` : 'far'
+  return mine ? 'you' : sap ? `−${sap} sap` : sap === 0 ? '' : 'far'
 }
 
 type Props = {
