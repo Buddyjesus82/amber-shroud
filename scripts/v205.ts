@@ -55,6 +55,11 @@ for (let i = 0; i < 30 && sb.flags.encounterHere && !sb.flags.sableWon && sb.hea
 ok(sb.flags.sableWon && sb.flags.sableWave === 2, 'both waves down')
 ok(String(sb.flags.encounterClash).includes('Nice footwork.'), 'sable win line'); sb = go(sb, 'enc-continue')
 ok(pick(sb, 'sable_recruit'), 'sable recruit after win')
+// Played through the rows (Fight / On.), wave 2 opens and the win sticks: no loop back to Stand Together.
+{ let u = go(at('prisoner', 'spine:sable', { health: 6 }), 'sable_stand')
+  for (let i = 0; i < 40 && !u.flags.sableWon; i++) { u = { ...u, health: u.healthMax }; u = go(u, pick(u, 'enc-continue') ? 'enc-continue' : 'enc-fight') }
+  ok(u.flags.sableWon && String(u.flags.encounterClash).includes('Nice footwork.'), 'row path wins both waves')
+  u = go(u, 'enc-continue'); ok(pick(u, 'sable_recruit') && !pick(u, 'sable_stand') && !pick(u, 'sable_refuse'), 'no loop, no coward after a win') }
 const ref = go(go(at('outcast', 'spine:shattered'), 'sable'), 'sable_refuse')
 ok(ref.flags.sableRefused && !pick(ref, 'sable'), 'refuse locks')
 
@@ -111,6 +116,6 @@ ok(k.flags.keltStatus === 'failed' && k.items.damaged_data_cylinder === 1 && k.f
 const pr = go(go(at('vessel', 'thresh:conduits'), 'breach'), 'pry')
 ok(pr.items.sealed_data_cylinder === 1 && pr.flags.keltStatus === 'failed', 'pry')
 
-ok(readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v214'") && readFileSync('src/version.ts', 'utf8').includes("'v214'"), 'v205 bump')
+ok(readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v215'") && readFileSync('src/version.ts', 'utf8').includes("'v215'"), 'v205 bump')
 console.log(fails ? `v205: ${fails} FAIL` : 'v205: all ok')
 process.exit(fails ? 1 : 0)
