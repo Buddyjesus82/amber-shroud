@@ -573,6 +573,11 @@ export function encounterChoices(state: GameState): Choice[] {
       return [{ id: 'enc-continue', label: 'Into the Court.', tone: 'quiet', effects: { ...dismissEncounter(state), goto: 'thresh:court' } }]
     }
     const base = dismissEncounter(state)
+    // Sable's trench: wave 1 down, wave 2 has not opened yet. The ambush on the fight's result is never
+    // started (the encounter was still open), so On. opens the second wave instead of ending the fight.
+    if (state.flags.encounterKind === 'sablewave' && state.flags.sableWave === 2 && !state.flags.sableWon && (state.health ?? 1) > 0) {
+      return [{ id: 'enc-continue', label: 'On.', tone: 'danger', effects: { ...base, ambush: { kind: 'sablewave', line: SABLE_WAVE2 } } }]
+    }
     return [
       {
         id: 'enc-continue',
