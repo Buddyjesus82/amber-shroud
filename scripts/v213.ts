@@ -9,10 +9,10 @@ import type { GameState } from '../src/game/types'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL ' + m) } }
 ok(RUN_OVER_FLASH.includes(RUN_OVER_GEAR_LOST) && RUN_OVER_GEAR_LOST === 'Gear found this chapter is lost.', 'restart line')
-const card = chapterTwoSummary({ sybellaBargain: true, ossaAlly: true, bayPikeTook: true, thaliaFavor: true, kaelenKnown: true, valeriusCheated: true }, {})
+const card = chapterTwoSummary({ sybellaBargain: true, ossaAlly: true, bayPikeTook: true, thaliaFavor: true, kaelenKnown: true, kaelenIntroSeen: true, valeriusCheated: true }, {})
 for (const l of ['Sybella: bargain struck', 'Ossa: ally', 'Pike: took from his bay', 'Thalia: favor taken', 'Kaelen: met', 'Valerius cheated: yes']) ok(card.includes(l), 'card ' + l)
 ok(chapterTwoSummary({}, {}).includes('Valerius cheated: no'), 'card default no')
-ok(gearStat(ITEMS.ossa_token) === 'Relic' && !!ITEMS.ossa_token.perk, 'Knot is a Relic')
+ok(gearStat(ITEMS.ossa_token) === 'Relic: Ancient Ward' && !!ITEMS.ossa_token.perk, 'Knot is a Relic')
 ok(gearStat(ITEMS.knotted_wrap) === 'Shell 1', 'wrap keeps Shell 1')
 // Greg dead: no Greg fight rows anywhere.
 const gregRows = (s: GameState) => visibleChoices(s).filter((c) => c.effects.ambush?.kind === 'greg')

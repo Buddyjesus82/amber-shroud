@@ -2744,7 +2744,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v213'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v214'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(!sw.includes('covers/camp04.jpg') && sw.includes('covers/yard.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -4265,7 +4265,7 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(!!GE.equipBlock(g, 'scrap_buckler', 'weapon'), 'shield cannot go in the main hand')
   assert(!GE.equipBlock(g, 'wrench', 'offhand'), 'v134: the wrench goes in the off hand like the other club and blade weapons')
   g = equipItem(g, 'needle_knife', 'weapon')
-  assert(!!GE.equipBlock(g, 'needle_knife', 'offhand'), 'one copy cannot be in both hands')
+  { const mv = equipItem(g, 'needle_knife', 'offhand'); assert(mv.equipped.offhand === 'needle_knife' && !mv.equipped.weapon, 'v214: one copy moves between hands, never in both') }
   const mainOnly = GK.equippedStrike(g)
   g = equipItem(g, 'shiv', 'offhand')
   assert(GK.equippedStrike(g) === mainOnly + 1, 'off-hand blade adds 1 Strike')
@@ -6757,7 +6757,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   assert(K.equippedStrike(own({ wrench: 1, needle_knife: 1 }, { weapon: 'wrench', offhand: 'needle_knife' })) === 4, 'v134: wrench main, Needle Knife off hand: 3 + 1')
   assert(K.equippedShell(own({ wrench: 1 }, { offhand: 'wrench' })) === 0, 'v134: the wrench never adds Shell')
   const solo = own({ wrench: 1, shiv: 1 }, { weapon: 'wrench' })
-  assert(!equipItem(solo, 'wrench', 'offhand').equipped?.offhand, 'v134: one wrench cannot be in both hands')
+  { const mv = equipItem(solo, 'wrench', 'offhand'); assert(mv.equipped?.offhand === 'wrench' && mv.equipped?.weapon !== 'wrench', 'v214: one wrench moves hands, never in both') }
   const offed = equipItem(own({ wrench: 1, shiv: 1 }, { weapon: 'shiv' }), 'wrench', 'offhand')
   assert(offed.equipped?.offhand === 'wrench' && offed.flash === 'Oversized Wrench in the off hand.', 'v134: equip the wrench in the off hand')
   assert(equipItem(own({ wrench: 2 }, { weapon: 'wrench' }), 'wrench', 'offhand').equipped?.offhand === 'wrench', 'v134: two wrenches fill both hands')

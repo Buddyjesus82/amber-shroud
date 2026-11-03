@@ -26,6 +26,7 @@ import {
   wornCount,
   type GearTab,
   type KitChip,
+  KNOT_TAG,
 } from '../game/kit'
 import { ITEMS } from '../game/content/catalog'
 import type { EquipSlot, GameState, ItemId } from '../game/types'
@@ -116,7 +117,7 @@ function WornTab({ state, chips, onChange }: { state: GameState; chips: KitChip[
       <div className="body-grid" aria-label="Worn slots">
         {LAYOUT.map((slot, i) =>
           slot ? (
-            <Slot key={slot} state={state} slot={slot} onClear={() => onChange(unequipSlot(state, slot))} />
+            <Slot key={slot} state={state} slot={slot} onClear={() => onChange(unequipSlot(state, slot))} onMove={(to) => { const id = state.equipped?.[slot]; if (id) onChange(equipItem(state, id, to)) }} />
           ) : (
             <div key={`gap-${i}`} className="equip-slot gap" aria-hidden="true" />
           ),
@@ -176,7 +177,7 @@ function WornTab({ state, chips, onChange }: { state: GameState; chips: KitChip[
   )
 }
 
-function Slot({ state, slot, onClear }: { state: GameState; slot: EquipSlot; onClear: () => void }) {
+function Slot({ state, slot, onClear, onMove }: { state: GameState; slot: EquipSlot; onClear: () => void; onMove?: (to: EquipSlot) => void }) {
   const id = state.equipped?.[slot]
   const item = id ? ITEMS[id] : null
   const stat = slot === 'offhand' && item && item.offhand !== 'shield' ? 'Strike +1' : gearStat(item)
@@ -187,6 +188,11 @@ function Slot({ state, slot, onClear }: { state: GameState; slot: EquipSlot; onC
         {slot === 'offhand' && id === 'needle_knife' ? 'Parry Blade' : (item?.name ?? 'Empty')}
         {stat ? <span className="gear-stat">{stat}</span> : null}
       </strong>
+      {item && id && (slot === 'weapon' || slot === 'offhand') && slotsFor(id).length > 1 && onMove ? (
+        <button type="button" className="btn btn-tiny equip-btn" onClick={() => onMove(slot === 'weapon' ? 'offhand' : 'weapon')}>
+          {SLOT_LABEL[slot === 'weapon' ? 'offhand' : 'weapon']}
+        </button>
+      ) : null}
       {item ? (
         <button type="button" className="btn btn-tiny btn-ghost unequip-btn" onClick={onClear}>
           Unequip
@@ -231,10 +237,10 @@ function ListTab({
                   {c.name}
                   {c.n > 1 || c.id === 'scrap' ? ` ×${c.n}` : ''}
                   {slotNote(state, c.id)}
-                  {gearStat(c) === 'Relic' ? <span className="gear-stat relic-tag">Relic</span> : null}
+                  {gearStat(c) === KNOT_TAG ? <span className="gear-stat relic-tag">{KNOT_TAG}</span> : null}
                 </strong>
                 <span>{c.desc}</span>
-                {gearStat(c) === 'Relic' && ITEMS[c.id].perk ? <span>{ITEMS[c.id].perk}</span> : null}
+                {gearStat(c) === KNOT_TAG && ITEMS[c.id].perk ? <span>{ITEMS[c.id].perk}</span> : null}
               </div>
               <div className="item-acts">
                 {c.n > wornCount(state, c.id)
