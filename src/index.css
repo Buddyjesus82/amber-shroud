@@ -782,7 +782,9 @@ h2 {
 }
 
 .unequip-btn {
-  margin-top: 0.2rem;
+  margin-top: 0.6rem;
+  border: 1px dashed #b8735f;
+  color: #ffb199;
   min-height: 40px;
   width: 100%;
   font-size: 0.95rem;
@@ -2316,3 +2318,19 @@ h2 {
 .party-body { display: flex; flex-direction: column; gap: 2px; font-size: 0.82rem; line-height: 1.2; }
 .party-stats { opacity: 0.85; }
 .party-ask { display: flex; gap: 12px; }
+
+/* v213: Equip and Unequip look different and sit apart, so one cannot be tapped for the other. */
+.equip-btn {
+  background: #3d5a3a;
+  border: 1px solid #8fbf7f;
+  color: #eaf6e2;
+  font-weight: 700;
+  min-height: 36px;
+}
+.item-acts .equip-btn + .equip-btn,
+.item-acts .equip-btn + * {
+  margin-top: 0.4rem;
+}
+.relic-tag {
+  margin-left: 0.4rem;
+}

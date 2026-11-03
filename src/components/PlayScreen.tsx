@@ -153,6 +153,8 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
   // A held result only covers the exact state it was made for. Walking on by Map must not carry it along.
   const held = heldRaw && heldRaw.stamp === heldStamp(state) ? heldRaw : null
   const prevHeat = useRef(state.heat)
+  const prevToastScene = useRef(state.sceneId)
+  const toastTimer = useRef<number | undefined>(undefined)
   // No Map in the Crucible Chambers: the only way up is the stairs.
   // Map on every hub and road screen, but not in a crisis, a fight, Down, or the Crucible Chambers (the only way up is the stairs).
   const showNav =
@@ -425,11 +427,18 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
       if (d > 0) bits.push(heatRiseLine(f, d, state.door))
     }
     prevHeat.current = state.heat
-    if (!bits.length) return
+    const moved = prevToastScene.current !== state.sceneId
+    prevToastScene.current = state.sceneId
+    // v213: a Heat banner belongs to the scene it fired in. A new action must not cancel its timer and strand it.
+    if (!bits.length) {
+      if (moved) setToast(null)
+      return
+    }
     setToast(bits.join(' '))
-    const t = window.setTimeout(() => setToast(null), 3200)
-    return () => window.clearTimeout(t)
-  }, [state.heat, state.updatedAt, state.door])
+    window.clearTimeout(toastTimer.current)
+    toastTimer.current = window.setTimeout(() => setToast(null), 3200)
+  }, [state.heat, state.updatedAt, state.door, state.sceneId])
+  useEffect(() => () => window.clearTimeout(toastTimer.current), [])
 
   function submitIntent() {
     const t = draft.trim()

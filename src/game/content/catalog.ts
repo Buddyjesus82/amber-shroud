@@ -65,6 +65,7 @@ export const ITEMS: Record<ItemId, ItemDef> = {
     name: "Ossa's Knot",
     kind: 'gear',
     slot: 'head',
+    perk: 'The Knot at your brow: Strays who know Ossa let some of that go.',
     desc: 'Stilt-cord knotted twice. A headband. She is alive. She remembers.',
   },
   knotted_wrap: {

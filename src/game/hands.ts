@@ -9,7 +9,8 @@ export const RUN_OVER_NOTE = 'You collapse. Too hurt to fight. The ground keeps 
 export const RUN_OVER_SAP_NOTE = 'Sap hits zero like a light going out. The ground keeps you. No hand is left to take.'
 export const RUN_OVER_LABEL = 'Start the chapter again'
 export const RUN_OVER_SUB = 'Back to where this chapter began. Earlier chapters stay.'
-export const RUN_OVER_FLASH = `The chapter starts again. Hands: ${HANDS_MAX}.`
+export const RUN_OVER_GEAR_LOST = 'Gear found this chapter is lost.'
+export const RUN_OVER_FLASH = `The chapter starts again. Hands: ${HANDS_MAX}. ${RUN_OVER_GEAR_LOST}`
 
 export function handsLeft(state: Pick<GameState, 'hands'>): number {
   const n = state.hands
