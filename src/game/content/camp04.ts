@@ -1,5 +1,6 @@
 import { cartelEntry } from './phase1Camps'
 import { campPlaceChoices } from './newPlaces'
+export const PENS_STASH = "Under a loose plank by the cell door, someone's left a wrapped cloth. Two Sap vials, still sealed."
 import { FENCE_HOLE_BACK, HEAR_PLAN, PLAN_HEARD, PLAN_UNHEARD, TAKE_INSIDE_JOB } from '../campJob'
 import type { Cond, Scene } from '../types'
 
@@ -375,9 +376,18 @@ He is the one who can break you out. He hotwires Ironclad Skiff-Striders, and he
         },
       },
       {
+        // v212: one-time stash on the way out of the cell.
         id: 'yard',
         label: 'Walk the Blood Yard',
         sub: 'The vats and the steam are out there. Costs sap. The camp is bigger than this cage.',
+        show: { flagUnset: 'pensStash' },
+        effects: { goto: 'camp:yard', ticks: 1, sap: -1, add: { vial_drop: 2 }, flag: { pensStash: true }, flash: PENS_STASH },
+      },
+      {
+        id: 'yard',
+        label: 'Walk the Blood Yard',
+        sub: 'The vats and the steam are out there. Costs sap. The camp is bigger than this cage.',
+        show: { flag: 'pensStash' },
         effects: { goto: 'camp:yard', ticks: 1, sap: -1 },
       },
       {
@@ -657,7 +667,7 @@ He taps the brass. "If you need supplies, see Kaelen the Sifter at the Wire. Jit
         label: 'Take the inside job. Take the oversized wrench.',
         sub: 'Sabotage the guard station. He hotwires. A trader at the Wire sells the rest.',
         show: { all: [{ all: [{ flagUnset: 'jaxsonInside' }, PLAN_HEARD] }, JAX_HERE] },
-        effects: { ...TAKE_INSIDE_JOB, goto: 'camp:lean' },
+        effects: { ...TAKE_INSIDE_JOB, goto: 'camp:cages' },
       },
       {
         id: 'ask-guard',
@@ -697,7 +707,7 @@ He taps the brass. "If you need supplies, see Kaelen the Sifter at the Wire. Jit
         effects: {
           ticks: 1,
           pressure: 1,
-          goto: 'camp:lean',
+          goto: 'camp:cages',
           flash: '"Guard Station is north, under the Overseer\'s tower. Blood Yard, then the Steam Vents, then the west vent. Skiff Bay is one road east of the station. I will be under the hull."',
         },
       },
@@ -782,7 +792,7 @@ He taps the brass. "If you need supplies, see Kaelen the Sifter at the Wire. Jit
         tags: ['hotwire', 'strider', 'runner', 'inside', 'wrench', 'job'],
         show: { all: [{ all: [{ flagUnset: 'jaxsonInside' }, PLAN_HEARD] }, JAX_HERE] },
         reply: TAKE_INSIDE_JOB.flash ?? '',
-        effects: { ...TAKE_INSIDE_JOB, goto: 'camp:lean' },
+        effects: { ...TAKE_INSIDE_JOB, goto: 'camp:cages' },
       },
       {
         tags: ['sabotage', 'guard', 'station', 'vent', 'bolt'],

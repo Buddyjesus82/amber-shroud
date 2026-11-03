@@ -50,12 +50,14 @@ export const tunnelsEntry = (ch2: boolean): Choice => ({
 
 export const campPlaceChoices = (from: 'cages' | 'valerius' | 'wire'): Choice[] => {
   const road = (id: string, label: string, goto: string): Choice => ({ id, label, sub: '1 Sap.', effects: { sap: -1, goto } })
+  // v212: moving between Pens spots is free; Sap is for actions and for leaving the Pens.
+  const free = (id: string, label: string, goto: string): Choice => ({ id, label, effects: { goto } })
   if (from === 'cages')
     return [
-      road('overlook', "Warden's Overlook", 'camp:overlook'),
-      road('siftline', 'Resin Sift Line', 'camp:siftline'),
-      road('ration', 'Ration Line', 'camp:ration'),
-      road('genpop', 'General Population Pens', 'camp:genpop'),
+      free('overlook', "Warden's Overlook", 'camp:overlook'),
+      free('siftline', 'Resin Sift Line', 'camp:siftline'),
+      free('ration', 'Ration Line', 'camp:ration'),
+      free('genpop', 'General Population Pens', 'camp:genpop'),
     ]
   if (from === 'valerius') return [road('overlook', "Warden's Overlook", 'camp:overlook')]
   return [road('ration', 'Ration Line', 'camp:ration')]
@@ -118,7 +120,7 @@ export const newPlaceScenes: Scene[] = [
     body: 'The Overlook watches the pens. Nothing in the yard moves unseen.',
     choices: [
       { id: 'watch', label: 'Watch the guard rotation', sub: 'Cartel Heat +1.', tone: 'danger', show: { flagUnset: 'guardRotation' }, effects: { heat: { cartel: 1 }, flag: { guardRotation: true } } },
-      { id: 'pens', label: 'Holding Pens', sub: '1 Sap.', tone: 'quiet', effects: { ...sapRoad(1), goto: 'camp:cages' } },
+      { id: 'pens', label: 'Holding Pens', tone: 'quiet', effects: { goto: 'camp:cages' } },
       { id: 'overseer', label: 'Overseer', sub: '1 Sap.', tone: 'quiet', effects: { ...sapRoad(1), goto: 'camp:valerius' } },
     ],
   },
@@ -138,7 +140,7 @@ export const newPlaceScenes: Scene[] = [
         show: { all: [{ door: 'prisoner' }, { flag: 'kaelenKnown' }, { flagUnset: 'kaelenJob' }, { flagUnset: 'chapter1Done' }] },
         effects: { sap: -2, heat: { cartel: 1 }, flag: { kaelenJob: true }, goto: 'camp:jammed' },
       },
-      { id: 'pens', label: 'Holding Pens', sub: '1 Sap.', tone: 'quiet', effects: { ...sapRoad(1), goto: 'camp:cages' } },
+      { id: 'pens', label: 'Holding Pens', tone: 'quiet', effects: { goto: 'camp:cages' } },
     ],
   },
   {
@@ -158,7 +160,7 @@ export const newPlaceScenes: Scene[] = [
     choices: [
       { id: 'eat', label: 'Take the ration', show: { flag: 'siftWorked' }, effects: { health: 1, unsetFlag: ['siftWorked'] } },
       { id: 'eat-none', label: 'Take the ration', sub: 'No quota, no bowl.', show: { flagUnset: 'siftWorked' }, enable: { flag: 'siftWorked' }, locked: 'No quota, no bowl.', effects: {} },
-      { id: 'pens', label: 'Holding Pens', sub: '1 Sap.', tone: 'quiet', effects: { ...sapRoad(1), goto: 'camp:cages' } },
+      { id: 'pens', label: 'Holding Pens', tone: 'quiet', effects: { goto: 'camp:cages' } },
       { id: 'wire', label: 'The Wire', sub: '1 Sap.', tone: 'quiet', effects: { ...sapRoad(1), goto: 'camp:wire' } },
     ],
   },
@@ -168,7 +170,7 @@ export const newPlaceScenes: Scene[] = [
     kind: 'story',
     title: 'General Population Pens',
     body: 'General Population. Labor quotas on every post.',
-    choices: [{ id: 'pens', label: 'Holding Pens', sub: '1 Sap.', tone: 'quiet', effects: { ...sapRoad(1), goto: 'camp:cages' } }],
+    choices: [{ id: 'pens', label: 'Holding Pens', tone: 'quiet', effects: { goto: 'camp:cages' } }],
   },
   // C. Spine
   {
