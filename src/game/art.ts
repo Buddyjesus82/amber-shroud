@@ -139,6 +139,7 @@ export type CoverKey =
   | 'p1_log_vents'
   | 'p1_log_deck'
   | 'p1_dugouts'
+  | 'p1_sable_tent'
   | 'p1_skimmer'
   | 'p1_dusteye'
   | 'p1_echo_gate'
@@ -310,6 +311,8 @@ const FILES: Record<CoverKey, string> = {
   p1_log_vents: 'p1-log-vents.jpg',
   p1_log_deck: 'p1-log-deck.jpg',
   p1_dugouts: 'p1-dugouts.jpg',
+  // v219: Sable Varn's tent on the Spine, her own scene art (not the well).
+  p1_sable_tent: 'p1-sable-tent.jpg',
   p1_skimmer: 'p1-skimmer.jpg',
   p1_dusteye: 'p1-dusteye.jpg',
   p1_echo_gate: 'p1-echo-gate.jpg',
@@ -524,6 +527,8 @@ export const COVER_BAND: Record<CoverKey, [number, number]> = {
   p1_log_vents: [0.08, 0.72],
   p1_log_deck: [0.08, 0.72],
   p1_dugouts: [0.08, 0.72],
+  // Her face to the blade and the ember.
+  p1_sable_tent: [0.12, 0.92],
   p1_skimmer: [0.08, 0.72],
   p1_dusteye: [0.08, 0.72],
   p1_echo_gate: [0.08, 0.72],
@@ -738,7 +743,7 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   if (id === 'ch2:stub') return 'under_jaw'
   // v166: Chapter Two covers.
   // v199: the new places.
-  const NEW_PLACE_ART: Record<string, CoverKey> = {'deep:rubble': 'p2_rubble', 'deep:shanty': 'p2_shanty', 'deep:anvil': 'p2_anvil', 'deep:drill-deck': 'p2_drill_deck', 'deep:vents': 'p2_vents', 'deep:vein-approach': 'p2_vein_approach', 'deep:crucible': 'p2_crucible', 'deep:lock': 'p2_lock', 'camp:sift-gate': 'p1_sift_gate', 'camp:log-vents': 'p1_log_vents', 'camp:log-deck': 'p1_log_deck', 'spine:dugouts': 'p1_dugouts', 'spine:skimmer': 'p1_skimmer', 'spine:dusteye': 'p1_dusteye', 'thresh:echo-gate': 'p1_echo_gate', 'thresh:conduits': 'p1_conduits', 'thresh:parade': 'p1_parade', 'thresh:breach': 'v205_breach', 'thresh:subdrain': 'v205_subdrain', 'thresh:oasis': 'v205_oasis', 'thresh:canyon': 'np_canyon', 'thresh:gate': 'np_gate', 'thresh:command': 'np_command', 'camp:overlook': 'np_overlook', 'camp:siftline': 'np_siftline', 'camp:ration': 'np_ration', 'camp:genpop': 'np_genpop', 'spine:shattered': 'np_shattered', 'spine:ossuary': 'np_ossuary', 'maw:tunnels': 'np_tunnels', 'maw:gullet': 'np_gullet', 'maw:bargain': 'np_bargain', 'ch2:v-hidden': 'np_hidden', 'maw:mill': 'np_mill', 'camp:jammed': 'np_shim'}
+  const NEW_PLACE_ART: Record<string, CoverKey> = {'deep:rubble': 'p2_rubble', 'deep:shanty': 'p2_shanty', 'deep:anvil': 'p2_anvil', 'deep:drill-deck': 'p2_drill_deck', 'deep:vents': 'p2_vents', 'deep:vein-approach': 'p2_vein_approach', 'deep:crucible': 'p2_crucible', 'deep:lock': 'p2_lock', 'camp:sift-gate': 'p1_sift_gate', 'camp:log-vents': 'p1_log_vents', 'camp:log-deck': 'p1_log_deck', 'spine:dugouts': 'p1_dugouts', 'spine:sable': 'p1_sable_tent', 'spine:skimmer': 'p1_skimmer', 'spine:dusteye': 'p1_dusteye', 'thresh:echo-gate': 'p1_echo_gate', 'thresh:conduits': 'p1_conduits', 'thresh:parade': 'p1_parade', 'thresh:breach': 'v205_breach', 'thresh:subdrain': 'v205_subdrain', 'thresh:oasis': 'v205_oasis', 'thresh:canyon': 'np_canyon', 'thresh:gate': 'np_gate', 'thresh:command': 'np_command', 'camp:overlook': 'np_overlook', 'camp:siftline': 'np_siftline', 'camp:ration': 'np_ration', 'camp:genpop': 'np_genpop', 'spine:shattered': 'np_shattered', 'spine:ossuary': 'np_ossuary', 'maw:tunnels': 'np_tunnels', 'maw:gullet': 'np_gullet', 'maw:bargain': 'np_bargain', 'ch2:v-hidden': 'np_hidden', 'maw:mill': 'np_mill', 'camp:jammed': 'np_shim'}
   if (NEW_PLACE_ART[id]) return NEW_PLACE_ART[id]
   // v206 DRAFT: Chapter Three covers.
   const CH3_ART: Record<string, CoverKey> = { 'ch3:capture': 'ch3_capture', 'ch3:wagon': 'ch3_wagon', 'ch3:supply': 'ch3_supply', 'ch3:tent': 'ch3_tent', 'ch3:crosshaven': 'ch3_crosshaven' }
