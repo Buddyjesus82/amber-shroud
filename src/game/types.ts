@@ -154,6 +154,8 @@ export type Effect = {
   payGlintRemove?: Partial<Record<ItemId, number>>
   flag?: FlagMap
   unsetFlag?: string[]
+  /** v218: internal, Clean Passage already rolled for this effect. */
+  passageChecked?: boolean
   goto?: string
   /** Map-gated walk. Uses travelGate / travelTo — never a silent hop. */
   travel?: string

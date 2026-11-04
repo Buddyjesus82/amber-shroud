@@ -886,8 +886,12 @@ function lootLine(add: Partial<Record<ItemId, number>>, dropped = false): string
   return held
 }
 
+// PLACEHOLDER: guard-check win copy not approved yet.
+export const PASSAGE_WIN_LINE = 'PLACEHOLDER: the clerk drops. Scrap.'
+
 export const ENCOUNTER_FLAGS = [
   'encounterHere',
+  'passagePatrol',
   'encounterNoSkip',
   'encounterKind',
   'encounterHp',
@@ -1446,6 +1450,11 @@ function resolveEncounterCore(
     return holdCard(state, spec, card, outcome, { health: attacking ? 0 : healthDelta, sap, flag: { maskedFought: true } })
   }
 
+  // v218: a Clean Passage check is the Vent patrol off the bolt. Beating it does not drop the station.
+  if (theirHp <= 0 && spec.kind === 'patrol' && state.flags.passagePatrol) {
+    const said = `${PASSAGE_WIN_LINE}${mutualWin ? MUTUAL_WIN_LINE : ''}`
+    return holdCard(state, spec, `${hitCard}\n\n${said}`, said, { health: healthDelta, add: { scrap: 1 }, heat: { cartel: 1 }, pressure: 1, sap, flag: { encounterGrip: grip } })
+  }
   if (theirHp <= 0 && spec.kind === 'patrol') {
     const outcome = `The clerk drops. Scrap. Shock Baton. The bolt is open.${mutualWin ? MUTUAL_WIN_LINE : ''}`
     const salve = carriesSalve(state, 'patrol')

@@ -2,6 +2,7 @@ import { SPARE_SAP_LOCK } from './sapLock'
 import { companionOf, keltStep, LINES as PARTY_LINES, recruitFx, sneakOdds } from './companions'
 import { STAIRS, STAIRS_CLEARED, STAIRS_TO } from './content/crucible'
 import { hash as hashRoll } from './fightTricks'
+import { heatReliefRows, passageCheck } from './heatRelief'
 import { isMaskedBlock, MASKED_BLOCK_LINE, maskedBody, maskedChoices, maskedPass, maskedPickup } from './masked'
 import { isStrayHunt, STRAY_ARRIVAL_LINE, STRAY_CUT_LINE, STRAY_HOUND_HEAT, STRAY_HOUND_LINE, STRAY_KILL_LINE, strayHuntBody, strayHuntChoices, strayHunterArrives } from './strayHunter'
 import { HUB_MAPS } from './content/maps'
@@ -548,6 +549,8 @@ export const WIRE_BLOCKED =
   "The Overseer's tower is still live—searchlights cut the sand to ribbons. You can't break the wire until that station is dropped."
 
 export function applyEffect(state: GameState, fx: Effect): GameState {
+  // v218: Clean Passage. Leaving a trader stays roll-free (v89).
+  if (!isVendorScene(state.sceneId)) fx = passageCheck(state, fx)
   // v186: Chapter Two released, the End card's Continue opens it in place (same as the code on that card).
   // v192: always, on any save (chapter2Unlocked set or not), straight onto the Approach. The Siphon comes with it if not had yet.
   if (state.sceneId === CHAPTER_ONE_END && fx.goto === CH2_ENTRY && !fx.flag?.chapter2Unlocked) return applyEffect(state, endCardContinue(state))
@@ -2263,7 +2266,7 @@ function visibleChoicesRaw(state: GameState): Choice[] {
     : isRumorCounter(state.sceneId)
       ? rumorChoices(state, authored).filter((c) => check(c.show, state))
       : authored
-  return [...bag, ...maskedPickup(state), ...withRest(state, withKaelenPass(state, [...hymnSapLocks(state, mawToll(state, rows)), ...jobWalkRows(state), ...campWalkRows(state, rows)]))]
+  return [...bag, ...maskedPickup(state), ...withRest(state, withKaelenPass(state, [...hymnSapLocks(state, mawToll(state, rows)), ...jobWalkRows(state), ...heatReliefRows(state), ...campWalkRows(state, rows)]))]
 }
 
 /** Camp-04 before the Overlook map: every map road is also a button, so the blank scrap never gates movement. */
