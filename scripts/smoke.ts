@@ -2477,7 +2477,7 @@ s = pick(s, 'keep')
   assert(/resin bolt/i.test(bayLook.flash ?? ''), 'Skiff Bay look points at Pike’s bolt')
   assert(/Sarn/i.test(bayLook.flash ?? '') && /Vetch/i.test(bayLook.flash ?? ''), 'Skiff Bay look points at Sarn and Vetch')
   assert(/wrench/i.test(bayLook.flash ?? ''), 'Skiff Bay look points at the wrench trade')
-  assert(/South: Jaxson's Stall, The Wire/.test(bayLook.flash ?? ''), 'Skiff Bay south exits share one label')
+  assert(/South: The Wire/.test(bayLook.flash ?? '') && /Jaxson's Stall/.test(bayLook.flash ?? ''), 'Skiff Bay exits follow the v2 map')
   assert(!/South:[\s\S]*South:/.test(exitsOf(bayLook.flash ?? '')), 'Skiff Bay exits do not repeat South')
   assert(bayLook.flags.bayLooked, 'room look still reveals the bay')
   const spent = applyEffect(bay, {

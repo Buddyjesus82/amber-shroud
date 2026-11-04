@@ -2334,3 +2334,57 @@ h2 {
 .relic-tag {
   margin-left: 0.4rem;
 }
+
+/* Camp-04: charcoal on a torn scrap of paper. */
+.charcoal-scrap {
+  --charcoal: #141210;
+  background-color: #dcd5c6;
+  background-image:
+    radial-gradient(ellipse at 14% 10%, rgba(30, 28, 26, 0.16), transparent 34%),
+    radial-gradient(ellipse at 88% 86%, rgba(30, 28, 26, 0.2), transparent 40%),
+    radial-gradient(ellipse at 60% 40%, rgba(120, 100, 70, 0.1), transparent 30%),
+    linear-gradient(176deg, transparent 49.4%, rgba(0, 0, 0, 0.12) 50%, rgba(255, 255, 255, 0.35) 50.6%, transparent 51.4%),
+    linear-gradient(93deg, transparent 49.5%, rgba(0, 0, 0, 0.07) 50%, rgba(255, 255, 255, 0.25) 50.5%, transparent 51%),
+    linear-gradient(168deg, #e8e2d4 0%, #d6cebd 55%, #c6bba5 100%);
+}
+.charcoal-scrap .hub-map {
+  background: transparent;
+  box-shadow: none;
+}
+.charcoal-scrap .map-hide-wash {
+  fill: rgba(240, 235, 222, 0.12);
+}
+.map-sketch.charcoal .map-thumb {
+  fill: rgba(25, 22, 20, 0.16);
+  stroke: rgba(25, 22, 20, 0.14);
+}
+.map-crease {
+  fill: none;
+  stroke: rgba(40, 34, 28, 0.22);
+  stroke-width: 0.35;
+}
+.map-crease.light {
+  stroke: rgba(255, 255, 255, 0.5);
+  stroke-width: 0.4;
+}
+.map-crease.faint {
+  stroke: rgba(40, 34, 28, 0.1);
+}
+.charcoal-scrap .map-block,
+.charcoal-scrap .map-wire,
+.charcoal-scrap .map-dune,
+.charcoal-scrap .map-hatch {
+  stroke: #1a1715;
+}
+.charcoal-scrap .map-edge {
+  stroke: #15120f;
+  filter: url(#charcoal-rough);
+}
+.charcoal-scrap .map-edge-smudge {
+  stroke: rgba(20, 18, 16, 0.22);
+  filter: url(#charcoal-smudge);
+}
+.charcoal-scrap .map-node .map-label b {
+  color: #121010;
+  text-shadow: 0 0 2px rgba(232, 226, 212, 0.95), 0.6px 0.4px 0 rgba(20, 18, 16, 0.35);
+}

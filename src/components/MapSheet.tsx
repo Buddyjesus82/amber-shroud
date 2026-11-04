@@ -41,7 +41,7 @@ export function MapSheet({ state, onChange, onClose }: Props) {
 
   return (
     <div className="map-backdrop scrap-map" role="dialog" aria-label="Map" onClick={onClose}>
-      <div className="map-sheet scrap-sheet" onClick={(e) => e.stopPropagation()}>
+      <div className={map?.hubId === 'camp04' ? 'map-sheet scrap-sheet charcoal-scrap' : 'map-sheet scrap-sheet'} onClick={(e) => e.stopPropagation()}>
         <header className="sheet-head">
           <div>
             <p className="kicker map-kicker">scavenged scrap</p>
@@ -322,6 +322,16 @@ function ScrapDefs() {
           values="0 0 0 0 0.18  0 0 0 0 0.12  0 0 0 0 0.07  0 0 0 0.22 0"
         />
       </filter>
+      <filter id="charcoal-rough" x="-15%" y="-15%" width="130%" height="130%">
+        <feTurbulence type="fractalNoise" baseFrequency="1.6" numOctaves="3" seed="7" result="n" />
+        <feDisplacementMap in="SourceGraphic" in2="n" scale="1.3" xChannelSelector="R" yChannelSelector="G" result="d" />
+        <feTurbulence type="fractalNoise" baseFrequency="2.4" numOctaves="2" seed="19" result="tooth" />
+        <feColorMatrix in="tooth" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.6 1.25" result="mask" />
+        <feComposite in="d" in2="mask" operator="in" />
+      </filter>
+      <filter id="charcoal-smudge" x="-30%" y="-30%" width="160%" height="160%">
+        <feGaussianBlur stdDeviation="1.6" />
+      </filter>
       <pattern id="charcoal-hatch" width="3.2" height="3.2" patternUnits="userSpaceOnUse" patternTransform="rotate(26)">
         <path d="M0 0 V3.2" stroke="#2a1c12" strokeWidth="0.28" opacity="0.42" />
       </pattern>
@@ -353,39 +363,47 @@ function MapArt({ map }: { map: HubMapDef }) {
 }
 
 function CampArt() {
+  // Charcoal on a torn scrap: thumb smudges, a fold crease, rough blocks where the sketch puts each place.
   return (
-    <g className="map-sketch" filter="url(#charcoal-jitter)">
-      <rect x="0" y="0" width="100" height="132" filter="url(#soot-grain)" opacity="0.55" />
-      <ellipse cx="18" cy="22" rx="16" ry="10" className="map-stain" />
-      <ellipse cx="86" cy="96" rx="18" ry="14" className="map-stain deep" />
-      <path
-        d="M7 10 Q22 6 38 12 Q54 7 70 11 Q84 8 93 13 L91 106 Q74 113 52 107 Q28 112 8 108 Z"
-        fill="none"
-        className="map-wire"
-      />
-      <path
-        d="M8 108 L16 103 L24 110 L33 102 L44 111 L56 104 L67 112 L78 105 L88 113 L93 108"
-        fill="none"
-        className="map-dune"
-      />
-      <path d="M66 5 l11 1 l1 13 l-12 1 z" fill="url(#charcoal-hatch)" className="map-block" />
-      <path d="M62 24 l17 1 l-1 11 l-16 -1 z" fill="url(#charcoal-hatch)" className="map-block" />
-      <path d="M74 46 l16 2 l-1 12 l-16 -1 z" fill="url(#charcoal-hatch)" className="map-block" />
-      <ellipse cx="80" cy="51" rx="5.8" ry="2.4" fill="none" className="map-block" />
-      <path d="M76 51 L73 58 M80 53 L80 60 M85 51 L87 58" className="map-hatch" />
-      <path d="M21 61 l17 1 l-1 13 l-16 -1 z" fill="url(#charcoal-hatch-steep)" className="map-block" />
-      <g className="map-hatch">
-        <path d="M28 38 q5 -7 10 1" />
-        <path d="M32 42 q4 -6 8 1" />
-        <path d="M36 39 q4 -7 8 0" />
+    <g className="map-sketch charcoal">
+      <g filter="url(#charcoal-smudge)" className="map-thumb">
+        <ellipse cx="20" cy="30" rx="15" ry="9" />
+        <ellipse cx="82" cy="98" rx="16" ry="11" />
+        <ellipse cx="46" cy="60" rx="9" ry="5" />
+        <path d="M60 118 q14 -6 30 2" strokeWidth="5" fill="none" />
       </g>
-      <g fill="url(#charcoal-hatch)" className="map-block">
-        <path d="M8 84 h6 v8 h-6 z" />
-        <path d="M15 84 h6 v8 h-6 z" />
-        <path d="M8 93 h6 v8 h-6 z" />
-        <path d="M15 93 h6 v8 h-6 z" />
+      <path d="M0 67 Q30 64 52 68 T100 65" className="map-crease" />
+      <path d="M0 67.6 Q30 64.6 52 68.6 T100 65.6" className="map-crease light" />
+      <path d="M49 0 Q51 40 48 80 T50 132" className="map-crease faint" />
+      <g filter="url(#charcoal-rough)">
+        <path d="M5 6 Q30 2 52 7 Q74 3 95 8 M94 10 L96 118 M5 9 L4 120" fill="none" className="map-wire" />
+        <path
+          d="M3 124 L11 119 L19 126 L28 118 L37 126 L47 119 L57 127 L67 119 L77 127 L87 119 L96 125"
+          fill="none"
+          className="map-dune"
+        />
+        <path d="M70 -1 l10 1 l1 9 l-11 0 z" fill="url(#charcoal-hatch)" className="map-block" />
+        <path d="M72 6 l3 -5 l3 5" className="map-hatch" />
+        <path d="M63 19 l10 0 l0 10 l-10 0 z M66 19 l2 -5 l2 5" fill="url(#charcoal-hatch-steep)" className="map-block" />
+        <path d="M13 4 l12 1 l-1 8 l-12 -1 z" fill="url(#charcoal-hatch)" className="map-block" />
+        <g className="map-hatch">
+          <path d="M28 32 q4 -7 8 1" />
+          <path d="M33 31 q4 -8 8 0" />
+          <path d="M38 33 q3 -6 7 1" />
+        </g>
+        <path d="M1 46 l9 1 l-1 11 l-8 -1 z" className="map-block" fill="none" />
+        <path d="M82 51 l12 1 l-1 10 l-12 -1 z" fill="url(#charcoal-hatch)" className="map-block" />
+        <ellipse cx="87" cy="66" rx="7" ry="2.4" fill="none" className="map-block" />
+        <path d="M25 72 l12 1 l-1 7 l-12 -1 z" fill="url(#charcoal-hatch-steep)" className="map-block" />
+        <path d="M48 66 h12 M48 68 h12 M49 72 h10" className="map-hatch" />
+        <path d="M60 78 l12 0 l0 6 l-12 0 z" fill="url(#charcoal-hatch)" className="map-block" />
+        <g fill="url(#charcoal-hatch)" className="map-block">
+          <path d="M32 106 h5 v9 h-5 z" />
+          <path d="M39 106 h5 v9 h-5 z" />
+          <path d="M6 97 h5 v9 h-5 z" />
+          <path d="M13 97 h5 v9 h-5 z" />
+        </g>
       </g>
-      <path d="M38 82 l14 1 v10 l-15 -1 z" fill="url(#charcoal-hatch)" className="map-block" />
       <text x="49" y="8" textAnchor="middle" className="map-compass">
         N · inland
       </text>
