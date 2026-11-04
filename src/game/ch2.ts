@@ -102,7 +102,7 @@ export function chapterTwoAfter(state: GameState, next: GameState, _fx?: Effect)
       }
     }
   }
-  // Murch's lift: a jam, one in three, unless Vex knows the dead stops.
+  // Murch's lift: a jam, one in three, unless the Hollow knows the dead stops.
   if (f.ch2LiftRoll) {
     delete f.ch2LiftRoll
     if (!f.vexFreed && roll(state, 'lift', 3) === 0) {

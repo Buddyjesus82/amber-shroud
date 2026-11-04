@@ -22,7 +22,7 @@ ok(/hangs dead/.test(bodyOf(at({}))), 'before: dead lift')
 // 4: Descend shows with the lift, locked until Vex is settled
 const pend = visibleChoices(at({ liftDone: true, vexFreed: true }))
 const ride = pend.find((c) => c.id === 'ride')
-ok(ride && ride.enable && ride.locked === 'Vex is still at the vein.', 'Descend shown, locked by Vex')
+ok(ride && ride.enable && ride.locked === 'The Hollow is still at the vein.', 'Descend shown, locked by Vex')
 ok(visibleChoices(at({ liftDone: true, vexFreed: true, vexFate: 'scout' })).some((c) => c.id === 'ride'), 'Descend after Vex')
 // 2: a mutual-win log says why you stand
 let seen = 0

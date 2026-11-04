@@ -373,16 +373,16 @@ export const VOICES: Record<string, Voice> = {
   },
   vex_p: {
     "lines": [
-        "Vex keeps shaking the mesh, eyes on the ground. \"Didn't catch that. Shake while you talk. Still hands get noticed.\"",
+        "The Hollow keeps shaking the mesh, eyes on the ground. \"Didn't catch that. Shake while you talk. Still hands get noticed.\"",
         "He flinches at a far-off whine and counts under his breath. \"Drill. Under the barge. Say it again, slower.\"",
         "\"I don't know what that means. I know the shaft. I know where it stops dead.\""
     ],
     "want": "\"The chain off. That's all. The clippers can have the rest.\"",
     "price": "\"Price? I don't remember money. I remember the shaft's dead stops. Break the chain and they're yours.\"",
-    "who": "\"Vex. The Hollow, they call me on the line. Before the pens? Ask the vein. It took it.\"",
+    "who": "\"The Hollow, they call me on the line. Before the pens? Ask the vein. It took it.\"",
     "doing": "\"Sifting. Listening. The ground talks louder than Greg.\"",
     "what": "\"The tags? Pen tags. Same as yours, I think. I don't remember getting them.\"",
-    "refuse": "Vex shakes his head, fast. \"No. Greg's crew counts the rows. One row short and they shave us all again.\"",
+    "refuse": "The Hollow shakes his head, fast. \"No. Greg's crew counts the rows. One row short and they shave us all again.\"",
     "unknown": "\"Never heard it. Could've known them. I don't know who I knew.\"",
     "items": {
         "scrap": "\"Two scrap and the chain gives. Murch taught me that. I think.\"",
@@ -425,16 +425,16 @@ export const VOICES: Record<string, Voice> = {
 },
   vex_v: {
     "lines": [
-        "Vex's eyes slide to the cup on your belt. \"Didn't catch that. The cups drip loud. Say it under them.\"",
+        "The Hollow's eyes slide to the cup on your belt. \"Didn't catch that. The cups drip loud. Say it under them.\"",
         "He flinches as a cup fills. \"Another one. That's mine, you know. Say it again, slower.\"",
         "\"I don't know what that means. I know the stair. I know the way in they forgot.\""
     ],
     "want": "\"The tube out. Quietly, if you're still a Vessel. Loud, if you're not.\"",
     "price": "\"Price? I'll show you the stair. That's all I've got that isn't in a cup.\"",
-    "who": "\"Vex. The Hollow. They hung a cup on me once. It didn't fill. Now I fill theirs.\"",
+    "who": "\"The Hollow. They hung a cup on me once. It didn't fill. Now I fill theirs.\"",
     "doing": "\"Bleeding. Counting the drips. Waiting for the lamps to look away.\"",
     "what": "\"The tube? It goes into the vein, then into me, then into the cups. That's the rite.\"",
-    "refuse": "Vex shakes his head, fast. \"No. The keepers hear blood through bone. Your cup would crack in your hand.\"",
+    "refuse": "The Hollow shakes his head, fast. \"No. The keepers hear blood through bone. Your cup would crack in your hand.\"",
     "unknown": "\"Never heard it. Could've known them. I don't know who I knew.\"",
     "items": {
         "scrap": "\"Scrap's for the mechanic on the transport. Not me.\"",
@@ -477,16 +477,16 @@ export const VOICES: Record<string, Voice> = {
 },
   vex_o: {
     "lines": [
-        "Vex presses his face to the bone bars. \"Didn't catch that. The Hunters come back at dusk. Talk faster.\"",
+        "The Hollow presses his face to the bone bars. \"Didn't catch that. The Hunters come back at dusk. Talk faster.\"",
         "He flinches at a far-off whine. \"Drill. Or a hound. Say it again, slower.\"",
         "\"I don't know what that means. I know the true gap between the bones. That I know.\""
     ],
     "want": "\"The cord cut. Before they sell me down to the lamps.\"",
     "price": "\"Price? I'll walk you the true gap. No Knot needed, if you've got me.\"",
-    "who": "\"Vex. The Hollow. A Stray, maybe, once. My brand burned off. Or I don't remember it.\"",
+    "who": "\"The Hollow. A Stray, maybe, once. My brand burned off. Or I don't remember it.\"",
     "doing": "\"Waiting to be sold. Watching the lamps below.\"",
     "what": "\"The cage? Stray Hunter work. Bone and cord. They sell what they catch.\"",
-    "refuse": "Vex shakes his head, fast. \"No. The Hunters left the cord tied on purpose. They're watching it.\"",
+    "refuse": "The Hollow shakes his head, fast. \"No. The Hunters left the cord tied on purpose. They're watching it.\"",
     "unknown": "\"Never heard it. Could've known them. I don't know who I knew.\"",
     "items": {
         "scrap": "\"Scrap's for the tinker in the camp. He takes it off the stone when no one looks.\"",
@@ -575,7 +575,7 @@ export const PERSON_VOICE: Record<string, string> = {
   carapace: 'nim',
 }
 
-/** v168: Vex and Murch speak per door. The scene id (ch2:p-, ch2:v-, ch2:o-) or the door picks the set. */
+/** v168: The Hollow and Murch speak per door. The scene id (ch2:p-, ch2:v-, ch2:o-) or the door picks the set. */
 const DOOR_LETTER: Record<string, string> = { prisoner: 'p', vessel: 'v', outcast: 'o' }
 function perDoor(key: string, where?: string | null): string {
   if (key !== 'vex' && key !== 'murch') return key
