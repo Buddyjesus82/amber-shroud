@@ -29,7 +29,7 @@ for (let i = 0; i < 80 && g.flags.encounterHere; i++) {
   g = applyEffect(g, visibleChoices(g).find((c: any) => c.id === 'enc-fight')!.effects)
 }
 ok(g.heat.seekers === h + 2 && g.flash?.includes('Seeker Heat +2.'), `win heat +2 (${h}->${g.heat.seekers})`)
-ok(readFileSync('src/version.ts', 'utf8').includes("'v216'") && readFileSync('public/sw.js', 'utf8').includes('covers/ch3-ash-fight.jpg'), 'build')
+ok(readFileSync('src/version.ts', 'utf8').includes("BUILD = 'v2") && readFileSync('public/sw.js', 'utf8').includes('covers/ch3-ash-fight.jpg'), 'build')
 ok(coverFor({ ...base, sceneId: 'ch3:wagon', flags: { ch3Helper: 'wren' } } as GameState) === 'ch3_wagon_wren' && coverFor({ ...base, sceneId: 'ch3:wagon', flags: { ch3Helper: 'corvus' } } as GameState) === 'ch3_wagon', 'wren wagon art')
 ok(coverFor({ ...base, sceneId: 'ch3:tent', flags: { wrenPromise: true } } as GameState) === 'ch3_wren_deal', 'wren deal art')
 ok(readFileSync('public/sw.js', 'utf8').includes('covers/ch3-wren-deal.jpg'), 'wren art precached')
