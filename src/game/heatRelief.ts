@@ -9,17 +9,17 @@ export const BRIBE_LINE =
   'You slide a polished length of copper wire and two twists of scrap through the food slot to the tier-walker\'s runner. Ten minutes later, the patrol rotation shifts two cells down. The weight on your neck lightens just enough to breathe.'
 export const BRIBE_HEAT_LINE = 'Cartel Heat -2.'
 export const BRIBE_EVERY = 3
-// PLACEHOLDER: Lay Low copy not approved yet.
-export const LAY_LOW_LABEL = 'PLACEHOLDER Lay Low'
-export const LAY_LOW_LINE = 'PLACEHOLDER: you lay low.\n\nCartel Heat -1.'
-// PLACEHOLDER: guard-check copy not approved yet.
-export const PASSAGE_LINE = 'PLACEHOLDER: a guard check stops you.'
+export const LAY_LOW_LABEL = 'Lay Low'
+export const LAY_LOW_SUB = 'Face the wall. Let the walker pass.'
+export const LAY_LOW_LINE = "You fold into the back of the cage and breathe through your teeth. The tier-walker's lamp slides past without stopping.\n\nCartel Heat -1."
+export const PASSAGE_LINE = "A block runner steps off the tier rotation and cuts you off. Shock baton angled low. 'Tags. Show 'em.'"
 export const PASSAGE_HEAT = 6
 export const PASSAGE_ONE_IN = 3
 
 const BRIBE_AT = 'bribeTick'
 const LAID_LOW = 'laidLowVisit'
-const CLEAR = 'passageClear'
+/** Stealth: Hidden. Set by Lay Low; the next guard check is skipped and this is consumed. No chip (none exists). */
+export const HIDDEN = 'stealthHidden'
 
 function inPens(state: GameState): boolean {
   return state.door === 'prisoner' && state.hubId === 'camp04' && PENS_CLUSTER.has(state.sceneId)
@@ -39,7 +39,7 @@ export function heatReliefRows(state: GameState): Choice[] {
     out.push({
       id: 'kick-up',
       label: 'Kick Up to the Block Boss',
-      sub: '2 Scrap or 1 Cartel Scrip.',
+      sub: 'Pay 2 Scrap or 1 Cartel Scrip',
       tone: 'quiet',
       effects: {
         remove: scrap ? { scrap: 2 } : { scrip: 1 },
@@ -54,8 +54,9 @@ export function heatReliefRows(state: GameState): Choice[] {
     out.push({
       id: 'lay-low',
       label: LAY_LOW_LABEL,
+      sub: LAY_LOW_SUB,
       tone: 'quiet',
-      effects: { heat: { cartel: -1 }, flag: { [LAID_LOW]: true, [CLEAR]: true }, flash: LAY_LOW_LINE },
+      effects: { heat: { cartel: -1 }, flag: { [LAID_LOW]: true, [HIDDEN]: true }, flash: LAY_LOW_LINE },
     })
   }
   return out
@@ -71,7 +72,24 @@ export function passageCheck(state: GameState, fx: Effect): Effect {
   if (state.flags.encounterHere || state.heat.cartel < PASSAGE_HEAT) return out
   // A walk is place to place. Talks, deals and story beats resolve first.
   if (getScene(state.sceneId, state.door).kind !== 'place' || getScene(fx.goto, state.door).kind !== 'place') return out
-  if (state.flags[CLEAR]) return { ...out, unsetFlag: [...(out.unsetFlag ?? []), CLEAR] }
+  if (state.flags[HIDDEN]) return { ...out, unsetFlag: [...(out.unsetFlag ?? []), HIDDEN] }
   if (hash(state, `passage:${fx.goto}`) % PASSAGE_ONE_IN !== 0) return out
   return { ...out, flag: { ...out.flag, passagePatrol: true }, ambush: { kind: 'patrol', line: PASSAGE_LINE } }
+}
+
+/** Barrow Trails cache: first successful scavenge in a tagged scene drops Seeker Heat by 1. Nothing tagged until confirmed. */
+export const BARROW_CACHE_SCENES: ReadonlySet<string> = new Set<string>([])
+export const BARROW_HEAT_LINE = 'Seeker Heat -1.'
+export function barrowCache(before: GameState, next: GameState, tagged: ReadonlySet<string> = BARROW_CACHE_SCENES): GameState {
+  const id = before.sceneId
+  const key = `barrowCache:${id}`
+  if (!tagged.has(id) || before.flags[key]) return next
+  const found = Object.entries(next.items).some(([k, n]) => (n ?? 0) > ((before.items as Record<string, number>)[k] ?? 0))
+  if (!found) return next
+  return {
+    ...next,
+    heat: { ...next.heat, seekers: Math.max(0, next.heat.seekers - 1) },
+    flags: { ...next.flags, [key]: true },
+    flash: [next.flash, BARROW_HEAT_LINE].filter(Boolean).join('\n\n'),
+  }
 }

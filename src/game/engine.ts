@@ -2,7 +2,7 @@ import { SPARE_SAP_LOCK } from './sapLock'
 import { companionOf, keltStep, LINES as PARTY_LINES, recruitFx, sneakOdds } from './companions'
 import { STAIRS, STAIRS_CLEARED, STAIRS_TO } from './content/crucible'
 import { hash as hashRoll } from './fightTricks'
-import { heatReliefRows, passageCheck } from './heatRelief'
+import { barrowCache, heatReliefRows, passageCheck } from './heatRelief'
 import { isMaskedBlock, MASKED_BLOCK_LINE, maskedBody, maskedChoices, maskedPass, maskedPickup } from './masked'
 import { isStrayHunt, STRAY_ARRIVAL_LINE, STRAY_CUT_LINE, STRAY_HOUND_HEAT, STRAY_HOUND_LINE, STRAY_KILL_LINE, strayHuntBody, strayHuntChoices, strayHunterArrives } from './strayHunter'
 import { HUB_MAPS } from './content/maps'
@@ -1582,6 +1582,7 @@ export function scavenge(state: GameState): GameState {
   const warm = amberFindSign(state, (next.items.glints ?? 0) > (state.items.glints ?? 0))
   if (warm) next = { ...next, flash: `${next.flash ?? ''} ${warm}`.trim(), flags: { ...next.flags, amberWarmSeen: true, sandSignAt: next.ticks } }
   next = scavengeNotice(state, next)
+  next = barrowCache(state, next)
   // v211: Hide Gloves, Shin Wraps and other road finds go on when their slot is empty.
   next = autoEquip(state, next)
   return withVerb(

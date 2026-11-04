@@ -1,6 +1,7 @@
 /** v218 (unshipped): Pens heat relief + Clean Passage. npx tsx scripts/heatRelief.ts */
 import { applyEffect, newGame, visibleChoices } from '../src/game/engine.ts'
-import { BRIBE_LINE, BRIBE_HEAT_LINE } from '../src/game/heatRelief.ts'
+import { BARROW_CACHE_SCENES, BRIBE_LINE, BRIBE_HEAT_LINE, HIDDEN, barrowCache } from '../src/game/heatRelief.ts'
+import { PASSAGE_WIN_LINE } from '../src/game/encounter.ts'
 import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
@@ -12,7 +13,7 @@ const row = (s: GameState, id: string) => visibleChoices(s).find((c) => c.id ===
 // Bribe
 let s = at(5, { scrap: 2, scrip: 0 })
 const kb = row(s, 'kick-up')
-ok(kb?.label === 'Kick Up to the Block Boss', 'bribe button')
+ok(kb?.label === 'Kick Up to the Block Boss' && kb?.sub === 'Pay 2 Scrap or 1 Cartel Scrip', 'bribe button + cost line')
 s = applyEffect(s, kb!.effects)
 ok(s.heat.cartel === 3 && (s.items.scrap ?? 0) === 0, 'bribe: 2 Scrap, Cartel -2')
 ok(s.flash === `${BRIBE_LINE}\n\n${BRIBE_HEAT_LINE}`, 'bribe copy')
@@ -56,7 +57,40 @@ ok(low === 0, 'no check under Cartel Heat 6')
   ok(f && f.sceneId === 'camp:lean' && f.flags.encounterKind === 'patrol' && f.flags.encounterNoSkip, 'passage opens the Vent patrol on arrival')
   let w = f!
   for (let i = 0; i < 30 && w.flags.encounterHere; i++) { const c = visibleChoices(w).find((x) => x.id === 'enc-fight') ?? visibleChoices(w)[0]; w = applyEffect(w, c.effects) }
+  ok((w.items.scrap ?? 0) === (f!.items.scrap ?? 0) + 2 && (w.health ?? 0) > 0, `passage win: +2 Scrap (${w.items.scrap})`)
   ok(!w.flags.guardDown && !w.flags.passagePatrol, `passage patrol win leaves the station up (${(w.flash ?? '').slice(0, 60)})`)
+}
+
+// Approved lines
+{
+  const l = row(at(6, {}), 'lay-low')!
+  ok(l.label === 'Lay Low' && l.sub === 'Face the wall. Let the walker pass.', 'lay low button copy')
+  ok(applyEffect(at(6, {}), l.effects).flash === "You fold into the back of the cage and breathe through your teeth. The tier-walker's lamp slides past without stopping.\n\nCartel Heat -1.", 'lay low result copy')
+  ok(PASSAGE_WIN_LINE === 'The runner hits the grating with a dull thud. Two pieces of scrap in his palm. Nobody turned around. Yet.', 'guard win copy')
+}
+// Stealth: Hidden skips exactly the next check, then is consumed
+{
+  let hitT = -1
+  for (let t = 0; t < 60 && hitT < 0; t++) if (applyEffect(at(7, {}, { sceneId: 'camp:yard', ticks: t }), { goto: 'camp:lean' }).flags.passagePatrol) hitT = t
+  const hid = at(7, {}, { sceneId: 'camp:yard', ticks: hitT, flags: { [HIDDEN]: true } } as never)
+  const n = applyEffect(hid, { goto: 'camp:lean' })
+  ok(!n.flags.encounterHere && !n.flags[HIDDEN], 'hidden skips the check and is consumed')
+  const again = applyEffect({ ...n, sceneId: 'camp:yard', ticks: hitT } as GameState, { goto: 'camp:lean' })
+  ok(!!again.flags.passagePatrol, 'next check after that rolls again')
+  ok(applyEffect(at(4, {}, { sceneId: 'camp:yard', flags: { [HIDDEN]: true } } as never), { goto: 'camp:lean' }).flags[HIDDEN] === true, 'hidden kept until a real check')
+}
+// barrowCache hook
+{
+  ok(BARROW_CACHE_SCENES.size === 0, 'nothing tagged yet')
+  const tag = new Set(['camp:yard'])
+  const b0 = at(0, { scrap: 0 }, { sceneId: 'camp:yard', heat: { cartel: 0, seekers: 3, strays: 0 } } as never)
+  const found = { ...b0, items: { ...b0.items, scrap: 2 }, flash: 'x' } as GameState
+  const c1 = barrowCache(b0, found, tag)
+  ok(c1.heat.seekers === 2 && c1.flags['barrowCache:camp:yard'] && c1.flash === 'x\n\nSeeker Heat -1.', 'first find in tagged scene: Seeker -1')
+  ok(barrowCache({ ...c1, items: b0.items } as GameState, found, tag).heat.seekers === 3, 'only once per scene')
+  ok(barrowCache(b0, { ...b0, flash: 'nothing' } as GameState, tag).heat.seekers === 3, 'empty scavenge does not count')
+  ok(barrowCache(b0, found).heat.seekers === 3, 'untagged scene: no change')
+  ok(barrowCache({ ...b0, heat: { ...b0.heat, seekers: 0 } } as GameState, { ...found, heat: { ...found.heat, seekers: 0 } } as GameState, tag).heat.seekers === 0, 'never below 0')
 }
 console.log(fails ? `heatRelief: ${fails} FAIL` : 'heatRelief: all pass')
 process.exit(fails ? 1 : 0)

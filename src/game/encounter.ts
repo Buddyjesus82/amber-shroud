@@ -886,8 +886,7 @@ function lootLine(add: Partial<Record<ItemId, number>>, dropped = false): string
   return held
 }
 
-// PLACEHOLDER: guard-check win copy not approved yet.
-export const PASSAGE_WIN_LINE = 'PLACEHOLDER: the clerk drops. Scrap.'
+export const PASSAGE_WIN_LINE = 'The runner hits the grating with a dull thud. Two pieces of scrap in his palm. Nobody turned around. Yet.'
 
 export const ENCOUNTER_FLAGS = [
   'encounterHere',
@@ -1453,7 +1452,7 @@ function resolveEncounterCore(
   // v218: a Clean Passage check is the Vent patrol off the bolt. Beating it does not drop the station.
   if (theirHp <= 0 && spec.kind === 'patrol' && state.flags.passagePatrol) {
     const said = `${PASSAGE_WIN_LINE}${mutualWin ? MUTUAL_WIN_LINE : ''}`
-    return holdCard(state, spec, `${hitCard}\n\n${said}`, said, { health: healthDelta, add: { scrap: 1 }, heat: { cartel: 1 }, pressure: 1, sap, flag: { encounterGrip: grip } })
+    return holdCard(state, spec, `${hitCard}\n\n${said}`, said, { health: healthDelta, add: { scrap: 2 }, heat: { cartel: 1 }, pressure: 1, sap, flag: { encounterGrip: grip } })
   }
   if (theirHp <= 0 && spec.kind === 'patrol') {
     const outcome = `The clerk drops. Scrap. Shock Baton. The bolt is open.${mutualWin ? MUTUAL_WIN_LINE : ''}`
