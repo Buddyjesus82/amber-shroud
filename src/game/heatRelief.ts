@@ -78,8 +78,8 @@ export function passageCheck(state: GameState, fx: Effect): Effect {
   return { ...out, flag: { ...out.flag, passagePatrol: true }, ambush: { kind: 'patrol', line: PASSAGE_LINE } }
 }
 
-/** Barrow Trails cache: first successful scavenge in a tagged scene drops Seeker Heat by 1. Nothing tagged until confirmed. */
-export const BARROW_CACHE_SCENES: ReadonlySet<string> = new Set<string>([])
+/** Barrow Trails cache: first successful scavenge in a tagged scene drops Seeker Heat by 1. v218: four approved perimeter scenes. */
+export const BARROW_CACHE_SCENES: ReadonlySet<string> = new Set<string>(['camp:siftline', 'ch2:p-sift', 'thresh:conduits', 'thresh:subdrain'])
 export const BARROW_HEAT_LINE = 'Seeker Heat -1.'
 export function barrowCache(before: GameState, next: GameState, tagged: ReadonlySet<string> = BARROW_CACHE_SCENES): GameState {
   const id = before.sceneId

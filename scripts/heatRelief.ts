@@ -1,3 +1,4 @@
+import { getScene } from '../src/game/content/index.ts'
 /** v218 (unshipped): Pens heat relief + Clean Passage. npx tsx scripts/heatRelief.ts */
 import { applyEffect, newGame, visibleChoices } from '../src/game/engine.ts'
 import { BARROW_CACHE_SCENES, BRIBE_LINE, BRIBE_HEAT_LINE, HIDDEN, barrowCache } from '../src/game/heatRelief.ts'
@@ -82,7 +83,16 @@ ok(low === 0, 'no check under Cartel Heat 6')
 }
 // barrowCache hook
 {
-  ok(BARROW_CACHE_SCENES.size === 0, 'nothing tagged yet')
+  ok([...BARROW_CACHE_SCENES].sort().join() === 'camp:siftline,ch2:p-sift,thresh:conduits,thresh:subdrain', 'barrow tags: exactly the four approved scenes')
+  for (const id of ['thresh:breach', 'maw:tunnels', 'maw:gullet']) ok(!BARROW_CACHE_SCENES.has(id), `barrow excludes ${id}`)
+  for (const id of BARROW_CACHE_SCENES) {
+    ok(getScene(id, 'prisoner' as never), `barrow scene exists: ${id}`)
+    const b = { ...newGame('prisoner' as never), sceneId: id, heat: { ...newGame('prisoner' as never).heat, seekers: 3 } } as GameState
+    const n = { ...b, items: { ...b.items, scrap: (b.items.scrap ?? 0) + 1 } } as GameState
+    const r = barrowCache(b, n)
+    ok(r.heat.seekers === 2 && r.flags[`barrowCache:${id}`], `barrow cache fires at ${id}`)
+    ok(barrowCache(r, { ...r, items: { ...r.items, scrap: (r.items.scrap ?? 0) + 1 } } as GameState).heat.seekers === 2, `barrow cache once at ${id}`)
+  }
   const tag = new Set(['camp:yard'])
   const b0 = at(0, { scrap: 0 }, { sceneId: 'camp:yard', heat: { cartel: 0, seekers: 3, strays: 0 } } as never)
   const found = { ...b0, items: { ...b0.items, scrap: 2 }, flash: 'x' } as GameState
