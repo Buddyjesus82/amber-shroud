@@ -102,7 +102,7 @@ import { CARAPACE_HUNTER, CARAPACE_HUNTER_HEAT, SPINE_HUNTER } from '../src/game
 import { JODI_LINES, SHADE_HANDS_LIVE } from '../src/game/content/shadeHands.ts'
 import { SILAS_JOB_FLAGS, SILAS_JOB_LIVE } from '../src/game/content/silasJob.ts'
 import { canSkim } from '../src/game/scavenge.ts'
-import { canTravelTo, edgeSap, HUB_MAPS, nodeIdForScene, route } from '../src/game/map.ts'
+import { campSeen, canTravelTo, drawnMap, edgeSap, HUB_MAPS, markCampSeen, nodeIdForScene, route } from '../src/game/map.ts'
 import { estimateLabel, layoutLabels, layoutProblems, type Box } from '../src/game/mapLabels.ts'
 import {
   clearAllSaves,
@@ -373,6 +373,38 @@ assert(edgeSap(camp, 'pens', 'bay') == null, 'pens have no road to the bay')
 assert(edgeSap(camp, 'pens', 'yard') === 1, 'pens connect to the Yard')
 assert(edgeSap(camp, 'pens', 'lean') === 1, 'pens connect to the stall')
 assert(route(camp, 'pens', 'wire')?.join('→') === 'pens→lean→bay→wire', 'mechanic corridor is the short Wire path')
+{
+  // Camp-04 map draws in as you walk it; the Overlook scrap reveals all of it.
+  let m = markCampSeen({ ...newGame('prisoner'), hubId: 'camp04', sceneId: 'camp:cages' } as GameState)
+  assert([...campSeen(m)].join() === 'pens', 'blank scrap: only the Pens are drawn at the start')
+  assert(drawnMap(m)!.nodes.length === 1 && drawnMap(m)!.edges.length === 0, 'unvisited places and roads stay off the scrap')
+  m = markCampSeen({ ...m, sceneId: 'camp:overlook' })
+  m = markCampSeen({ ...m, sceneId: 'camp:yard' })
+  const part = drawnMap(m)!
+  assert(part.nodes.map((n) => n.id).sort().join() === 'overlook,pens,yard', 'visited places draw in')
+  assert(part.edges.some((e) => e.a === 'pens' && e.b === 'overlook') && part.edges.some((e) => e.a === 'yard' && e.b === 'pens'), 'roads between drawn places draw in')
+  m = { ...m, sceneId: 'camp:overlook' }
+  assert(visibleChoices(m).some((c) => c.id === 'take-map'), 'the camp map can be taken at the Overlook')
+  m = pick(m, 'take-map')
+  assert(m.flags.camp04Map === true && drawnMap(m)!.nodes.length === camp.nodes.length, 'taking the Overlook map draws the whole camp')
+  assert(!visibleChoices(m).some((c) => c.id === 'take-map'), 'the camp map is taken once')
+  // No map needed to move: from a fresh start, buttons alone reach every Camp-04 place.
+  const s0 = { ...newGame('prisoner'), hubId: 'camp04', sceneId: 'camp:cages' } as GameState
+  const got = new Map<string, GameState>([[s0.sceneId, s0]])
+  const q = [s0]
+  while (q.length) {
+    const st = q.shift()!
+    for (const c of visibleChoices(st)) {
+      if (!c.effects?.goto || !isChoiceOn(st, c.enable)) continue
+      const nx = applyEffect(st, c.effects)
+      if (nx.hubId === 'camp04' && !got.has(nx.sceneId)) { got.set(nx.sceneId, nx); q.push(nx) }
+    }
+  }
+  for (const n of camp.nodes) assert(got.has(n.sceneId), `${n.name} is reachable by buttons without the camp map`)
+  const walked = { ...s0, flags: { ...s0.flags, camp04Map: true } }
+  assert(!visibleChoices(walked).some((c) => c.id.startsWith('walk-')), 'map roads leave the buttons once the map is taken')
+  assert(drawnMap({ ...newGame('prisoner'), hubId: 'spine', sceneId: 'spine:sign' } as GameState)!.nodes.length === HUB_MAPS.spine.nodes.length, 'other hubs keep their full maps')
+}
 assert(edgeSap(camp, 'bay', 'wire') === 2, 'camp Maw-leg from bay to Wire is long')
 assert(HUBS.camp04.mawLegs > HUBS.spine.mawLegs, 'Camp-04 is farther from the Maw than the Spine')
 assert(HUBS.spine.mawLegs > HUBS.threshold.mawLegs, 'Spine is farther from the Maw than Outer Threshold')
@@ -2477,7 +2509,7 @@ s = pick(s, 'keep')
   assert(/resin bolt/i.test(bayLook.flash ?? ''), 'Skiff Bay look points at Pike’s bolt')
   assert(/Sarn/i.test(bayLook.flash ?? '') && /Vetch/i.test(bayLook.flash ?? ''), 'Skiff Bay look points at Sarn and Vetch')
   assert(/wrench/i.test(bayLook.flash ?? ''), 'Skiff Bay look points at the wrench trade')
-  assert(/South: Jaxson's Stall, The Wire/.test(bayLook.flash ?? ''), 'Skiff Bay south exits share one label')
+  assert(/South: The Wire/.test(bayLook.flash ?? '') && /Jaxson's Stall/.test(bayLook.flash ?? ''), 'Skiff Bay exits follow the v2 map')
   assert(!/South:[\s\S]*South:/.test(exitsOf(bayLook.flash ?? '')), 'Skiff Bay exits do not repeat South')
   assert(bayLook.flags.bayLooked, 'room look still reveals the bay')
   const spent = applyEffect(bay, {
@@ -2744,7 +2776,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v216'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v217'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(!sw.includes('covers/camp04.jpg') && sw.includes('covers/yard.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -4759,7 +4791,7 @@ function assertHelpResolves(s: GameState, where: string) {
   for (const map of Object.values(HUB_MAPS)) {
     const H = (W * map.height) / map.width
     const ex = estimateLabel(map.maw.label, null, 200)
-    const exitBox: Box = {
+    const exitBox: Box = map.hubId === 'camp04' ? { x: -999, y: -999, w: 0, h: 0 } : {
       x: Math.min(Math.max((map.maw.x / map.width) * W - ex.w / 2, 6), W - 6 - ex.w),
       y: Math.min(Math.max((map.maw.y / map.height) * H - ex.h / 2, 6), H - 6 - ex.h),
       w: ex.w,
@@ -4777,7 +4809,7 @@ function assertHelpResolves(s: GameState, where: string) {
         const mine = n.id === here.id
         const sap = adj.has(n.id) ? edgeSap(map, here.id, n.id) : null
         const sub = mine ? 'you' : sap != null ? `−${sap} sap` : 'far'
-        return { id: n.id, x: (n.x / map.width) * W, y: (n.y / map.height) * H, ...estimateLabel(n.short ?? n.name, sub, 118), here: mine, side: n.labelSide }
+        return { id: n.id, x: (n.x / map.width) * W, y: (n.y / map.height) * H, ...estimateLabel(n.short ?? n.name, map.hubId === 'camp04' ? null : sub, 118), here: mine, side: n.labelSide }
       })
       const input = { width: W, height: H, nodes, edges, obstacles: [exitBox, compass] }
       const placed = layoutLabels(input)

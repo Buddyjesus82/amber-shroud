@@ -1,7 +1,7 @@
 import { useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { HUBS } from '../game/content/catalog'
 import { CH2_BACKTRACK, chapterTwoLocked, travelTo } from '../game/engine'
-import { adjacency, currentNode, edgeSap as rawEdgeSap, hubMapOf, nodeById } from '../game/map'
+import { adjacency, CAMP_MAP_FLAG, currentNode, drawnMap, edgeSap as rawEdgeSap, nodeById } from '../game/map'
 import { ROAD_SAP } from '../game/returnRoad'
 import { estimateLabel, layoutLabels, type Box } from '../game/mapLabels'
 import type { GameState, HubMapDef, HubMapNode } from '../game/types'
@@ -21,8 +21,13 @@ function edgeSap(map: HubMapDef, a: string, b: string, state: GameState): number
   return to?.sceneId === 'ch1:leave' && state.flags.chapter1Done ? ROAD_SAP : sap
 }
 
+/** Camp-04 is a bare hand sketch: names only, no road costs or exit note. */
+function sketchMap(map: HubMapDef): boolean {
+  return map.hubId === 'camp04'
+}
+
 function subFor(mine: boolean, sap: number | null): string {
-  return mine ? 'you' : sap ? `−${sap} sap` : 'far'
+  return mine ? 'you' : sap ? `−${sap} sap` : sap === 0 ? '' : 'far'
 }
 
 type Props = {
@@ -35,13 +40,13 @@ type Props = {
 export const ROAD_MAP_LINE = 'On the road. The only map is the heading: keep walking toward Red Maw.'
 
 export function MapSheet({ state, onChange, onClose }: Props) {
-  const map = hubMapOf(state)
+  const map = drawnMap(state)
   const here = currentNode(state)
   const [hint, setHint] = useState<string | null>(null)
 
   return (
     <div className="map-backdrop scrap-map" role="dialog" aria-label="Map" onClick={onClose}>
-      <div className="map-sheet scrap-sheet" onClick={(e) => e.stopPropagation()}>
+      <div className={map?.hubId === 'camp04' ? 'map-sheet scrap-sheet charcoal-scrap' : 'map-sheet scrap-sheet'} onClick={(e) => e.stopPropagation()}>
         <header className="sheet-head">
           <div>
             <p className="kicker map-kicker">scavenged scrap</p>
@@ -153,12 +158,12 @@ function HubMapView({
       if (m && m.w && m.h) return m
       const mine = here?.id === n.id
       const sap = here && adjIds.has(n.id) ? edgeSap(map, here.id, n.id, state) : null
-      return estimateLabel(n.short ?? n.name, subFor(mine, sap), LABEL_MAX_W)
+      return estimateLabel(n.short ?? n.name, sketchMap(map) ? null : subFor(mine, sap), LABEL_MAX_W)
     }
     const ex = measured?.exit && measured.exit.w ? measured.exit : estimateLabel(map.maw.label, null, 150)
     const ecx = (map.maw.x / map.width) * W
     const ecy = (map.maw.y / map.height) * H
-    const exitBox: Box = {
+    const exitBox: Box = sketchMap(map) ? { x: -999, y: -999, w: 0, h: 0 } : {
       x: Math.min(Math.max(ecx - ex.w / 2, 6), Math.max(6, W - 6 - ex.w)),
       y: Math.min(Math.max(ecy - ex.h / 2, 6), Math.max(6, H - 6 - ex.h)),
       w: ex.w,
@@ -226,7 +231,7 @@ function HubMapView({
         >
           <ScrapDefs />
           <rect className="map-hide-wash" x="0" y="0" width={map.width} height={map.height} />
-          <MapArt map={map} />
+          <MapArt map={map} full={map.hubId !== 'camp04' || !!state.flags[CAMP_MAP_FLAG]} />
           {map.edges.map((e) => {
             const a = nodeById(map, e.a)
             const b = nodeById(map, e.b)
@@ -240,6 +245,9 @@ function HubMapView({
               <g key={`${e.a}-${e.b}`}>
                 <path d={d} className={on ? 'map-edge-smudge on' : 'map-edge-smudge'} />
                 <path d={d} className={on ? 'map-edge on' : 'map-edge'} />
+                {sketchMap(map) ? (
+                  <path d={charcoalStroke(a.x, a.y, b.x, b.y, `${e.b}~${e.a}`, 0.8)} className="map-edge-ghost" />
+                ) : null}
                 {long ? (
                   <path
                     d={charcoalStroke(a.x, a.y, b.x, b.y, `${e.a}-${e.b}-long`, 0.9)}
@@ -288,18 +296,18 @@ function HubMapView({
                   }}
                 >
                   <b>{n.short ?? n.name}</b>
-                  <small>{subFor(mine, sap)}</small>
+                  {sketchMap(map) ? null : <small>{subFor(mine, sap)}</small>}
                 </span>
               </button>
             )
           })}
-          <span
+          {sketchMap(map) ? null : <span
             className="map-exit-label map-maw-label"
             style={{ left: `${layout.exit.x}px`, top: `${layout.exit.y}px` }}
             ref={exitEl}
           >
             {map.maw.label}
-          </span>
+          </span>}
         </div>
       </div>
       <p className="map-hint">{hint ?? (state.sap <= 2 ? 'Sap is thin. Walks still cost Drops — empty is a crisis.' : `You are at ${here?.name ?? 'an unnamed scrap of ground'}. Tap a connected name.`)}</p>
@@ -321,6 +329,16 @@ function ScrapDefs() {
           type="matrix"
           values="0 0 0 0 0.18  0 0 0 0 0.12  0 0 0 0 0.07  0 0 0 0.22 0"
         />
+      </filter>
+      <filter id="charcoal-rough" x="-15%" y="-15%" width="130%" height="130%">
+        <feTurbulence type="fractalNoise" baseFrequency="1.6" numOctaves="3" seed="7" result="n" />
+        <feDisplacementMap in="SourceGraphic" in2="n" scale="2.2" xChannelSelector="R" yChannelSelector="G" result="d" />
+        <feTurbulence type="fractalNoise" baseFrequency="2.4" numOctaves="2" seed="19" result="tooth" />
+        <feColorMatrix in="tooth" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.6 1.25" result="mask" />
+        <feComposite in="d" in2="mask" operator="in" />
+      </filter>
+      <filter id="charcoal-smudge" x="-30%" y="-30%" width="160%" height="160%">
+        <feGaussianBlur stdDeviation="1.6" />
       </filter>
       <pattern id="charcoal-hatch" width="3.2" height="3.2" patternUnits="userSpaceOnUse" patternTransform="rotate(26)">
         <path d="M0 0 V3.2" stroke="#2a1c12" strokeWidth="0.28" opacity="0.42" />
@@ -345,47 +363,55 @@ function YouMark({ x, y }: { x: number; y: number }) {
   )
 }
 
-function MapArt({ map }: { map: HubMapDef }) {
-  if (map.hubId === 'camp04') return <CampArt />
+function MapArt({ map, full }: { map: HubMapDef; full: boolean }) {
+  if (map.hubId === 'camp04') return <CampArt full={full} />
   if (map.hubId === 'spine') return <SpineArt />
   if (map.hubId === 'threshold') return <ThreshArt />
   return <MawArt />
 }
 
-function CampArt() {
+function CampArt({ full }: { full: boolean }) {
+  // Charcoal on a torn scrap: thumb smudges, a fold crease, rough blocks where the sketch puts each place.
   return (
-    <g className="map-sketch" filter="url(#charcoal-jitter)">
-      <rect x="0" y="0" width="100" height="132" filter="url(#soot-grain)" opacity="0.55" />
-      <ellipse cx="18" cy="22" rx="16" ry="10" className="map-stain" />
-      <ellipse cx="86" cy="96" rx="18" ry="14" className="map-stain deep" />
-      <path
-        d="M7 10 Q22 6 38 12 Q54 7 70 11 Q84 8 93 13 L91 106 Q74 113 52 107 Q28 112 8 108 Z"
-        fill="none"
-        className="map-wire"
-      />
-      <path
-        d="M8 108 L16 103 L24 110 L33 102 L44 111 L56 104 L67 112 L78 105 L88 113 L93 108"
-        fill="none"
-        className="map-dune"
-      />
-      <path d="M66 5 l11 1 l1 13 l-12 1 z" fill="url(#charcoal-hatch)" className="map-block" />
-      <path d="M62 24 l17 1 l-1 11 l-16 -1 z" fill="url(#charcoal-hatch)" className="map-block" />
-      <path d="M74 46 l16 2 l-1 12 l-16 -1 z" fill="url(#charcoal-hatch)" className="map-block" />
-      <ellipse cx="80" cy="51" rx="5.8" ry="2.4" fill="none" className="map-block" />
-      <path d="M76 51 L73 58 M80 53 L80 60 M85 51 L87 58" className="map-hatch" />
-      <path d="M21 61 l17 1 l-1 13 l-16 -1 z" fill="url(#charcoal-hatch-steep)" className="map-block" />
-      <g className="map-hatch">
-        <path d="M28 38 q5 -7 10 1" />
-        <path d="M32 42 q4 -6 8 1" />
-        <path d="M36 39 q4 -7 8 0" />
+    <g className="map-sketch charcoal">
+      <g filter="url(#charcoal-smudge)" className="map-thumb">
+        <ellipse cx="20" cy="30" rx="15" ry="9" />
+        <ellipse cx="82" cy="98" rx="16" ry="11" />
+        <ellipse cx="46" cy="60" rx="9" ry="5" />
+        <path d="M60 118 q14 -6 30 2" strokeWidth="5" fill="none" />
       </g>
-      <g fill="url(#charcoal-hatch)" className="map-block">
-        <path d="M8 84 h6 v8 h-6 z" />
-        <path d="M15 84 h6 v8 h-6 z" />
-        <path d="M8 93 h6 v8 h-6 z" />
-        <path d="M15 93 h6 v8 h-6 z" />
+      <path d="M0 67 Q30 64 52 68 T100 65" className="map-crease" />
+      <path d="M0 67.6 Q30 64.6 52 68.6 T100 65.6" className="map-crease light" />
+      <path d="M49 0 Q51 40 48 80 T50 132" className="map-crease faint" />
+      <g filter="url(#charcoal-rough)" display={full ? undefined : 'none'}>
+        <path d="M5 6 Q30 2 52 7 Q74 3 95 8 M94 10 L96 118 M5 9 L4 120" fill="none" className="map-wire" />
+        <path
+          d="M3 124 L11 119 L19 126 L28 118 L37 126 L47 119 L57 127 L67 119 L77 127 L87 119 L96 125"
+          fill="none"
+          className="map-dune"
+        />
+        <path d="M70 -1 l10 1 l1 9 l-11 0 z" fill="url(#charcoal-hatch)" className="map-block" />
+        <path d="M72 6 l3 -5 l3 5" className="map-hatch" />
+        <path d="M63 19 l10 0 l0 10 l-10 0 z M66 19 l2 -5 l2 5" fill="url(#charcoal-hatch-steep)" className="map-block" />
+        <path d="M13 4 l12 1 l-1 8 l-12 -1 z" fill="url(#charcoal-hatch)" className="map-block" />
+        <g className="map-hatch">
+          <path d="M28 32 q4 -7 8 1" />
+          <path d="M33 31 q4 -8 8 0" />
+          <path d="M38 33 q3 -6 7 1" />
+        </g>
+        <path d="M1 46 l9 1 l-1 11 l-8 -1 z" className="map-block" fill="none" />
+        <path d="M82 51 l12 1 l-1 10 l-12 -1 z" fill="url(#charcoal-hatch)" className="map-block" />
+        <ellipse cx="87" cy="66" rx="7" ry="2.4" fill="none" className="map-block" />
+        <path d="M25 72 l12 1 l-1 7 l-12 -1 z" fill="url(#charcoal-hatch-steep)" className="map-block" />
+        <path d="M48 66 h12 M48 68 h12 M49 72 h10" className="map-hatch" />
+        <path d="M60 78 l12 0 l0 6 l-12 0 z" fill="url(#charcoal-hatch)" className="map-block" />
+        <g fill="url(#charcoal-hatch)" className="map-block">
+          <path d="M32 106 h5 v9 h-5 z" />
+          <path d="M39 106 h5 v9 h-5 z" />
+          <path d="M6 97 h5 v9 h-5 z" />
+          <path d="M13 97 h5 v9 h-5 z" />
+        </g>
       </g>
-      <path d="M38 82 l14 1 v10 l-15 -1 z" fill="url(#charcoal-hatch)" className="map-block" />
       <text x="49" y="8" textAnchor="middle" className="map-compass">
         N · inland
       </text>

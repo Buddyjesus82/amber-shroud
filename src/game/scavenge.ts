@@ -193,7 +193,7 @@ function rollFind(state: GameState): ScavengeResult {
     return {
       add: { scrap: 2 },
       drop: false,
-      flash: 'Two twists of scrap. Wire. Bent tooth. Saleable. Tradeable.',
+      flash: 'Two twists of scrap. Wire. Bent nail. Saleable. Tradeable.',
     }
   }
   if (state.hubId === 'camp04' && roll === 3) {
