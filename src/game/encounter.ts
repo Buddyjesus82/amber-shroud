@@ -540,7 +540,8 @@ export function terrainOf(state: GameState): Terrain {
 function openerOf(state: GameState, spec: Spec): string {
   const list = OPENERS[spec.kind] ?? []
   const i = Number(state.flags.encounterOpen ?? 0)
-  const line = list[i] || spec.line
+  // v218: a Clean Passage check opens on its own line, not the vent's.
+  const line = spec.kind === 'patrol' && state.flags.passagePatrol ? PASSAGE_LINE : list[i] || spec.line
   if (state.flags.encounterPair) return `${line} ${PAIR_LINE}`
   if (state.flags.encounterController) return `${line} ${HUSK_CONTROLLER_LINE}`
   return line
@@ -886,6 +887,7 @@ function lootLine(add: Partial<Record<ItemId, number>>, dropped = false): string
   return held
 }
 
+export const PASSAGE_LINE = "A block runner steps off the tier rotation and cuts you off. Shock baton angled low. 'Tags. Show 'em.'"
 export const PASSAGE_WIN_LINE = 'The runner hits the grating with a dull thud. Two pieces of scrap in his palm. Nobody turned around. Yet.'
 
 export const ENCOUNTER_FLAGS = [

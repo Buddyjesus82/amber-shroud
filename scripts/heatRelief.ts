@@ -1,7 +1,7 @@
 /** v218 (unshipped): Pens heat relief + Clean Passage. npx tsx scripts/heatRelief.ts */
 import { applyEffect, newGame, visibleChoices } from '../src/game/engine.ts'
 import { BARROW_CACHE_SCENES, BRIBE_LINE, BRIBE_HEAT_LINE, HIDDEN, barrowCache } from '../src/game/heatRelief.ts'
-import { PASSAGE_WIN_LINE } from '../src/game/encounter.ts'
+import { PASSAGE_LINE, PASSAGE_WIN_LINE, encounterCard } from '../src/game/encounter.ts'
 import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
@@ -55,6 +55,7 @@ ok(low === 0, 'no check under Cartel Heat 6')
   let f: GameState | null = null
   for (let t = 0; t < 40 && !f; t++) { const n = applyEffect(at(6, {}, { sceneId: 'camp:yard', ticks: t, health: 20 } as never), { goto: 'camp:lean', ticks: 1 }); if (n.flags.passagePatrol) f = n }
   ok(f && f.sceneId === 'camp:lean' && f.flags.encounterKind === 'patrol' && f.flags.encounterNoSkip, 'passage opens the Vent patrol on arrival')
+  ok(encounterCard(f!).includes(PASSAGE_LINE) && !encounterCard(f!).includes('One clerk'), 'guard check card opens on the approved line')
   let w = f!
   for (let i = 0; i < 30 && w.flags.encounterHere; i++) { const c = visibleChoices(w).find((x) => x.id === 'enc-fight') ?? visibleChoices(w)[0]; w = applyEffect(w, c.effects) }
   ok((w.items.scrap ?? 0) === (f!.items.scrap ?? 0) + 2 && (w.health ?? 0) > 0, `passage win: +2 Scrap (${w.items.scrap})`)

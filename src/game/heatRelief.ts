@@ -12,7 +12,8 @@ export const BRIBE_EVERY = 3
 export const LAY_LOW_LABEL = 'Lay Low'
 export const LAY_LOW_SUB = 'Face the wall. Let the walker pass.'
 export const LAY_LOW_LINE = "You fold into the back of the cage and breathe through your teeth. The tier-walker's lamp slides past without stopping.\n\nCartel Heat -1."
-export const PASSAGE_LINE = "A block runner steps off the tier rotation and cuts you off. Shock baton angled low. 'Tags. Show 'em.'"
+import { PASSAGE_LINE } from './encounter'
+export { PASSAGE_LINE }
 export const PASSAGE_HEAT = 6
 export const PASSAGE_ONE_IN = 3
 
