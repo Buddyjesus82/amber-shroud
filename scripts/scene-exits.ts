@@ -100,7 +100,7 @@ function ended(s: GameState) {
 function key(s: GameState) {
   const flags = Object.keys(s.flags)
     .sort()
-    .filter((k) => !['sceneSteps', 'fightQuiet', 'huntQuiet', 'restHeatStep'].includes(k) && s.flags[k] !== false && s.flags[k] !== '' && s.flags[k] !== 0)
+    .filter((k) => !['sceneSteps', 'fightQuiet', 'huntQuiet', 'restHeatStep', 'camp04Seen', 'camp04Map'].includes(k) && s.flags[k] !== false && s.flags[k] !== '' && s.flags[k] !== 0)
     .map((k) => `${k}=${String(s.flags[k])}`)
     .join(',')
   const items = Object.keys(s.items)
@@ -114,6 +114,7 @@ function key(s: GameState) {
 function thumbActions(s: GameState): { name: string; next: GameState }[] {
   const out: { name: string; next: GameState }[] = []
   for (const c of visibleChoices(s)) {
+    if (c.id.startsWith('walk-')) continue // Camp-04 map roads as buttons: same as hub place-chips, not story choices.
     if (!isChoiceOn(s, c.enable)) continue
     out.push({ name: c.id, next: applyEffect(s, c.effects) })
   }

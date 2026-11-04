@@ -102,7 +102,7 @@ import { CARAPACE_HUNTER, CARAPACE_HUNTER_HEAT, SPINE_HUNTER } from '../src/game
 import { JODI_LINES, SHADE_HANDS_LIVE } from '../src/game/content/shadeHands.ts'
 import { SILAS_JOB_FLAGS, SILAS_JOB_LIVE } from '../src/game/content/silasJob.ts'
 import { canSkim } from '../src/game/scavenge.ts'
-import { canTravelTo, edgeSap, HUB_MAPS, nodeIdForScene, route } from '../src/game/map.ts'
+import { campSeen, canTravelTo, drawnMap, edgeSap, HUB_MAPS, markCampSeen, nodeIdForScene, route } from '../src/game/map.ts'
 import { estimateLabel, layoutLabels, layoutProblems, type Box } from '../src/game/mapLabels.ts'
 import {
   clearAllSaves,
@@ -373,6 +373,38 @@ assert(edgeSap(camp, 'pens', 'bay') == null, 'pens have no road to the bay')
 assert(edgeSap(camp, 'pens', 'yard') === 1, 'pens connect to the Yard')
 assert(edgeSap(camp, 'pens', 'lean') === 1, 'pens connect to the stall')
 assert(route(camp, 'pens', 'wire')?.join('→') === 'pens→lean→bay→wire', 'mechanic corridor is the short Wire path')
+{
+  // Camp-04 map draws in as you walk it; the Overlook scrap reveals all of it.
+  let m = markCampSeen({ ...newGame('prisoner'), hubId: 'camp04', sceneId: 'camp:cages' } as GameState)
+  assert([...campSeen(m)].join() === 'pens', 'blank scrap: only the Pens are drawn at the start')
+  assert(drawnMap(m)!.nodes.length === 1 && drawnMap(m)!.edges.length === 0, 'unvisited places and roads stay off the scrap')
+  m = markCampSeen({ ...m, sceneId: 'camp:overlook' })
+  m = markCampSeen({ ...m, sceneId: 'camp:yard' })
+  const part = drawnMap(m)!
+  assert(part.nodes.map((n) => n.id).sort().join() === 'overlook,pens,yard', 'visited places draw in')
+  assert(part.edges.some((e) => e.a === 'pens' && e.b === 'overlook') && part.edges.some((e) => e.a === 'yard' && e.b === 'pens'), 'roads between drawn places draw in')
+  m = { ...m, sceneId: 'camp:overlook' }
+  assert(visibleChoices(m).some((c) => c.id === 'take-map'), 'the camp map can be taken at the Overlook')
+  m = pick(m, 'take-map')
+  assert(m.flags.camp04Map === true && drawnMap(m)!.nodes.length === camp.nodes.length, 'taking the Overlook map draws the whole camp')
+  assert(!visibleChoices(m).some((c) => c.id === 'take-map'), 'the camp map is taken once')
+  // No map needed to move: from a fresh start, buttons alone reach every Camp-04 place.
+  const s0 = { ...newGame('prisoner'), hubId: 'camp04', sceneId: 'camp:cages' } as GameState
+  const got = new Map<string, GameState>([[s0.sceneId, s0]])
+  const q = [s0]
+  while (q.length) {
+    const st = q.shift()!
+    for (const c of visibleChoices(st)) {
+      if (!c.effects?.goto || !isChoiceOn(st, c.enable)) continue
+      const nx = applyEffect(st, c.effects)
+      if (nx.hubId === 'camp04' && !got.has(nx.sceneId)) { got.set(nx.sceneId, nx); q.push(nx) }
+    }
+  }
+  for (const n of camp.nodes) assert(got.has(n.sceneId), `${n.name} is reachable by buttons without the camp map`)
+  const walked = { ...s0, flags: { ...s0.flags, camp04Map: true } }
+  assert(!visibleChoices(walked).some((c) => c.id.startsWith('walk-')), 'map roads leave the buttons once the map is taken')
+  assert(drawnMap({ ...newGame('prisoner'), hubId: 'spine', sceneId: 'spine:sign' } as GameState)!.nodes.length === HUB_MAPS.spine.nodes.length, 'other hubs keep their full maps')
+}
 assert(edgeSap(camp, 'bay', 'wire') === 2, 'camp Maw-leg from bay to Wire is long')
 assert(HUBS.camp04.mawLegs > HUBS.spine.mawLegs, 'Camp-04 is farther from the Maw than the Spine')
 assert(HUBS.spine.mawLegs > HUBS.threshold.mawLegs, 'Spine is farther from the Maw than Outer Threshold')

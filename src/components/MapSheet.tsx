@@ -1,7 +1,7 @@
 import { useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { HUBS } from '../game/content/catalog'
 import { CH2_BACKTRACK, chapterTwoLocked, travelTo } from '../game/engine'
-import { adjacency, currentNode, edgeSap as rawEdgeSap, hubMapOf, nodeById } from '../game/map'
+import { adjacency, CAMP_MAP_FLAG, currentNode, drawnMap, edgeSap as rawEdgeSap, nodeById } from '../game/map'
 import { ROAD_SAP } from '../game/returnRoad'
 import { estimateLabel, layoutLabels, type Box } from '../game/mapLabels'
 import type { GameState, HubMapDef, HubMapNode } from '../game/types'
@@ -40,7 +40,7 @@ type Props = {
 export const ROAD_MAP_LINE = 'On the road. The only map is the heading: keep walking toward Red Maw.'
 
 export function MapSheet({ state, onChange, onClose }: Props) {
-  const map = hubMapOf(state)
+  const map = drawnMap(state)
   const here = currentNode(state)
   const [hint, setHint] = useState<string | null>(null)
 
@@ -231,7 +231,7 @@ function HubMapView({
         >
           <ScrapDefs />
           <rect className="map-hide-wash" x="0" y="0" width={map.width} height={map.height} />
-          <MapArt map={map} />
+          <MapArt map={map} full={map.hubId !== 'camp04' || !!state.flags[CAMP_MAP_FLAG]} />
           {map.edges.map((e) => {
             const a = nodeById(map, e.a)
             const b = nodeById(map, e.b)
@@ -363,14 +363,14 @@ function YouMark({ x, y }: { x: number; y: number }) {
   )
 }
 
-function MapArt({ map }: { map: HubMapDef }) {
-  if (map.hubId === 'camp04') return <CampArt />
+function MapArt({ map, full }: { map: HubMapDef; full: boolean }) {
+  if (map.hubId === 'camp04') return <CampArt full={full} />
   if (map.hubId === 'spine') return <SpineArt />
   if (map.hubId === 'threshold') return <ThreshArt />
   return <MawArt />
 }
 
-function CampArt() {
+function CampArt({ full }: { full: boolean }) {
   // Charcoal on a torn scrap: thumb smudges, a fold crease, rough blocks where the sketch puts each place.
   return (
     <g className="map-sketch charcoal">
@@ -383,7 +383,7 @@ function CampArt() {
       <path d="M0 67 Q30 64 52 68 T100 65" className="map-crease" />
       <path d="M0 67.6 Q30 64.6 52 68.6 T100 65.6" className="map-crease light" />
       <path d="M49 0 Q51 40 48 80 T50 132" className="map-crease faint" />
-      <g filter="url(#charcoal-rough)">
+      <g filter="url(#charcoal-rough)" display={full ? undefined : 'none'}>
         <path d="M5 6 Q30 2 52 7 Q74 3 95 8 M94 10 L96 118 M5 9 L4 120" fill="none" className="map-wire" />
         <path
           d="M3 124 L11 119 L19 126 L28 118 L37 126 L47 119 L57 127 L67 119 L77 127 L87 119 L96 125"

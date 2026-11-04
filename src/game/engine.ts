@@ -25,7 +25,7 @@ import { helpText } from './help'
 import { helpRoute, HELP_HINT, HELP_TOPICS, topicText } from './helpTopics'
 import { isBayScene } from './content/bayHands'
 import { classifyLook, directedLookFlash, pressureLookFlash, roomLookEffect } from './look'
-import { matchCompass, travelGate } from './map'
+import { CAMP_MAP_FLAG, markCampSeen, matchCompass, travelGate } from './map'
 import { isChapterReleased } from './chapters'
 import { chapterThreeAfter } from './ch3'
 import { chapterTwoAfter, chapterTwoUnlock, isChapterTwoCode } from './ch2'
@@ -206,7 +206,7 @@ function openingState(door: DoorId): GameState {
 }
 
 export function persist(state: GameState): GameState {
-  const next = withCheckpoint(markFirstDrop(state), () => openingState(state.door))
+  const next = withCheckpoint(markFirstDrop(markCampSeen(state)), () => openingState(state.door))
   writeSave(next)
   return next
 }
@@ -2263,7 +2263,25 @@ function visibleChoicesRaw(state: GameState): Choice[] {
     : isRumorCounter(state.sceneId)
       ? rumorChoices(state, authored).filter((c) => check(c.show, state))
       : authored
-  return [...bag, ...maskedPickup(state), ...withRest(state, withKaelenPass(state, [...hymnSapLocks(state, mawToll(state, rows)), ...jobWalkRows(state)]))]
+  return [...bag, ...maskedPickup(state), ...withRest(state, withKaelenPass(state, [...hymnSapLocks(state, mawToll(state, rows)), ...jobWalkRows(state), ...campWalkRows(state, rows)]))]
+}
+
+/** Camp-04 before the Overlook map: every map road is also a button, so the blank scrap never gates movement. */
+function campWalkRows(state: GameState, rows: Choice[]): Choice[] {
+  const map = HUB_MAPS.camp04
+  if (state.hubId !== 'camp04' || state.flags[CAMP_MAP_FLAG] || !map) return []
+  const here = map.sceneNode[state.sceneId] ?? map.nodes.find((n) => n.sceneId === state.sceneId)?.id
+  if (!here) return []
+  const has = new Set(rows.map((c) => c.effects?.goto).filter(Boolean))
+  const out: Choice[] = []
+  for (const e of map.edges) {
+    const other = e.a === here ? e.b : e.b === here ? e.a : null
+    const to = other ? map.nodes.find((n) => n.id === other) : null
+    if (!to || has.has(to.sceneId)) continue
+    const sap = e.sap ?? 1
+    out.push({ id: `walk-${to.id}`, label: `Walk to ${to.name}`, sub: sap ? `${sap} Sap.` : undefined, tone: 'quiet', effects: { sap: -sap, goto: to.sceneId } })
+  }
+  return out
 }
 
 /** The Maw toll: diggers hold the rope down to the Fossil Ribs. Pay (more at higher Cartel Heat), slip past, or fight. Once a Maw visit. */

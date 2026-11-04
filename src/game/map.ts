@@ -199,3 +199,36 @@ export function isMawExit(state: GameState): boolean {
   if (!map?.ready) return true
   return !!currentNode(state)?.mawExit
 }
+
+/** Camp-04 starts as a blank scrap: places draw in as you reach them, until the Overlook map is taken. */
+export const CAMP_MAP_FLAG = 'camp04Map'
+export const CAMP_SEEN_FLAG = 'camp04Seen'
+
+export function campSeen(state: Pick<GameState, 'flags'>): Set<string> {
+  const raw = state.flags[CAMP_SEEN_FLAG]
+  return new Set(typeof raw === 'string' && raw ? raw.split(',') : [])
+}
+
+export function markCampSeen(state: GameState): GameState {
+  if (state.hubId !== 'camp04' || state.flags[CAMP_MAP_FLAG]) return state
+  const id = HUB_MAPS.camp04?.sceneNode[state.sceneId] ?? HUB_MAPS.camp04?.nodes.find((n) => n.sceneId === state.sceneId)?.id
+  if (!id) return state
+  const seen = campSeen(state)
+  if (seen.has(id)) return state
+  seen.add(id)
+  return { ...state, flags: { ...state.flags, [CAMP_SEEN_FLAG]: [...seen].join(',') } }
+}
+
+/** The map as drawn on the player's scrap: the full sheet, or only the places (and roads between them) reached so far. */
+export function drawnMap(state: GameState): HubMapDef | null {
+  const map = hubMapOf(state)
+  if (!map || map.hubId !== 'camp04' || state.flags[CAMP_MAP_FLAG]) return map
+  const seen = campSeen(state)
+  const here = nodeIdForScene(map, state.sceneId)
+  if (here) seen.add(here)
+  return {
+    ...map,
+    nodes: map.nodes.filter((n) => seen.has(n.id)),
+    edges: map.edges.filter((e) => seen.has(e.a) && seen.has(e.b)),
+  }
+}

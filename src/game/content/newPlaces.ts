@@ -119,6 +119,8 @@ export const newPlaceScenes: Scene[] = [
     title: "Warden's Overlook",
     body: 'The Overlook watches the pens. Nothing in the yard moves unseen.',
     choices: [
+      // PLACEHOLDER copy — awaiting owner approval.
+      { id: 'take-map', label: 'Take the camp map', sub: 'Pinned under a rock.', tone: 'quiet', show: { flagUnset: 'camp04Map' }, effects: { flag: { camp04Map: true }, flash: 'A charcoal scrap of the whole camp. Every road is on it.' } },
       { id: 'watch', label: 'Watch the guard rotation', sub: 'Cartel Heat +1.', tone: 'danger', show: { flagUnset: 'guardRotation' }, effects: { heat: { cartel: 1 }, flag: { guardRotation: true } } },
       { id: 'pens', label: 'Holding Pens', tone: 'quiet', effects: { goto: 'camp:cages' } },
       { id: 'overseer', label: 'Overseer', sub: '1 Sap.', tone: 'quiet', effects: { ...sapRoad(1), goto: 'camp:valerius' } },
