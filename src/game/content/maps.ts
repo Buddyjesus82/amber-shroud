@@ -10,11 +10,11 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
     blurb: 'Cartel wire. East is Maw-country — days away. The sealed Spire is farther still. Walk only the roads that connect.',
     maw: { x: 78, y: 124, label: 'Gullet → Red Maw, east' },
     nodes: [
-      { id: 'tower', name: 'Overseer', sceneId: 'camp:tower', x: 75, y: 3 },
+      { id: 'tower', name: 'Overseer', sceneId: 'camp:tower', x: 75, y: 8 },
       { id: 'overlook', name: "Warden's Overlook", sceneId: 'camp:overlook', x: 19, y: 9 },
       { id: 'guard', name: 'Guard Station', sceneId: 'camp:guard', x: 68, y: 24 },
       { id: 'vents', name: 'Steam Vents', sceneId: 'camp:vents', x: 36, y: 35 },
-      { id: 'yard', name: 'Blood Yard', sceneId: 'camp:yard', x: 4, y: 52 },
+      { id: 'yard', name: 'Blood Yard', sceneId: 'camp:yard', x: 9, y: 52 },
       { id: 'bay', name: 'Skiff Bay', sceneId: 'camp:bay', x: 88, y: 56 },
       { id: 'ration', name: 'Ration Line', sceneId: 'camp:ration', x: 54, y: 70 },
       { id: 'siftline', name: 'Resin Sift Line', sceneId: 'camp:siftline', x: 66, y: 80 },

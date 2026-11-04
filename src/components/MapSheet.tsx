@@ -21,6 +21,11 @@ function edgeSap(map: HubMapDef, a: string, b: string, state: GameState): number
   return to?.sceneId === 'ch1:leave' && state.flags.chapter1Done ? ROAD_SAP : sap
 }
 
+/** Camp-04 is a bare hand sketch: names only, no road costs or exit note. */
+function sketchMap(map: HubMapDef): boolean {
+  return map.hubId === 'camp04'
+}
+
 function subFor(mine: boolean, sap: number | null): string {
   return mine ? 'you' : sap ? `−${sap} sap` : sap === 0 ? '' : 'far'
 }
@@ -153,12 +158,12 @@ function HubMapView({
       if (m && m.w && m.h) return m
       const mine = here?.id === n.id
       const sap = here && adjIds.has(n.id) ? edgeSap(map, here.id, n.id, state) : null
-      return estimateLabel(n.short ?? n.name, subFor(mine, sap), LABEL_MAX_W)
+      return estimateLabel(n.short ?? n.name, sketchMap(map) ? null : subFor(mine, sap), LABEL_MAX_W)
     }
     const ex = measured?.exit && measured.exit.w ? measured.exit : estimateLabel(map.maw.label, null, 150)
     const ecx = (map.maw.x / map.width) * W
     const ecy = (map.maw.y / map.height) * H
-    const exitBox: Box = {
+    const exitBox: Box = sketchMap(map) ? { x: -999, y: -999, w: 0, h: 0 } : {
       x: Math.min(Math.max(ecx - ex.w / 2, 6), Math.max(6, W - 6 - ex.w)),
       y: Math.min(Math.max(ecy - ex.h / 2, 6), Math.max(6, H - 6 - ex.h)),
       w: ex.w,
@@ -240,6 +245,9 @@ function HubMapView({
               <g key={`${e.a}-${e.b}`}>
                 <path d={d} className={on ? 'map-edge-smudge on' : 'map-edge-smudge'} />
                 <path d={d} className={on ? 'map-edge on' : 'map-edge'} />
+                {sketchMap(map) ? (
+                  <path d={charcoalStroke(a.x, a.y, b.x, b.y, `${e.b}~${e.a}`, 0.8)} className="map-edge-ghost" />
+                ) : null}
                 {long ? (
                   <path
                     d={charcoalStroke(a.x, a.y, b.x, b.y, `${e.a}-${e.b}-long`, 0.9)}
@@ -288,18 +296,18 @@ function HubMapView({
                   }}
                 >
                   <b>{n.short ?? n.name}</b>
-                  <small>{subFor(mine, sap)}</small>
+                  {sketchMap(map) ? null : <small>{subFor(mine, sap)}</small>}
                 </span>
               </button>
             )
           })}
-          <span
+          {sketchMap(map) ? null : <span
             className="map-exit-label map-maw-label"
             style={{ left: `${layout.exit.x}px`, top: `${layout.exit.y}px` }}
             ref={exitEl}
           >
             {map.maw.label}
-          </span>
+          </span>}
         </div>
       </div>
       <p className="map-hint">{hint ?? (state.sap <= 2 ? 'Sap is thin. Walks still cost Drops — empty is a crisis.' : `You are at ${here?.name ?? 'an unnamed scrap of ground'}. Tap a connected name.`)}</p>
@@ -324,7 +332,7 @@ function ScrapDefs() {
       </filter>
       <filter id="charcoal-rough" x="-15%" y="-15%" width="130%" height="130%">
         <feTurbulence type="fractalNoise" baseFrequency="1.6" numOctaves="3" seed="7" result="n" />
-        <feDisplacementMap in="SourceGraphic" in2="n" scale="1.3" xChannelSelector="R" yChannelSelector="G" result="d" />
+        <feDisplacementMap in="SourceGraphic" in2="n" scale="2.2" xChannelSelector="R" yChannelSelector="G" result="d" />
         <feTurbulence type="fractalNoise" baseFrequency="2.4" numOctaves="2" seed="19" result="tooth" />
         <feColorMatrix in="tooth" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.6 1.25" result="mask" />
         <feComposite in="d" in2="mask" operator="in" />

@@ -2355,8 +2355,8 @@ h2 {
   fill: rgba(240, 235, 222, 0.12);
 }
 .map-sketch.charcoal .map-thumb {
-  fill: rgba(25, 22, 20, 0.16);
-  stroke: rgba(25, 22, 20, 0.14);
+  fill: rgba(25, 22, 20, 0.07);
+  stroke: rgba(25, 22, 20, 0.06);
 }
 .map-crease {
   fill: none;
@@ -2387,4 +2387,27 @@ h2 {
 .charcoal-scrap .map-node .map-label b {
   color: #121010;
   text-shadow: 0 0 2px rgba(232, 226, 212, 0.95), 0.6px 0.4px 0 rgba(20, 18, 16, 0.35);
+}
+
+.map-edge-ghost {
+  fill: none;
+  stroke: rgba(21, 18, 15, 0.45);
+  stroke-width: 0.35;
+  stroke-linecap: round;
+  filter: url(#charcoal-rough);
+}
+.charcoal-scrap .map-node .map-label b {
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  display: inline-block;
+  transform: rotate(-2deg);
+}
+.charcoal-scrap .map-node:nth-child(3n) .map-label b {
+  transform: rotate(1.6deg) translateY(1px);
+}
+.charcoal-scrap .map-node:nth-child(3n + 1) .map-label b {
+  transform: rotate(-0.8deg) skewX(-4deg);
+}
+.charcoal-scrap .map-dot {
+  border-radius: 46% 54% 50% 48%;
 }

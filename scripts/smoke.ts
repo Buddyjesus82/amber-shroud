@@ -4759,7 +4759,7 @@ function assertHelpResolves(s: GameState, where: string) {
   for (const map of Object.values(HUB_MAPS)) {
     const H = (W * map.height) / map.width
     const ex = estimateLabel(map.maw.label, null, 200)
-    const exitBox: Box = {
+    const exitBox: Box = map.hubId === 'camp04' ? { x: -999, y: -999, w: 0, h: 0 } : {
       x: Math.min(Math.max((map.maw.x / map.width) * W - ex.w / 2, 6), W - 6 - ex.w),
       y: Math.min(Math.max((map.maw.y / map.height) * H - ex.h / 2, 6), H - 6 - ex.h),
       w: ex.w,
@@ -4777,7 +4777,7 @@ function assertHelpResolves(s: GameState, where: string) {
         const mine = n.id === here.id
         const sap = adj.has(n.id) ? edgeSap(map, here.id, n.id) : null
         const sub = mine ? 'you' : sap != null ? `−${sap} sap` : 'far'
-        return { id: n.id, x: (n.x / map.width) * W, y: (n.y / map.height) * H, ...estimateLabel(n.short ?? n.name, sub, 118), here: mine, side: n.labelSide }
+        return { id: n.id, x: (n.x / map.width) * W, y: (n.y / map.height) * H, ...estimateLabel(n.short ?? n.name, map.hubId === 'camp04' ? null : sub, 118), here: mine, side: n.labelSide }
       })
       const input = { width: W, height: H, nodes, edges, obstacles: [exitBox, compass] }
       const placed = layoutLabels(input)
