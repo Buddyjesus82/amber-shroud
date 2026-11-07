@@ -64,6 +64,6 @@ ok(!kaelenNamed({ kaelenKnown: true }) && kaelenNamed({ kaelenKnown: true, kaele
 ok(shownText(at('prisoner', 'roam:kaelen', { flags: { kaelenKnown: true } }), 'Kaelen the Sifter') === 'The trader', 'Buy header says the trader until heard')
 { const s = at('prisoner', 'ch1:storm', { health: 2 }); const f = { ...s, equipped: {}, flags: { ...s.flags, ...fightStartFlags(s, 'skiff') } } as GameState; ok(encounterCard(f).includes(UNARMED_LOW_WARN), 'unarmed low Health warning')
   ok(!encounterCard({ ...f, health: 5 } as GameState).includes(UNARMED_LOW_WARN), 'no warning when healthy') }
-ok(readFileSync('public/sw.js', 'utf8').includes("amber-shroud-v218") && readFileSync('src/version.ts', 'utf8').includes("'v218'"), 'v207 cache + build')
+ok(readFileSync('public/sw.js', 'utf8').includes("amber-shroud-v219") && readFileSync('src/version.ts', 'utf8').includes("'v219'"), 'v207 cache + build')
 console.log(fails ? `v207: ${fails} FAIL` : 'v207 ok')
 process.exit(fails ? 1 : 0)
