@@ -83,7 +83,7 @@ ok(low === 0, 'no check under Cartel Heat 6')
 }
 // barrowCache hook
 {
-  ok([...BARROW_CACHE_SCENES].sort().join() === 'camp:siftline,ch2:p-sift,thresh:conduits,thresh:subdrain', 'barrow tags: exactly the four approved scenes')
+  ok([...BARROW_CACHE_SCENES].sort().join() === 'camp:siftline,ch2:p-sift,ch3:siphon,thresh:conduits,thresh:subdrain', 'barrow tags: the four approved scenes plus the Alpha Siphon')
   for (const id of ['thresh:breach', 'maw:tunnels', 'maw:gullet']) ok(!BARROW_CACHE_SCENES.has(id), `barrow excludes ${id}`)
   for (const id of BARROW_CACHE_SCENES) {
     ok(getScene(id, 'prisoner' as never), `barrow scene exists: ${id}`)

@@ -100,7 +100,7 @@ function ended(s: GameState) {
 function key(s: GameState) {
   const flags = Object.keys(s.flags)
     .sort()
-    .filter((k) => !['sceneSteps', 'fightQuiet', 'huntQuiet', 'restHeatStep', 'camp04Seen', 'camp04Map', 'bribeTick', 'laidLowVisit', 'stealthHidden', 'mapHere', 'spineSeen', 'spineMap', 'threshSeen', 'threshMap'].includes(k) && s.flags[k] !== false && s.flags[k] !== '' && s.flags[k] !== 0)
+    .filter((k) => !['sceneSteps', 'fightQuiet', 'huntQuiet', 'restHeatStep', 'camp04Seen', 'camp04Map', 'bribeTick', 'laidLowVisit', 'stealthHidden', 'mapHere', 'spineSeen', 'spineMap', 'threshSeen', 'threshMap', 'barrowSeen', 'barrowMap'].includes(k) && s.flags[k] !== false && s.flags[k] !== '' && s.flags[k] !== 0)
     .map((k) => `${k}=${String(s.flags[k])}`)
     .join(',')
   const items = Object.keys(s.items)

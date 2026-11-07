@@ -33,6 +33,7 @@ export const chapterThreeScenes: Scene[] = [
   {
     id: 'ch3:capture',
     kind: 'story',
+    hubId: 'barrow',
     title: 'Collapsed Threshold Exit',
     body: capture,
     choices: [
@@ -43,6 +44,7 @@ export const chapterThreeScenes: Scene[] = [
   {
     id: 'ch3:wagon',
     kind: 'story',
+    hubId: 'barrow',
     title: 'Luminspire Citadel Approach',
     body: 'A Retriever transport wagon. Collared. The crystal walls of Luminspire climb ahead.',
     variants: [
@@ -57,6 +59,7 @@ export const chapterThreeScenes: Scene[] = [
   {
     id: 'ch3:supply',
     kind: 'story',
+    hubId: 'barrow',
     title: 'Supply Wagon',
     body: 'The quartermaster wagon. Your gear, tagged and crated. The outpost is shouting about the convoy.',
     choices: [
@@ -69,6 +72,7 @@ export const chapterThreeScenes: Scene[] = [
   {
     id: 'ch3:tent',
     kind: 'story',
+    hubId: 'barrow',
     title: 'Retriever Command Tent',
     body: "The command tent. A lockbox under Ash Vane's cot. The Spire Key is inside.",
     choices: [
@@ -79,8 +83,33 @@ export const chapterThreeScenes: Scene[] = [
     ],
   },
   {
+    id: 'ch3:trench',
+    kind: 'story',
+    hubId: 'barrow',
+    title: 'Primary Sift Trench',
+    body: 'The earth gives way to a massive industrial gash. Heavy iron screens and severed conduit lines lie choked under drifts of amber grit. Wind whistles hollowly through the open pipe ends.',
+    choices: [],
+  },
+  {
+    id: 'ch3:relay',
+    kind: 'story',
+    hubId: 'barrow',
+    title: 'Sunken Relay',
+    body: 'A buried junction chamber exposed by centuries of erosion. Stagnant runoff laps against brass-capped conduits, and a dull hum vibrates through the damp stone floor.',
+    choices: [],
+  },
+  {
+    id: 'ch3:siphon',
+    kind: 'story',
+    hubId: 'barrow',
+    title: 'Conduit Alpha Siphon',
+    body: 'A high-pressure bypass tap clamped directly into the main conduit line. Raw Sap beads like heavy oil along the valves, smelling sharply of ozone and old metal.',
+    choices: [],
+  },
+  {
     id: 'ch3:crosshaven',
     kind: 'ending',
+    hubId: 'barrow',
     title: 'Crosshaven Fringe',
     body: 'The Spire Key is cold against your palm, heavy with stolen brass. Behind you, the horn static of the Citadel perimeter fades into the freezing mist; ahead, the rot and oil-smoke of Crosshaven begin to take shape.',
     choices: [{ id: 'title', label: 'Back to the title', sub: 'Your game is saved.', tone: 'quiet', effects: { flag: { ch3StubSeen: true } } }],

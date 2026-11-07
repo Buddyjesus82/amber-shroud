@@ -47,7 +47,7 @@ ok(f.flags.encounterHere && f.flags.encounterKind === 'vex', 'vex fight opens')
 ok(coverFor(f) === 'ch3_vex_fight', 'fight art')
 for (const id of ['ch3:capture', 'ch3:wagon', 'ch3:supply', 'ch3:tent', 'ch3:crosshaven']) ok(String(coverFor({ ...w, sceneId: id, flags: {} } as GameState)).startsWith('ch3_'), `art ${id}`)
 const sw = readFileSync('public/sw.js', 'utf8')
-ok(sw.includes('amber-shroud-v221') && sw.includes('covers/ch3-tent.jpg'), 'sw')
+ok(sw.includes('amber-shroud-v222') && sw.includes('covers/ch3-tent.jpg'), 'sw')
 // Win both: strong player, strike until done.
 let g: GameState = { ...f, health: 99, healthMax: 99, items: { ...f.items, valerius_baton: 1 } }
 const kinds: string[] = []

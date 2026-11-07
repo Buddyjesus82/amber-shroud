@@ -76,6 +76,7 @@ export function canScavenge(state: GameState): boolean {
   const id = sceneOf(state)
   // v157: no Scavenge on The Stairs, from the Court or the opening.
   if (id === 'thresh:stairs') return false
+  if (id === 'ch3:trench' || id === 'ch3:relay') return true
   if (id.startsWith('crisis:') || id.startsWith('open:') || id.startsWith('ch1:') || id.startsWith('ch2:') || id.startsWith('ch3:')) {
     return false
   }

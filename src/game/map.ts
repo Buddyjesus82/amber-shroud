@@ -211,6 +211,15 @@ export const FOG_HUBS: Record<string, { seen: string; full: string }> = {
   camp04: { seen: CAMP_SEEN_FLAG, full: CAMP_MAP_FLAG },
   spine: { seen: 'spineSeen', full: 'spineMap' },
   threshold: { seen: 'threshSeen', full: 'threshMap' },
+  barrow: { seen: 'barrowSeen', full: 'barrowMap' },
+}
+/** v222: a Barrow Trails story scene the map must not open before its beat. */
+export function ch3MapLocked(state: Pick<GameState, 'flags'>, sceneId: string): boolean {
+  if (sceneId === 'ch3:wagon') return !state.flags.ch3Stripped
+  if (sceneId === 'ch3:supply') return !state.flags.ch3SupplyOpen
+  if (sceneId === 'ch3:tent') return !state.flags.ch3TentOpen
+  if (sceneId === 'ch3:crosshaven') return !state.flags.ch3VaultDone
+  return false
 }
 /** v219: the last map node you stood on, as `hub:node`. Off-map screens hold the pin here instead of the hub default. */
 export const MAP_HERE_FLAG = 'mapHere'
@@ -265,13 +274,23 @@ export function drawnMap(state: GameState): HubMapDef | null {
   const seen = seenOf(state, map.hubId)
   const here = currentNode(state)?.id
   if (here) seen.add(here)
+  const prefix = map.hubId === 'camp04' ? 'camp:' : map.hubId === 'spine' ? 'spine:' : map.hubId === 'threshold' ? 'thresh:' : map.hubId === 'barrow' ? 'ch3:' : `${map.hubId}:`
   const exit = (id: string) => {
     const n = nodeById(map, id)
-    return !!n && !n.sceneId.startsWith(map.hubId === 'camp04' ? 'camp:' : map.hubId === 'spine' ? 'spine:' : 'thresh:')
+    return !!n && !n.sceneId.startsWith(prefix)
   }
   for (const e of map.edges) {
     if (seen.has(e.a) && exit(e.b)) seen.add(e.b)
     if (seen.has(e.b) && exit(e.a)) seen.add(e.a)
+  }
+  // A story gate keeps the next node on the scrap, and the walk stays locked.
+  if (map.hubId === 'barrow') {
+    for (const e of map.edges) {
+      const a = nodeById(map, e.a)
+      const b = nodeById(map, e.b)
+      if (seen.has(e.a) && b && ch3MapLocked(state, b.sceneId)) seen.add(e.b)
+      if (seen.has(e.b) && a && ch3MapLocked(state, a.sceneId)) seen.add(e.a)
+    }
   }
   return {
     ...map,
