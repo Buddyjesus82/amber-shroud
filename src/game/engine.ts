@@ -26,7 +26,7 @@ import { helpText } from './help'
 import { helpRoute, HELP_HINT, HELP_TOPICS, topicText } from './helpTopics'
 import { isBayScene } from './content/bayHands'
 import { classifyLook, directedLookFlash, pressureLookFlash, roomLookEffect } from './look'
-import { CAMP_MAP_FLAG, markCampSeen, matchCompass, travelGate } from './map'
+import { fogged, markCampSeen, matchCompass, travelGate } from './map'
 import { isChapterReleased } from './chapters'
 import { chapterThreeAfter } from './ch3'
 import { chapterTwoAfter, chapterTwoUnlock, isChapterTwoCode } from './ch2'
@@ -2270,18 +2270,19 @@ function visibleChoicesRaw(state: GameState): Choice[] {
   return [...bag, ...maskedPickup(state), ...withRest(state, withKaelenPass(state, [...hymnSapLocks(state, mawToll(state, rows)), ...jobWalkRows(state), ...heatReliefRows(state), ...campWalkRows(state, rows)]))]
 }
 
-/** Camp-04 before the Overlook map: every map road is also a button, so the blank scrap never gates movement. */
+/** Camp-04 before the Overlook map: every map road is also a button, so the blank scrap never gates movement.
+ * v219: the Spine and the Threshold too (their scraps stay blank until walked). Roads out of the hub stay on their own buttons. */
 function campWalkRows(state: GameState, rows: Choice[]): Choice[] {
-  const map = HUB_MAPS.camp04
-  if (state.hubId !== 'camp04' || state.flags[CAMP_MAP_FLAG] || !map) return []
+  const map = state.hubId ? HUB_MAPS[state.hubId] : undefined
+  if (!map || !fogged(state)) return []
   const here = map.sceneNode[state.sceneId] ?? map.nodes.find((n) => n.sceneId === state.sceneId)?.id
   if (!here) return []
-  const has = new Set(rows.map((c) => c.effects?.goto).filter(Boolean))
+  const has = new Set(rows.map((c) => c.effects?.goto ?? c.effects?.travel).filter(Boolean))
   const out: Choice[] = []
   for (const e of map.edges) {
     const other = e.a === here ? e.b : e.b === here ? e.a : null
     const to = other ? map.nodes.find((n) => n.id === other) : null
-    if (!to || has.has(to.sceneId)) continue
+    if (!to || has.has(to.sceneId) || to.sceneId === state.sceneId || getScene(to.sceneId, state.door).hubId !== state.hubId) continue
     const sap = e.sap ?? 1
     out.push({ id: `walk-${to.id}`, label: `Walk to ${to.name}`, sub: sap ? `${sap} Sap.` : undefined, tone: 'quiet', effects: { sap: -sap, goto: to.sceneId } })
   }

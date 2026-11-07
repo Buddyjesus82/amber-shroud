@@ -403,7 +403,9 @@ assert(route(camp, 'pens', 'wire')?.join('→') === 'pens→lean→bay→wire', 
   for (const n of camp.nodes) assert(got.has(n.sceneId), `${n.name} is reachable by buttons without the camp map`)
   const walked = { ...s0, flags: { ...s0.flags, camp04Map: true } }
   assert(!visibleChoices(walked).some((c) => c.id.startsWith('walk-')), 'map roads leave the buttons once the map is taken')
-  assert(drawnMap({ ...newGame('prisoner'), hubId: 'spine', sceneId: 'spine:sign' } as GameState)!.nodes.length === HUB_MAPS.spine.nodes.length, 'other hubs keep their full maps')
+  // v219: the Spine and the Threshold draw in too; the Red Maw keeps its full sheet.
+  assert(drawnMap({ ...newGame('outcast'), hubId: 'spine', sceneId: 'spine:sign' } as GameState)!.nodes.length < HUB_MAPS.spine.nodes.length, 'the Spine starts as a blank scrap')
+  assert(drawnMap({ ...newGame('prisoner'), hubId: 'redmaw', sceneId: HUB_MAPS.redmaw.nodes[0].sceneId } as GameState)!.nodes.length === HUB_MAPS.redmaw.nodes.length, 'the Red Maw keeps its full map')
 }
 assert(edgeSap(camp, 'bay', 'wire') === 2, 'camp Maw-leg from bay to Wire is long')
 assert(HUBS.camp04.mawLegs > HUBS.spine.mawLegs, 'Camp-04 is farther from the Maw than the Spine')

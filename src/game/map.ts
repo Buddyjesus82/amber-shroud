@@ -109,7 +109,10 @@ export function currentNode(state: GameState): HubMapNode | null {
     (state.sceneId === 'camp:hunter' || state.flags.hunterHere) && typeof from === 'string' && from
       ? from
       : state.sceneId
-  const id = nodeIdForScene(map, prefer, true)
+  // v219: an off-map screen (a gate, a crisis, a place past the sheet's edge) holds the last pin, not the hub default.
+  const pin = state.flags[MAP_HERE_FLAG]
+  const held = typeof pin === 'string' && pin.startsWith(`${map.hubId}:`) ? pin.slice(map.hubId.length + 1) : null
+  const id = nodeIdForScene(map, prefer) ?? (held && nodeById(map, held) ? held : map.defaultNode)
   return id ? (nodeById(map, id) ?? null) : null
 }
 
@@ -170,7 +173,7 @@ export function travelGate(state: GameState, sceneId: string): TravelGate {
   if (!map.ready) {
     return { ok: false, reason: map.coming ?? 'This ground is not mapped yet.' }
   }
-  const fromId = nodeIdForScene(map, state.sceneId, true)
+  const fromId = currentNode(state)?.id
   const toId = nodeIdForScene(map, sceneId, false)
   const from = fromId ? nodeById(map, fromId) : null
   const to = toId ? nodeById(map, toId) : null
@@ -200,32 +203,76 @@ export function isMawExit(state: GameState): boolean {
   return !!currentNode(state)?.mawExit
 }
 
-/** Camp-04 starts as a blank scrap: places draw in as you reach them, until the Overlook map is taken. */
+/** Camp-04 starts as a blank scrap: places draw in as you reach them, until the Overlook map is taken.
+ * v219: the Spine and the Threshold draw in the same way. They have no full map to pick up (yet). */
 export const CAMP_MAP_FLAG = 'camp04Map'
 export const CAMP_SEEN_FLAG = 'camp04Seen'
+export const FOG_HUBS: Record<string, { seen: string; full: string }> = {
+  camp04: { seen: CAMP_SEEN_FLAG, full: CAMP_MAP_FLAG },
+  spine: { seen: 'spineSeen', full: 'spineMap' },
+  threshold: { seen: 'threshSeen', full: 'threshMap' },
+}
+/** v219: the last map node you stood on, as `hub:node`. Off-map screens hold the pin here instead of the hub default. */
+export const MAP_HERE_FLAG = 'mapHere'
 
-export function campSeen(state: Pick<GameState, 'flags'>): Set<string> {
-  const raw = state.flags[CAMP_SEEN_FLAG]
+/** True while this hub's scrap is still drawing in (no full map in hand). */
+export function fogged(state: Pick<GameState, 'flags' | 'hubId'>): boolean {
+  const fog = state.hubId ? FOG_HUBS[state.hubId] : undefined
+  return !!fog && !state.flags[fog.full]
+}
+
+export function seenOf(state: Pick<GameState, 'flags'>, hubId: string): Set<string> {
+  const key = FOG_HUBS[hubId]?.seen
+  const raw = key ? state.flags[key] : undefined
   return new Set(typeof raw === 'string' && raw ? raw.split(',') : [])
 }
 
-export function markCampSeen(state: GameState): GameState {
-  if (state.hubId !== 'camp04' || state.flags[CAMP_MAP_FLAG]) return state
-  const id = HUB_MAPS.camp04?.sceneNode[state.sceneId] ?? HUB_MAPS.camp04?.nodes.find((n) => n.sceneId === state.sceneId)?.id
-  if (!id) return state
-  const seen = campSeen(state)
-  if (seen.has(id)) return state
-  seen.add(id)
-  return { ...state, flags: { ...state.flags, [CAMP_SEEN_FLAG]: [...seen].join(',') } }
+export function campSeen(state: Pick<GameState, 'flags'>): Set<string> {
+  return seenOf(state, 'camp04')
 }
 
-/** The map as drawn on the player's scrap: the full sheet, or only the places (and roads between them) reached so far. */
+/** Marks the node you stand on: drawn on the scrap (fog hubs) and remembered as the last place the pin was. */
+export function markCampSeen(state: GameState): GameState {
+  const map = hubMapOf(state)
+  if (!map) return state
+  const id = map.sceneNode[state.sceneId] ?? map.nodes.find((n) => n.sceneId === state.sceneId)?.id
+  if (!id) return state
+  const flags: GameState['flags'] = { ...state.flags }
+  let changed = false
+  const pin = `${map.hubId}:${id}`
+  if (flags[MAP_HERE_FLAG] !== pin) {
+    flags[MAP_HERE_FLAG] = pin
+    changed = true
+  }
+  const fog = FOG_HUBS[map.hubId]
+  if (fog && !flags[fog.full]) {
+    const seen = seenOf(state, map.hubId)
+    if (!seen.has(id)) {
+      seen.add(id)
+      flags[fog.seen] = [...seen].join(',')
+      changed = true
+    }
+  }
+  return changed ? { ...state, flags } : state
+}
+export const markMapSeen = markCampSeen
+
+/** The map as drawn on the player's scrap: the full sheet, or only the places (and roads between them) reached so far.
+ * A road out of the hub (a node whose scene is not in the hub, like the Bone Wash) shows once the place beside it is drawn. */
 export function drawnMap(state: GameState): HubMapDef | null {
   const map = hubMapOf(state)
-  if (!map || map.hubId !== 'camp04' || state.flags[CAMP_MAP_FLAG]) return map
-  const seen = campSeen(state)
-  const here = nodeIdForScene(map, state.sceneId)
+  if (!map || !fogged(state)) return map
+  const seen = seenOf(state, map.hubId)
+  const here = currentNode(state)?.id
   if (here) seen.add(here)
+  const exit = (id: string) => {
+    const n = nodeById(map, id)
+    return !!n && !n.sceneId.startsWith(map.hubId === 'camp04' ? 'camp:' : map.hubId === 'spine' ? 'spine:' : 'thresh:')
+  }
+  for (const e of map.edges) {
+    if (seen.has(e.a) && exit(e.b)) seen.add(e.b)
+    if (seen.has(e.b) && exit(e.a)) seen.add(e.a)
+  }
   return {
     ...map,
     nodes: map.nodes.filter((n) => seen.has(n.id)),

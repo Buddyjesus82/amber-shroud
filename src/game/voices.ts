@@ -565,6 +565,7 @@ const SPEAKER_VOICE: Record<string, string> = {
   'the collector': 'nim',
   vex: 'vex',
   'vex the hollow': 'vex',
+  'the hollow': 'vex',
   murch: 'murch',
   'murch the socket': 'murch',
 }
