@@ -156,7 +156,7 @@ He watched the shade go quiet when you walked in, and he knows what that quiet m
     {
       id: 'hound-walk',
       label: 'Walk the east wash',
-      sub: 'Down the wash to Hound Sign. 2 Sap. The deserter hides behind the rock there.',
+      sub: 'Down the wash to Hound Sign. 1 Sap. The deserter hides behind the rock there.',
       show: { flag: 'korvanHoundRumor' },
       effects: { travel: 'spine:hound' },
     },

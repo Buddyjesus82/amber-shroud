@@ -90,13 +90,13 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
       { id: 'wash', name: 'Bone Wash', short: 'Wash', sceneId: 'ch1:leave', x: 70, y: 102 },
     ],
     edges: [
-      { a: 'ridge', b: 'shade' },
-      { a: 'ridge', b: 'well' },
-      { a: 'shade', b: 'well' },
-      { a: 'well', b: 'hound', sap: 2 },
+      { a: 'ridge', b: 'shade', sap: 1 },
+      { a: 'ridge', b: 'well', sap: 1 },
+      { a: 'shade', b: 'well', sap: 1 },
+      { a: 'well', b: 'hound', sap: 1 },
       // The east wash: Korvan's heading runs straight down it from Silas's shade to Hound Sign.
-      { a: 'shade', b: 'hound', sap: 2 },
-      { a: 'hound', b: 'wash' },
+      { a: 'shade', b: 'hound', sap: 1 },
+      { a: 'hound', b: 'wash', sap: 2 },
     ],
     sceneNode: {
       'spine:ridge': 'ridge',
@@ -137,11 +137,11 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
       { id: 'guard', name: 'Guard Post', short: 'Guard', sceneId: 'thresh:guard', x: 80, y: 48 },
     ],
     edges: [
-      { a: 'court', b: 'cell' },
-      { a: 'court', b: 'paddock' },
-      { a: 'court', b: 'sift' },
-      { a: 'paddock', b: 'sift' },
-      { a: 'paddock', b: 'guard', oneWay: true }, // v200: out to the Guard Post only; back is through Post Echo
+      { a: 'court', b: 'cell', sap: 1 },
+      { a: 'court', b: 'paddock', sap: 1 },
+      { a: 'court', b: 'sift', sap: 1 },
+      { a: 'paddock', b: 'sift', sap: 1 },
+      { a: 'paddock', b: 'guard', sap: 2, oneWay: true }, // v200: out to the Guard Post only; back is through Post Echo
     ],
     sceneNode: {
       'thresh:court': 'court',

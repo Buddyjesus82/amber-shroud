@@ -2778,7 +2778,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v219'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v220'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(!sw.includes('covers/camp04.jpg') && sw.includes('covers/yard.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -3643,7 +3643,7 @@ function assertHelpResolves(s: GameState, where: string) {
   const kFresh = { ...kHound, sap: 6, flags: { ...kHound.flags, encounterAt: 99999 } }
   const washed = pick(kFresh, 'hound-walk')
   assert(washed.sceneId === 'spine:hound' && !/No road/.test(washed.flash ?? ''), `Walk the east wash really walks there: ${washed.sceneId} ${washed.flash}`)
-  assert(washed.sap === 4, `the east wash costs 2 Sap (${kFresh.sap} → ${washed.sap})`)
+  assert(washed.sap === 5, `the east wash costs 1 Sap (${kFresh.sap} → ${washed.sap})`)
   const kTook = pick(kor, 'take')
   assert(kTook.flags.korvanTook && kTook.flags.strayNotice && !ids(kTook).includes('hunger-scrap'), 'taking from Korvan wakes the Strays and closes his trade')
   const mira = pick(pick(shade, 'walk-mira'), 'sit')
@@ -6148,7 +6148,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
     s = GE.applyEffect(s, GE.visibleChoices(s).find((c) => c.id === 'scan')!.effects)
     assert(!!s.flags.hungerKnown, 'v116: reading the wash is a heading')
     const sm = readFileSync('src/game/content/maps.ts', 'utf8')
-    assert(sm.includes("{ id: 'wash', name: 'Bone Wash'") && sm.includes("{ a: 'hound', b: 'wash' }"), 'v116: Bone Wash node on the Spine map')
+    assert(sm.includes("{ id: 'wash', name: 'Bone Wash'") && sm.includes("{ a: 'hound', b: 'wash', sap: 2 }"), 'v116: Bone Wash node on the Spine map')
     const out = GE.travelTo({ ...s, sceneId: 'spine:hound' }, 'ch1:leave')
     assert(out.chapterId === 'cache-run' && out.sceneId === 'ch1:leave', 'v116: the Bone Wash node starts the road')
     const shut = GE.travelTo({ ...o, sceneId: 'spine:hound', hubId: 'spine' }, 'ch1:leave')
