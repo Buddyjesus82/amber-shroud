@@ -26,7 +26,7 @@ import { helpText } from './help'
 import { helpRoute, HELP_HINT, HELP_TOPICS, topicText } from './helpTopics'
 import { isBayScene } from './content/bayHands'
 import { classifyLook, directedLookFlash, pressureLookFlash, roomLookEffect } from './look'
-import { CAMP_MAP_FLAG, markCampSeen, matchCompass, travelGate } from './map'
+import { fogged, markCampSeen, matchCompass, travelGate } from './map'
 import { isChapterReleased } from './chapters'
 import { chapterThreeAfter } from './ch3'
 import { chapterTwoAfter, chapterTwoUnlock, isChapterTwoCode } from './ch2'
@@ -2270,18 +2270,19 @@ function visibleChoicesRaw(state: GameState): Choice[] {
   return [...bag, ...maskedPickup(state), ...withRest(state, withKaelenPass(state, [...hymnSapLocks(state, mawToll(state, rows)), ...jobWalkRows(state), ...heatReliefRows(state), ...campWalkRows(state, rows)]))]
 }
 
-/** Camp-04 before the Overlook map: every map road is also a button, so the blank scrap never gates movement. */
+/** Camp-04 before the Overlook map: every map road is also a button, so the blank scrap never gates movement.
+ * v219: the Spine and the Threshold too (their scraps stay blank until walked). Roads out of the hub stay on their own buttons. */
 function campWalkRows(state: GameState, rows: Choice[]): Choice[] {
-  const map = HUB_MAPS.camp04
-  if (state.hubId !== 'camp04' || state.flags[CAMP_MAP_FLAG] || !map) return []
+  const map = state.hubId ? HUB_MAPS[state.hubId] : undefined
+  if (!map || !fogged(state)) return []
   const here = map.sceneNode[state.sceneId] ?? map.nodes.find((n) => n.sceneId === state.sceneId)?.id
   if (!here) return []
-  const has = new Set(rows.map((c) => c.effects?.goto).filter(Boolean))
+  const has = new Set(rows.map((c) => c.effects?.goto ?? c.effects?.travel).filter(Boolean))
   const out: Choice[] = []
   for (const e of map.edges) {
     const other = e.a === here ? e.b : e.b === here ? e.a : null
     const to = other ? map.nodes.find((n) => n.id === other) : null
-    if (!to || has.has(to.sceneId)) continue
+    if (!to || has.has(to.sceneId) || to.sceneId === state.sceneId || getScene(to.sceneId, state.door).hubId !== state.hubId) continue
     const sap = e.sap ?? 1
     out.push({ id: `walk-${to.id}`, label: `Walk to ${to.name}`, sub: sap ? `${sap} Sap.` : undefined, tone: 'quiet', effects: { sap: -sap, goto: to.sceneId } })
   }
@@ -2543,7 +2544,10 @@ export function equipBlock(state: GameState, id: ItemId, slot: EquipSlot): strin
   const def = ITEMS[id]
   if (!def?.slot) return 'That does not wear. Carry it.'
   if (!(state.items[id] ?? 0)) return 'You do not have it to equip.'
+  const held = state.equipped?.weapon
+  if (slot === 'offhand' && held && ITEMS[held]?.twoHanded) return `${ITEMS[held].name} takes both hands.`
   if (!slotsFor(id).includes(slot)) {
+    if (def.twoHanded && slot === 'offhand') return `${def.name} takes both hands.`
     if (slot === 'weapon' && def.offhand === 'shield') return 'A shield goes in the Off hand.'
     if (slot === 'offhand') return 'The Off hand takes a short blade, a club, or a shield.'
     return `${def.name} goes in the ${SLOT_LABEL[def.slot]} slot.`
@@ -2561,10 +2565,18 @@ export function equipItem(state: GameState, id: ItemId, slot?: EquipSlot): GameS
   // v214: your only one already in the other hand moves across (Shock Baton from Off hand to Main hand).
   const other: EquipSlot | null = to === 'weapon' ? 'offhand' : to === 'offhand' ? 'weapon' : null
   if (other && equipped[other] === id && (state.items[id] ?? 0) < 2) delete equipped[other]
+  let flash = `${def.name} ${SLOT_ON[to]}.`
+  if (to === 'weapon' && def.twoHanded) {
+    const cleared = !!equipped.offhand
+    if (equipped.offhand) delete equipped.offhand
+    flash = cleared
+      ? `${def.name} in the main hand. Two-handed. The off hand comes clear.`
+      : `${def.name} in the main hand. Two-handed.`
+  }
   return persist({
     ...state,
     equipped,
-    flash: `${def.name} ${SLOT_ON[to]}.`,
+    flash,
     updatedAt: Date.now(),
   })
 }
@@ -2581,6 +2593,11 @@ function autoEquip(state: GameState, next: GameState): GameState {
     if (!to) continue
     if (Object.values(equipped).includes(id) && (n ?? 0) < 2) continue
     equipped = { ...equipped, [to]: id }
+    if (to === 'weapon' && ITEMS[id]?.twoHanded && equipped.offhand) {
+      const cleared = { ...equipped }
+      delete cleared.offhand
+      equipped = cleared
+    }
     changed = true
   }
   return changed ? { ...next, equipped } : next

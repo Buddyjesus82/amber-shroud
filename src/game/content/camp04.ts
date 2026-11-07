@@ -1186,7 +1186,7 @@ A vent patrol is in place: one clerk, shock baton, eyes on the joint. Unwatched 
           ticks: 1,
           goto: 'camp:bay',
           flash:
-            'The bolt turns. Nobody is on it. The scream still puts you in the steam. Scrap. Shock Baton · Strike 4. Equip it. Jaxson is under a hull.',
+            'The bolt turns. Nobody is on it. The scream still puts you in the steam. Scrap. Shock Baton · Strike 3. Equip it. Jaxson is under a hull.',
         },
       },
       {
@@ -1201,7 +1201,7 @@ A vent patrol is in place: one clerk, shock baton, eyes on the joint. Unwatched 
           ticks: 1,
           goto: 'camp:bay',
           flash:
-            'The Sifter sold a gap. You take it. Shock Baton · Strike 4 from a clerk who was counting vats. Equip it. Jaxson still has to hotwire.',
+            'The Sifter sold a gap. You take it. Shock Baton · Strike 3 from a clerk who was counting vats. Equip it. Jaxson still has to hotwire.',
         },
       },
       {

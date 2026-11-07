@@ -172,7 +172,7 @@ export type Effect = {
   returnHunterFrom?: boolean
   returnCrisisFrom?: boolean
   /** Optional roam fight. Strike + 0-2 swing vs Shell, min 1 damage. */
-  resolveEncounter?: 'fight' | 'skip' | 'guard' | 'feint' | 'trick' | 'run' | 'pull' | 'deal' | 'disguise' | 'core' | 'seeker' | 'resin'
+  resolveEncounter?: 'fight' | 'skip' | 'guard' | 'feint' | 'trick' | 'run' | 'pull' | 'deal' | 'disguise' | 'core' | 'seeker' | 'resin' | 'board' | 'steer'
   /** v160: Varro plates this piece with a Maw Plate (see kit.ts PLATING). Worn stays worn. */
   plate?: ItemId
   /** Bag full: take held finds back up to the free room. */
@@ -307,6 +307,8 @@ export type ItemDef = {
   shell?: number
   /** Can also go in the Off hand: a short blade, a club, or a shield (shield goes only there). */
   offhand?: 'blade' | 'club' | 'shield'
+  /** Both hands. Main hand only, and the Off hand stays empty while it is held. */
+  twoHanded?: boolean
   /** Bag capacity when this is the best bag you own. */
   bag?: number
   /** One-line perk, shown in Gear. */

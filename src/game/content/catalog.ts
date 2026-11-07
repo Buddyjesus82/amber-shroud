@@ -105,10 +105,9 @@ export const ITEMS: Record<ItemId, ItemDef> = {
     name: 'Oversized Wrench',
     kind: 'weapon',
     slot: 'weapon',
-    // v134: heavy steel, a club in the off hand: either hand, the usual +1 Strike off hand.
-    offhand: 'club',
-    strike: 3,
-    desc: "Jaxson's steel. Strike 3. Hotwires Cartel runners. Pries bolts, wire, and lies. Equip it if you mean to swing.",
+    twoHanded: true,
+    strike: 4,
+    desc: "Jaxson's steel. Strike 4. Two-handed. Hotwires Cartel runners. Pries bolts, wire, and lies. +1 Strike against machinery. Equip it if you mean to swing.",
   },
   rusted_dagger: {
     id: 'rusted_dagger',
@@ -143,8 +142,8 @@ export const ITEMS: Record<ItemId, ItemDef> = {
     kind: 'weapon',
     slot: 'weapon',
     offhand: 'club',
-    strike: 4,
-    desc: 'Ironwood issue. Strike 4. Still warm from a clerk who loved a ledger more than a throat.',
+    strike: 3,
+    desc: 'Ironwood issue. Strike 3. Still warm from a clerk who loved a ledger more than a throat.',
   },
   needle_knife: {
     id: 'needle_knife',
@@ -294,9 +293,9 @@ export const ITEMS: Record<ItemId, ItemDef> = {
     name: 'Seeker Extractor',
     kind: 'weapon',
     slot: 'weapon',
-    strike: 3,
-    perk: 'In an Amber Husk fight, once: Draw resin — take scrap and a little Sap without shattering the core, or cut the Seeker\'s siphon if one is walking the husk.',
-    desc: 'A thin Seeker blade forged to draw living heat and liquefy resin seals under husk plates without shattering the core. Main hand, Strike 3.',
+    strike: 5,
+    perk: 'In an Amber Husk fight, once: Draw resin — take scrap and a little Sap without shattering the core, or cut the Seeker\'s siphon if one is walking the husk. Piercing: ignores the first 2 Shell.',
+    desc: 'A thin Seeker blade forged to draw living heat and liquefy resin seals under husk plates without shattering the core. Main hand, Strike 5. Piercing: ignores the first 2 Shell.',
   },
   // v166: Chapter Two.
   crate_key: {

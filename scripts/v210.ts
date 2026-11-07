@@ -10,6 +10,6 @@ ok(a.equipped.head === 'head_wrap' && a.equipped.legs === 'shin_wraps' && a.equi
 const b = applyEffect({ ...g, items: { ...g.items, head_wrap: 1 }, equipped: { head: 'head_wrap' } } as GameState, { add: { plated_head_wrap: 1 } })
 ok(b.equipped.head === 'head_wrap', 'worn head piece is not swapped')
 ok(readFileSync('src/game/engine.ts', 'utf8').includes("'garment', 'offhand']"), 'garment and off hand covered')
-ok(readFileSync('public/sw.js', 'utf8').includes('amber-shroud-v218') && readFileSync('src/version.ts', 'utf8').includes("'v218'"), 'v210 bump')
+ok(readFileSync('public/sw.js', 'utf8').includes('amber-shroud-v219') && readFileSync('src/version.ts', 'utf8').includes("'v219'"), 'v210 bump')
 console.log(fails ? `v210: ${fails} FAIL` : 'v210 ok')
 process.exit(fails ? 1 : 0)

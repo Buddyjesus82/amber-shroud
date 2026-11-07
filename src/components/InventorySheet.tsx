@@ -124,8 +124,8 @@ function WornTab({ state, chips, onChange }: { state: GameState; chips: KitChip[
         )}
       </div>
       <p className="kit-note">
-        Main hand: any weapon. Off hand: a short blade or club (Strike +1) or a shield. Body, cloak, head, legs, hands,
-        and a shield add Shell. A garment adds none.
+        Main hand: any weapon. The Oversized Wrench takes both hands. Off hand: a short blade or club (Strike +1) or a
+        shield. Body, cloak, head, legs, hands, and a shield add Shell. A garment adds none.
       </p>
       <h3 className="gear-sub">Spare gear</h3>
       {spare.length === 0 ? (
@@ -180,12 +180,13 @@ function WornTab({ state, chips, onChange }: { state: GameState; chips: KitChip[
 function Slot({ state, slot, onClear, onMove }: { state: GameState; slot: EquipSlot; onClear: () => void; onMove?: (to: EquipSlot) => void }) {
   const id = state.equipped?.[slot]
   const item = id ? ITEMS[id] : null
+  const twoHand = slot === 'offhand' && !id && !!state.equipped?.weapon && !!ITEMS[state.equipped.weapon]?.twoHanded
   const stat = slot === 'offhand' && item && item.offhand !== 'shield' ? 'Strike +1' : gearStat(item)
   return (
     <div className={`equip-slot${item ? ' filled' : ''}`}>
       <em>{SLOT_LABEL[slot]}</em>
       <strong>
-        {slot === 'offhand' && id === 'needle_knife' ? 'Parry Blade' : (item?.name ?? 'Empty')}
+        {twoHand ? 'Empty' : slot === 'offhand' && id === 'needle_knife' ? 'Parry Blade' : (item?.name ?? 'Empty')}
         {stat ? <span className="gear-stat">{stat}</span> : null}
       </strong>
       {item && id && (slot === 'weapon' || slot === 'offhand') && slotsFor(id).length > 1 && onMove ? (
@@ -198,7 +199,7 @@ function Slot({ state, slot, onClear, onMove }: { state: GameState; slot: EquipS
           Unequip
         </button>
       ) : (
-        <span className="kit-empty">{SLOT_EMPTY[slot]}</span>
+        <span className="kit-empty">{twoHand ? `${ITEMS[state.equipped!.weapon!].name} takes both hands.` : SLOT_EMPTY[slot]}</span>
       )}
     </div>
   )

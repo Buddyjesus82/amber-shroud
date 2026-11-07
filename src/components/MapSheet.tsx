@@ -1,7 +1,7 @@
 import { useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { HUBS } from '../game/content/catalog'
 import { CH2_BACKTRACK, chapterTwoLocked, travelTo } from '../game/engine'
-import { adjacency, CAMP_MAP_FLAG, currentNode, drawnMap, edgeSap as rawEdgeSap, nodeById } from '../game/map'
+import { adjacency, currentNode, fogged, drawnMap, edgeSap as rawEdgeSap, nodeById } from '../game/map'
 import { ROAD_SAP } from '../game/returnRoad'
 import { estimateLabel, layoutLabels, type Box } from '../game/mapLabels'
 import type { GameState, HubMapDef, HubMapNode } from '../game/types'
@@ -231,7 +231,7 @@ function HubMapView({
         >
           <ScrapDefs />
           <rect className="map-hide-wash" x="0" y="0" width={map.width} height={map.height} />
-          <MapArt map={map} full={map.hubId !== 'camp04' || !!state.flags[CAMP_MAP_FLAG]} />
+          <MapArt map={map} full={!fogged(state)} />
           {map.edges.map((e) => {
             const a = nodeById(map, e.a)
             const b = nodeById(map, e.b)
@@ -365,8 +365,8 @@ function YouMark({ x, y }: { x: number; y: number }) {
 
 function MapArt({ map, full }: { map: HubMapDef; full: boolean }) {
   if (map.hubId === 'camp04') return <CampArt full={full} />
-  if (map.hubId === 'spine') return <SpineArt />
-  if (map.hubId === 'threshold') return <ThreshArt />
+  if (map.hubId === 'spine') return <SpineArt full={full} />
+  if (map.hubId === 'threshold') return <ThreshArt full={full} />
   return <MawArt />
 }
 
@@ -419,21 +419,23 @@ function CampArt({ full }: { full: boolean }) {
   )
 }
 
-function SpineArt() {
+function SpineArt({ full }: { full: boolean }) {
   return (
     <g className="map-sketch" filter="url(#charcoal-jitter)">
       <rect x="0" y="0" width="100" height="120" filter="url(#soot-grain)" opacity="0.5" />
       <ellipse cx="72" cy="18" rx="22" ry="12" className="map-stain" />
       <ellipse cx="22" cy="96" rx="16" ry="11" className="map-stain deep" />
-      <path
-        d="M5 42 L26 16 L50 36 L76 20 L96 46 L95 72 L6 80 Z"
-        fill="url(#charcoal-hatch-steep)"
-        className="map-block"
-      />
-      <path d="M9 63 Q24 54 32 65 Q41 76 22 79 Z" fill="url(#charcoal-hatch)" className="map-block" />
-      <circle cx="58" cy="46" r="5.4" fill="none" className="map-block" />
-      <circle cx="58" cy="46" r="2.1" fill="none" className="map-hatch" />
-      <path d="M70 71 L81 88 L89 79" fill="none" className="map-dune" />
+      <g display={full ? undefined : 'none'}>
+        <path
+          d="M5 42 L26 16 L50 36 L76 20 L96 46 L95 72 L6 80 Z"
+          fill="url(#charcoal-hatch-steep)"
+          className="map-block"
+        />
+        <path d="M9 63 Q24 54 32 65 Q41 76 22 79 Z" fill="url(#charcoal-hatch)" className="map-block" />
+        <circle cx="58" cy="46" r="5.4" fill="none" className="map-block" />
+        <circle cx="58" cy="46" r="2.1" fill="none" className="map-hatch" />
+        <path d="M70 71 L81 88 L89 79" fill="none" className="map-dune" />
+      </g>
       <text x="50" y="11" textAnchor="middle" className="map-compass">
         N · noon
       </text>
@@ -441,17 +443,19 @@ function SpineArt() {
   )
 }
 
-function ThreshArt() {
+function ThreshArt({ full }: { full: boolean }) {
   return (
     <g className="map-sketch" filter="url(#charcoal-jitter)">
       <rect x="0" y="0" width="100" height="120" filter="url(#soot-grain)" opacity="0.5" />
       <ellipse cx="16" cy="70" rx="14" ry="18" className="map-stain" />
-      <path d="M17 19 H83 L71 89 H29 Z" fill="url(#charcoal-hatch)" className="map-block" />
-      <path d="M42 28 h16 v18 h-16 z" fill="url(#charcoal-hatch-steep)" className="map-block" />
-      <path d="M12 28 h14 v16 h-14 z" fill="url(#charcoal-hatch)" className="map-block" />
-      <path d="M40 70 h18 v14 h-18 z" fill="url(#charcoal-hatch-steep)" className="map-block" />
-      <path d="M72 40 h14 v14 h-14 z" fill="url(#charcoal-hatch)" className="map-block" />
-      <path d="M18 101 Q50 91 82 105" fill="none" className="map-dune" />
+      <g display={full ? undefined : 'none'}>
+        <path d="M17 19 H83 L71 89 H29 Z" fill="url(#charcoal-hatch)" className="map-block" />
+        <path d="M42 28 h16 v18 h-16 z" fill="url(#charcoal-hatch-steep)" className="map-block" />
+        <path d="M12 28 h14 v16 h-14 z" fill="url(#charcoal-hatch)" className="map-block" />
+        <path d="M40 70 h18 v14 h-18 z" fill="url(#charcoal-hatch-steep)" className="map-block" />
+        <path d="M72 40 h14 v14 h-14 z" fill="url(#charcoal-hatch)" className="map-block" />
+        <path d="M18 101 Q50 91 82 105" fill="none" className="map-dune" />
+      </g>
       <text x="50" y="11" textAnchor="middle" className="map-compass">
         N · nave
       </text>

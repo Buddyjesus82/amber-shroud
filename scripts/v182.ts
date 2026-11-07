@@ -5,8 +5,8 @@ import { fightStartFlags, resolveEncounter } from '../src/game/encounter.ts'
 import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v218'"), 'SW cache v182')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v218'"), 'Build label v182')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v219'"), 'SW cache v182')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v219'"), 'Build label v182')
 const v = chapterTwoFromCode('vessel')
 // v199: the Primary Vein lock needs the bargain or the shim; these checks hold the key.
 const at = (flags: object) => ({ ...v, sceneId: 'ch2:ribs', flags: { ...v.flags, hasBargainFlag: true, ...flags } }) as GameState
@@ -22,7 +22,7 @@ ok(/hangs dead/.test(bodyOf(at({}))), 'before: dead lift')
 // 4: Descend shows with the lift, locked until Vex is settled
 const pend = visibleChoices(at({ liftDone: true, vexFreed: true }))
 const ride = pend.find((c) => c.id === 'ride')
-ok(ride && ride.enable && ride.locked === 'Vex is still at the vein.', 'Descend shown, locked by Vex')
+ok(ride && ride.enable && ride.locked === 'The Hollow is still at the vein.', 'Descend shown, locked by Vex')
 ok(visibleChoices(at({ liftDone: true, vexFreed: true, vexFate: 'scout' })).some((c) => c.id === 'ride'), 'Descend after Vex')
 // 2: a mutual-win log says why you stand
 let seen = 0
