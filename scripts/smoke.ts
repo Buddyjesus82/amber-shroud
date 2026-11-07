@@ -304,7 +304,7 @@ assert(vessel.items.ceremonial_cloth === 1 && vessel.items.vial_drop === 1, 'ves
 assert(!vessel.items.wrench && !vessel.items.silas_tip, 'vessel kit unique')
 assert(vessel.heat.seekers === 3, 'vessel seeker pressure')
 
-assert(ITEMS.wrench.strike === 3 && ITEMS.shiv.strike === 2 && ITEMS.needle_knife.strike === 3, 'work steel is Strike 3; junk edge is Strike 2')
+assert(ITEMS.wrench.strike === 4 && ITEMS.wrench.twoHanded && !ITEMS.wrench.offhand && ITEMS.shiv.strike === 2 && ITEMS.needle_knife.strike === 3, 'wrench is two-handed Strike 4; junk edge is Strike 2')
 assert(ITEMS.ironwood_baton.strike === 4 && ITEMS.rusted_dagger.strike === 2, 'Cartel issue is Strike 4; dagger stays junk edge')
 assert(ITEMS.scav_wrap.shell === 2 && ITEMS.scav_wrap.slot === 'armor', 'mid armor is Scav Wrap Shell 2')
 assert(ITEMS.dust_cloak.shell === 2 && ITEMS.dust_cloak.slot === 'cloak' && ITEMS.hide_wrap.shell === 4, 'Dust Cloak is a Cloak, Shell 2; Hound Hide Shell 4')
@@ -4297,7 +4297,7 @@ function assertHelpResolves(s: GameState, where: string) {
   // hands
   let g: GameState = { ...base, items: { ...base.items, scrap_buckler: 1, wrench: 1, needle_knife: 1, shiv: 1, head_wrap: 1, shin_wraps: 1, hide_gloves: 1, dust_cloak: 1, scav_wrap: 1 } }
   assert(!!GE.equipBlock(g, 'scrap_buckler', 'weapon'), 'shield cannot go in the main hand')
-  assert(!GE.equipBlock(g, 'wrench', 'offhand'), 'v134: the wrench goes in the off hand like the other club and blade weapons')
+  assert(GE.equipBlock(g, 'wrench', 'offhand') === 'Oversized Wrench takes both hands.', 'the wrench will not sit in the off hand')
   g = equipItem(g, 'needle_knife', 'weapon')
   { const mv = equipItem(g, 'needle_knife', 'offhand'); assert(mv.equipped.offhand === 'needle_knife' && !mv.equipped.weapon, 'v214: one copy moves between hands, never in both') }
   const mainOnly = GK.equippedStrike(g)
@@ -6784,19 +6784,17 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   const K = await import('../src/game/kit.ts')
   const base = rawNewGame('prisoner')
   const own = (items: Record<string, number>, equipped: Record<string, string>) => ({ ...base, items: { ...base.items, ...items }, equipped }) as typeof base
-  assert(K.slotsFor('wrench').join() === 'weapon,offhand', 'v134: wrench fits main hand and off hand')
-  assert(K.equippedStrike(own({ wrench: 1 }, { weapon: 'wrench' })) === 3, 'v134: wrench in the main hand is Strike 3, as before')
-  assert(K.equippedStrike(own({ wrench: 1, shiv: 1 }, { weapon: 'shiv', offhand: 'wrench' })) === 3, 'v134: wrench in the off hand adds +1 (Shiv 2 + 1)')
-  assert(K.equippedStrike(own({ wrench: 1, needle_knife: 1 }, { weapon: 'needle_knife', offhand: 'wrench' })) === 4, 'v134: Needle Knife main, wrench off hand: 3 + 1')
-  assert(K.equippedStrike(own({ wrench: 1, needle_knife: 1 }, { weapon: 'wrench', offhand: 'needle_knife' })) === 4, 'v134: wrench main, Needle Knife off hand: 3 + 1')
-  assert(K.equippedShell(own({ wrench: 1 }, { offhand: 'wrench' })) === 0, 'v134: the wrench never adds Shell')
-  const solo = own({ wrench: 1, shiv: 1 }, { weapon: 'wrench' })
-  { const mv = equipItem(solo, 'wrench', 'offhand'); assert(mv.equipped?.offhand === 'wrench' && mv.equipped?.weapon !== 'wrench', 'v214: one wrench moves hands, never in both') }
-  const offed = equipItem(own({ wrench: 1, shiv: 1 }, { weapon: 'shiv' }), 'wrench', 'offhand')
-  assert(offed.equipped?.offhand === 'wrench' && offed.flash === 'Oversized Wrench in the off hand.', 'v134: equip the wrench in the off hand')
-  assert(equipItem(own({ wrench: 2 }, { weapon: 'wrench' }), 'wrench', 'offhand').equipped?.offhand === 'wrench', 'v134: two wrenches fill both hands')
-  const traded = rawApplyEffect(offed, { remove: { wrench: 1 } })
-  assert(!traded.equipped?.offhand && traded.equipped?.weapon === 'shiv', 'v134: spend the wrench and the off hand empties')
+  assert(K.slotsFor('wrench').join() === 'weapon', 'wrench fits the main hand only')
+  assert(K.equippedStrike(own({ wrench: 1 }, { weapon: 'wrench' })) === 4, 'wrench in the main hand is Strike 4')
+  assert(K.equippedStrike(own({ wrench: 1, shiv: 1 }, { weapon: 'wrench', offhand: 'shiv' })) === 4, 'two-handed wrench grants no off-hand Strike')
+  assert(K.equippedShell(own({ wrench: 1 }, { weapon: 'wrench' })) === 0, 'the wrench never adds Shell')
+  const held = equipItem(own({ wrench: 1, shiv: 1 }, { offhand: 'shiv' }), 'wrench', 'weapon')
+  assert(held.equipped?.weapon === 'wrench' && !held.equipped?.offhand && held.flash === 'Oversized Wrench in the main hand. Two-handed. The off hand comes clear.', 'equipping the wrench clears the off hand')
+  assert(equipItem(own({ wrench: 1 }, {}), 'wrench').flash === 'Oversized Wrench in the main hand. Two-handed.', 'equipping the wrench names two-handed')
+  assert(GE.equipBlock(own({ wrench: 1, shiv: 1 }, { weapon: 'wrench' }), 'shiv', 'offhand') === 'Oversized Wrench takes both hands.', 'off hand stays locked while the wrench is held')
+  const offed = own({ wrench: 1, shiv: 1 }, { weapon: 'shiv' })
+  const traded = rawApplyEffect(offed, { remove: { shiv: 1 } })
+  assert(!traded.equipped?.weapon && !traded.equipped?.offhand, 'spend the worn blade and the hand empties')
   assert(visibleChoices.length > 0, 'v134: engine intact')
 }
 

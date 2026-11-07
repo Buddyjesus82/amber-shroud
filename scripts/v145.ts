@@ -44,7 +44,7 @@ let wins = 0
 let mutual = 0
 for (let t = 0; t < 300; t++) {
   const s = hunt(t, {}, { weapon: 'wrench', offhand: undefined } as never)
-  const end = fight({ ...s, items: { ...s.items, ironwood_baton: 1 }, equipped: { weapon: 'ironwood_baton', offhand: 'wrench' } })
+  const end = fight({ ...s, items: { ...s.items, ironwood_baton: 1, shiv: 1 }, equipped: { weapon: 'ironwood_baton', offhand: 'shiv' } })
   if (!end.flags.encounterDone) continue
   const card = String(end.flags.encounterClash)
   if (!card.includes(VALERIUS_ESCAPES)) continue
@@ -98,4 +98,4 @@ if (fails) {
   console.log(`v145: ${fails} failures`)
   process.exit(1)
 }
-console.log(`v145 checks OK (${wins}/300 wins with a baton + wrench, ${mutual} at mutual 0)`)
+console.log(`v145 checks OK (${wins}/300 wins with a baton + shiv, ${mutual} at mutual 0)`)

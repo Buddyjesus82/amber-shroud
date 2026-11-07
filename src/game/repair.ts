@@ -26,6 +26,11 @@ export function migrateEquipped(state: GameState): GameState {
       if (!next[want]) next[want] = id
     }
   }
+  // A two-handed weapon keeps the Off hand empty, including on old saves that paired it with a blade.
+  if (next.weapon && ITEMS[next.weapon]?.twoHanded && next.offhand) {
+    delete next.offhand
+    changed = true
+  }
   if (!changed) return state
   return { ...state, equipped: next }
 }

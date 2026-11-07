@@ -2544,7 +2544,10 @@ export function equipBlock(state: GameState, id: ItemId, slot: EquipSlot): strin
   const def = ITEMS[id]
   if (!def?.slot) return 'That does not wear. Carry it.'
   if (!(state.items[id] ?? 0)) return 'You do not have it to equip.'
+  const held = state.equipped?.weapon
+  if (slot === 'offhand' && held && ITEMS[held]?.twoHanded) return `${ITEMS[held].name} takes both hands.`
   if (!slotsFor(id).includes(slot)) {
+    if (def.twoHanded && slot === 'offhand') return `${def.name} takes both hands.`
     if (slot === 'weapon' && def.offhand === 'shield') return 'A shield goes in the Off hand.'
     if (slot === 'offhand') return 'The Off hand takes a short blade, a club, or a shield.'
     return `${def.name} goes in the ${SLOT_LABEL[def.slot]} slot.`
@@ -2562,10 +2565,18 @@ export function equipItem(state: GameState, id: ItemId, slot?: EquipSlot): GameS
   // v214: your only one already in the other hand moves across (Shock Baton from Off hand to Main hand).
   const other: EquipSlot | null = to === 'weapon' ? 'offhand' : to === 'offhand' ? 'weapon' : null
   if (other && equipped[other] === id && (state.items[id] ?? 0) < 2) delete equipped[other]
+  let flash = `${def.name} ${SLOT_ON[to]}.`
+  if (to === 'weapon' && def.twoHanded) {
+    const cleared = !!equipped.offhand
+    if (equipped.offhand) delete equipped.offhand
+    flash = cleared
+      ? `${def.name} in the main hand. Two-handed. The off hand comes clear.`
+      : `${def.name} in the main hand. Two-handed.`
+  }
   return persist({
     ...state,
     equipped,
-    flash: `${def.name} ${SLOT_ON[to]}.`,
+    flash,
     updatedAt: Date.now(),
   })
 }
@@ -2582,6 +2593,11 @@ function autoEquip(state: GameState, next: GameState): GameState {
     if (!to) continue
     if (Object.values(equipped).includes(id) && (n ?? 0) < 2) continue
     equipped = { ...equipped, [to]: id }
+    if (to === 'weapon' && ITEMS[id]?.twoHanded && equipped.offhand) {
+      const cleared = { ...equipped }
+      delete cleared.offhand
+      equipped = cleared
+    }
     changed = true
   }
   return changed ? { ...next, equipped } : next

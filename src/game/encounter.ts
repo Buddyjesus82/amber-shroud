@@ -5,9 +5,9 @@ import { MASKED_BLOCK_LINE, MASKED_ROUNDS, MASKED_STRIKE_LINE, MASKED_WALKS_OFF_
 import { ITEMS } from './content/catalog'
 import { getScene } from './content'
 import { check } from './logic'
-import { disguiseActive, equippedShell, equippedStrike, wearsCloth } from './kit'
+import { disguiseActive, equippedShell, equippedStrike, machineryBonus, wearsCloth } from './kit'
 import { CARAPACE_HUNTER, SPINE_HUNTER } from './content/spineHunter'
-import { FOREMAN_LINE, PACK_CALL_LINE, PACK_HOUND_LINE, RIG_GUARDS_LINE, RIG_PATROL_LINE, SEEKER_HANDLER_LINE, SKIFF_LINE, SKIFF_RUN_LINE, SKIFF_RUN_SUB } from './v203Lines'
+import { FOREMAN_LINE, PACK_CALL_LINE, PACK_HOUND_LINE, RIG_GUARDS_LINE, RIG_PATROL_LINE, SEEKER_HANDLER_LINE, SKIFF_BOARD_LABEL, SKIFF_BOARD_SUB, SKIFF_CRASH, SKIFF_HIT_BARE, SKIFF_HIT_BLUNT, SKIFF_HIT_EDGE, SKIFF_HULL_LINE, SKIFF_LINE, SKIFF_REWARD, SKIFF_RUN_LINE, SKIFF_RUN_SUB, SKIFF_STEER_LABEL, SKIFF_STEER_SUB, SKIFF_WIN, WRENCH_MECH_LINE } from './v203Lines'
 export { OVERTIME_LINE, PACK_HOUND_LINE, RIG_GUARDS_LINE } from './v203Lines'
 import type { Choice, Effect, FlagMap, GameState, ItemId } from './types'
 import { hash, OPENERS, sandAnswers, PAIR_LINE, HUSK_CONTROLLER_LINE, sandGripLine, TERRAINS, terrainPool, type Terrain, type TerrainId } from './fightTricks'
@@ -51,6 +51,8 @@ type Spec = {
   shell: number
   hp: number
   line: string
+  /** Turret, hull, or other metal. The Oversized Wrench gets +1 Strike. */
+  mechanical?: boolean
 }
 
 const SPECS: Spec[] = [
@@ -176,7 +178,7 @@ const SPECS: Spec[] = [
   { kind: 'rigpatrol', name: 'Vent patrol', strike: 3, shell: 1, hp: 3, line: RIG_PATROL_LINE },
   { kind: 'seekerhandler', name: 'Seeker Hound-Handler', strike: 3, shell: 2, hp: 4, line: SEEKER_HANDLER_LINE },
   { kind: 'packhound', name: 'Shard-Hound', strike: 3, shell: 2, hp: 3, line: PACK_HOUND_LINE },
-  { kind: 'skiff', name: 'Turreted Skiff', strike: 4, shell: 3, hp: 5, line: SKIFF_LINE },
+  { kind: 'skiff', name: 'Turreted Skiff', strike: 4, shell: 3, hp: 5, line: SKIFF_LINE, mechanical: true },
   { kind: 'foreman', name: 'Mercenary Foreman', strike: 4, shell: 2, hp: 5, line: FOREMAN_LINE },
   { kind: 'rigguard', name: 'Rig Guards', strike: 3, shell: 2, hp: 3, line: RIG_GUARDS_LINE },
   // Spine hunter fight. Copy and stats live in content/spineHunter.ts.
@@ -615,6 +617,32 @@ export function encounterChoices(state: GameState): Choice[] {
       locked: 'Too hurt to fight.',
       effects: { resolveEncounter: 'fight', ticks: 1 },
     },
+    ...(spec.kind === 'skiff' && state.flags.stealthHidden
+      ? [
+          {
+            id: 'enc-board',
+            label: SKIFF_BOARD_LABEL,
+            sub: SKIFF_BOARD_SUB,
+            tone: 'danger' as const,
+            enable: { healthMin: 1 },
+            locked: 'Too hurt to fight.',
+            effects: { resolveEncounter: 'board' as const, ticks: 1 },
+          },
+        ]
+      : []),
+    ...(spec.kind === 'skiff' && (state.items.scrap ?? 0) >= 2
+      ? [
+          {
+            id: 'enc-steer',
+            label: SKIFF_STEER_LABEL,
+            sub: SKIFF_STEER_SUB,
+            tone: 'danger' as const,
+            enable: { healthMin: 1 },
+            locked: 'Too hurt to fight.',
+            effects: { resolveEncounter: 'steer' as const, ticks: 1 },
+          },
+        ]
+      : []),
     {
       id: 'enc-guard',
       label: 'Guard',
@@ -984,7 +1012,7 @@ function holdCard(state: GameState, spec: Spec, card: string, short: string, ext
   }
 }
 
-export type FightMove = 'fight' | 'guard' | 'feint' | 'trick' | 'run' | 'pull' | 'deal' | 'core' | 'seeker' | 'resin'
+export type FightMove = 'fight' | 'guard' | 'feint' | 'trick' | 'run' | 'pull' | 'deal' | 'core' | 'seeker' | 'resin' | 'board' | 'steer'
 
 /** 1 in 10 landed hits, both sides. The Shard-pup lands them twice as often. */
 export const CRIT_IN_10 = 1
@@ -1011,6 +1039,15 @@ function sv(spec: Spec, one: string, many: string): string {
 function whoOf(spec: Spec): string {
   if (spec.kind === 'masked') return 'the masked figure'
   return PROPER_KINDS.includes(spec.kind) ? spec.name : `the ${spec.name}`
+}
+
+/** Edged: Seeker blade, shivs, knives. Everything else in hand is blunt. Bare hands stay bare. */
+function skiffHitLine(state: GameState): string {
+  const id = state.equipped?.weapon
+  const def = id ? ITEMS[id] : undefined
+  if (!id || !def || def.strike == null) return SKIFF_HIT_BARE
+  const edged = def.offhand === 'blade' || id === 'seeker_extractor' || /\b(blade|knife|shiv)\b/i.test(def.name)
+  return (edged ? SKIFF_HIT_EDGE : SKIFF_HIT_BLUNT).replaceAll('{weapon}', def.name)
 }
 
 function cap(s: string): string {
@@ -1106,10 +1143,26 @@ function resolveEncounterCore(
     const line = `${cap(who)} drops a twist of scrap and backs away into the grit. Scrap +1. No more hits.`
     return holdCard(state, spec, line, line, { add: { scrap: 1 } })
   }
+  if (how === 'board' || how === 'steer') {
+    if (spec.kind === 'skiff') {
+      const c = clashOf(state)
+      const top = statRows(c.yourHp, c.strike, c.shell, spec, 0)
+      if (how === 'board' && state.flags.stealthHidden) {
+        return holdCard(state, spec, `${top}\n\n${SKIFF_WIN}`, SKIFF_WIN, { add: { scrap: 1 }, unsetFlag: ['stealthHidden'] })
+      }
+      if (how === 'steer' && (state.items.scrap ?? 0) >= 2) {
+        const outcome = `${SKIFF_CRASH}\n\n${SKIFF_REWARD}`
+        return holdCard(state, spec, `${top}\n\n${outcome}`, outcome, { add: { scrap: 1 }, remove: { scrap: 2 } })
+      }
+    }
+    return { fx: {}, flash: '' }
+  }
   const move: FightMove = how === 'deal' ? 'fight' : how
 
   const floor = opts.floor ?? DAMAGE_FLOOR
   const c = clashOf(state, floor)
+  const mech = machineryBonus(state, !!c.spec.mechanical)
+  const hitStrike = c.strike + mech
   const ground = terrainOf(state)
   const round = Number(f.encounterRound ?? 0) + 1
   const max = state.healthMax ?? HEALTH_MAX
@@ -1134,7 +1187,7 @@ function resolveEncounterCore(
   const outRaw = swingOut
   swingOut = Math.max(0, swingOut + ground.you)
   // v144: a ground line names what it did to the hit you see, not to a swing the damage floor swallowed.
-  const groundDelta = exchangeDamage(c.strike, swingOut, spec.shell, floor) - exchangeDamage(c.strike, outRaw, spec.shell, floor)
+  const groundDelta = exchangeDamage(hitStrike, swingOut, spec.shell, floor) - exchangeDamage(hitStrike, outRaw, spec.shell, floor)
   if (attacking && groundDelta > 0) outTags.push(`High ground: +${groundDelta} to your hit.`)
   if (attacking && groundDelta < 0) outTags.push(`Loose sand: −${-groundDelta} to your hit.`)
   if (ground.cap != null) {
@@ -1153,17 +1206,18 @@ function resolveEncounterCore(
     notes.push('The harpoon line pins you. No running until you land a hit.')
   }
 
-  let dmgOut = attacking ? exchangeDamage(c.strike, swingOut, spec.shell, floor) : 0
+  let dmgOut = attacking ? exchangeDamage(hitStrike, swingOut, spec.shell, floor) : 0
   // v144: your own 0-2 swing is a bonus like any other, so it gets its own line when it adds to the hit.
   // Each bonus claims the points it adds, in order (swing, feint, ground), so the lines add up to the hit you see.
   if (attacking) {
     const own = f.encounterShocked ? 0 : c.swingOut
-    const base0 = exchangeDamage(c.strike, 0, spec.shell, floor)
-    const withSwing = exchangeDamage(c.strike, own, spec.shell, floor)
-    const withFeint = exchangeDamage(c.strike, own + feintAdd, spec.shell, floor)
+    const base0 = exchangeDamage(hitStrike, 0, spec.shell, floor)
+    const withSwing = exchangeDamage(hitStrike, own, spec.shell, floor)
+    const withFeint = exchangeDamage(hitStrike, own + feintAdd, spec.shell, floor)
     const lead: string[] = []
     if (withSwing > base0) lead.push(`Extra force: +${withSwing - base0} to your hit.`)
     if (feintAdd) lead.push(withFeint > withSwing ? `Feint: +${withFeint - withSwing} to your hit.` : 'Feint: no extra on this hit.')
+    if (mech) lead.unshift(WRENCH_MECH_LINE)
     outTags.unshift(...lead)
   }
   const hitBare = enemyHit(state, theirStrike, c.shell, floor, harpoon)
@@ -1370,11 +1424,26 @@ function resolveEncounterCore(
     } else notes.push('The cloth dulls the hum. No Sap lost.')
   }
 
+  // Turreted Skiff: ordinary melee, including a machinery bonus and a crit, stops at 1.
+  if (spec.kind === 'skiff' && attacking && dmgOut > 0) {
+    if (dmgOut > 1) {
+      dmgOut = 1
+      critOut = false
+      for (let i = outTags.length - 1; i >= 0; i--) {
+        if (/to your hit\.$|^Feint: no extra|^Blowing sand: your/.test(outTags[i])) outTags.splice(i, 1)
+      }
+    }
+    outTags.push(SKIFF_HULL_LINE)
+  } else if (dmgOut <= 0) {
+    const at = outTags.indexOf(WRENCH_MECH_LINE)
+    if (at >= 0) outTags.splice(at, 1)
+  }
   let theirHp = Math.max(0, c.theirHp - dmgOut)
   // v205: the companion attacks after you. Lens Beam (Sable, every 2nd round) ignores 2 of their Shell.
   if (mate && theirHp > 0 && mateHp > 0) {
     const lens = mate.id === 'sable' && round % 2 === 0
-    const d = exchangeDamage(mate.strike, 0, Math.max(0, spec.shell - (lens ? 2 : 0)), floor)
+    let d = exchangeDamage(mate.strike, 0, Math.max(0, spec.shell - (lens ? 2 : 0)), floor)
+    if (spec.kind === 'skiff') d = Math.min(1, d)
     theirHp = Math.max(0, theirHp - d)
     mateHits.push(PARTY_LINES.mateHit(mate.name, who, d))
     if (lens) mateHits.push(PARTY_LINES.lens)
@@ -1415,9 +1484,11 @@ function resolveEncounterCore(
     ? 'You do not attack this round.'
     : dmgOut <= 0
       ? `You miss ${who}.`
-      : critOut
-        ? `Critical Strike! You hit ${who} for ${dmgOut}.`
-        : `You hit ${who} for ${dmgOut}.`
+      : spec.kind === 'skiff'
+        ? skiffHitLine(state)
+        : critOut
+          ? `Critical Strike! You hit ${who} for ${dmgOut}.`
+          : `You hit ${who} for ${dmgOut}.`
   const pl = PLURAL_KINDS.includes(spec.kind)
   const vb = (one: string, many: string) => (pl ? many : one)
   const themLine = f.encounterStun
@@ -1481,6 +1552,17 @@ function resolveEncounterCore(
       heat: command ? { seekers: -1 } : { cartel: -1 },
       pressure: dmgIn > 0 ? 1 : undefined,
       flag: { encounterGrip: grip, valeriusBeaten: true, valeriusCool: true, huntQuiet: 0 },
+    })
+  }
+
+  if (theirHp <= 0 && spec.kind === 'skiff') {
+    const said = `${SKIFF_WIN}${mutualWin ? MUTUAL_WIN_LINE : ''}`
+    return holdCard(state, spec, `${hitCard}\n\n${said}`, said, {
+      health: healthDelta,
+      add: { scrap: 1 },
+      sap,
+      pressure: dmgIn > 0 ? 1 : undefined,
+      flag: { encounterGrip: grip },
     })
   }
 

@@ -74,14 +74,20 @@ export function slotsFor(id: ItemId): EquipSlot[] {
   return [def.slot]
 }
 
-/** Main hand Strike (bare hand is 1), plus 1 for a short blade or club in the Off hand. The fight adds its own 0-2 swing. */
+/** Main hand Strike (bare hand is 1), plus 1 for a short blade or club in the Off hand. A two-handed weapon leaves the Off hand empty, so it adds nothing. The fight adds its own 0-2 swing. */
 export function equippedStrike(state: GameState): number {
   const id = state.equipped?.weapon
   const main = id && ITEMS[id]?.strike != null ? (ITEMS[id].strike as number) : 1
+  if (id && ITEMS[id]?.twoHanded) return main
   const off = state.equipped?.offhand
   const offDef = off ? ITEMS[off] : null
   const bonus = offDef && (offDef.offhand === 'blade' || offDef.offhand === 'club') ? OFFHAND_STRIKE : 0
   return main + bonus
+}
+
+/** Oversized Wrench vs a mechanical target. +1 Strike, no Sap cost. A hull cap can still hold the hit. */
+export function machineryBonus(state: Pick<GameState, 'equipped'>, mechanical: boolean): number {
+  return mechanical && state.equipped?.weapon === 'wrench' ? 1 : 0
 }
 
 /** Body, cloak, head, legs, hands, and a shield add up, to SHELL_CAP. A garment adds nothing. Bare is 0. */
@@ -313,6 +319,8 @@ export function gearLookLine(state: GameState): string {
   if (state.door !== 'vessel' && state.equipped?.garment === 'ceremonial_cloth') {
     parts.push(state.flags.disguiseBlown ? 'The Vessel Cloth has been seen through. It fools nobody now.' : 'The Vessel Cloth reads as a cup to Cartel eyes.')
   }
+  const mainId = state.equipped?.weapon
+  if (mainId && ITEMS[mainId]?.twoHanded) parts.push(`${ITEMS[mainId].name} takes both hands.`)
   return parts.join(' ')
 }
 
