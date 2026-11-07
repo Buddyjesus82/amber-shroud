@@ -116,6 +116,6 @@ ok(k.flags.keltStatus === 'failed' && k.items.damaged_data_cylinder === 1 && k.f
 const pr = go(go(at('vessel', 'thresh:conduits'), 'breach'), 'pry')
 ok(pr.items.sealed_data_cylinder === 1 && pr.flags.keltStatus === 'failed', 'pry')
 
-ok(readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v219'") && readFileSync('src/version.ts', 'utf8').includes("'v219'"), 'v205 bump')
+ok(readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v220'") && readFileSync('src/version.ts', 'utf8').includes("'v220'"), 'v205 bump')
 console.log(fails ? `v205: ${fails} FAIL` : 'v205: all ok')
 process.exit(fails ? 1 : 0)
