@@ -1,6 +1,7 @@
 import type { Choice, Effect, GameState } from './types'
 import { hash } from './fightTricks'
-import { getScene } from './content'
+import { getScene, ITEMS } from './content'
+import { EQUIP_SLOTS } from './kit'
 
 /** v218: Cartel Heat relief in the Camp-04 Pens cluster (Prisoner), and Clean Passage at Cartel Heat 6+. */
 export const PENS_CLUSTER = new Set(['camp:cages', 'camp:jaxson', 'camp:shiv', 'camp:genpop'])
@@ -78,13 +79,76 @@ export function passageCheck(state: GameState, fx: Effect): Effect {
   return { ...out, flag: { ...out.flag, passagePatrol: true }, ambush: { kind: 'patrol', line: PASSAGE_LINE } }
 }
 
-/** Barrow Trails cache: first successful scavenge in a tagged scene drops Seeker Heat by 1. v218: four approved perimeter scenes. */
+/** Barrow Trails caches. v221: these four scenes are a one-pick cache, not a scavenge. */
 export const BARROW_CACHE_SCENES: ReadonlySet<string> = new Set<string>(['camp:siftline', 'ch2:p-sift', 'thresh:conduits', 'thresh:subdrain'])
 export const BARROW_HEAT_LINE = 'Seeker Heat -1.'
+/** v221: looted. The old `barrowCache:` flag was only the first-scavenge heat cut, so it does not count. */
+export const barrowLootKey = (sceneId: string) => `barrowLooted:${sceneId}`
+export const BARROW_POP = 'Pop the cache'
+export const BARROW_POP_SUB = 'Requires Oversized Wrench for 0 Heat'
+export const BARROW_BYPASS = 'Bypass the lock'
+export const BARROW_BYPASS_LOCK = `Requires: ${ITEMS.rig_passkey.name} or ${ITEMS.cipher_key.name}`
+export const BARROW_SIPHON = 'Siphon conduit fuel'
+export const BARROW_EMPTY = 'The cache is empty.'
+export const BARROW_SCRAP_1 = 'Scrap +1.'
+export const BARROW_SCRAP_2 = 'Scrap +2.'
+export const BARROW_CARTEL_1 = 'Cartel Heat +1.'
+export const BARROW_CARTEL_2 = 'Cartel Heat +2.'
+export const BARROW_SAP_1 = 'Sap +1.'
+
+export function barrowScene(state: Pick<GameState, 'sceneId'>): boolean {
+  return BARROW_CACHE_SCENES.has(state.sceneId)
+}
+
+export function barrowLooted(state: GameState): boolean {
+  return !!state.flags[barrowLootKey(state.sceneId)]
+}
+
+function wrenchOn(state: GameState): boolean {
+  return EQUIP_SLOTS.some((slot) => state.equipped?.[slot] === 'wrench')
+}
+
+/** The cache replaces Scavenge. One pick, then it stays empty. */
+export function barrowRows(state: GameState): Choice[] {
+  if (!barrowScene(state)) return []
+  if (barrowLooted(state)) {
+    return [{ id: 'barrow-empty', label: BARROW_EMPTY, tone: 'quiet', enable: { flag: '__no__' }, effects: {} }]
+  }
+  const id = state.sceneId
+  const key = barrowLootKey(id)
+  const wrench = wrenchOn(state)
+  return [
+    {
+      id: 'barrow-pop',
+      label: BARROW_POP,
+      sub: wrench ? undefined : BARROW_POP_SUB,
+      tone: 'quiet',
+      effects: wrench
+        ? { add: { scrap: 1 }, flag: { [key]: true }, flash: BARROW_SCRAP_1 }
+        : { add: { scrap: 1 }, heat: { cartel: 1 }, flag: { [key]: true }, flash: `${BARROW_SCRAP_1}\n\n${BARROW_CARTEL_1}` },
+    },
+    {
+      id: 'barrow-bypass',
+      label: BARROW_BYPASS,
+      tone: 'quiet',
+      enable: { any: [{ item: 'rig_passkey' }, { item: 'cipher_key' }] },
+      locked: BARROW_BYPASS_LOCK,
+      effects: { add: { scrap: 2 }, heat: { seekers: -1 }, flag: { [key]: true }, flash: `${BARROW_SCRAP_2}\n\n${BARROW_HEAT_LINE}` },
+    },
+    {
+      id: 'barrow-siphon',
+      label: BARROW_SIPHON,
+      tone: 'quiet',
+      effects: { sap: 1, heat: { cartel: 2 }, flag: { [key]: true }, flash: `${BARROW_SAP_1}\n\n${BARROW_CARTEL_2}` },
+    },
+  ]
+}
+
+/** Old first-scavenge Seeker cut. v221: the four cache scenes no longer use it. */
 export function barrowCache(before: GameState, next: GameState, tagged: ReadonlySet<string> = BARROW_CACHE_SCENES): GameState {
   const id = before.sceneId
   const key = `barrowCache:${id}`
-  if (!tagged.has(id) || before.flags[key]) return next
+  if (BARROW_CACHE_SCENES.has(id) || !tagged.has(id) || before.flags[key]) return next
   const found = Object.entries(next.items).some(([k, n]) => (n ?? 0) > ((before.items as Record<string, number>)[k] ?? 0))
   if (!found) return next
   return {

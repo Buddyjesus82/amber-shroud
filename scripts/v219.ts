@@ -6,7 +6,7 @@ import { BATON_SKIP_LINE, BATON_STUN_LINE, PIERCE_LINE, SKIFF_HULL_LINE } from '
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v220'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v220'"), 'build v219')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v221'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v221'"), 'build v219')
 ok(ITEMS.wrench.strike === 4 && ITEMS.wrench.twoHanded === true && !ITEMS.wrench.offhand, 'wrench Strike 4, two-handed')
 ok(ITEMS.ironwood_baton.strike === 3, 'Shock Baton Strike 3')
 ok(ITEMS.seeker_extractor.strike === 5 && ITEMS.seeker_extractor.desc.includes(PIERCE_LINE), 'Seeker Extractor Strike 5, Piercing')

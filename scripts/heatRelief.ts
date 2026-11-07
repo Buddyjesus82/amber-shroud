@@ -90,8 +90,7 @@ ok(low === 0, 'no check under Cartel Heat 6')
     const b = { ...newGame('prisoner' as never), sceneId: id, heat: { ...newGame('prisoner' as never).heat, seekers: 3 } } as GameState
     const n = { ...b, items: { ...b.items, scrap: (b.items.scrap ?? 0) + 1 } } as GameState
     const r = barrowCache(b, n)
-    ok(r.heat.seekers === 2 && r.flags[`barrowCache:${id}`], `barrow cache fires at ${id}`)
-    ok(barrowCache(r, { ...r, items: { ...r.items, scrap: (r.items.scrap ?? 0) + 1 } } as GameState).heat.seekers === 2, `barrow cache once at ${id}`)
+    ok(r.heat.seekers === 3 && !r.flags[`barrowCache:${id}`] && !r.flags[`barrowLooted:${id}`], `scavenge no longer cools the cache at ${id}`)
   }
   const tag = new Set(['camp:yard'])
   const b0 = at(0, { scrap: 0 }, { sceneId: 'camp:yard', heat: { cartel: 0, seekers: 3, strays: 0 } } as never)

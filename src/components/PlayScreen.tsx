@@ -36,6 +36,7 @@ import { isMaskedFlash, maskedCoverKey, maskedQuietScene } from '../game/masked'
 import { DISGUISE_SOFTEN_NOTE } from '../game/disguise'
 import { kaelenNamed, ROADS, shownText } from '../game/roads'
 import { canDrawResin, DRAW_RESIN_SUB, DRAW_RESIN_SUB_TUNED, scavengeLock } from '../game/scavenge'
+import { barrowScene } from '../game/heatRelief'
 import { RUSH_CHANCE, RUSH_MOVES, RUSH_WINDOW_MS, STALL_BASE, STALL_MAX_S, STALL_MIN_S, STALL_STEP, STALL_TICK_S } from '../game/noticeHeat'
 import { fightLocked, noticeOn, timingNotice } from '../game/engine'
 import { isShopOpen } from '../game/trade'
@@ -257,7 +258,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
   const closeRow = !!(!overlay && !shopOpen && closing && showNav)
   // Every selectable quest/story/hub action belongs in this list — never pinned above .choices.
   const optionRows: OptionRow[] = []
-  if (!overlay && !shopOpen && roam) {
+  if (!overlay && !shopOpen && roam && !barrowScene(state)) {
     optionRows.push({
       key: 'scavenge',
       tone: 'quiet',
