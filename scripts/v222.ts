@@ -5,6 +5,7 @@ import { getScene } from '../src/game/content/index.ts'
 import { HUB_MAPS } from '../src/game/content/maps.ts'
 import {
   BARROW_BYPASS_LOCK,
+  BARROW_CACHE_SCENES,
   BARROW_CARTEL_2,
   BARROW_CARTEL_3,
   BARROW_EMPTY,
@@ -15,6 +16,7 @@ import {
   BARROW_SCRAP_4,
   barrowLootKey,
 } from '../src/game/heatRelief.ts'
+import { effectPills } from '../src/game/kit.ts'
 import { drawnMap, edgeSap, seenOf } from '../src/game/map.ts'
 import { canScavenge } from '../src/game/scavenge.ts'
 import { ROAD_NOT_NOW } from '../src/game/returnRoad.ts'
@@ -148,6 +150,37 @@ ok(!visibleChoices(fuel).some((c) => c.id === 'barrow-pop'), 'siphon fuel is the
 const old = applyEffect({ ...newGame('prisoner'), sap: 8, flags: { 'barrowCache:ch3:siphon': true } }, { goto: 'ch3:siphon' })
 ok(!!visibleChoices(old).find((c) => c.id === 'barrow-pop') && !visibleChoices(old).find((c) => c.id === 'barrow-empty'), 'old barrowCache flag does not spend the siphon')
 ok(!old.flags[barrowLootKey('ch3:siphon')], 'looted flag is the new key')
+
+// Pop's outcome tags are the choice pills. An equipped wrench hides the subtitle and drops the Cartel tag.
+ok(readFileSync('src/components/PlayScreen.tsx', 'utf8').includes('{row.sub ? <small>{row.sub}</small> : null}'), 'a missing subtitle renders no replacement')
+function cacheAt(sceneId: string, extra: Partial<GameState> = {}): GameState {
+  const g = newGame('prisoner')
+  return {
+    ...g,
+    sceneId,
+    hubId: sceneId.startsWith('camp:') ? 'camp04' : sceneId.startsWith('thresh:') ? 'threshold' : 'barrow',
+    sap: 4,
+    heat: { cartel: 1, seekers: 3, strays: 0 },
+    ...extra,
+    items: { ...g.items, ...(extra.items ?? {}) },
+    flags: { ...g.flags, ...(extra.flags ?? {}) },
+    equipped: extra.equipped ?? {},
+  } as GameState
+}
+for (const id of BARROW_CACHE_SCENES) {
+  const off = cacheAt(id)
+  const bare = visibleChoices(off).find((c) => c.id === 'barrow-pop')!
+  const barePills = effectPills(bare.effects, off.heat).map((p) => p.text)
+  ok(bare.sub === BARROW_POP_SUB, `${id}: subtitle while the wrench is off`)
+  ok(barePills.some((t) => t.startsWith('+ ') && t.includes('scrap')) && barePills.some((t) => t.startsWith('Cartel +')), `${id}: scrap and Cartel tags while the wrench is off (${barePills})`)
+  const pocket = cacheAt(id, { items: { wrench: 1 } })
+  ok(visibleChoices(pocket).find((c) => c.id === 'barrow-pop')?.sub === BARROW_POP_SUB, `${id}: a carried wrench still shows the subtitle`)
+  const on = cacheAt(id, { items: { wrench: 1 }, equipped: { weapon: 'wrench' } })
+  const armedPop = visibleChoices(on).find((c) => c.id === 'barrow-pop')!
+  const armedPills = effectPills(armedPop.effects, on.heat).map((p) => p.text)
+  ok(armedPop.sub == null, `${id}: equipped wrench hides the subtitle`)
+  ok(armedPills.some((t) => t.includes('scrap')) && !armedPills.some((t) => /Cartel|Heat/.test(t)), `${id}: equipped wrench keeps only the scrap tag (${armedPills})`)
+}
 
 console.log(fails ? `v222: ${fails} FAIL` : 'v222: all pass')
 process.exit(fails ? 1 : 0)
