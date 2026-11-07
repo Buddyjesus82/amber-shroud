@@ -114,7 +114,7 @@ function key(s: GameState) {
 function thumbActions(s: GameState): { name: string; next: GameState }[] {
   const out: { name: string; next: GameState }[] = []
   for (const c of visibleChoices(s)) {
-    if (c.id.startsWith('walk-') || c.id === 'kick-up' || c.id === 'lay-low') continue // Camp-04 map roads as buttons: same as hub place-chips, not story choices.
+    if (c.id.startsWith('walk-') || c.id === 'kick-up' || c.id === 'lay-low' || c.id.startsWith('barrow-')) continue // Map roads, heat relief, and the Barrow cache stand in for Scavenge. Not story exits.
     if (!isChoiceOn(s, c.enable)) continue
     out.push({ name: c.id, next: applyEffect(s, c.effects) })
   }

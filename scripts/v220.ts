@@ -6,7 +6,7 @@ import { edgeSap } from '../src/game/map.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v220'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v220'"), 'build v220')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v221'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v221'"), 'build v220')
 
 const spine = HUB_MAPS.spine
 const thresh = HUB_MAPS.threshold
