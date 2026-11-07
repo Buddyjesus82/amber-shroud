@@ -1,7 +1,7 @@
 /** Turreted Skiff fight and the Oversized Wrench: hull cap, weapon lines, Board & Jam, Disable Steering, two-handed Strike 4. */
 import { applyEffect, equipBlock, equipItem, newGame, visibleChoices } from '../src/game/engine.ts'
 import { encounterSpec, exchangeDamage, fightStartFlags, resolveEncounter } from '../src/game/encounter.ts'
-import { equippedStrike, gearLookLine, machineryBonus } from '../src/game/kit.ts'
+import { equippedStrike, extractorHeld, gearLookLine, machineryBonus, piercedShell, shockBatonHeld } from '../src/game/kit.ts'
 import { migrateEquipped } from '../src/game/repair.ts'
 import { ITEMS } from '../src/game/content/catalog.ts'
 import {
@@ -13,6 +13,9 @@ import {
   SKIFF_REWARD,
   SKIFF_WIN,
   WRENCH_MECH_LINE,
+  BATON_SKIP_LINE,
+  BATON_STUN_LINE,
+  PIERCE_LINE,
 } from '../src/game/v203Lines.ts'
 import type { GameState, ItemId } from '../src/game/types.ts'
 
@@ -67,6 +70,13 @@ const knife = hit('needle_knife')
 ok(card(knife).includes(SKIFF_HIT_EDGE.replaceAll('{weapon}', 'Needle Knife')), 'knife plunges')
 const blade = hit('seeker_extractor')
 ok(card(blade).includes(SKIFF_HIT_EDGE.replaceAll('{weapon}', 'Seeker Extractor')), 'Seeker blade plunges')
+ok(card(blade).includes(PIERCE_LINE) && !card(blade).includes(SKIFF_HULL_LINE), 'Piercing bypasses the hull cap')
+ok(/^YOU ♥ \d+ ⚔ Strike 5 🛡 Shell 0$/m.test(card(blade)), 'extractor Strike row stays 5')
+ok(/SKIFF ♥ \d+ ⚔ Strike 4 🛡 Shell 3/.test(card(blade)), 'skiff Shell row stays 3')
+const skiffHp = Number(/SKIFF ♥ (\d+)/.exec(card(blade))?.[1])
+ok(skiffHp <= 1, `piercing hit is more than 1 (${skiffHp})`)
+ok(ITEMS.seeker_extractor.strike === 5 && ITEMS.seeker_extractor.desc.includes('Strike 5') && ITEMS.seeker_extractor.desc.includes(PIERCE_LINE), 'extractor catalog')
+ok(piercedShell({ equipped: { weapon: 'seeker_extractor' } }, 3) === 1 && !extractorHeld({ equipped: { weapon: 'ironwood_baton' } }), 'pierce is 2 Shell, baton does not pierce')
 const bare = hit()
 ok(card(bare).includes(SKIFF_HIT_BARE) && card(bare).includes(SKIFF_HULL_LINE), 'bare hands, still capped')
 
@@ -117,6 +127,43 @@ const on = equipItem({ ...pack, equipped: { offhand: 'shiv' } }, 'wrench', 'weap
 ok(on.equipped.weapon === 'wrench' && !on.equipped.offhand, 'equip clears the off hand')
 ok(equipBlock(on, 'shiv', 'offhand') === 'Oversized Wrench takes both hands.', 'off hand locked')
 ok(gearLookLine(on).includes('Oversized Wrench takes both hands.') && gearLookLine(on).includes('Strike 4'), 'look names two-handed Strike 4')
+
+// Shock Baton is Strike 3. One landed swing in three stuns a Seeker runner for their next action.
+ok(ITEMS.ironwood_baton.strike === 3 && ITEMS.ironwood_baton.desc.includes('Strike 3') && !ITEMS.ironwood_baton.desc.includes('Strike 4'), 'baton catalog is Strike 3')
+ok(shockBatonHeld({ equipped: { weapon: 'ironwood_baton' } }), 'baton is in hand')
+let stunned = false
+for (let t = 0; t < 60 && !stunned; t++) {
+  const s = newGame('vessel')
+  const st = skiff({
+    items: { ironwood_baton: 1 },
+    equipped: { weapon: 'ironwood_baton' },
+    flags: { ...fightStartFlags({ ...s, ticks: t } as GameState, 'runner'), encounterKind: 'runner', encounterHp: 8, encounterTerrain: 'open' },
+  })
+  const started = { ...st, ticks: t, door: 'vessel' as const, health: 6 }
+  const a = applyEffect(started, { resolveEncounter: 'fight', ticks: 1 })
+  if (!card(a).includes(BATON_STUN_LINE)) continue
+  stunned = true
+  const before = a.health
+  const b = applyEffect(a, { resolveEncounter: 'fight', ticks: 1 })
+  ok(b.health === before && card(b).includes(BATON_SKIP_LINE), `stunned runner skips (${b.health} vs ${before})`)
+  ok(!/hits back for/.test(card(b)), 'skip is not a hit')
+}
+ok(stunned, 'baton stun procced within 60 swings')
+let leaked = false
+for (let t = 0; t < 40; t++) {
+  const s = newGame('prisoner')
+  const st = {
+    ...s,
+    ticks: t,
+    health: 6,
+    items: { ...s.items, ironwood_baton: 1 },
+    equipped: { weapon: 'ironwood_baton' },
+    flags: { ...s.flags, ...fightStartFlags(s, 'cutter'), encounterTerrain: 'open', encounterHp: 8 },
+  } as GameState
+  const a = applyEffect(st, { resolveEncounter: 'fight', ticks: 1 })
+  if (card(a).includes(BATON_STUN_LINE)) leaked = true
+}
+ok(!leaked, 'stun is only for a runner')
 const old = migrateEquipped({ ...pack, equipped: { weapon: 'shiv', offhand: 'wrench' } } as GameState)
 ok(old.equipped.weapon === 'shiv' && !old.equipped.offhand, 'old off-hand wrench comes off')
 const both = migrateEquipped({ ...pack, equipped: { weapon: 'wrench', offhand: 'shiv' } } as GameState)

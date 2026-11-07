@@ -90,6 +90,21 @@ export function machineryBonus(state: Pick<GameState, 'equipped'>, mechanical: b
   return mechanical && state.equipped?.weapon === 'wrench' ? 1 : 0
 }
 
+/** Shock Baton in the main hand. One swing in three stuns a runner. */
+export function shockBatonHeld(state: Pick<GameState, 'equipped'>): boolean {
+  return state.equipped?.weapon === 'ironwood_baton'
+}
+
+/** Seeker Extractor ignores this much Shell, and the skiff hull cap. */
+export const PIERCE_SHELL = 2
+export function extractorHeld(state: Pick<GameState, 'equipped'>): boolean {
+  return state.equipped?.weapon === 'seeker_extractor'
+}
+export function piercedShell(state: Pick<GameState, 'equipped'>, shell: number): number {
+  if (!extractorHeld(state)) return shell
+  return Math.max(0, shell - PIERCE_SHELL)
+}
+
 /** Body, cloak, head, legs, hands, and a shield add up, to SHELL_CAP. A garment adds nothing. Bare is 0. */
 export function equippedShell(state: GameState): number {
   let total = 0

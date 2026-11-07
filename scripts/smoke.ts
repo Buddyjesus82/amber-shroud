@@ -305,7 +305,7 @@ assert(!vessel.items.wrench && !vessel.items.silas_tip, 'vessel kit unique')
 assert(vessel.heat.seekers === 3, 'vessel seeker pressure')
 
 assert(ITEMS.wrench.strike === 4 && ITEMS.wrench.twoHanded && !ITEMS.wrench.offhand && ITEMS.shiv.strike === 2 && ITEMS.needle_knife.strike === 3, 'wrench is two-handed Strike 4; junk edge is Strike 2')
-assert(ITEMS.ironwood_baton.strike === 4 && ITEMS.rusted_dagger.strike === 2, 'Cartel issue is Strike 4; dagger stays junk edge')
+assert(ITEMS.ironwood_baton.strike === 3 && ITEMS.rusted_dagger.strike === 2, 'Shock Baton is Strike 3; dagger stays junk edge')
 assert(ITEMS.scav_wrap.shell === 2 && ITEMS.scav_wrap.slot === 'armor', 'mid armor is Scav Wrap Shell 2')
 assert(ITEMS.dust_cloak.shell === 2 && ITEMS.dust_cloak.slot === 'cloak' && ITEMS.hide_wrap.shell === 4, 'Dust Cloak is a Cloak, Shell 2; Hound Hide Shell 4')
 assert(ITEMS.ceremonial_cloth.slot === 'garment' && ITEMS.ceremonial_cloth.shell == null, 'Vessel Cloth is garment and adds no Shell')
@@ -4651,7 +4651,7 @@ function assertHelpResolves(s: GameState, where: string) {
 
 // Seeker Extractor: rare drop from a Seeker walking a husk; Draw resin perk.
 {
-  assert(ITEMS.seeker_extractor.strike === 3 && ITEMS.seeker_extractor.slot === 'weapon', 'Seeker Extractor is Main hand Strike 3')
+  assert(ITEMS.seeker_extractor.strike === 5 && ITEMS.seeker_extractor.slot === 'weapon', 'Seeker Extractor is Main hand Strike 5')
   assert(/living heat|liquefy resin|without shattering/i.test(ITEMS.seeker_extractor.desc), 'extractor lore matches Jeramie')
   assert(EXTRACTOR_DROP_IN === 8 && EXTRACTOR_DUPE_IN === 40, 'drop is 1 in 8, dupe 1 in 40')
   const alone = primedFight('vessel', 5, 'husk', { hp: 1 })

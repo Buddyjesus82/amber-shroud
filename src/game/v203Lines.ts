@@ -26,3 +26,6 @@ export const SKIFF_CRASH = "You wedge the scrap iron into the skiff's rudder lin
 export const SKIFF_REWARD = 'Scrap +1.'
 /** Shown when the point is not taken back by a damage cap. */
 export const WRENCH_MECH_LINE = 'Wrench: +1 Strike against machinery.'
+export const BATON_STUN_LINE = 'Stun: the runner skips the next action.'
+export const BATON_SKIP_LINE = 'The runner skips this action.'
+export const PIERCE_LINE = 'Piercing: ignores the first 2 Shell.'

@@ -15,5 +15,5 @@ const n = downedNote({ ...base, flags: { encounterKind: 'courtguard', sybellaHun
 ok(!n.includes('skiff-shadow'), 'Court Guard loss not Sybella line')
 ok(guardCooling({ flags: { guardCool: true, huntQuiet: 0 } }) && !guardCooling({ flags: { guardCool: true, huntQuiet: 99 } }), 'guard cooldown')
 const tr = readFileSync('src/game/trade.ts', 'utf8')
-ok(tr.includes('A thin Maw tooth. Weapon · Strike 3. Not Hound Hide. Equip it in Gear.') && tr.includes('Weapon · Strike 4. Pawned Ironwood.') && tr.includes('Hymn-shade rag. Armor · Shell 2. Not a vow.') && tr.includes('Binds a cut. Restores 3 Health. Not Sap.'), 'shop flavor restored with rule text')
+ok(tr.includes('A thin Maw tooth. Weapon · Strike 3. Not Hound Hide. Equip it in Gear.') && tr.includes('Weapon · Strike 3. Pawned Ironwood.') && tr.includes('Hymn-shade rag. Armor · Shell 2. Not a vow.') && tr.includes('Binds a cut. Restores 3 Health. Not Sap.'), 'shop flavor restored with rule text')
 if (fails) { console.log(`v175: ${fails} fail`); process.exit(1) } else console.log('v175 ok')

@@ -416,7 +416,7 @@ const VENDORS: Vendor[] = [
         id: 'baton',
         item: 'ironwood_baton',
         label: 'Buy a Shock Baton — four Glints',
-        sub: 'Weapon · Strike 4. Pawned Ironwood. Equip it in Gear.',
+        sub: 'Weapon · Strike 3. Pawned Ironwood. Equip it in Gear.',
         cost: { glints: 4 },
         onceFlag: 'zafirSoldBaton',
         extraFlag: { zafirSoldBaton: true },

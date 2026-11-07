@@ -217,7 +217,7 @@ Varro is at his stall. He has watched buyers fail and kept the tray anyway. On i
       {
         tags: ['baton', 'weapon', 'shock'],
         show: { all: [{ itemMin: ['glints', 4] }, { flagUnset: 'zafirSoldBaton' }] },
-        reply: 'Ironwood issue. Strike 4. He does not ask who you plan to correct.',
+        reply: 'Ironwood issue. Strike 3. He does not ask who you plan to correct.',
         effects: {
           remove: { glints: 4 },
           add: { ironwood_baton: 1 },

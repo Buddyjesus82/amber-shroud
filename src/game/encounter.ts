@@ -5,9 +5,9 @@ import { MASKED_BLOCK_LINE, MASKED_ROUNDS, MASKED_STRIKE_LINE, MASKED_WALKS_OFF_
 import { ITEMS } from './content/catalog'
 import { getScene } from './content'
 import { check } from './logic'
-import { disguiseActive, equippedShell, equippedStrike, machineryBonus, wearsCloth } from './kit'
+import { disguiseActive, equippedShell, equippedStrike, extractorHeld, machineryBonus, piercedShell, shockBatonHeld, wearsCloth } from './kit'
 import { CARAPACE_HUNTER, SPINE_HUNTER } from './content/spineHunter'
-import { FOREMAN_LINE, PACK_CALL_LINE, PACK_HOUND_LINE, RIG_GUARDS_LINE, RIG_PATROL_LINE, SEEKER_HANDLER_LINE, SKIFF_BOARD_LABEL, SKIFF_BOARD_SUB, SKIFF_CRASH, SKIFF_HIT_BARE, SKIFF_HIT_BLUNT, SKIFF_HIT_EDGE, SKIFF_HULL_LINE, SKIFF_LINE, SKIFF_REWARD, SKIFF_RUN_LINE, SKIFF_RUN_SUB, SKIFF_STEER_LABEL, SKIFF_STEER_SUB, SKIFF_WIN, WRENCH_MECH_LINE } from './v203Lines'
+import { BATON_SKIP_LINE, BATON_STUN_LINE, FOREMAN_LINE, PACK_CALL_LINE, PACK_HOUND_LINE, PIERCE_LINE, RIG_GUARDS_LINE, RIG_PATROL_LINE, SEEKER_HANDLER_LINE, SKIFF_BOARD_LABEL, SKIFF_BOARD_SUB, SKIFF_CRASH, SKIFF_HIT_BARE, SKIFF_HIT_BLUNT, SKIFF_HIT_EDGE, SKIFF_HULL_LINE, SKIFF_LINE, SKIFF_REWARD, SKIFF_RUN_LINE, SKIFF_RUN_SUB, SKIFF_STEER_LABEL, SKIFF_STEER_SUB, SKIFF_WIN, WRENCH_MECH_LINE } from './v203Lines'
 export { OVERTIME_LINE, PACK_HOUND_LINE, RIG_GUARDS_LINE } from './v203Lines'
 import type { Choice, Effect, FlagMap, GameState, ItemId } from './types'
 import { hash, OPENERS, sandAnswers, PAIR_LINE, HUSK_CONTROLLER_LINE, sandGripLine, TERRAINS, terrainPool, type Terrain, type TerrainId } from './fightTricks'
@@ -593,7 +593,7 @@ export function encounterChoices(state: GameState): Choice[] {
           ? {
               ...base,
               goto: 'camp:bay',
-              flash: 'The clerk is down. The vent screams. Shock Baton · Strike 4. Equip it. Jaxson is under a hull.',
+              flash: 'The clerk is down. The vent screams. Shock Baton · Strike 3. Equip it. Jaxson is under a hull.',
             }
           : base,
       },
@@ -1163,6 +1163,7 @@ function resolveEncounterCore(
   const c = clashOf(state, floor)
   const mech = machineryBonus(state, !!c.spec.mechanical)
   const hitStrike = c.strike + mech
+  const theirShell = piercedShell(state, spec.shell)
   const ground = terrainOf(state)
   const round = Number(f.encounterRound ?? 0) + 1
   const max = state.healthMax ?? HEALTH_MAX
@@ -1187,7 +1188,7 @@ function resolveEncounterCore(
   const outRaw = swingOut
   swingOut = Math.max(0, swingOut + ground.you)
   // v144: a ground line names what it did to the hit you see, not to a swing the damage floor swallowed.
-  const groundDelta = exchangeDamage(hitStrike, swingOut, spec.shell, floor) - exchangeDamage(hitStrike, outRaw, spec.shell, floor)
+  const groundDelta = exchangeDamage(hitStrike, swingOut, theirShell, floor) - exchangeDamage(hitStrike, outRaw, theirShell, floor)
   if (attacking && groundDelta > 0) outTags.push(`High ground: +${groundDelta} to your hit.`)
   if (attacking && groundDelta < 0) outTags.push(`Loose sand: −${-groundDelta} to your hit.`)
   if (ground.cap != null) {
@@ -1206,18 +1207,19 @@ function resolveEncounterCore(
     notes.push('The harpoon line pins you. No running until you land a hit.')
   }
 
-  let dmgOut = attacking ? exchangeDamage(hitStrike, swingOut, spec.shell, floor) : 0
+  let dmgOut = attacking ? exchangeDamage(hitStrike, swingOut, theirShell, floor) : 0
   // v144: your own 0-2 swing is a bonus like any other, so it gets its own line when it adds to the hit.
   // Each bonus claims the points it adds, in order (swing, feint, ground), so the lines add up to the hit you see.
   if (attacking) {
     const own = f.encounterShocked ? 0 : c.swingOut
-    const base0 = exchangeDamage(hitStrike, 0, spec.shell, floor)
-    const withSwing = exchangeDamage(hitStrike, own, spec.shell, floor)
-    const withFeint = exchangeDamage(hitStrike, own + feintAdd, spec.shell, floor)
+    const base0 = exchangeDamage(hitStrike, 0, theirShell, floor)
+    const withSwing = exchangeDamage(hitStrike, own, theirShell, floor)
+    const withFeint = exchangeDamage(hitStrike, own + feintAdd, theirShell, floor)
     const lead: string[] = []
     if (withSwing > base0) lead.push(`Extra force: +${withSwing - base0} to your hit.`)
     if (feintAdd) lead.push(withFeint > withSwing ? `Feint: +${withFeint - withSwing} to your hit.` : 'Feint: no extra on this hit.')
     if (mech) lead.unshift(WRENCH_MECH_LINE)
+    if (theirShell < spec.shell) lead.unshift(PIERCE_LINE)
     outTags.unshift(...lead)
   }
   const hitBare = enemyHit(state, theirStrike, c.shell, floor, harpoon)
@@ -1288,7 +1290,11 @@ function resolveEncounterCore(
     inTags.push(spec.kind === 'hound' ? `Off the lead: a hit takes at most ${EARLY_CRIT_CAP} Health.` : `Early fight: a hit takes at most ${EARLY_CRIT_CAP} Health.`)
   }
   let stunNext = false
-  if (f.encounterStun) hitIn(() => 0)
+  let batonSkipNext = false
+  if (f.encounterStunBaton) {
+    hitIn(() => 0)
+    inTags.length = 0
+  } else if (f.encounterStun) hitIn(() => 0)
 
   let feintNext = false
   let trickUsed = !!f.encounterTrickUsed
@@ -1425,7 +1431,8 @@ function resolveEncounterCore(
   }
 
   // Turreted Skiff: ordinary melee, including a machinery bonus and a crit, stops at 1.
-  if (spec.kind === 'skiff' && attacking && dmgOut > 0) {
+  // The Seeker Extractor is Piercing: it ignores that cap.
+  if (spec.kind === 'skiff' && attacking && dmgOut > 0 && !extractorHeld(state)) {
     if (dmgOut > 1) {
       dmgOut = 1
       critOut = false
@@ -1477,6 +1484,13 @@ function resolveEncounterCore(
     notes.push('The Seeker drives the extractor into a plate. Resin floods the core. The husk stands again, Health 2.')
   }
 
+  // Shock Baton: one landed swing in three, a runner does nothing next round.
+  if (attacking && dmgOut > 0 && theirHp > 0 && spec.kind === 'runner' && shockBatonHeld(state) && roll(state, 'batonStun', 3) === 0) {
+    batonSkipNext = true
+    stunNext = true
+    outTags.push(BATON_STUN_LINE)
+  }
+
   // Plain result lines: who hit whom for how much. Named extras in brackets; a crit gets its own line.
   // Stat rows on top, then plain result lines. Every bonus gets its own short line; a crit gets its own line.
   // A crit is part of its own hit line, with the final damage. No separate base-hit line.
@@ -1491,7 +1505,9 @@ function resolveEncounterCore(
           : `You hit ${who} for ${dmgOut}.`
   const pl = PLURAL_KINDS.includes(spec.kind)
   const vb = (one: string, many: string) => (pl ? many : one)
-  const themLine = f.encounterStun
+  const themLine = f.encounterStunBaton
+    ? BATON_SKIP_LINE
+    : f.encounterStun
     ? `${cap(who)} ${vb('misses', 'miss')}. Sand in the eyes.`
     : lulled
       ? `${cap(who)} ${vb('goes', 'go')} for your Sap.`
@@ -1645,6 +1661,7 @@ function resolveEncounterCore(
     encounterAt: state.ticks,
     encounterFeint: feintNext,
     encounterStun: stunNext,
+    encounterStunBaton: batonSkipNext,
     encounterShocked: false,
     encounterPinned: pinned,
     encounterLatched: latched,
