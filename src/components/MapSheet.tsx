@@ -1,7 +1,7 @@
 import { useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { HUBS } from '../game/content/catalog'
 import { CH2_BACKTRACK, chapterTwoLocked, travelTo } from '../game/engine'
-import { adjacency, currentNode, fogged, drawnMap, edgeSap as rawEdgeSap, nodeById } from '../game/map'
+import { adjacency, ch3MapLocked, currentNode, fogged, drawnMap, edgeSap as rawEdgeSap, nodeById } from '../game/map'
 import { ROAD_SAP } from '../game/returnRoad'
 import { estimateLabel, layoutLabels, type Box } from '../game/mapLabels'
 import type { GameState, HubMapDef, HubMapNode } from '../game/types'
@@ -85,6 +85,7 @@ function titleFor(state: GameState, map: HubMapDef) {
   if (map.hubId === 'spine') return 'Bleached Spine'
   if (map.hubId === 'threshold') return 'Outer Threshold'
   if (map.hubId === 'redmaw') return 'Red Maw Approach'
+  if (map.hubId === 'barrow') return 'Barrow Trails'
   return state.hubId ?? 'Map'
 }
 
@@ -203,6 +204,10 @@ function HubMapView({
       onHint(`You are at ${node.name}.`)
       return
     }
+    if (ch3MapLocked(state, node.sceneId)) {
+      onHint('Not now.')
+      return
+    }
     const sap = here ? edgeSap(map, here.id, node.id, state) : null
     if (sap == null) {
       onHint(
@@ -262,7 +267,8 @@ function HubMapView({
         <div className="hub-map-nodes">
           {map.nodes.map((n, i) => {
             const mine = here?.id === n.id
-            const next = adjIds.has(n.id)
+            const sealed = ch3MapLocked(state, n.sceneId)
+            const next = adjIds.has(n.id) && !sealed
             const sap = here && next ? edgeSap(map, here.id, n.id, state) : null
             const cls = mine ? 'map-node here' : next ? 'map-node next' : 'map-node far'
             const place = layout.placements[i]
@@ -367,7 +373,20 @@ function MapArt({ map, full }: { map: HubMapDef; full: boolean }) {
   if (map.hubId === 'camp04') return <CampArt full={full} />
   if (map.hubId === 'spine') return <SpineArt full={full} />
   if (map.hubId === 'threshold') return <ThreshArt full={full} />
+  if (map.hubId === 'barrow') return <BarrowArt />
   return <MawArt />
+}
+
+function BarrowArt() {
+  return (
+    <g className="map-sketch" filter="url(#charcoal-jitter)">
+      <rect x="0" y="0" width="100" height="200" filter="url(#soot-grain)" opacity="0.5" />
+      <ellipse cx="70" cy="28" rx="18" ry="10" className="map-stain" />
+      <ellipse cx="22" cy="150" rx="16" ry="12" className="map-stain deep" />
+      <path d="M26 30 L38 30 L34 196 L22 196 Z" fill="url(#charcoal-hatch)" className="map-block" />
+      <path d="M40 58 L78 58 L76 74 L38 74 Z" fill="url(#charcoal-hatch-steep)" className="map-block" />
+    </g>
+  )
 }
 
 function CampArt({ full }: { full: boolean }) {

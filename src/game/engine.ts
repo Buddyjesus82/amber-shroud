@@ -26,7 +26,7 @@ import { helpText } from './help'
 import { helpRoute, HELP_HINT, HELP_TOPICS, topicText } from './helpTopics'
 import { isBayScene } from './content/bayHands'
 import { classifyLook, directedLookFlash, pressureLookFlash, roomLookEffect } from './look'
-import { fogged, markCampSeen, matchCompass, travelGate } from './map'
+import { ch3MapLocked, fogged, markCampSeen, matchCompass, travelGate } from './map'
 import { isChapterReleased } from './chapters'
 import { chapterThreeAfter } from './ch3'
 import { chapterTwoAfter, chapterTwoUnlock, isChapterTwoCode } from './ch2'
@@ -669,6 +669,9 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   const softened = softenCartel(state, fx)
   if (softened !== fx) fx = { ...softened, flash: fx.flash ? `${fx.flash} ${DISGUISE_SOFTEN_NOTE}` : DISGUISE_SOFTEN_NOTE }
   let dest = resolveDest(state, fx)
+  // v222: a map hop cannot open a Chapter 3 beat the story has not opened.
+  const mapHop = !!fx.mapWalk || (typeof fx.sap === 'number' && fx.sap < 0 && !fx.flag)
+  if (dest && mapHop && ch3MapLocked(state, dest)) return persist({ ...state, flash: ROAD_NOT_NOW })
   let next = applyDelta(state, fx)
   next.flash = fx.flash
   // Every escape out of Camp-04 plays the storm beat first; the route's own line waits for the Hunger.
@@ -1387,6 +1390,7 @@ export function chapterTwoLocked(state: Pick<GameState, 'flags'>): boolean {
 
 export function travelTo(state: GameState, sceneId: string): GameState {
   if (state.sceneId === sceneId) return state
+  if (ch3MapLocked(state, sceneId)) return persist({ ...state, flash: ROAD_NOT_NOW })
   if (chapterTwoLocked(state) && !sceneId.startsWith('ch2:')) {
     // A button on this screen that goes there (the Vessel market and stilt rows, a Back) still works.
     const row = visibleChoices(state).find((c) => c.effects?.goto === sceneId && isChoiceOn(state, c.enable))
@@ -2287,9 +2291,19 @@ function campWalkRows(state: GameState, rows: Choice[]): Choice[] {
   for (const e of map.edges) {
     const other = e.a === here ? e.b : e.b === here ? e.a : null
     const to = other ? map.nodes.find((n) => n.id === other) : null
-    if (!to || has.has(to.sceneId) || to.sceneId === state.sceneId || getScene(to.sceneId, state.door).hubId !== state.hubId) continue
+    if (!to || to.sceneId === state.sceneId || getScene(to.sceneId, state.door).hubId !== state.hubId) continue
+    // A story button may share the destination. On the Barrow trail the walk still shows, and a gate keeps it locked.
+    if (has.has(to.sceneId) && state.hubId !== 'barrow') continue
     const sap = e.sap ?? 1
-    out.push({ id: `walk-${to.id}`, label: `Walk to ${to.name}`, sub: sap ? `${sap} Sap.` : undefined, tone: 'quiet', effects: { sap: -sap, goto: to.sceneId } })
+    const locked = ch3MapLocked(state, to.sceneId)
+    out.push({
+      id: `walk-${to.id}`,
+      label: `Walk to ${to.name}`,
+      sub: sap ? `${sap} Sap.` : undefined,
+      tone: 'quiet',
+      ...(locked ? { enable: { flag: '__no__' }, locked: ROAD_NOT_NOW } : {}),
+      effects: { sap: -sap, goto: to.sceneId },
+    })
   }
   return out
 }

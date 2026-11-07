@@ -79,8 +79,8 @@ export function passageCheck(state: GameState, fx: Effect): Effect {
   return { ...out, flag: { ...out.flag, passagePatrol: true }, ambush: { kind: 'patrol', line: PASSAGE_LINE } }
 }
 
-/** Barrow Trails caches. v221: these four scenes are a one-pick cache, not a scavenge. */
-export const BARROW_CACHE_SCENES: ReadonlySet<string> = new Set<string>(['camp:siftline', 'ch2:p-sift', 'thresh:conduits', 'thresh:subdrain'])
+/** Barrow Trails caches. v221: these four scenes are a one-pick cache, not a scavenge. v222: Conduit Alpha Siphon is the same cache at a higher yield. */
+export const BARROW_CACHE_SCENES: ReadonlySet<string> = new Set<string>(['camp:siftline', 'ch2:p-sift', 'thresh:conduits', 'thresh:subdrain', 'ch3:siphon'])
 export const BARROW_HEAT_LINE = 'Seeker Heat -1.'
 /** v221: looted. The old `barrowCache:` flag was only the first-scavenge heat cut, so it does not count. */
 export const barrowLootKey = (sceneId: string) => `barrowLooted:${sceneId}`
@@ -92,9 +92,23 @@ export const BARROW_SIPHON = 'Siphon conduit fuel'
 export const BARROW_EMPTY = 'The cache is empty.'
 export const BARROW_SCRAP_1 = 'Scrap +1.'
 export const BARROW_SCRAP_2 = 'Scrap +2.'
+export const BARROW_SCRAP_3 = 'Scrap +3.'
+export const BARROW_SCRAP_4 = 'Scrap +4.'
 export const BARROW_CARTEL_1 = 'Cartel Heat +1.'
 export const BARROW_CARTEL_2 = 'Cartel Heat +2.'
+export const BARROW_CARTEL_3 = 'Cartel Heat +3.'
 export const BARROW_SAP_1 = 'Sap +1.'
+export const BARROW_SAP_2 = 'Sap +2.'
+export const BARROW_HEAT_DOWN_2 = 'Seeker Heat -2.'
+
+type BarrowPay = { popScrap: number; popHeat: number; popLine: string; heatLine: string; bypassScrap: number; bypassHeat: number; bypassLine: string; seekerLine: string; sap: number; siphonHeat: number; sapLine: string; siphonHeatLine: string }
+
+function barrowPay(sceneId: string): BarrowPay {
+  if (sceneId === 'ch3:siphon') {
+    return { popScrap: 3, popHeat: 2, popLine: BARROW_SCRAP_3, heatLine: BARROW_CARTEL_2, bypassScrap: 4, bypassHeat: -2, bypassLine: BARROW_SCRAP_4, seekerLine: BARROW_HEAT_DOWN_2, sap: 2, siphonHeat: 3, sapLine: BARROW_SAP_2, siphonHeatLine: BARROW_CARTEL_3 }
+  }
+  return { popScrap: 1, popHeat: 1, popLine: BARROW_SCRAP_1, heatLine: BARROW_CARTEL_1, bypassScrap: 2, bypassHeat: -1, bypassLine: BARROW_SCRAP_2, seekerLine: BARROW_HEAT_LINE, sap: 1, siphonHeat: 2, sapLine: BARROW_SAP_1, siphonHeatLine: BARROW_CARTEL_2 }
+}
 
 export function barrowScene(state: Pick<GameState, 'sceneId'>): boolean {
   return BARROW_CACHE_SCENES.has(state.sceneId)
@@ -117,6 +131,7 @@ export function barrowRows(state: GameState): Choice[] {
   const id = state.sceneId
   const key = barrowLootKey(id)
   const wrench = wrenchOn(state)
+  const pay = barrowPay(id)
   return [
     {
       id: 'barrow-pop',
@@ -124,8 +139,8 @@ export function barrowRows(state: GameState): Choice[] {
       sub: wrench ? undefined : BARROW_POP_SUB,
       tone: 'quiet',
       effects: wrench
-        ? { add: { scrap: 1 }, flag: { [key]: true }, flash: BARROW_SCRAP_1 }
-        : { add: { scrap: 1 }, heat: { cartel: 1 }, flag: { [key]: true }, flash: `${BARROW_SCRAP_1}\n\n${BARROW_CARTEL_1}` },
+        ? { add: { scrap: pay.popScrap }, flag: { [key]: true }, flash: pay.popLine }
+        : { add: { scrap: pay.popScrap }, heat: { cartel: pay.popHeat }, flag: { [key]: true }, flash: `${pay.popLine}\n\n${pay.heatLine}` },
     },
     {
       id: 'barrow-bypass',
@@ -133,13 +148,13 @@ export function barrowRows(state: GameState): Choice[] {
       tone: 'quiet',
       enable: { any: [{ item: 'rig_passkey' }, { item: 'cipher_key' }] },
       locked: BARROW_BYPASS_LOCK,
-      effects: { add: { scrap: 2 }, heat: { seekers: -1 }, flag: { [key]: true }, flash: `${BARROW_SCRAP_2}\n\n${BARROW_HEAT_LINE}` },
+      effects: { add: { scrap: pay.bypassScrap }, heat: { seekers: pay.bypassHeat }, flag: { [key]: true }, flash: `${pay.bypassLine}\n\n${pay.seekerLine}` },
     },
     {
       id: 'barrow-siphon',
       label: BARROW_SIPHON,
       tone: 'quiet',
-      effects: { sap: 1, heat: { cartel: 2 }, flag: { [key]: true }, flash: `${BARROW_SAP_1}\n\n${BARROW_CARTEL_2}` },
+      effects: { sap: pay.sap, heat: { cartel: pay.siphonHeat }, flag: { [key]: true }, flash: `${pay.sapLine}\n\n${pay.siphonHeatLine}` },
     },
   ]
 }

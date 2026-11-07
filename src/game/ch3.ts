@@ -38,8 +38,11 @@ export function chapterThreeAfter(state: GameState, next: GameState, _fx?: Effec
   const f = next.flags
   if (onGround) {
     next.chapterId = CH3_CHAPTER
-    next.hubId = null
+    next.hubId = 'barrow'
   }
+  // v222: the map may walk these scenes only after the story has already opened them.
+  if (next.sceneId === 'ch3:supply' || next.sceneId === 'ch3:tent' || next.sceneId === 'ch3:crosshaven') f.ch3SupplyOpen = true
+  if (next.sceneId === 'ch3:tent' || next.sceneId === 'ch3:crosshaven') f.ch3TentOpen = true
   // The capture: both choices land here. Strip gear, consumables, Sap, the key and the party.
   if (f.ch3Strip && !f.ch3Stripped) {
     const how = f.ch3Strip
