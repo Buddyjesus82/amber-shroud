@@ -56,6 +56,10 @@ export function shadeHandChoices(): Choice[] {
     id: `walk-${hand.sceneId.split(':').pop()}`,
     label: hand.walkLabel,
     sub: hand.walkSub,
+    // v224: the python trader is the woman who lived through the tarp. Turned in, she is gone.
+    ...(hand.sceneId === 'spine:jodi'
+      ? { show: { all: [{ flagUnset: 'jodi_removed' }, { any: [{ flag: 'jodiSap' }, { flag: 'jodiStash' }, { flag: 'jodiLeft' }] }] } }
+      : {}),
     effects: { goto: hand.sceneId, ticks: 1 },
   }))
 }
@@ -440,8 +444,63 @@ ${JODI_LINES.arrive}`,
 }
 
 /** Scenes for each live hand. */
+export const JODI_TARP_BODY =
+  'Halfway to the well, a tarp over a body that is still breathing. Jodi Hollowmere, lips cracked, the wire a long way behind her. "Don\'t shout. I didn\'t steal the crossing. I just didn\'t die on it."'
+
+const jodiOnce = { all: [{ flagUnset: 'jodi_removed' }, { flagUnset: 'jodiSap' }, { flagUnset: 'jodiStash' }, { flagUnset: 'jodiLeft' }, { flagUnset: 'jodiTurned' }] }
+
+export const JODI_TARP_SCENE: Scene = {
+  id: 'spine:jodi-tarp',
+  hubId: 'spine',
+  kind: 'story',
+  title: 'Halfway to the Well',
+  speaker: 'Jodi Hollowmere',
+  body: JODI_TARP_BODY,
+  choices: [
+    {
+      id: 'sap',
+      label: 'Give her a Drop',
+      sub: 'Costs 1 Sap.',
+      tone: 'quiet',
+      show: jodiOnce,
+      enable: { sapMin: 1 },
+      locked: 'Needs: 1 Sap',
+      effects: { sap: -1, heat: { strays: -1 }, flag: { jodiSap: true }, goto: 'spine:well', flash: "She drinks like the cup might be taken back. She doesn't thank you. She lives." },
+    },
+    {
+      id: 'stash',
+      label: 'Stand over her while she digs',
+      sub: 'She kept a little scrap.',
+      tone: 'quiet',
+      show: jodiOnce,
+      effects: { add: { scrap: 1 }, flag: { jodiStash: true }, goto: 'spine:well', flash: 'Under the tarp, a twist of scrap. She puts it in your hand and pulls the canvas shut.' },
+    },
+    {
+      id: 'leave',
+      label: 'Leave her',
+      sub: 'The tarp stays.',
+      tone: 'quiet',
+      show: jodiOnce,
+      effects: { flag: { jodiLeft: true }, goto: 'spine:well', flash: "You walk on. The canvas doesn't move." },
+    },
+    {
+      id: 'turn',
+      label: 'Turn her in',
+      sub: 'The Cartel pays. The Strays hear it.',
+      tone: 'danger',
+      show: jodiOnce,
+      effects: {
+        add: { scrap: 1 },
+        heat: { cartel: 2, strays: 1 },
+        flag: { jodiTurned: true, jodi_removed: true, jodi_traded: false },
+        goto: 'spine:well',
+        flash: 'You name the ridge. A Cartel hand pays in scrap. The shade will know who spoke.',
+      },
+    },
+  ],
+}
+
 export function shadeHandScenes(): Scene[] {
-  if (!SHADE_HANDS_LIVE) return []
-  const byId: Record<string, Scene> = { 'spine:korvan': KORVAN_SCENE, 'spine:mira': MIRA_SCENE, 'spine:jodi': JODI_SCENE }
-  return liveHands().map((h) => byId[h.sceneId]).filter(Boolean)
+  const hands = !SHADE_HANDS_LIVE ? [] : liveHands().map((h) => ({ 'spine:korvan': KORVAN_SCENE, 'spine:mira': MIRA_SCENE, 'spine:jodi': JODI_SCENE }[h.sceneId])).filter((s): s is Scene => !!s)
+  return [...hands, JODI_TARP_SCENE]
 }

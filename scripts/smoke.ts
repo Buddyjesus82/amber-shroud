@@ -2778,7 +2778,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v223'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v224'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(!sw.includes('covers/camp04.jpg') && sw.includes('covers/yard.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -3149,7 +3149,8 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(SHADE_HANDS_LIVE && !SILAS_JOB_LIVE, 'shade walk-ups are live (Korvan, Mira, Jodi); the Silas job is a scaffold, off')
   const shade = applyEffect(fresh, { goto: 'spine:shade', flag: quiet })
   assert(!visibleChoices(shade).some((c) => /TODO/.test(c.label)), 'shade shows no placeholder walk-ups')
-  assert(ids(shade).includes('walk-korvan') && ids(shade).includes('walk-mira') && ids(shade).includes('walk-jodi'), 'shade walks up to Korvan, Mira, and Jodi')
+  assert(ids(shade).includes('walk-korvan') && ids(shade).includes('walk-mira') && !ids(shade).includes('walk-jodi'), 'shade walks up to Korvan and Mira; Jodi waits until the tarp')
+  assert(ids({ ...shade, flags: { ...shade.flags, jodiLeft: true } }).includes('walk-jodi'), 'Jodi the trader appears after she lives')
   for (const scene of ALL_SCENES) {
     const text = JSON.stringify(scene)
     assert(!/TODO_STRAY/.test(text), `${scene.id} carries no walk-up placeholder`)
@@ -4224,8 +4225,8 @@ function assertHelpResolves(s: GameState, where: string) {
 {
   const quiet = { encounterAt: 9999 }
   const at = (fx: Parameters<typeof applyEffect>[1] = {}) => applyEffect(applyEffect(newGame('outcast'), { goto: 'spine:jodi', flag: quiet }), fx)
-  const shade = applyEffect(newGame('outcast'), { goto: 'spine:shade', flag: quiet })
-  assert(ids(shade).includes('walk-jodi'), 'shade walks up to Jodi')
+  const shade = applyEffect(newGame('outcast'), { goto: 'spine:shade', flag: { ...quiet, jodiLeft: true } })
+  assert(ids(shade).includes('walk-jodi'), 'shade walks up to Jodi after she lives')
   assert(pick(shade, 'walk-jodi').sceneId === 'spine:jodi', 'the walk-up lands at Jodi')
   const scene = getScene('spine:jodi')
   const all = JSON.stringify(scene)
