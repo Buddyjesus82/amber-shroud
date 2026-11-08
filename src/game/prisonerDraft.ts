@@ -61,20 +61,20 @@ export const DRAFT_BAY = {
   pike: {
     surviveSub: 'Scrape, eat, stay off the count.',
     survive: 'Pike keeps scraping. "The pens have a wall. The station does not."',
-    rumorSub: 'The Wire, not a secret.',
-    rumor: '"The Wire has a pack. He sells. I scrape."',
+    rumorSub: 'Ridge runs, heavy stock.',
+    rumor: '"The Wire gets new packs when the Cartel runs the ridge. Kaelen buys low and holds heavy."',
   },
   sarn: {
     surviveSub: 'Count what you take.',
     survive: 'Sarn does not look up. "The Yard writes the rest."',
-    rumorSub: 'The roads he already walks.',
-    rumor: '"East of the stall is this bay. West of the bay is the station."',
+    rumorSub: 'Seekers at the fence.',
+    rumor: '"Seekers checked the outer fence twice before dusk. They aren\'t looking for stray scrap."',
   },
   vetch: {
     surviveSub: 'Keep the torch up.',
     survive: 'The mask stays down. "Rest where the wire is not."',
-    rumorSub: 'Who walks which ground.',
-    rumor: '"Kaelen walks the Wire. Valerius walks the tower. I stay on the skid."',
+    rumorSub: 'Movement on the high line.',
+    rumor: '"Valerius took two extra guards up the tower line. Something broke on the high conduit."',
   },
 } as const
 

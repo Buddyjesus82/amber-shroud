@@ -68,6 +68,11 @@ function at(sceneId: string, extra: Partial<GameState> = {}): GameState {
   ok(!visibleChoices({ ...k, door: 'outcast' } as GameState).some((c) => c.id === 'bays'), 'the mentor buttons are Prisoner-only')
 }
 
+ok(DRAFT_BAY.pike.rumor === '"The Wire gets new packs when the Cartel runs the ridge. Kaelen buys low and holds heavy."' && DRAFT_BAY.pike.rumorSub === 'Ridge runs, heavy stock.', 'Pike rumor is the approved line')
+ok(DRAFT_BAY.sarn.rumor === '"Seekers checked the outer fence twice before dusk. They aren\'t looking for stray scrap."' && DRAFT_BAY.sarn.rumorSub === 'Seekers at the fence.', 'Sarn rumor is the approved line')
+ok(DRAFT_BAY.vetch.rumor === '"Valerius took two extra guards up the tower line. Something broke on the high conduit."' && DRAFT_BAY.vetch.rumorSub === 'Movement on the high line.', 'Vetch rumor is the approved line')
+ok(!DRAFT_BAY.pike.rumor.startsWith('Pike'), 'Pike rumor stays quote-only')
+
 // Bay buttons: survival, the existing trade, a rumor. No new loot.
 for (const [id, who] of [['camp:bay-pike', 'pike'], ['camp:bay-sarn', 'sarn'], ['camp:bay-vetch', 'vetch']] as const) {
   const rows = visibleChoices(at(id, { items: { wrench: 1 } }))
@@ -75,7 +80,7 @@ for (const [id, who] of [['camp:bay-pike', 'pike'], ['camp:bay-sarn', 'sarn'], [
   const rumor = rows.find((c) => c.id === 'rumor')!
   const trade = rows.find((c) => c.id.startsWith('trade-'))
   ok(survive?.label === DRAFT_BAY_SURVIVE_LABEL && survive.effects.flash === DRAFT_BAY[who].survive && !survive.effects.add, `${id} survival`)
-  ok(rumor?.label === DRAFT_BAY_RUMOR_LABEL && rumor.effects.flash === DRAFT_BAY[who].rumor && !rumor.effects.heat, `${id} rumor`)
+  ok(rumor?.label === DRAFT_BAY_RUMOR_LABEL && rumor.sub === DRAFT_BAY[who].rumorSub && rumor.effects.flash === DRAFT_BAY[who].rumor && !rumor.effects.heat, `${id} rumor`)
   ok(!!trade, `${id} keeps its trade button`)
 }
 
