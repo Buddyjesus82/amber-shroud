@@ -132,6 +132,9 @@ Greg leans over the rail, eyes narrowing as he inspects your tags.
 export const GREG_TOLL_IRON = "Just open the gate, Greg. Here's your iron."
 export const GREG_TOLL_RESIN = 'Two drops of clean resin. Take it and drop the latch.'
 export const GREG_TOLL_SYBELLA = "Sybella's skiff is right behind me, Greg. You want to explain to her why you delayed her run?"
+export const GREG_TOLL_SCRIP = "Just open the gate, Greg. Here's your scrip."
+export const GREG_SCRIP_LOCKED = "Greg doesn't take IOUs"
+export const GREG_SCRIP_FLASH = "'Through. Fast. I never saw you.'"
 const GREG_OPEN: Cond = { flagUnset: 'ch2Won_tollgate' }
 /** v179: Greg turns the name away from a runner the Seekers already watch. */
 export const SYBELLA_RAGS = "Sybella's team doesn't walk with rags like you."
@@ -661,6 +664,7 @@ Off the road, smoke rises from a drainage ditch.`,
     choices: [
       { id: 'iron', label: GREG_TOLL_IRON, sub: '15 scrap.', show: GREG_OPEN, enable: { itemMin: ['scrap', 15] }, locked: 'Needs: 15 scrap', effects: { remove: { scrap: 15 }, flag: { gregStanding: 'paid' }, goto: 'ch2:irongut', flash: 'The winch opens the gate.' } },
       { id: 'resin', label: GREG_TOLL_RESIN, sub: '2 vials.', show: GREG_OPEN, enable: { itemMin: ['vial_drop', 2] }, locked: 'Needs: 2 vials', effects: { remove: { vial_drop: 2 }, flag: { gregStanding: 'paid' }, goto: 'ch2:irongut', flash: 'Greg checks the seals and waves you through.' } },
+      { id: 'scrip', label: GREG_TOLL_SCRIP, sub: '1 scrip.', show: GREG_OPEN, enable: { item: 'scrip' }, locked: GREG_SCRIP_LOCKED, effects: { remove: { scrip: 1 }, flag: { gregStanding: 'paid' }, goto: 'ch2:irongut', flash: GREG_SCRIP_FLASH } },
       { id: 'skiff', label: 'Hide in the haul skiff under the platform', show: { all: [GREG_OPEN, { door: 'prisoner' }] }, effects: { flag: { gregStanding: 'bypassed' }, goto: 'ch2:p-haul', flash: 'The skiff grinds into the subterranean repair bays.' } },
       ...sybellaRows('sybella', GREG_TOLL_SYBELLA, { all: [GREG_OPEN, { any: [{ door: 'vessel' }, { door: 'outcast' }] }] }, { flag: { ch2SybellaNamed: true }, goto: 'ch2:irongut', flash: "'Through. Fast. I never saw you.'" }, 3),
       { id: 'knot', label: "Show Ossa's Knot", show: { all: [GREG_OPEN, { door: 'outcast' }, knot] }, effects: { goto: 'ch2:irongut', flash: "'Ossa's. Huh.' He lets you go, for now." } },

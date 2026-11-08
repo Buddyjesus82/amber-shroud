@@ -1,9 +1,10 @@
 /** v226: Knot perk line, the unpaid shaft row, the Collapse leftover cut, the empty gate. */
-import { readFileSync } from 'node:fs'
-import { applyEffect, bodyOf, newGame, visibleChoices } from '../src/game/engine.ts'
+import { existsSync, readFileSync } from 'node:fs'
+import { applyEffect, bodyOf, isChoiceOn, newGame, sceneOf, visibleChoices } from '../src/game/engine.ts'
+import { playCoverKey } from '../src/game/art.ts'
 import { ITEMS } from '../src/game/content/catalog.ts'
 import { KNOT_STRAYS_NOTE } from '../src/game/kit.ts'
-import { GREG_GATE_EMPTY } from '../src/game/content/intoTheMaw.ts'
+import { GREG_GATE_EMPTY, GREG_SCRIP_FLASH, GREG_SCRIP_LOCKED, GREG_TOLL_SCRIP } from '../src/game/content/intoTheMaw.ts'
 import type { DoorId } from '../src/game/types.ts'
 
 let fails = 0
@@ -37,7 +38,24 @@ for (const door of ['prisoner', 'outcast', 'vessel'] as DoorId[]) {
   const dead = bodyOf({ ...gate, flags: { ...gate.flags, gregDead: true } })
   ok(dead === GREG_GATE_EMPTY, `${door}: empty platform after Greg dies`)
   ok(bodyOf(gate).includes('Greg Ambergrin'), `${door}: living Greg keeps the toll`)
+  ok(playCoverKey(gate, sceneOf(gate)) === 'greg', `${door}: living Greg keeps his portrait`)
+  const empty = { ...gate, flags: { ...gate.flags, gregDead: true } }
+  ok(playCoverKey(empty, sceneOf(empty)) === 'greg_empty', `${door}: dead Greg swaps to the empty platform`)
+  for (const heat of [0, 8]) {
+    const broke = { ...gate, heat: { cartel: heat, seekers: heat, strays: heat }, items: { ...gate.items, scrip: 0 } }
+    const row = visibleChoices(broke).find((c) => c.id === 'scrip')
+    ok(!!row && row.label === GREG_TOLL_SCRIP && row.sub === '1 scrip.' && row.locked === GREG_SCRIP_LOCKED && !isChoiceOn(broke, row.enable), `${door} heat ${heat}: scrip row shows and locks at 0`)
+    const paid = { ...broke, items: { ...broke.items, scrip: 1 } }
+    const open = visibleChoices(paid).find((c) => c.id === 'scrip')!
+    ok(isChoiceOn(paid, open.enable), `${door} heat ${heat}: one scrip enables the row`)
+    const next = applyEffect(paid, open.effects)
+    ok(next.sceneId === 'ch2:irongut' && (next.items.scrip ?? 0) === 0 && !next.flags.ch2SybellaNamed && next.flash === GREG_SCRIP_FLASH && next.flags.gregStanding === 'paid', `${door} heat ${heat}: scrip pays through to Iron-Gut`)
+  }
+  const bluff = visibleChoices(gate).filter((c) => c.id === 'sybella')
+  if (door === 'prisoner') ok(bluff.length === 0, 'prisoner still has no Sybella bluff')
+  else ok(bluff.length === 1 && bluff[0].sub === '3 scrap.' && !!bluff[0].effects.flag?.ch2SybellaNamed, `${door}: the 3-scrap bluff stays`)
 }
+ok(existsSync('public/covers/greg-empty.jpg') && readFileSync('public/sw.js', 'utf8').includes('covers/greg-empty.jpg'), 'empty platform is precached')
 
 console.log(fails ? `v226 FAILED ${fails}` : 'v226: all pass')
 if (fails) process.exit(1)
