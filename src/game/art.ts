@@ -69,6 +69,7 @@ export type CoverKey =
   | 'ch2_s_gate'
   | 'valerius'
   | 'greg'
+  | 'greg_empty'
   | 'murch'
   | 'vex'
   | 'hound'
@@ -255,6 +256,7 @@ const FILES: Record<CoverKey, string> = {
   world: 'world.jpg',
   hunger: 'hunger.png',
   greg: 'greg.jpg',
+  greg_empty: 'greg-empty.jpg',
   murch: 'murch.jpg',
   vex: 'vex.jpg',
   spine: 'spine.jpg',
@@ -472,6 +474,7 @@ export const COVER_BAND: Record<CoverKey, [number, number]> = {
   world: [0.05, 0.75],
   hunger: [0.05, 0.75],
   greg: [0.0, 0.6],
+  greg_empty: [0.08, 0.62],
   murch: [0.0, 0.65],
   vex: [0.02, 0.8],
   spine: [0.15, 0.85],
@@ -872,6 +875,7 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   if (CH3_ART[id]) return CH3_ART[id]
   const CH2_ART: Record<string, CoverKey> = {'ch2:greg-toll': 'greg', 'ch2:gate': 'ch2_s_gate', 'ch2:cache': 'ch2_s_cache', 'ch2:trapped': 'ch2_s_trapped', 'ch2:heart': 'ch2_s_heart', 'ch2:end': 'ch2_s_end', 'ch2:o-abyss': 'ch2_o_abyss', 'ch2:o-bounty': 'ch2_o_bounty', 'ch2:o-cage': 'ch2_o_cage', 'ch2:o-hounds': 'ch2_o_hounds', 'ch2:o-hermit': 'ch2_o_hermit', 'ch2:o-root': 'ch2_o_root', 'ch2:o-stakes': 'ch2_o_stakes', 'ch2:o-stilts': 'ch2_o_stilts', 'ch2:o-strays': 'ch2_o_strays', 'ch2:o-wash': 'ch2_o_wash', 'ch2:p-abyss': 'ch2_p_abyss', 'ch2:p-bays': 'ch2_p_bays', 'ch2:p-bilge': 'ch2_p_bilge', 'ch2:p-haul': 'ch2_p_haul', 'ch2:p-jaws': 'ch2_p_jaws', 'ch2:p-shaft': 'ch2_p_shaft', 'ch2:p-sift': 'ch2_p_sift', 'ch2:v-bleed': 'ch2_v_bleed', 'ch2:v-blown': 'ch2_v_blown', 'ch2:v-garden': 'ch2_v_garden', 'ch2:v-greg': 'ch2_v_greg', 'ch2:v-murch': 'ch2_v_murch', 'ch2:v-outpost': 'ch2_v_outpost', 'ch2:v-ribs': 'ch2_v_ribs', 'ch2:v-scar': 'ch2_v_scar', 'ch2:v-stair': 'ch2_v_stair', 'ch2:v-test': 'ch2_v_test', 'ch2:p-supply': 'ch2_s_p_supply', 'ch2:p-drillrun': 'ch2_s_p_drillrun', 'ch2:survivor': 'ch2_s_survivor', 'ch2:approach': 'ch2_s_approach', 'ch2:ditch': 'ch2_s_ditch', 'ch2:gully': 'ch2_s_gully', 'ch2:irongut': 'ch2_s_irongut', 'ch2:ribs': 'ch2_s_ribs', 'ch2:vein': 'ch2_s_vein'}
   // v179: Valerius has moved on; the test chamber shows the outpost, not him.
+  if (id === 'ch2:greg-toll' && state.flags.gregDead) return 'greg_empty'
   if (id === 'ch2:v-test' && state.flags.valeriusMoved) return 'ch2_v_outpost'
   // v180: the lift is awake.
   // v181: Murch only when he ran it for you; forced by hand or no Murch, the empty lift.
