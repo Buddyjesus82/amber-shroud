@@ -396,8 +396,8 @@ const VENDORS: Vendor[] = [
       {
         id: 'buy',
         item: 'vial_drop',
-        label: 'Buy a Drop at Approach prices',
-        sub: 'Restores 3 Sap. Approach prices: costs more here.',
+        label: 'Buy a Drop of Oasis Sap',
+        sub: 'Restores 3 Sap.',
         cost: { glints: 2 },
         flash: 'Highway robbery. You pay it. The stall is still open. Living costs more here.',
         tags: ['drop', 'vial', 'sap', 'oasis'],
@@ -439,9 +439,9 @@ const VENDORS: Vendor[] = [
     ],
     changeScrap: true,
     buyScrip: true,
-    openBuyFlash: '"Drops. Hound Hide. A baton if the Maw pawned one. Approach prices. That is Buy."',
-    openSellFlash: '"I buy what the dunes spat out — if it is not on your body, and it is not a key. I pay less than I charge."',
-    sellFlash: 'He smiles like a receipt. You get less than the stall would charge.',
+    openBuyFlash: 'Thread, pins, and iron are on the shelf. I take raw scrap and clean bone. I do not take Cartel paper.',
+    openSellFlash: 'I take raw scrap and clean bone. I do not take Cartel paper.',
+    sellFlash: 'I take raw scrap and clean bone.',
   },
   {
     id: 'silas',

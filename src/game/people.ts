@@ -288,7 +288,7 @@ Thalia's love made you loud. They want a pour, a cloth, or a confession. They wi
 He knows where the tendons anchor and where the sap runs thickest. He'll stitch you up for two resin, but he won't look you in the eyes while he pulls the wire.`,
     scenes: ['ch1:v-zafir', 'maw:zafir', 'maw:market'],
     later: {
-      'ch1:v-zafir': `He looks at gold thread like fire in a dry stall. "I don't sell headings to walking batteries. I sell the news that she already knows."`,
+      'ch1:v-zafir': `The gold thread is still a fire. I left it. She already knows you are coming.`,
       'maw:zafir': `The Bone-Stitcher / Seeker Deserter.
 
 He knows where the tendons anchor and where the sap runs thickest. He'll stitch you up for two resin, but he won't look you in the eyes while he pulls the wire.`,

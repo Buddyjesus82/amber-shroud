@@ -499,13 +499,13 @@ function authored(state: GameState, scene: Scene): string[] {
   }
 
   if (id === 'maw:market') {
-    push(lines, "Varro's tray is a real shop. Buy and sell are on the counter.")
+    push(lines, 'Thread, pins, and iron are on the shelf. I take raw scrap and clean bone. I do not take Cartel paper.')
     if (!on(state, 'mawGlint')) push(lines, 'Another stall has a coil of wire nobody has claimed.')
     return lines
   }
 
   if (id === 'maw:zafir') {
-    push(lines, 'He will talk news.')
+    push(lines, "He doesn't look up from his needles.")
     if (on(state, 'heardWalkingAmber')) push(lines, 'Ask him about the Walking Amber and he gives you the street version.')
     return lines
   }

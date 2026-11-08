@@ -279,27 +279,27 @@ const oiltoothRoad: IntentRule[] = [
 const zafirCup: IntentRule[] = [
   {
     tags: TALK,
-    reply: '"I don\'t sell headings to walking batteries. I sell the news that she already knows. Walk or buy a curse."',
+    reply: 'I do not sell a cup a road. She already knows. Walk.',
     effects: { ticks: 1 },
   },
   {
     tags: HELP,
-    reply: '"Help is the blonde\'s word. I sell delays to people who are not lanterns."',
+    reply: 'Help is her word. I left that word with the lamps.',
     effects: { ticks: 1 },
   },
   {
     tags: TRADE,
-    reply: '"This cairn does not shop walking batteries. News is free and worse. Pay for a curse if you like ink."',
+    reply: 'This cairn does not shop a lantern. The news is already hers.',
     effects: { ticks: 1, flag: { zafirMet: true, zafirCup: true } },
   },
   {
     tags: THREAT,
-    reply: 'The smile costs extra. "Crowd a man who will not shop a cup and the map grows a lie."',
+    reply: 'Crowd a deserter and the only map you get is a lie.',
     effects: { heat: { strays: 1 }, flag: { zafirSore: true }, ticks: 1 },
   },
   {
     tags: ['sybella', 'skiff', 'blonde', 'shadow'],
-    reply: '"Blindfold up. Kohl ruined. She will collect. I sold that news already."',
+    reply: 'Blindfold up. She will collect. I already told the sand once.',
     effects: { flag: { sybellaNamed: true }, ticks: 1 },
   },
 ]
@@ -307,28 +307,27 @@ const zafirCup: IntentRule[] = [
 const zafir: IntentRule[] = [
   {
     tags: TALK,
-    reply: '"You lived. How rude. Headings, news, and now a stall that actually sells things — Hound Hide, a baton if the Maw pawned one, Drops at Approach prices. Pick a product."',
+    reply: 'You lived. Sit. I stitch. I do not keep a tray of pardons.',
     effects: { ticks: 1 },
   },
   {
     tags: HELP,
-    reply: '"Help is a heading or a hide. I do not walk you into the Maw. I sell you the chance to walk wrong more slowly."',
+    reply: 'Help is the wire, if you can pay it. I do not walk you into the Maw.',
     effects: { ticks: 1 },
   },
   {
     tags: TRADE,
-    reply:
-      '"Glints buy a Drop. Two scrap I will call a Glint. Hound Hide if you have not worn one. A shock baton if Ironwood dropped it. Buy is one shelf. Sell is the other. News is still free and worse."',
+    reply: 'Thread, pins, and iron are on the shelf. I take raw scrap and clean bone. I do not take Cartel paper.',
     effects: { ticks: 1 },
   },
   {
     tags: THREAT,
-    reply: 'The smile costs extra. "Crowd me and the map grows a lie. I have already survived you once. Do not make the receipt interesting."',
+    reply: 'Crowd the needle and the stitch goes wrong. I have already left one master.',
     effects: { heat: { strays: 1 }, flag: { zafirSore: true }, ticks: 1 },
   },
   {
     tags: ['sybella', 'skiff', 'blonde', 'shadow'],
-    reply: '"Blindfold up. Kohl ruined. She will collect. I sell delays, not pardons."',
+    reply: 'Blindfold up. Kohl ruined. She will collect. I stitch. I do not pardon.',
     effects: { flag: { sybellaNamed: true }, ticks: 1 },
   },
 ]
@@ -399,7 +398,7 @@ const sybella: IntentRule[] = [
   },
   {
     tags: TRADE,
-    reply: '"I do not sell. I collect. Varro sells delays at the market. I sell the idea that you still have time."',
+    reply: '"I do not sell. I collect. Varro stitches at the market. I sell the idea that you still have time."',
     effects: { ticks: 1 },
   },
   {

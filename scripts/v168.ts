@@ -15,7 +15,7 @@ for (const f of ['ch2_o_stakes']) ok(readFileSync('src/game/strayHunter.ts', 'ut
 ok(existsSync('public/intro/cartel.jpg'), 'cartel intro art')
 const vz = getScene('maw:zafir')
 ok(String(vz.body).includes('The Bone-Stitcher / Seeker Deserter.') && String(vz.body).includes("He'll stitch you up for two resin"), 'Varro card replaces the merchant greeting')
-ok(String(getScene('ch1:v-zafir').body).includes("You look like you walked out of a fresh wreck."), 'Varro greeting_vessel')
+ok(String(getScene('ch1:v-zafir').body).includes('You walked out of a wreck still open.') && !String(getScene('ch1:v-zafir').body).includes('walking batteries'), 'Varro cairn is the deserter')
 const ask = vz.choices.find((c) => c.id === 'plate-ask')
 ok(ask && String(ask.effects.flash).includes('turn a Seeker blade cold') && (ask.effects.flag as any)?.plateHinted, 'plate hint sets plateHinted')
 ok(vz.choices.filter((c) => c.id.startsWith('plate-') && c.id !== 'plate-ask').every((c) => JSON.stringify(c.show).includes('plateHinted')), 'Plate buttons wait for plateHinted')

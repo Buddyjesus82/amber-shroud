@@ -1104,7 +1104,7 @@ The Seekers sent their Vessel to Red Maw for what opens the Spire, and they mean
           ticks: 1,
           heat: { seekers: -1 },
           flag: { brinMet: true, brinPour: true },
-          flash: 'They watch you pour the Drop. "Useful. Do not become a hymn yet." Seeker Heat drops. Varro is ahead, and he will not sell a heading to a Vessel. Sybella already knows you are coming.',
+          flash: 'They watch you pour the Drop. "Useful. Do not become a hymn yet." Seeker Heat drops. Varro is ahead. I will not draw her a map to you. She already knows you are coming.',
         },
       },
       {
@@ -1117,7 +1117,7 @@ The Seekers sent their Vessel to Red Maw for what opens the Spire, and they mean
           ticks: 1,
           heat: { seekers: 1 },
           flag: { brinMet: true, brinCloth: true },
-          flash: 'You show the gold thread. Brin starts to bow and stops. "Sybella already knows. Walk. Varro will not help a Vessel." Seeker Heat rises.',
+          flash: 'You show the gold thread. Brin starts to bow and stops. "Sybella already knows. Walk. Varro will not draw her a map to you." Seeker Heat rises.',
         },
       },
       {
@@ -1130,7 +1130,7 @@ The Seekers sent their Vessel to Red Maw for what opens the Spire, and they mean
           ticks: 1,
           heat: { seekers: 1 },
           flag: { brinMet: true, brinMap: true },
-          flash: 'Kesh spits at the feed-dust on the map. Brin lets you keep walking. Seeker Heat rises. Varro is ahead, and he will not sell to a Vessel.',
+          flash: 'Kesh spits at the feed-dust on the map. Brin lets you keep walking. Seeker Heat rises. Varro is ahead. I will not draw her a map to you.',
         },
       },
       {
@@ -1205,45 +1205,45 @@ The Seekers sent their Vessel to Red Maw for what opens the Spire, and they mean
     kind: 'talk',
     title: 'Bone Cairn',
     speaker: 'Varro',
-    body: `"You look like you walked out of a fresh wreck. Work with what you've got or you won't survive the next mile. Let's see your kit."
+    body: `You walked out of a wreck still open. Sit if you want the wire. I do not sell a heading to a cup.
 
-Varro does not smile the shop smile. He looks at the gold thread like a fire in a dry stall.
+He keeps his eyes on the needle. The gold thread is a fire he already left.
 
-"I don't sell headings to walking batteries. I sell the news that she already knows. Pay if you want a curse with better spelling. Or walk. The skiff likes cups that arrive on time."`,
+I left the lamps. I will not draw her a map to you. She already knows. Walk, or bleed quieter.`,
     variants: [
       {
         if: { item: 'oram_map' },
         mode: 'append',
-        body: `His eyes flick to the feed-pencil crease. "Oram still thinks animals are scripture. That heading is better than mine. I hate admitting that. I will not stamp it for a cup."`,
+        body: `Oram's map is already better than anything I would sell a cup. I will not put a Seeker's mark on it.`,
       },
       {
         if: { flag: 'brinPour' },
         mode: 'append',
-        body: `"You already poured for spears. She will want the rest. I do not stock pardons."`,
+        body: `You poured. She will want the rest of you. I do not stitch a pardon.`,
       },
       {
         if: { heatMin: ['seekers', 2] },
         mode: 'append',
-        body: `"Seekers are paying for news of a walking cup. You are expensive gossip I already sold once."`,
+        body: `The lamps are paying for a walking cup. I sold that news once. I will not sell it again.`,
       },
     ],
     choices: [
       {
         id: 'oram',
-        label: "Show Oram's map. Skip his price.",
-        sub: 'You already have a heading. He confirms it and takes no fee. No extra Heat.',
+        label: "Show Oram's map.",
+        sub: "Oram's map is already better than anything I would sell a cup. I will not put a Seeker's mark on it.",
         show: { item: 'oram_map' },
         effects: {
           flag: { zafirMet: true, zafirCup: true, oramShown: true },
           ticks: 1,
           goto: 'ch1:south-wind',
-          flash: 'Varro checks the second rib on Oram\'s map and will not take a fee from a Vessel. You keep the map. Sybella\'s skiff is next.',
+          flash: 'Oram\'s map is already better than anything I would sell a cup. I will not put a Seeker\'s mark on it. You keep the map. Sybella\'s skiff is next.',
         },
       },
       {
         id: 'heading-glint',
-        label: 'Buy the heading — 1 Glint',
-        sub: 'Costs 1 Glint. You get a map to the cache. Sybella\'s name is in the margin. No extra Heat.',
+        label: '1 Glint',
+        sub: 'I left the lamps. I will not draw her a map to you. She already knows.',
         enable: { item: 'glints' },
         locked: 'Need 1 Glint',
         effects: {
@@ -1252,13 +1252,13 @@ Varro does not smile the shop smile. He looks at the gold thread like a fire in 
           flag: { zafirMet: true, zafirCup: true, zafirPaid: true },
           ticks: 1,
           goto: 'ch1:south-wind',
-          flash: 'Varro takes the Glint. The map he draws has Sybella\'s name in the margin. That is what you paid for. No faction saw the sale.',
+          flash: 'I left the lamps. I will not draw her a map to you. She already knows. The map still has her name in the margin. Sybella\'s skiff is next.',
         },
       },
       {
         id: 'heading-scrap',
-        label: 'Buy the heading — 1 scrap',
-        sub: 'Costs 1 scrap. You get a map to the cache. Sybella\'s name is in the margin. No extra Heat.',
+        label: '1 scrap',
+        sub: 'I left the lamps. I will not draw her a map to you. She already knows.',
         enable: { item: 'scrap' },
         locked: 'Need 1 scrap',
         effects: {
@@ -1267,13 +1267,13 @@ Varro does not smile the shop smile. He looks at the gold thread like a fire in 
           flag: { zafirMet: true, zafirCup: true, zafirPaid: true },
           ticks: 1,
           goto: 'ch1:south-wind',
-          flash: 'Varro takes the scrap. The map he draws has Sybella\'s name in the margin. That is what you paid for. No faction saw the sale.',
+          flash: 'I left the lamps. I will not draw her a map to you. She already knows. The map still has her name in the margin. Sybella\'s skiff is next.',
         },
       },
       {
         id: 'dagger',
-        label: 'Crowd him with the rusted dagger',
-        sub: 'You threaten him. He still gives you a map. Stray Heat rises.',
+        label: 'Crowd him',
+        sub: 'Crowd a deserter and the only map you get is a lie.',
         show: { item: 'rusted_dagger' },
         tone: 'danger',
         effects: {
@@ -1287,8 +1287,8 @@ Varro does not smile the shop smile. He looks at the gold thread like a fire in 
       },
       {
         id: 'news',
-        label: 'Take the free news and walk',
-        sub: 'No fee. No map. You walk on toward Sybella\'s skiff.',
+        label: 'Walk',
+        sub: 'She already knows. Walk.',
         tone: 'quiet',
         effects: {
           flag: { zafirMet: true, zafirCup: true },
@@ -1306,23 +1306,22 @@ Varro does not smile the shop smile. He looks at the gold thread like a fire in 
       },
       {
         tags: ['sybella', 'skiff', 'blonde'],
-        reply: '"Blindfold up. Kohl ruined. Voice like a lullaby that learned law. Do not be interesting — you already are."',
+        reply: 'Blindfold up. She will collect. I already told the sand once.',
         effects: { flag: { sybellaNamed: true } },
       },
       {
         tags: ['trade', 'buy', 'sell', 'shop', 'goods', 'inventory'],
-        reply:
-          '"This cairn does not shop walking batteries. News is free and worse. Pay for a curse if you like ink."',
+        reply: 'This cairn does not shop a lantern. The news is already hers.',
         effects: { ticks: 1, flag: { zafirMet: true, zafirCup: true } },
       },
       {
         tags: ['help', 'please', 'aid'],
-        reply: '"Help is the blonde\'s word. I sell delays to people who are not lanterns."',
+        reply: 'Help is her word. I left that word with the lamps.',
         effects: { ticks: 1 },
       },
       {
         tags: ['threaten', 'threat', 'crowd', 'dagger'],
-        reply: 'He hands you a worse map with a better smile.',
+        reply: 'Crowd a deserter and the only map you get is a lie.',
         effects: {
           flag: { zafirMet: true, zafirCup: true, zafirSore: true },
           add: { cache_map: 1 },
@@ -1974,7 +1973,7 @@ You are on the Approach. What you gave the sand is still on you.`,
       {
         if: { flag: 'zafirCup' },
         mode: 'append',
-        body: `Varro would not shop a lantern. He sold the news instead. She already had it.`,
+        body: `This cairn does not shop a lantern. The news is already hers.`,
       },
       {
         if: { flag: 'ossaAlly' },

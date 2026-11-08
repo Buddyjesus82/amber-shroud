@@ -1,6 +1,6 @@
 /** v227: Varro's card, Field Surgery, the Heat price, the two knowledge lines. */
 import { existsSync, readFileSync } from 'node:fs'
-import { applyEffect, bodyOf, isChoiceOn, newGame, sceneOf, visibleChoices } from '../src/game/engine.ts'
+import { applyEffect, bodyOf, interpret, isChoiceOn, newGame, sceneOf, visibleChoices } from '../src/game/engine.ts'
 import { playCoverFile, playCoverKey } from '../src/game/art.ts'
 import { PEOPLE } from '../src/game/people.ts'
 import { FIELD_RESIN, FIELD_SCRAP, FIELD_SCRAP_HOT, FIELD_SURGERY, VARRO_BUY, VARRO_CARD, VARRO_FLAVOR, VARRO_HEAL, VARRO_KNOT, VARRO_MARKET, VARRO_NAME, VARRO_SCRIP, VARRO_SELL, VARRO_TALK, VARRO_TITLE, VARRO_WHOLE } from '../src/game/varroCard.ts'
@@ -62,6 +62,16 @@ ok(bodyOf(market).includes(VARRO_MARKET) && !bodyOf(market).includes('pawned sho
 ok(visibleChoices(market).find((c) => c.id === 'zafir')?.sub === VARRO_TALK, 'talk subtitle')
 const shelves = visibleChoices(card)
 ok(shelves.find((c) => c.id === 'shop-buy')?.sub === VARRO_BUY && shelves.find((c) => c.id === 'shop-sell')?.sub === VARRO_SELL, 'Varro shelf subtitles')
+const cairn = applyEffect(newGame('vessel'), { goto: 'ch1:v-zafir' })
+ok(bodyOf(cairn).includes('You walked out of a wreck still open.') && bodyOf(cairn).includes('He keeps his eyes on the needle.') && bodyOf(cairn).includes('I left the lamps.') && bodyOf(cairn).includes("Oram's map is already better"), 'Bone Cairn 1-4')
+ok(!bodyOf(cairn).includes('walking batteries') && !bodyOf(cairn).includes('Bonewright'), 'the cairn drops the merchant pitch')
+ok(interpret(cairn, 'talk').flash === 'I do not sell a cup a road. She already knows. Walk.', 'cairn talk')
+ok(interpret(card, 'talk').flash === 'You lived. Sit. I stitch. I do not keep a tray of pardons.', 'stall talk')
+ok(interpret(card, 'who are you').flash === 'Varro. They called me a Seeker. I left. I stitch bone. I do not kneel.', 'who-is')
+ok(bodyOf({ ...cairn, flags: { ...cairn.flags, metZafir: true } }).includes('The gold thread is still a fire.'), 'cairn return')
+for (const f of ['src/game/talk.ts', 'src/game/voices.ts', 'src/game/people.ts', 'src/game/content/cacheRun.ts', 'src/game/content/redMaw.ts', 'src/game/look.ts', 'src/game/trade.ts', 'src/game/intent.ts']) {
+  ok(!readFileSync(f, 'utf8').includes('Bonewright'), `${f} has no Bonewright`)
+}
 const kaelen = applyEffect(newGame('prisoner'), { goto: 'camp:kaelen' })
 ok(visibleChoices(kaelen).find((c) => c.id === 'shop-buy')?.sub === 'His stock. Prices on the shelf.', 'Kaelen keeps his shelf line')
 

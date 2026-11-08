@@ -317,17 +317,17 @@ export const VOICES: Record<string, Voice> = {
   },
   zafir: {
     lines: [
-      'Varro smiles in a way that costs extra. "That sentence was free. The next one isn\'t."',
-      '"Headings, news, a small shop. Pick one and pay."',
-      'He weighs a Glint on his palm and waits.',
+      'He keeps his eyes on the needle. The gold thread is a fire he already left.',
+      'Thread, pins, and iron are on the shelf. I take raw scrap and clean bone. I do not take Cartel paper.',
+      'Varro. They called me a Seeker. I left. I stitch bone. I do not kneel.',
     ],
-    want: '"Free? I sold the same heading twice. Nothing in this stall is free."',
-    price: '"Highway prices. Open the shelf and weep."',
-    who: '"Varro. They call me the Bonewright. Bone-cairn merchant. I sell what you need at prices you hate."',
-    doing: '"Waiting for you to pay."',
-    what: '"Stock. Headings. News Sybella already has."',
-    refuse: '"Rob a merchant at the bite? Polite, even. Charming. No."',
-    unknown: '"Not a customer of mine."',
+    want: 'I do not stitch a pardon.',
+    price: 'Thread, pins, and iron are on the shelf. I take raw scrap and clean bone. I do not take Cartel paper.',
+    who: 'Varro. They called me a Seeker. I left. I stitch bone. I do not kneel.',
+    doing: 'You lived. Sit. I stitch. I do not keep a tray of pardons.',
+    what: 'Thread, pins, and iron are on the shelf.',
+    refuse: 'Crowd the needle and the stitch goes wrong. I have already left one master.',
+    unknown: 'I left the lamps.',
   },
   sybella: {
     lines: [
