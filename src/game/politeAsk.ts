@@ -10,6 +10,7 @@ import { itemDesc } from './kit'
 import { PEOPLE, personAtScene, personKnown } from './people'
 import { moneyLabel, offersFor, vendorFor } from './trade'
 import type { Choice, GameState, Scene } from './types'
+import { draftWhoLine, prisonerIdentityClosed } from './prisonerDraft'
 import { NAMED_SPEAKERS, pickLine, PERSON_VOICE, VOICES, voiceKeyForSpeaker, type Voice } from './voices'
 
 export type Ask =
@@ -207,6 +208,8 @@ export function answerAsk(state: GameState, scene: Scene, ask: Ask, choices: Cho
     return { flash: `${v ? v.refuse : sceneVoice(scene, state, said)} ${hintLine(choices, on)}`, verb: 'ask' }
   }
   if (ask.kind === 'who') {
+    // v223 DRAFT: a Prisoner with no trust and Cartel Heat under 6 gets an evasion, not a name.
+    if (prisonerIdentityClosed(state, scene)) return { flash: draftWhoLine(scene), verb: 'who are you' }
     return { flash: v ? v.who : `Nobody here to give a name. ${scene.title ?? 'The dunes'} keeps its own.`, verb: 'who are you' }
   }
   if (ask.kind === 'doing') {

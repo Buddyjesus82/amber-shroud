@@ -1,3 +1,4 @@
+import { DRAFT_BAY, DRAFT_BAY_RUMOR_LABEL, DRAFT_BAY_SURVIVE_LABEL } from '../prisonerDraft'
 import type { Choice, Cond, Effect, IntentRule } from '../types'
 
 /** Other prisoners at Skiff Bay, each beside their own skiff. Not quest anchors. Do is the path. */
@@ -392,6 +393,20 @@ export const pikeBayChoices: Choice[] = [
     locked: WRENCH_WORN,
     effects: { ...TRADE_PIKE_FX, flash: TRADE_PIKE_REPLY },
   },
+  {
+    id: 'survive',
+    label: DRAFT_BAY_SURVIVE_LABEL,
+    sub: DRAFT_BAY.pike.surviveSub,
+    tone: 'quiet',
+    effects: { ticks: 1, flash: DRAFT_BAY.pike.survive },
+  },
+  {
+    id: 'rumor',
+    label: DRAFT_BAY_RUMOR_LABEL,
+    sub: DRAFT_BAY.pike.rumorSub,
+    tone: 'quiet',
+    effects: { ticks: 1, flash: DRAFT_BAY.pike.rumor },
+  },
   back,
 ]
 
@@ -412,6 +427,20 @@ export const sarnBayChoices: Choice[] = [
     locked: WRENCH_WORN,
     effects: { ...TRADE_SARN_FX, flash: TRADE_SARN_REPLY },
   },
+  {
+    id: 'survive',
+    label: DRAFT_BAY_SURVIVE_LABEL,
+    sub: DRAFT_BAY.sarn.surviveSub,
+    tone: 'quiet',
+    effects: { ticks: 1, flash: DRAFT_BAY.sarn.survive },
+  },
+  {
+    id: 'rumor',
+    label: DRAFT_BAY_RUMOR_LABEL,
+    sub: DRAFT_BAY.sarn.rumorSub,
+    tone: 'quiet',
+    effects: { ticks: 1, flash: DRAFT_BAY.sarn.rumor },
+  },
   back,
 ]
 
@@ -431,6 +460,20 @@ export const vetchBayChoices: Choice[] = [
     enable: wrenchOff,
     locked: WRENCH_WORN,
     effects: { ...TRADE_VETCH_FX, flash: TRADE_VETCH_REPLY },
+  },
+  {
+    id: 'survive',
+    label: DRAFT_BAY_SURVIVE_LABEL,
+    sub: DRAFT_BAY.vetch.surviveSub,
+    tone: 'quiet',
+    effects: { ticks: 1, flash: DRAFT_BAY.vetch.survive },
+  },
+  {
+    id: 'rumor',
+    label: DRAFT_BAY_RUMOR_LABEL,
+    sub: DRAFT_BAY.vetch.rumorSub,
+    tone: 'quiet',
+    effects: { ticks: 1, flash: DRAFT_BAY.vetch.rumor },
   },
   back,
 ]

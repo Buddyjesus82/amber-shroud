@@ -2443,7 +2443,12 @@ function withRest(state: GameState, rows: Choice[]): Choice[] {
       return c
     })
   }
-  if (!restAllowed(state)) return rows
+  // v223: a Prisoner rests only on the nodes that already allow it, including the Valerius foot. The stall is one of them, even though it also sells.
+  const prisonerSafe =
+    REST_SCENES.has(state.sceneId) ||
+    (VALERIUS_FOOT.includes(state.sceneId) && !state.flags.ch2Won_valerius && !state.flags.ribsCollapsed)
+  if (state.door === 'prisoner' && !prisonerSafe) return rows
+  if (!restAllowed(state) && !(state.door === 'prisoner' && REST_SCENES.has(state.sceneId) && isVendorScene(state.sceneId))) return rows
   const hurt = (state.health ?? HEALTH_MAX) < (state.healthMax ?? HEALTH_MAX)
   // v139: at a home camp, resting also lowers the home faction's Heat by 1, once every few scenes.
   const cool = restCools(state)

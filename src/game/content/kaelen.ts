@@ -1,4 +1,12 @@
 import { FENCE_HOLE_BACK, PLAN_HEARD } from '../campJob'
+import {
+  DRAFT_KAELEN_BAYS,
+  DRAFT_KAELEN_BAYS_LABEL,
+  DRAFT_KAELEN_BAYS_SUB,
+  DRAFT_KAELEN_SHADE,
+  DRAFT_KAELEN_SHADE_LABEL,
+  DRAFT_KAELEN_SHADE_SUB,
+} from '../prisonerDraft'
 
 export const KAELEN_GRATE_FLASH =
   'Kaelen pries the loose grate behind the sifting chutes and presses a filed scrap shim into your hand. You drop into the outer drainage Gullet. Behind you, the tower light finds the breach.'
@@ -42,6 +50,22 @@ export const campKaelenScenes: Scene[] = [
           flag: { kaelenKnown: true, kaelenGlintOut: true },
           flash: 'The Glint disappears into a thick glove. "Now we are talking inventory."',
         },
+      },
+      {
+        id: 'bays',
+        label: DRAFT_KAELEN_BAYS_LABEL,
+        sub: DRAFT_KAELEN_BAYS_SUB,
+        tone: 'quiet',
+        show: { door: 'prisoner' },
+        effects: { ticks: 1, flag: { kaelenKnown: true }, flash: DRAFT_KAELEN_BAYS },
+      },
+      {
+        id: 'shade',
+        label: DRAFT_KAELEN_SHADE_LABEL,
+        sub: DRAFT_KAELEN_SHADE_SUB,
+        tone: 'quiet',
+        show: { door: 'prisoner' },
+        effects: { ticks: 1, flash: DRAFT_KAELEN_SHADE },
       },
       {
         id: 'oil',
