@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import { applyEffect, bodyOf, HAND_UP_LINE, isChoiceOn, newGame, persist, RESCUE_GLINT_LINE, visibleChoices } from '../src/game/engine.ts'
 import { doorPreview } from '../src/game/doorPreview.ts'
 import { CH3_TENT_BODY, CH3_TENT_KEY, CH3_WAGON_CLOSED, CH3_WAGON_GONE } from '../src/game/content/luminspire.ts'
+import { VEIN_BY_LADDER, VEIN_BY_LIFT } from '../src/game/content/intoTheMaw.ts'
 import { resolveEncounter } from '../src/game/encounter.ts'
 import { fightVerbButton, fightVerbHit, fightVerbId } from '../src/game/fightVerbs.ts'
 import { playCoverKey } from '../src/game/art.ts'
@@ -179,6 +180,10 @@ for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
   const told = { ...plain, flags: { ...plain.flags, ch3KeyTaken: true } }
   ok(bodyOf(plain) === CH3_TENT_BODY && !bodyOf(plain).includes(CH3_TENT_KEY), `${door}: the tent does not name the key`)
   ok(bodyOf(told) === `${CH3_TENT_BODY}\n\n${CH3_TENT_KEY}`, `${door}: Roth's handoff is the only prior line, so the tent adds the expectation`)
+  const vein = { ...plain, sceneId: 'ch2:vein', hubId: null, chapterId: 'into-the-maw' }
+  ok(bodyOf(vein).startsWith(VEIN_BY_LIFT) && !bodyOf(vein).includes(VEIN_BY_LADDER), `${door}: the lift still grinds to a stop`)
+  const climbed = { ...vein, flags: { ...vein.flags, liftLadder: true, liftDone: true } }
+  ok(bodyOf(climbed).startsWith(VEIN_BY_LADDER) && !bodyOf(climbed).includes('lift grinds'), `${door}: the ladder replaces the lift line`)
 }
 
 console.log(fails ? `v225: ${fails} FAIL` : 'v225: all pass')
