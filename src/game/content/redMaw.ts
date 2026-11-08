@@ -209,7 +209,7 @@ ${VARRO_MARKET}`,
       {
         tags: ['drop', 'vial', 'sap'],
         show: { itemMin: ['glints', 2] },
-        reply: 'Highway robbery. He counts two Glints. Glass kisses your kit.',
+        reply: 'Thread, pins, and iron are on the shelf. I take raw scrap and clean bone. I do not take Cartel paper.',
         effects: { remove: { glints: 2 }, add: { vial_drop: 1 }, ticks: 1 },
       },
       {
