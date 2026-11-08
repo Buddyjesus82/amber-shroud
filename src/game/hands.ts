@@ -53,9 +53,25 @@ export function withCheckpoint(state: GameState, opening: () => GameState): Game
   return state
 }
 
+/**
+ * A captor who already took the key keeps it across a chapter restart.
+ * The restart reads the live flag and the live bag, and does not put the key back.
+ */
+export function protectHeldKeys(live: GameState, restored: GameState): GameState {
+  const flags = { ...restored.flags }
+  const items = { ...restored.items }
+  if (live.flags.ch3KeyTaken) {
+    flags.ch3KeyTaken = true
+    if (!(live.items.spire_key ?? 0)) delete items.spire_key
+  }
+  if (live.flags.keySurrendered) flags.keySurrendered = true
+  return { ...restored, flags, items }
+}
+
 /** Run over: back to the checkpoint, hands full. Earlier chapters are in the checkpoint already. */
 export function restoreCheckpoint(state: GameState): GameState | null {
   const cp = state.checkpoint
   if (!cp) return null
-  return { ...cp, checkpoint: cp, hands: HANDS_MAX, flash: RUN_OVER_FLASH, updatedAt: Date.now() }
+  const restored = { ...cp, checkpoint: cp, hands: HANDS_MAX, flash: RUN_OVER_FLASH, updatedAt: Date.now() }
+  return protectHeldKeys(state, restored)
 }

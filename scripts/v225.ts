@@ -1,6 +1,8 @@
 /** v225: kill card, weapon verbs, one cover per shared Hunger or Maw beat. */
 import { existsSync, readFileSync } from 'node:fs'
-import { applyEffect, newGame, visibleChoices } from '../src/game/engine.ts'
+import { applyEffect, HAND_UP_LINE, isChoiceOn, newGame, persist, RESCUE_GLINT_LINE, visibleChoices } from '../src/game/engine.ts'
+import { doorPreview } from '../src/game/doorPreview.ts'
+import { CH3_WAGON_CLOSED, CH3_WAGON_GONE } from '../src/game/content/luminspire.ts'
 import { resolveEncounter } from '../src/game/encounter.ts'
 import { fightVerbButton, fightVerbHit, fightVerbId } from '../src/game/fightVerbs.ts'
 import { playCoverKey } from '../src/game/art.ts'
@@ -106,6 +108,69 @@ ok(readFileSync('public/sw.js', 'utf8').includes('covers/beat-escaped.jpg') && r
 
 const card = resolveEncounter(fight('ironwood_baton', 1), 'fight')
 ok(!!card.fx.flag?.encounterDone && !String(card.fx.flag?.encounterClash).includes('YOU ♥'), 'baton kill has no stat row')
+
+function fringe(door: 'prisoner' | 'outcast' | 'vessel', hands: number, key = true): GameState {
+  const g = newGame(door)
+  const items = { ...g.items, glints: 1 }
+  delete items.vial_drop
+  if (key) items.spire_key = 1
+  return {
+    ...g,
+    sceneId: 'ch3:crosshaven',
+    hubId: 'barrow',
+    chapterId: 'luminspire',
+    sap: 0,
+    health: 1,
+    hands,
+    items,
+    flags: {
+      ...g.flags,
+      chapter1Done: true,
+      chapter2Done: true,
+      chapter2Unlocked: true,
+      ch3Started: true,
+      ch3Stripped: true,
+      ch3VaultDone: true,
+      ch3KeyTaken: true,
+      ch3SupplyOpen: true,
+      ch3TentOpen: true,
+      noMasked: true,
+    },
+  }
+}
+
+for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
+  const home = door === 'prisoner' ? 'camp:' : door === 'outcast' ? 'spine:' : 'thresh:'
+  const buy = applyEffect(fringe(door, 3), { flag: { shopShelf: 'buy' }, flash: 'The shelf.' })
+  ok(buy.sceneId === 'ch3:crosshaven' && buy.hands === 3 && buy.sap === 0 && !buy.flags.runOver, `${door}: Buy at Sap 0 does not rescue`)
+  const trader = applyEffect(fringe(door, 3), { goto: 'roam:kaelen', ticks: 1, flag: { kaelenFrom: 'ch3:crosshaven' } })
+  ok(trader.sceneId === 'roam:kaelen' && trader.hands === 3 && !trader.flags.runOver, `${door}: opening Kaelen does not rescue`)
+  const walked = applyEffect(fringe(door, 3), { sap: -1, goto: 'ch3:tent' })
+  ok(walked.sceneId === 'ch3:tent' && walked.chapterId === 'luminspire' && walked.hubId === 'barrow', `${door}: the tent walk stays in Chapter 3 (${walked.sceneId})`)
+  ok(!walked.sceneId.startsWith(home) && !walked.sceneId.startsWith('crisis:'), `${door}: rescue does not warp home`)
+  ok(walked.hands === 2 && walked.sap === 3 && (walked.items.spire_key ?? 0) === 1 && walked.flags.ch3KeyTaken, `${door}: one hand, key stays, Ash still holds the record`)
+  ok(String(walked.flash).includes(HAND_UP_LINE) && String(walked.flash).includes(RESCUE_GLINT_LINE), `${door}: the hand and the Glint are on the walk`)
+  const dry = applyEffect({ ...fringe(door, 0, false), items: { ...fringe(door, 0, false).items, spire_key: 0 } }, { sap: -1, goto: 'ch3:tent' })
+  ok(dry.flags.runOver && dry.sceneId === 'ch3:tent' && dry.flags.ch3KeyTaken, `${door}: no hands left stays on the tent`)
+  const again = applyEffect(dry, { restoreCheckpoint: true })
+  ok(again.sceneId === 'ch3:wagon' && again.flags.chapter1Done && again.flags.chapter2Done && again.hands === 3, `${door}: restart is the wagon, earlier chapters kept`)
+  ok(again.flags.ch3KeyTaken && !(again.items.spire_key ?? 0), `${door}: Ash still has the key after the restart`)
+}
+
+const wagon = { ...fringe('prisoner', 3), sceneId: 'ch3:wagon', sap: 4 }
+const openSlip = visibleChoices(wagon).find((c) => c.id === 'slip')
+ok(openSlip?.label === 'Slip the Wagon' && isChoiceOn(wagon, openSlip?.enable), 'Slip the Wagon is open before the wait')
+const waited = applyEffect(wagon, visibleChoices(wagon).find((c) => c.id === 'wait')!.effects)
+const shut = visibleChoices(waited).find((c) => c.id === 'slip-closed')
+ok(shut?.label === CH3_WAGON_GONE && shut.sub === CH3_WAGON_CLOSED && !isChoiceOn(waited, shut?.enable), 'the wagon locks after the wait')
+ok(!visibleChoices(waited).some((c) => c.id === 'slip' || c.id === 'wait'), 'Slip and Wait leave once the window closes')
+
+const preview = persist({ ...fringe('prisoner', 3), sap: 0, sceneId: 'ch3:crosshaven' })
+const shown = doorPreview('prisoner')
+ok(shown.live && shown.place === 'Crosshaven Fringe' && shown.sap === preview.sap, `door card reads the save (${shown.place}, Sap ${shown.sap})`)
+
+const wire = applyEffect(applyEffect(newGame('prisoner'), { sap: 6, goto: 'camp:wire', enterHub: 'camp04' }), { sap: -8 })
+ok(wire.sceneId === 'crisis:camp', 'a Sap drain on the Wire is still the camp rescue')
 
 console.log(fails ? `v225: ${fails} FAIL` : 'v225: all pass')
 process.exit(fails ? 1 : 0)

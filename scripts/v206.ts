@@ -24,8 +24,9 @@ for (const how of ['fight', 'run']) {
 }
 let w = go(s, 'fight')
 const h0 = w.heat.seekers
-w = go(w, 'wait')
-ok(w.heat.seekers === h0 + 1 && !pick(w, 'wait'), 'wait +1 heat once')
+const waited = go(w, 'wait')
+ok(waited.heat.seekers === h0 + 1 && !pick(waited, 'wait'), 'wait +1 heat once')
+ok(pick(waited, 'slip-closed')?.label === 'The wagon has moved' && pick(waited, 'slip-closed')?.sub === 'The window has closed.' && !pick(waited, 'slip'), 'slip locks after the wait')
 w = go(w, 'slip')
 ok(w.sceneId === 'ch3:supply', 'slip to supply')
 const h1 = w.heat.seekers
