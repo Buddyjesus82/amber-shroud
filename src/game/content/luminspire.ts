@@ -15,6 +15,10 @@ export const CH3_SLIP = 'You drop into the dust. The convoy rolls on.'
 export const CH3_WAIT = 'The window closes. Seeker Heat +1.'
 export const CH3_WAGON_GONE = 'The wagon has moved'
 export const CH3_WAGON_CLOSED = 'The window has closed.'
+/** Tent, before anyone has said where the key went. */
+export const CH3_TENT_BODY = "The command tent. A lockbox under Ash Vane's cot."
+/** Only after captor dialogue already named the key. The lockbox itself still has to be opened. */
+export const CH3_TENT_KEY = 'The Spire Key should be inside.'
 export const CH3_WEAPON = 'Weapon reclaimed.'
 export const CH3_ARMOR = 'Armor reclaimed.'
 export const CH3_SAP = 'Sap reclaimed. Consumables reclaimed.'
@@ -77,7 +81,8 @@ export const chapterThreeScenes: Scene[] = [
     kind: 'story',
     hubId: 'barrow',
     title: 'Retriever Command Tent',
-    body: "The command tent. A lockbox under Ash Vane's cot. The Spire Key is inside.",
+    body: CH3_TENT_BODY,
+    variants: [{ if: { flag: 'ch3KeyTaken' }, mode: 'append', body: CH3_TENT_KEY }],
     choices: [
       { id: 'sneak', label: 'Solo Stealth', sub: "Alone. No one to cover you. If they hear, it's a fight.", tone: 'hunger', show: { flagUnset: 'ch3VaultDone' }, effects: { flag: { ch3VaultOpen: 'sneak' }, sneak: { odds: 2, kind: 'vex', spotted: `${CH3_SPOTTED}\n\n${CH3_VEX_IN}`, forfeit: true } } },
       { id: 'fight', label: 'Forced Fight', sub: 'A hard fight: Vex Ironhand, then Ash Vane (back-to-back).', tone: 'danger', show: { flagUnset: 'ch3VaultDone' }, effects: { ambush: { kind: 'vex', line: CH3_VEX_IN } } },

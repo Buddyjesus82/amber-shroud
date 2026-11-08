@@ -1,8 +1,8 @@
 /** v225: kill card, weapon verbs, one cover per shared Hunger or Maw beat. */
 import { existsSync, readFileSync } from 'node:fs'
-import { applyEffect, HAND_UP_LINE, isChoiceOn, newGame, persist, RESCUE_GLINT_LINE, visibleChoices } from '../src/game/engine.ts'
+import { applyEffect, bodyOf, HAND_UP_LINE, isChoiceOn, newGame, persist, RESCUE_GLINT_LINE, visibleChoices } from '../src/game/engine.ts'
 import { doorPreview } from '../src/game/doorPreview.ts'
-import { CH3_WAGON_CLOSED, CH3_WAGON_GONE } from '../src/game/content/luminspire.ts'
+import { CH3_TENT_BODY, CH3_TENT_KEY, CH3_WAGON_CLOSED, CH3_WAGON_GONE } from '../src/game/content/luminspire.ts'
 import { resolveEncounter } from '../src/game/encounter.ts'
 import { fightVerbButton, fightVerbHit, fightVerbId } from '../src/game/fightVerbs.ts'
 import { playCoverKey } from '../src/game/art.ts'
@@ -171,6 +171,15 @@ ok(shown.live && shown.place === 'Crosshaven Fringe' && shown.sap === preview.sa
 
 const wire = applyEffect(applyEffect(newGame('prisoner'), { sap: 6, goto: 'camp:wire', enterHub: 'camp04' }), { sap: -8 })
 ok(wire.sceneId === 'crisis:camp', 'a Sap drain on the Wire is still the camp rescue')
+
+for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
+  const plain = fringe(door, 3)
+  plain.flags = { ...plain.flags, ch3KeyTaken: false }
+  plain.sceneId = 'ch3:tent'
+  const told = { ...plain, flags: { ...plain.flags, ch3KeyTaken: true } }
+  ok(bodyOf(plain) === CH3_TENT_BODY && !bodyOf(plain).includes(CH3_TENT_KEY), `${door}: the tent does not name the key`)
+  ok(bodyOf(told) === `${CH3_TENT_BODY}\n\n${CH3_TENT_KEY}`, `${door}: Roth's handoff is the only prior line, so the tent adds the expectation`)
+}
 
 console.log(fails ? `v225: ${fails} FAIL` : 'v225: all pass')
 process.exit(fails ? 1 : 0)
