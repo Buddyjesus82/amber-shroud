@@ -283,14 +283,18 @@ Thalia's love made you loud. They want a pour, a cloth, or a confession. They wi
     name: 'Varro',
     aliases: ['varro', 'bonewright', 'the bonewright', 'varro the bonewright'],
     metFlag: 'metZafir',
-    card: `Varro the Bonewright smiles in a way that costs extra. Bone-cairn merchant. Approach stall. He sells headings to Kallik's hole, news that Sybella already knows you're coming, and a small Maw shop: Drops at highway prices, Hound Hide, a shock baton somebody pawned, scrap for Glints.
+    card: `Varro the Bone-Stitcher. The Bone-Stitcher / Seeker Deserter.
 
-Varro is a man who sold the same heading twice and is waiting to see which buyer lives.`,
+He knows where the tendons anchor and where the sap runs thickest. He'll stitch you up for two resin, but he won't look you in the eyes while he pulls the wire.`,
     scenes: ['ch1:v-zafir', 'maw:zafir', 'maw:market'],
     later: {
-      'ch1:v-zafir': `He looks at gold thread like fire in a dry stall. "I don't sell headings to walking batteries. I sell the news that she already knows."`,
-      'maw:zafir': `"You lived. How rude." The stall actually stocks things now — Hound Hide, a baton, Drops, a tray that buys scrap. Sybella circled twice. He is waiting to see which product you pick.`,
-      'maw:market': `A few stalls that pretend this is a town. Varro is here if the cairn did not keep him. Same smile. A real tray of goods, not only news.`,
+      'ch1:v-zafir': `The gold thread is still a fire. I left it. She already knows you are coming.`,
+      'maw:zafir': `The Bone-Stitcher / Seeker Deserter.
+
+He knows where the tendons anchor and where the sap runs thickest. He'll stitch you up for two resin, but he won't look you in the eyes while he pulls the wire.`,
+      'maw:market': `A few stalls pretending this is a town. Dried strider meat. Amber chips. Maps that have killed the people who bought them.
+
+Varro works out of a shaded stall, suture wire clamped between his teeth.`,
     },
   },
   ossa: {

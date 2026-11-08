@@ -5,8 +5,8 @@ import { itemDesc, PLATE_RECIPE_NAMES, PLATE_RECIPE } from '../src/game/kit.ts'
 import { CH2_STARTS } from '../src/game/content/intoTheMaw.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v226'"), 'SW cache v168')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v226'"), 'Build label v168')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v227'"), 'SW cache v168')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v227'"), 'Build label v168')
 for (const id of Object.values(CH2_STARTS)) ok(getScene(id), `start ${id}`)
 for (const id of ['ch2:cache', 'ch2:trapped', 'ch2:heart', 'ch2:end']) ok(getScene(id), `shared ${id}`)
 ok(!ALL_SCENES.some((s) => s.id === 'ch2:legacy'), 'legacy scene gone')
@@ -14,8 +14,8 @@ ok(!readFileSync('src/game/content/redMaw.ts', 'utf8').includes('ch2:legacy'), '
 for (const f of ['ch2_o_stakes']) ok(readFileSync('src/game/strayHunter.ts', 'utf8').includes(f), 'stray cover')
 ok(existsSync('public/intro/cartel.jpg'), 'cartel intro art')
 const vz = getScene('maw:zafir')
-ok(String(vz.body).includes("Keep your hands off the saws unless you're buying."), 'Varro greeting_default')
-ok(String(getScene('ch1:v-zafir').body).includes("You look like you walked out of a fresh wreck."), 'Varro greeting_vessel')
+ok(String(vz.body).includes('The Bone-Stitcher / Seeker Deserter.') && String(vz.body).includes("He'll stitch you up for two resin"), 'Varro card replaces the merchant greeting')
+ok(String(getScene('ch1:v-zafir').body).includes('You walked out of a wreck still open.') && !String(getScene('ch1:v-zafir').body).includes('walking batteries'), 'Varro cairn is the deserter')
 const ask = vz.choices.find((c) => c.id === 'plate-ask')
 ok(ask && String(ask.effects.flash).includes('turn a Seeker blade cold') && (ask.effects.flag as any)?.plateHinted, 'plate hint sets plateHinted')
 ok(vz.choices.filter((c) => c.id.startsWith('plate-') && c.id !== 'plate-ask').every((c) => JSON.stringify(c.show).includes('plateHinted')), 'Plate buttons wait for plateHinted')
