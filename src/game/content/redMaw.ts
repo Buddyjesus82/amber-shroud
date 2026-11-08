@@ -1,5 +1,5 @@
 import { SPARE_SAP_LOCK } from '../sapLock'
-import { FIELD_RESIN, FIELD_SCRAP, FIELD_SCRAP_HOT, FIELD_SURGERY, VARRO_CARD, VARRO_KNOT, VARRO_SCRIP } from '../varroCard'
+import { FIELD_RESIN, FIELD_SCRAP, FIELD_SCRAP_HOT, FIELD_SURGERY, VARRO_CARD, VARRO_HEAL, VARRO_KNOT, VARRO_MARKET, VARRO_NAME, VARRO_SCRIP, VARRO_TALK, VARRO_WHOLE } from '../varroCard'
 import { tunnelsEntry } from './newPlaces'
 import { ROADS } from '../roads'
 import { SIPHON_PRISONER, siphonSpotRows } from './intoTheMaw'
@@ -134,12 +134,12 @@ The ground out here takes more than the camp ever did. Sap goes faster. Hunters 
     title: 'Bone Market',
     body: `A few stalls pretending this is a town. Dried strider meat. Amber chips. Maps that have killed the people who bought them.
 
-Varro is at his stall. He has watched buyers fail and kept the tray anyway. On it: Drops of Oasis Sap, Hound Hide, a pawned shock baton, and scrap he will trade for Glints.`,
+${VARRO_MARKET}`,
     choices: [
       {
         id: 'zafir',
         label: 'Talk to Varro',
-        sub: 'His tray is a real shop. Buy and Sell. He does not sell a pardon.',
+        sub: VARRO_TALK,
         effects: { goto: 'maw:zafir', ticks: 1, flag: { zafirMet: true, metZafir: true } },
       },
       {
@@ -164,7 +164,7 @@ Varro is at his stall. He has watched buyers fail and kept the tray anyway. On i
     id: 'maw:zafir',
     hubId: 'redmaw',
     kind: 'talk',
-    title: 'Varro the Bonewright',
+    title: VARRO_NAME,
     speaker: 'Varro',
     body: VARRO_GREETING,
     variants: [
@@ -177,9 +177,12 @@ Varro is at his stall. He has watched buyers fail and kept the tray anyway. On i
       },
     ],
     choices: [
-      { id: 'stitch-resin', label: FIELD_SURGERY, sub: FIELD_RESIN, enable: { itemMin: ['salve', 2] }, locked: 'Needs: 2 Resin', effects: { remove: { salve: 2 }, health: 3, ticks: 1 } },
-      { id: 'stitch-scrap', label: FIELD_SURGERY, sub: FIELD_SCRAP, show: { heatMax: ['seekers', 4] }, enable: { itemMin: ['scrap', 4] }, locked: 'Needs: 4 Scrap', effects: { remove: { scrap: 4 }, health: 3, ticks: 1 } },
-      { id: 'stitch-scrap', label: FIELD_SURGERY, sub: FIELD_SCRAP_HOT, show: { heatMin: ['seekers', 5] }, enable: { itemMin: ['scrap', 5] }, locked: 'Needs: 5 Scrap', effects: { remove: { scrap: 5 }, health: 3, ticks: 1 } },
+      { id: 'stitch-resin', label: FIELD_SURGERY, sub: FIELD_RESIN, show: { healthMin: 6 }, enable: { flag: '__no__' }, locked: VARRO_WHOLE, effects: {} },
+      { id: 'stitch-resin', label: FIELD_SURGERY, sub: FIELD_RESIN, show: { not: { healthMin: 6 } }, enable: { itemMin: ['salve', 2] }, locked: 'Needs: 2 Resin', effects: { remove: { salve: 2 }, health: 3, ticks: 1, still: true, flash: VARRO_HEAL } },
+      { id: 'stitch-scrap', label: FIELD_SURGERY, sub: FIELD_SCRAP, show: { all: [{ healthMin: 6 }, { heatMax: ['seekers', 4] }] }, enable: { flag: '__no__' }, locked: VARRO_WHOLE, effects: {} },
+      { id: 'stitch-scrap', label: FIELD_SURGERY, sub: FIELD_SCRAP, show: { all: [{ not: { healthMin: 6 } }, { heatMax: ['seekers', 4] }] }, enable: { itemMin: ['scrap', 4] }, locked: 'Needs: 4 Scrap', effects: { remove: { scrap: 4 }, health: 3, ticks: 1, still: true, flash: VARRO_HEAL } },
+      { id: 'stitch-scrap', label: FIELD_SURGERY, sub: FIELD_SCRAP_HOT, show: { all: [{ healthMin: 6 }, { heatMin: ['seekers', 5] }] }, enable: { flag: '__no__' }, locked: VARRO_WHOLE, effects: {} },
+      { id: 'stitch-scrap', label: FIELD_SURGERY, sub: FIELD_SCRAP_HOT, show: { all: [{ not: { healthMin: 6 } }, { heatMin: ['seekers', 5] }] }, enable: { itemMin: ['scrap', 5] }, locked: 'Needs: 5 Scrap', effects: { remove: { scrap: 5 }, health: 3, ticks: 1, still: true, flash: VARRO_HEAL } },
       { id: 'plate-ask', label: 'Ask about the Maw Plate', group: 'talk', show: { flagUnset: 'plateHinted' }, effects: { ticks: 1, flag: { plateHinted: true }, flash: PLATE_HINT } },
       ...plateChoices,
       { id: 'back', label: 'Leave his stall', tone: 'quiet', effects: { goto: 'maw:market' } },

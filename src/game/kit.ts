@@ -345,7 +345,7 @@ export const SCAV_PACK_RECIPE = { scrap: 3, sinew_cord: 1 } as const
 export const SCAV_PACK_LOCKED = 'Needs 3 scrap and 1 Sinew Cord'
 
 /** v162: the Maw Plate names Varro as its crafter only after he has said so himself (plateHinted). */
-export const MAW_PLATE_VARRO = ' Varro the Bonewright works it.'
+export const MAW_PLATE_VARRO = ' Varro the Bone-Stitcher works it.'
 /** v168: pending Jeramie's approval. */
 export const MAW_PLATE_DESC_HINTED = 'Maw Plate: calcified rib-worm hide. Varro at the Bone Market can work this into your gear.'
 export function itemDesc(id: ItemId, state: Pick<GameState, 'flags'>): string {

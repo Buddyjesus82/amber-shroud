@@ -283,7 +283,7 @@ Thalia's love made you loud. They want a pour, a cloth, or a confession. They wi
     name: 'Varro',
     aliases: ['varro', 'bonewright', 'the bonewright', 'varro the bonewright'],
     metFlag: 'metZafir',
-    card: `Varro the Bonewright. The Bone-Stitcher / Seeker Deserter.
+    card: `Varro the Bone-Stitcher. The Bone-Stitcher / Seeker Deserter.
 
 He knows where the tendons anchor and where the sap runs thickest. He'll stitch you up for two resin, but he won't look you in the eyes while he pulls the wire.`,
     scenes: ['ch1:v-zafir', 'maw:zafir', 'maw:market'],
@@ -292,7 +292,9 @@ He knows where the tendons anchor and where the sap runs thickest. He'll stitch 
       'maw:zafir': `The Bone-Stitcher / Seeker Deserter.
 
 He knows where the tendons anchor and where the sap runs thickest. He'll stitch you up for two resin, but he won't look you in the eyes while he pulls the wire.`,
-      'maw:market': `A few stalls that pretend this is a town. Varro is here if the cairn did not keep him. Same smile. A real tray of goods, not only news.`,
+      'maw:market': `A few stalls pretending this is a town. Dried strider meat. Amber chips. Maps that have killed the people who bought them.
+
+Varro works out of a shaded stall, suture wire clamped between his teeth.`,
     },
   },
   ossa: {

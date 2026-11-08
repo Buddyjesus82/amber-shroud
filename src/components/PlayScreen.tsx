@@ -32,6 +32,7 @@ import { HANDS_MAX, handsLeft, handsPips } from '../game/hands'
 import { bayLookout } from '../game/campJob'
 import { isPressureOverlay, pressureFace } from '../game/hunter'
 import { DRILL_LINES } from '../game/content/intoTheMaw'
+import { VARRO_STALL } from '../game/varroCard'
 import { isMaskedFlash, maskedCoverKey, maskedQuietScene } from '../game/masked'
 import { DISGUISE_SOFTEN_NOTE } from '../game/disguise'
 import { kaelenNamed, ROADS, shownText } from '../game/roads'
@@ -211,7 +212,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     if (HOLD_RESULTS && moved && next.flash && !fightResult && !noteOnly && !maskedOnQuiet && !newChapter && scene.kind !== 'crisis') {
       const heldNext: HeldScreen = {
         title: placeTitle,
-        meta: hub && !NO_HUB_LABEL.has(scene.id) ? hub.name : scene.id === 'ch1:storm' ? 'Camp-04' : scene.chapterId === 'cache-run' ? cap(ROADS[state.door].name) : null,
+        meta: scene.id === 'maw:zafir' ? VARRO_STALL : hub && !NO_HUB_LABEL.has(scene.id) ? hub.name : scene.id === 'ch1:storm' ? 'Camp-04' : scene.chapterId === 'cache-run' ? cap(ROADS[state.door].name) : null,
         // His cover never wears a speaker's name.
         face: isMaskedFlash(next.flash) ? null : face,
         body: shownText(state, bodyOf(state)),
@@ -545,7 +546,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
         <div className="place-line">
           <strong>{held ? held.title : placeTitle}</strong>
           <span className="place-meta">
-            {held ? held.meta : hub && !NO_HUB_LABEL.has(scene.id) ? hub.name : scene.id === 'ch1:storm' ? 'Camp-04' : scene.chapterId === 'cache-run' ? cap(ROADS[state.door].name) : null}
+            {held ? held.meta : scene.id === 'maw:zafir' ? VARRO_STALL : hub && !NO_HUB_LABEL.has(scene.id) ? hub.name : scene.id === 'ch1:storm' ? 'Camp-04' : scene.chapterId === 'cache-run' ? cap(ROADS[state.door].name) : null}
             {savedCue ? <em className="saved-cue">Saved</em> : null}
           </span>
         </div>

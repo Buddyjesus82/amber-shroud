@@ -1,4 +1,5 @@
 import { turfFaction } from './encounter'
+import { VARRO_BUY, VARRO_SELL } from './varroCard'
 import { bagCap, bagFits, bagLoad, wornCount } from './kit'
 import { ITEMS } from './content/catalog'
 import type { Choice, Cond, DoorId, Effect, FlagMap, GameState, ItemId } from './types'
@@ -703,14 +704,14 @@ export function shopChoices(state: GameState, authored: Choice[]): Choice[] {
     {
       id: 'shop-buy',
       label: 'Buy',
-      sub: 'His stock. Prices on the shelf.',
+      sub: vendor.id === 'zafir' ? VARRO_BUY : 'His stock. Prices on the shelf.',
       group: 'buy',
       effects: { flag: { shopShelf: 'buy' }, flash: vendor.id === 'kaelen' ? kaelenBuyFlash(state) : vendor.openBuyFlash },
     },
     {
       id: 'shop-sell',
       label: 'Sell',
-      sub: 'Unequipped pack. He pays less than he charges.',
+      sub: vendor.id === 'zafir' ? VARRO_SELL : 'Unequipped pack. He pays less than he charges.',
       group: 'sell',
       effects: { flag: { shopShelf: 'sell' }, flash: vendor.openSellFlash },
     },
