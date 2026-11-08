@@ -12,6 +12,22 @@ export const STRAY_FEED_LINE = 'The hound takes the Drop and sits. Without it, t
 export const STRAY_FIGHT_SUB = 'A real fight. Health takes the hits.'
 export const STRAY_KILL_LINE = 'Stray Heat +1.'
 
+/** v224: the Bone Wash Stray. Unnamed. A type, met once on this road as an individual. */
+export const BONE_WASH_HOT =
+  'A stake in the sand. Fresh cord. A Stray on the ridge, chitin stitched over leather, a long rifle across the knees. Shard-hounds pace the wash below. "Trail\'s loud. Stake\'s set."'
+export const BONE_WASH_TRADE = 'Same figure, rifle down. "You brought something that keeps. I trade. I don\'t guide."'
+export const BONE_WASH_WIN = 'The cord goes slack. Another stake will come.'
+export const BONE_WASH_SCRAP = 'Scrap +2.'
+export const BONE_SLIP_SUB = 'Needs the Dust Cloak.'
+export const BONE_SLIP_LINE = 'Cloak down, wind up. The hounds take the wrong scent.'
+export const BONE_PAY_SUB = 'Costs 3 scrap.'
+export const BONE_PAY_LINE = 'The hunter counts it. Doesn\'t nod. Cord comes up.'
+export const BONE_SIGN_SUB = 'Costs 2 scrap.'
+export const BONE_SIGN_LINE = 'Prints. East wash. Don\'t follow them twice.'
+export const BONE_HIDE_SUB = 'Costs the Hound Hide.'
+export const BONE_HIDE_LINE = 'That hide walks quieter than you do. Keep to stone.'
+export const BONE_FEED_LABEL = 'Feed the hounds a Drop'
+
 export const STRAY_HUNTER_ENCOUNTERS = {
   strayhunter: { name: STRAY_HUNTER_NAME, strike: 3, shell: 1, hp: 2, line: STRAY_ARRIVAL_LINE },
   strayhound: { name: STRAY_HUNTER_NAME, strike: 3, shell: 2, hp: 4, line: STRAY_HOUND_LINE },

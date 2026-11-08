@@ -154,6 +154,8 @@ export type CoverKey =
   | 'ch3_trench'
   | 'ch3_relay'
   | 'ch3_siphon'
+  | 'bone_wash_hunter'
+  | 'jodi_tarp'
   | 'ch3_vault_fight'
   | 'ch3_vex_fight'
   | 'ch3_ash_fight'
@@ -330,6 +332,8 @@ const FILES: Record<CoverKey, string> = {
   ch3_trench: 'ch3-trench.jpg',
   ch3_relay: 'ch3-relay.jpg',
   ch3_siphon: 'ch3-siphon.jpg',
+  bone_wash_hunter: 'bone-wash-hunter.jpg',
+  jodi_tarp: 'jodi-tarp.jpg',
   ch3_vault_fight: 'ch3-vault-fight.jpg',
   ch3_vex_fight: 'ch3-vex-fight.jpg',
   ch3_ash_fight: 'ch3-ash-fight.jpg',
@@ -549,6 +553,8 @@ export const COVER_BAND: Record<CoverKey, [number, number]> = {
   ch3_trench: [0.08, 0.72],
   ch3_relay: [0.08, 0.72],
   ch3_siphon: [0.08, 0.78],
+  bone_wash_hunter: [0.05, 0.72],
+  jodi_tarp: [0.08, 0.72],
   ch3_vault_fight: [0.1, 0.8],
   ch3_vex_fight: [0.05, 0.85],
   ch3_ash_fight: [0.05, 0.85],
@@ -672,8 +678,9 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
       if (kind === 'dragoon') return 'ch2_fight_dragoon'
       if (kind === 'drilllead') return 'ch2_fight_drill_lead'
       if (kind === 'seekerpatrol') return 'ch2_fight_patrol'
-      if (kind === 'strayhunter' || kind === 'strayhound') return STRAY_HUNTER_COVER as CoverKey
     }
+    if ((kind === 'strayhunter' || kind === 'strayhound') && state.sceneId === 'ch1:leave' && state.door === 'outcast') return 'bone_wash_hunter'
+    if (kind === 'strayhunter' || kind === 'strayhound') return STRAY_HUNTER_COVER as CoverKey
     // v203: roster art. Seeker Patrol and Drill Lead fights off Into the Maw get their own covers.
     if (kind === 'vex') return 'ch3_vex_fight'
     if (kind === 'ash') return 'ch3_ash_fight'
@@ -707,7 +714,9 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   if (state.flags.maskedHere) return 'masked_figure'
   if (isMaskedFlash(state.flash)) return maskedCoverKey(state.flash)
   // Stray Hunter: its cover slot, neutral fight ground until the art lands.
+  if (state.flags.strayHunterHere && state.sceneId === 'ch1:leave' && state.door === 'outcast') return 'bone_wash_hunter'
   if (state.flags.strayHunterHere) return (STRAY_HUNTER_COVER as CoverKey | null) ?? fightGround(state, scene)
+  if (id === 'spine:jodi-tarp') return 'jodi_tarp'
   if (isSybellaOverlay(state) || id.startsWith('maw:sybella')) return 'sybella'
   if (isCampHunt(state)) return campHuntIsValerius(state) ? 'valerius' : 'handler'
   if (id === 'camp:hunter' || id === 'camp:valerius' || id === 'camp:tower') return 'valerius'

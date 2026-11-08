@@ -1,6 +1,6 @@
 import { SPARE_SAP_LOCK } from './sapLock'
 import { companionOf, LINES as PARTY_LINES } from './companions'
-import { STRAY_HUNTER_ENCOUNTERS } from './strayLines'
+import { BONE_WASH_SCRAP, BONE_WASH_WIN, STRAY_HUNTER_ENCOUNTERS, STRAY_KILL_LINE } from './strayLines'
 import { MASKED_BLOCK_LINE, MASKED_ROUNDS, MASKED_STRIKE_LINE, MASKED_WALKS_OFF_LINE } from './maskedLines'
 import { ITEMS } from './content/catalog'
 import { getScene } from './content'
@@ -1579,6 +1579,17 @@ function resolveEncounterCore(
       sap,
       pressure: dmgIn > 0 ? 1 : undefined,
       flag: { encounterGrip: grip },
+    })
+  }
+
+  if (theirHp <= 0 && (spec.kind === 'strayhunter' || spec.kind === 'strayhound') && state.flags.boneWashFight) {
+    const outcome = `${BONE_WASH_WIN}\n\n${STRAY_KILL_LINE}\n\n${BONE_WASH_SCRAP}${mutualWin ? MUTUAL_WIN_LINE : ''}`
+    return holdCard(state, spec, `${hitCard}\n\n${outcome}`, outcome, {
+      health: healthDelta,
+      sap,
+      add: { scrap: 2 },
+      pressure: dmgIn > 0 ? 1 : undefined,
+      flag: { encounterGrip: grip, strayLooted: true },
     })
   }
 

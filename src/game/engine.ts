@@ -4,7 +4,7 @@ import { STAIRS, STAIRS_CLEARED, STAIRS_TO } from './content/crucible'
 import { hash as hashRoll } from './fightTricks'
 import { BARROW_EMPTY, barrowCache, barrowLooted, barrowRows, barrowScene, heatReliefRows, passageCheck } from './heatRelief'
 import { isMaskedBlock, MASKED_BLOCK_LINE, maskedBody, maskedChoices, maskedPass, maskedPickup } from './masked'
-import { isStrayHunt, STRAY_ARRIVAL_LINE, STRAY_CUT_LINE, STRAY_HOUND_HEAT, STRAY_HOUND_LINE, STRAY_KILL_LINE, strayHuntBody, strayHuntChoices, strayHunterArrives } from './strayHunter'
+import { boneWashTrade, isStrayHunt, STRAY_ARRIVAL_LINE, STRAY_CUT_LINE, STRAY_HOUND_HEAT, STRAY_HOUND_LINE, STRAY_KILL_LINE, strayHuntBody, strayHuntChoices, strayHunterArrives } from './strayHunter'
 import { HUB_MAPS } from './content/maps'
 import { DOORS, HUBS, ITEMS, getScene, hasScene, resolveBody } from './content'
 import { applyDelta, check, clamp } from './logic'
@@ -669,11 +669,29 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   const softened = softenCartel(state, fx)
   if (softened !== fx) fx = { ...softened, flash: fx.flash ? `${fx.flash} ${DISGUISE_SOFTEN_NOTE}` : DISGUISE_SOFTEN_NOTE }
   let dest = resolveDest(state, fx)
+  // v224: Jodi's tarp is once, on the shade-well leg, before she is the trader in the shade.
+  const jodiOpen =
+    state.door === 'outcast' &&
+    !state.flags.jodi_removed &&
+    !state.flags.jodiSap &&
+    !state.flags.jodiStash &&
+    !state.flags.jodiLeft &&
+    !state.flags.jodiTurned
+  if (jodiOpen && ((state.sceneId === 'spine:shade' && dest === 'spine:well') || (state.sceneId === 'spine:well' && dest === 'spine:shade'))) {
+    fx = { ...fx, flag: { ...(fx.flag ?? {}), jodiLegTo: dest } }
+    dest = 'spine:jodi-tarp'
+  }
   // v222: a map hop cannot open a Chapter 3 beat the story has not opened.
   const mapHop = !!fx.mapWalk || (typeof fx.sap === 'number' && fx.sap < 0 && !fx.flag)
   if (dest && mapHop && ch3MapLocked(state, dest)) return persist({ ...state, flash: ROAD_NOT_NOW })
   let next = applyDelta(state, fx)
   next.flash = fx.flash
+  if (state.sceneId === 'spine:jodi-tarp' && dest && state.flags.jodiLegTo) {
+    dest = String(state.flags.jodiLegTo)
+    const flags = { ...next.flags }
+    delete flags.jodiLegTo
+    next.flags = flags
+  }
   // Every escape out of Camp-04 plays the storm beat first; the route's own line waits for the Hunger.
   const campEscape =
     !!fx.startChapter && dest === 'ch1:leave' && (state.hubId === 'camp04' || state.sceneId.startsWith('camp:'))
@@ -1124,6 +1142,9 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     const hound = (next.heat.strays ?? 0) >= STRAY_HOUND_HEAT
     next.flags = { ...next.flags, strayHunterHere: true, strayHunterHound: hound, strayHuntStep: Number(next.flags.sceneSteps ?? 0) + (next.sceneId !== state.sceneId ? 1 : 0), fightQuiet: 0 }
     next.flash = undefined
+  } else if (!roadHunt && !next.flags.strayHunterHere && boneWashTrade(state, next)) {
+    next.flags = { ...next.flags, strayHunterHere: true, strayWashTrade: true, fightQuiet: 0 }
+    next.flash = undefined
   }
   // Cutting your trail: a seeded roll loses them, or the fight opens here.
   if (fx.flag?.strayCut) {
@@ -1239,7 +1260,9 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     next.flags = flags
     if (!state.flags.encounterFled && !next.flags.downed && (next.health ?? 1) > 0) {
       next.heat = { ...next.heat, strays: Math.min(8, (next.heat.strays ?? 0) + 1) }
-      next.flash = next.flash ? `${next.flash}\n\n${STRAY_KILL_LINE}` : STRAY_KILL_LINE
+      // v224: the Bone Wash win already printed Heat and Scrap on the fight card.
+      if (!state.flags.boneWashFight) next.flash = next.flash ? `${next.flash}\n\n${STRAY_KILL_LINE}` : STRAY_KILL_LINE
+      delete next.flags.boneWashFight
       // v211: a beaten Stray Hunter stays beaten. Backing out of Murch's camp does not raise him again.
       if (next.chapterId === 'into-the-maw') next.flags = { ...next.flags, strayHunterBeaten: true }
     }
