@@ -6,9 +6,6 @@ import { migrateEquipped } from '../src/game/repair.ts'
 import { ITEMS } from '../src/game/content/catalog.ts'
 import {
   SKIFF_CRASH,
-  SKIFF_HIT_BARE,
-  SKIFF_HIT_BLUNT,
-  SKIFF_HIT_EDGE,
   SKIFF_HULL_LINE,
   SKIFF_REWARD,
   SKIFF_WIN,
@@ -59,26 +56,30 @@ ok(ITEMS.wrench.desc.includes('Strike 4') && !ITEMS.wrench.desc.includes('Strike
 const baton = hit('ironwood_baton')
 ok(baton.flags.encounterHp === 4, `baton melee takes 1, not a clean kill (${baton.flags.encounterHp})`)
 ok(card(baton).includes(SKIFF_HULL_LINE), 'hull line')
-ok(card(baton).includes(SKIFF_HIT_BLUNT.replaceAll('{weapon}', 'Shock Baton')), 'baton jams')
-ok(!/You hit the Turreted Skiff for/.test(card(baton)) && !/Critical Strike/.test(card(baton)), 'no person-hit line')
+ok(card(baton).includes('You crack the Turreted Skiff for 1.'), 'baton cracks')
+ok(!/You hit the Turreted Skiff for/.test(card(baton)) && !/Critical Strike/.test(card(baton)), 'no old hit line')
 ok(!card(baton).includes(WRENCH_MECH_LINE), 'baton has no machinery bonus')
 ok(!/Ram/.test(visibleChoices(skiff()).map((c) => c.label).join()), 'no Ram')
 
 const shiv = hit('shiv')
-ok(card(shiv).includes(SKIFF_HIT_EDGE.replaceAll('{weapon}', 'Blood Shiv')), 'shiv plunges')
+ok(card(shiv).includes('You cut the Turreted Skiff for '), 'shiv cuts')
 const knife = hit('needle_knife')
-ok(card(knife).includes(SKIFF_HIT_EDGE.replaceAll('{weapon}', 'Needle Knife')), 'knife plunges')
+ok(card(knife).includes('You cut the Turreted Skiff for '), 'knife cuts')
 const blade = hit('seeker_extractor')
-ok(card(blade).includes(SKIFF_HIT_EDGE.replaceAll('{weapon}', 'Seeker Extractor')), 'Seeker blade plunges')
-ok(card(blade).includes(PIERCE_LINE) && !card(blade).includes(SKIFF_HULL_LINE), 'Piercing bypasses the hull cap')
-ok(/^YOU ♥ \d+ ⚔ Strike 5 🛡 Shell 0$/m.test(card(blade)), 'extractor Strike row stays 5')
-ok(/SKIFF ♥ \d+ ⚔ Strike 4 🛡 Shell 3/.test(card(blade)), 'skiff Shell row stays 3')
-const skiffHp = Number(/SKIFF ♥ (\d+)/.exec(card(blade))?.[1])
-ok(skiffHp <= 1, `piercing hit is more than 1 (${skiffHp})`)
+if (blade.flags.encounterDone) {
+  ok(card(blade).includes(SKIFF_WIN) && !/YOU ♥/.test(card(blade)), 'extractor kill is the result card')
+} else {
+  ok(card(blade).includes('You plunge into the Turreted Skiff for '), 'extractor plunges')
+  ok(card(blade).includes(PIERCE_LINE) && !card(blade).includes(SKIFF_HULL_LINE), 'Piercing bypasses the hull cap')
+  ok(/^YOU ♥ \d+ ⚔ Strike 5 🛡 Shell 0$/m.test(card(blade)), 'extractor Strike row stays 5')
+  ok(/SKIFF ♥ \d+ ⚔ Strike 4 🛡 Shell 3/.test(card(blade)), 'skiff Shell row stays 3')
+  const skiffHp = Number(/SKIFF ♥ (\d+)/.exec(card(blade))?.[1])
+  ok(skiffHp <= 1, `piercing hit is more than 1 (${skiffHp})`)
+}
 ok(ITEMS.seeker_extractor.strike === 5 && ITEMS.seeker_extractor.desc.includes('Strike 5') && ITEMS.seeker_extractor.desc.includes(PIERCE_LINE), 'extractor catalog')
 ok(piercedShell({ equipped: { weapon: 'seeker_extractor' } }, 3) === 1 && !extractorHeld({ equipped: { weapon: 'ironwood_baton' } }), 'pierce is 2 Shell, baton does not pierce')
 const bare = hit()
-ok(card(bare).includes(SKIFF_HIT_BARE) && card(bare).includes(SKIFF_HULL_LINE), 'bare hands, still capped')
+ok(card(bare).includes('You strike the Turreted Skiff for 1.') && card(bare).includes(SKIFF_HULL_LINE), 'bare hands strike, still capped')
 
 // Wrench +1 is real before the cap and does not raise the hit past 1.
 const plain = exchangeDamage(4, 0, 3)
@@ -87,7 +88,7 @@ ok(plain === 1 && boosted === 2, `wrench +1 would raise the hit before the cap (
 const wr = hit('wrench')
 ok(wr.flags.encounterHp === 4, `wrench still deals 1 through the hull (${wr.flags.encounterHp})`)
 ok(card(wr).includes(WRENCH_MECH_LINE) && card(wr).includes(SKIFF_HULL_LINE), 'wrench line and hull line both show')
-ok(card(wr).includes(SKIFF_HIT_BLUNT.replaceAll('{weapon}', 'Oversized Wrench')), 'wrench jams')
+ok(card(wr).includes('You wrench the Turreted Skiff for 1.'), 'wrench verb')
 ok(!/to your hit\./.test(card(wr)), 'cap does not leave a +N the hull took back')
 ok(/^YOU ♥ \d+ ⚔ Strike 4 🛡 Shell 0$/m.test(card(wr)), 'stat row stays the wrench Strike 4')
 ok(equippedStrike(skiff({ items: { wrench: 1 }, equipped: { weapon: 'wrench', offhand: 'shiv' } })) === 4, 'stale off-hand adds nothing while the wrench is held')

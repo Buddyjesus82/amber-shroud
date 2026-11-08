@@ -176,6 +176,9 @@ export function siphonSpotRows(
   ]
 }
 export const RELAY_FIXED = "You splice a lead into the box and bind it with the Sinew-Bind. The relay clicks and starts reading numbers. Mara writes them on her arm: FREQ-774. 'Cartel courier channel. Miller's board will think you're a supply runner.'"
+export const VEIN_BY_LIFT = 'The lift grinds to a stop at the foot of the ribs.'
+export const VEIN_BY_LADDER = 'You drop the last rungs and hit the foot of the ribs running.'
+const VEIN_AIRLOCK = 'A vein of raw amber resin runs into a Pre-Collapse airlock set in the bone. The airlock hums at a pitch you feel in your teeth.'
 export const RIBS_CLIMAX = "The drill breaks through the rib above. Seeker dragoons rappel down on lines, gold trim catching the lamps. The platform drops out from under their boots and takes you down."
 export const RIBS_CLIMAX_LADDER = "The drill breaks through the rib above. Seeker dragoons rappel down on lines, gold trim catching the lamps. You drop the last rungs and run."
 /** Typed Do on the jammed lift gear. */
@@ -774,8 +777,11 @@ Above you, Sybella's drill-rigs are breaking through. Every bite shakes grit dow
     id: 'ch2:vein',
     kind: 'story',
     title: 'The Primary Vein',
-    body: 'The lift grinds to a stop at the foot of the ribs. A vein of raw amber resin runs into a Pre-Collapse airlock set in the bone. The airlock hums at a pitch you feel in your teeth.',
-    variants: [{ if: { item: 'spire_key' }, mode: 'append', body: 'The Spire Key hums back.' }],
+    body: `${VEIN_BY_LIFT} ${VEIN_AIRLOCK}`,
+    variants: [
+      { if: { flag: 'liftLadder' }, body: `${VEIN_BY_LADDER} ${VEIN_AIRLOCK}` },
+      { if: { item: 'spire_key' }, mode: 'append', body: 'The Spire Key hums back.' },
+    ],
     choices: [
       { id: 'key', label: 'Set the Spire Key to the vein', tone: 'hunger', show: { item: 'spire_key' }, effects: { goto: 'ch2:heart', flash: 'The Key finds the pitch. The airlock opens.' } },
       { id: 'code', label: 'Speak BLEED-CORE', tone: 'hunger', show: { all: [{ not: { item: 'spire_key' } }, { any: [{ flag: 'bleedCore' }, { flag: 'airlockFreq' }] }] }, effects: { flag: { airlockSealed: true }, goto: 'ch2:heart', flash: 'The airlock takes the code, opens, and slams shut behind you. Through the bone, a drill stalls against the seal.' } },

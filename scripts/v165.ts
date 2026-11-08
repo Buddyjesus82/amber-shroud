@@ -11,8 +11,8 @@ import { getScene } from '../src/game/content/index.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 const sw = readFileSync('public/sw.js', 'utf8')
-ok(sw.includes("CACHE = 'amber-shroud-v224'"), 'SW cache v167')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v224'"), 'Build label v168')
+ok(sw.includes("CACHE = 'amber-shroud-v225'"), 'SW cache v167')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v225'"), 'Build label v168')
 
 const buf = readFileSync('public/covers/south-wind.jpg')
 let w = 0, h = 0
@@ -32,8 +32,8 @@ ok(top <= 0.1 && bot >= 0.72 && bot <= 0.8, 'band keeps the crane top and the ru
 const sc = getScene('ch1:south-wind')
 const at = (door: 'prisoner' | 'outcast' | 'vessel') => playCoverKey({ ...newGame(door), chapterId: 'cache-run', sceneId: 'ch1:south-wind', hubId: undefined } as never, sc)
 ok(at('outcast') === 'south_wind', 'Outcast: the skiff on the Bone Wash')
-ok(at('prisoner') === 'rim_gullet', 'Prisoner unchanged')
-ok(at('vessel') === 'rim_pilgrims_scar', 'Vessel unchanged')
+ok(at('prisoner') === 'beat_south_gullet', 'Prisoner South Wind is the Gullet hull')
+ok(at('vessel') === 'beat_south_vessel', 'Vessel South Wind is the Scar hull')
 ok(playCoverKey({ ...newGame('prisoner'), sceneId: 'camp:bay', hubId: 'camp04' } as never, getScene('camp:bay')) === 'skiff_bay_docks', 'Skiff Bay keeps the dock art')
 
 console.log(fails ? `${fails} FAILED` : 'v165 ok')

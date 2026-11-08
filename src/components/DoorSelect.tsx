@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { DOORS } from '../game/content/catalog'
+import { doorPreview } from '../game/doorPreview'
 import {
   IDLE_DOOR,
   tapDoor,
@@ -11,7 +12,6 @@ import {
   type DoorPhase,
   type DoorTapResult,
 } from '../game/doorPick'
-import { kitLine } from '../game/kit'
 import { DOOR_ORDER, DOOR_SLOT_LABEL } from '../game/save'
 import type { DoorId } from '../game/types'
 
@@ -53,6 +53,7 @@ export function DoorSelect({ savedDoors, onResume, onStart, onBack }: Props) {
       <div className="door-list">
         {DOOR_ORDER.map((id) => {
           const d = DOORS[id]
+          const preview = doorPreview(id)
           const has = saved.includes(id)
           const asking = phase.kind !== 'idle' && phase.door === id
           const wiping = phase.kind === 'overwrite' && phase.door === id
@@ -69,13 +70,13 @@ export function DoorSelect({ savedDoors, onResume, onStart, onBack }: Props) {
                   {has ? <span className="door-saved">Saved</span> : null}
                 </span>
                 <strong>{d.title}</strong>
-                <span className="door-place">{d.place}</span>
+                <span className="door-place">{preview.place}</span>
                 {asking ? null : (
                   <>
                     <span className="door-stats">
-                      Sap {d.sap} · Cartel {d.heat.cartel} · Seekers {d.heat.seekers} · Strays {d.heat.strays}
+                      Sap {preview.sap} · Cartel {preview.heat.cartel} · Seekers {preview.heat.seekers} · Strays {preview.heat.strays}
                     </span>
-                    <span className="door-kit">Gear: {kitLine(d.items)}</span>
+                    <span className="door-kit">Gear: {preview.gear}</span>
                     <span className="door-blurb">{d.blurb}</span>
                   </>
                 )}

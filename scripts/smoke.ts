@@ -1579,8 +1579,8 @@ assert(fought.flags.encounterHere && fought.flags.encounterDone, 'win holds the 
 assert((fought.items.scrap ?? 0) >= 2, 'winning a jackal yields saleable scrap')
 assert(fought.health <= 6 && fought.sap === 6, 'v211: Health, not Sap, takes a hit; a foe that drops in the exchange never hits back')
 assert(fought.sap === 6, 'Sap is unchanged by a win')
-assert(/You hit the [^\n]+ for [1-9]/.test(bodyOf(fought)), 'fight result says plainly what you hit for')
-assert(/The [^\n]+ (?:hits back|hits you) for [1-9]|misses you\.|^[A-Z-]+ ♥ 0 /m.test(bodyOf(fought)), `fight result says plainly what they hit you for: ${bodyOf(fought)}`)
+assert(/They drop\./.test(bodyOf(fought)) && !/YOU ♥/.test(bodyOf(fought)), 'v225: a killing blow is the result card, not the stat rows')
+assert(/\n\n.+\+/.test(bodyOf(fought)) || /On the body/.test(bodyOf(fought)), 'v225: the loot line is its own paragraph')
 assert(!/→|\bvs\b|Strike \d+\+\d+|\(\+\d|\(−\d|for \d+ \(/.test(bodyOf(fought)), 'fight result has no maths')
 assert(!bodyOf(fought).includes('cooked resin'), 'outcome card does not bleed Yard prose')
 assert(!(fought.flash ?? '').includes('Strike'), 'compares live on the card, not a stacked flash')
@@ -1619,7 +1619,7 @@ assert(/^YOU ♥ \d+ ⚔ Strike 2 🛡 Shell \d+$/m.test(bodyOf(s)) && /^SHARD-P
   assert((loss.items.glints ?? 0) === beforeGlints, 'lose compare does not pay Glints')
   assert(loss.health === Math.max(0, 6 - inHit), `Shard-pup Strike 2 rolls ${inHit} vs Shell 0 and takes ${inHit} Health; cloth is not armor`)
   if (!loss.flags.downed) {
-    assert(new RegExp(`You hit [^\\n]+ for ${Math.max(1, 1 + outSwing)}[ .]`).test(bodyOf(loss)), `Fight body says what you hit for (out ${outSwing} in ${inHit}): ${bodyOf(loss).slice(0, 200)}`)
+    assert(new RegExp(`You cut [^\\n]+ for ${Math.max(1, 1 + outSwing)}[ .]`).test(bodyOf(loss)), `Fight body says what you cut for (out ${outSwing} in ${inHit}): ${bodyOf(loss).slice(0, 200)}`)
     assert(new RegExp(`(?:hits back|hits you) for ${inHit}[ .]`).test(bodyOf(loss)), 'Fight body says what they hit you for')
   }
   let drop = loss
@@ -1698,7 +1698,7 @@ for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
   assert(/^SCAVENGER ♥ \d+ ⚔ Strike 3 🛡 Shell 1$/m.test(bodyOf(card)), `${door} scavenger stats are on the card`)
   assert(/^YOU ♥ \d+ ⚔ Strike \d+ 🛡 Shell \d+$/m.test(bodyOf(card)), `${door} your stats are on the card`)
   const fightRow = visibleChoices(card).find((c) => c.id === 'enc-fight')
-  assert(fightRow?.label === 'Fight the Waste scavenger', `${door} fight label names the scavenger`)
+  assert(fightRow?.label === (door === 'vessel' ? 'Cut the Waste scavenger' : 'Strike the Waste scavenger'), `${door} fight label uses the weapon verb (${fightRow?.label})`)
   assert(ids(card).includes('enc-skip'), `${door} scavenger can be skipped`)
   const skipped = pick(card, 'enc-skip')
   assert(/give the .* road/i.test(bodyOf(skipped)), `${door} scavenger skip is the outcome card`)
@@ -2391,7 +2391,7 @@ assert(html.includes('apple-touch.png?v=14'), 'apple-touch-icon is cache-busted 
   assert(ridge.sceneId === 'spine:ridge', 'Outcast stands onto the ridge')
   assert(playCoverKey(ridge, sceneOf(ridge)) === 'spine', 'Noon Spine uses Spine art, not Silas')
   const well = walkTo(ridge, 'spine:well')
-  assert(playCoverKey(well, sceneOf(well)) === 'spine', 'Dry Well uses Spine art, not Kaelen')
+  assert(playCoverKey(well, sceneOf(well)) === 'beat_dry_well', 'Dry Well uses its own art, not the Spine painting')
   assert(playCoverKey(well, { id: 'roam:kaelen' }) === 'kaelen', 'Kaelen roaming pass still uses Kaelen art')
   assert(!PEOPLE.silas.scenes.includes('spine:ridge'), 'Silas cover list excludes the ridge')
   assert(!PEOPLE.kaelen.scenes.includes('spine:well'), 'Kaelen cover list excludes the dry well')
@@ -2415,7 +2415,7 @@ assert(html.includes('apple-touch.png?v=14'), 'apple-touch-icon is cache-busted 
   const maw = applyEffect(p, { goto: 'maw:market', enterHub: 'redmaw' })
   assert(visibleChoices(maw).some((c) => c.id === 'zafir'), 'Bone Market always offers Talk to Zafir')
   assert(visibleChoices(maw).some((c) => c.id === 'shop-buy'), 'Bone Market offers Zafir Buy without having met him at the cairn')
-  assert(playCoverKey(maw, { id: 'maw:market' }) === 'zafir', 'Bone Market uses Zafir art')
+  assert(playCoverKey(maw, { id: 'maw:market' }) === 'beat_bone_market', 'Bone Market uses its own stalls, not Varro\'s portrait')
   assert(playCoverKey(p, { id: 'maw:zafir' }) === 'zafir', 'Zafir stall uses Zafir art')
   const rumors = applyEffect(p, { goto: 'camp:kaelen-rumors' })
   const rumorLabels = visibleChoices(rumors).map((c) => c.label)
@@ -2778,7 +2778,7 @@ assert(ids(s).includes('sybella-hold') && ids(s).includes('sybella-defy') && ids
 }
 
 const sw = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8')
-assert(sw.includes("CACHE = 'amber-shroud-v224'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
+assert(sw.includes("CACHE = 'amber-shroud-v225'") && sw.includes('covers/carapace.jpg'), 'SW bumped so new portraits reach Pages')
 assert(sw.includes('covers/bonewright.jpg') && sw.includes('covers/kaelen.jpg'), 'SW precaches NPC covers')
 assert(!sw.includes('covers/camp04.jpg') && sw.includes('covers/yard.jpg') && sw.includes('covers/sybella.jpg'), 'SW precaches door and antagonist covers')
 assert(sw.includes('favicon.png') && !sw.includes('favicon.svg'), 'SW precaches the cover favicon, not the Drop SVG')
@@ -3360,7 +3360,7 @@ function assertHelpResolves(s: GameState, where: string) {
       rounds++
       const card = String(f.flags.encounterClash ?? '')
       if (f.flags.encounterHere) {
-        assert(/You hit [^\n]+ for [1-9]/.test(card), `round log says what you hit for (${card.slice(0, 80)})`)
+        assert(f.flags.encounterDone ? /They drop\./.test(card) && !/YOU ♥/.test(card) : /You strike [^\n]+ for [1-9]/.test(card), `round log says the blow (${card.slice(0, 80)})`)
         assert(/(hits back|hits you) for [1-9]/.test(card) || !!f.flags.encounterDone, 'round log says what they hit you for (v211: not once they drop)')
       }
       if (!f.flags.encounterDone && f.flags.encounterHere) {
@@ -3996,7 +3996,7 @@ function assertHelpResolves(s: GameState, where: string) {
   assert(!isChoiceOn(midFight, trickRow.enable) && /Already used/.test(String(trickRow.locked)), 'sand trick locks with a reason')
 
   // v97: a crit is part of its hit line, with the final damage: "Critical Strike! You hit the X for 6."
-  const CRIT_YOU = /^Critical Strike! You hit [^\n]+ for \d+\.$/m
+  const CRIT_YOU = /^Critical Strike! You crack [^\n]+ for \d+\.$/m
   const CRIT_THEM = /^Critical Strike! [^\n]+ hits you for \d+\.$/m
   // Guard takes 2 off, 1 off against Valerius; you do not hit.
   for (let t = 0; t < 30; t++) {
@@ -4020,7 +4020,7 @@ function assertHelpResolves(s: GameState, where: string) {
   // Feint: 1 lighter now, +2 swing next.
   const feinted = go(fv('vessel', 4, 'cutter'), 'feint')
   assert(feinted.flags.encounterFeint === true, 'feint sets up the next strike')
-  assert(/^Feint: \+2 to your hit\.$/m.test(bodyOf(go({ ...feinted, health: 6 }, 'fight'))), 'the next Fight names the feint on its own line')
+  assert(/^Feint: \+2 to your hit\.$/m.test(bodyOf(go({ ...feinted, health: 6, flags: { ...feinted.flags, encounterHp: 20 } }, 'fight'))), 'the next blow names the feint on its own line')
   assert(/^Feint: you take 1 less damage\.$/m.test(bodyOf(feinted)), `the feint round names the lighter hit: ${bodyOf(feinted).slice(0, 200)}`)
 
   // Crits about 1 in 10, both sides, with their own log line.
@@ -4031,10 +4031,10 @@ function assertHelpResolves(s: GameState, where: string) {
     const card = String(resolveEncounter(fv('prisoner', t, 'cutter', {}, 20), 'fight').fx.flag?.encounterClash ?? '')
     if (CRIT_YOU.test(card)) {
       critYou++
-      const m = card.match(/^Critical Strike! You hit [^\n]+ for (\d+)\.$/m)!
+      const m = card.match(/^Critical Strike! You crack [^\n]+ for (\d+)\.$/m)!
       const hp = Number(card.match(/^CUTTER ♥ (\d+) /m)![1])
       assert(hp === Math.max(0, 20 - Number(m[1])), `the crit line shows the final damage and the row matches: ${card.slice(0, 160)}`)
-      assert(!/^You hit /m.test(card), 'no separate base-hit line for a crit')
+      assert(!/^You crack /m.test(card), 'no separate base-hit line for a crit')
     }
     const houndCard = String(resolveEncounter(fv('prisoner', t, 'collector', {}, 20), 'fight').fx.flag?.encounterClash ?? '')
     if (CRIT_THEM.test(houndCard)) critThem++ // v101/v124: early enemies and the off-lead hound have capped crits, so the rate check uses the collector
@@ -5441,10 +5441,14 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
         assert(open[0].startsWith('YOU ♥ ') && ROW.test(open[0]) && ROW.test(open[1]), `v96 ${door} ${kind}: stat rows at the top (${open.slice(0, 2).join(' | ')})`)
         assert(!MATH.test(open.join('\n')), `v96 ${door} ${kind}: no maths on the open card`)
         for (const move of moves) {
-          const card = String(resolveEncounter(st, move).fx.flag?.encounterClash ?? '')
+          const resolved = resolveEncounter(st, move)
+          const card = String(resolved.fx.flag?.encounterClash ?? '')
           if (!card) continue
           const paras = card.split('\n\n')
-          if (move !== 'run' || ROW.test(paras[0])) {
+          const killCard = !!resolved.fx.flag?.encounterDone && !paras[0].startsWith('YOU ♥')
+          if (killCard) {
+            assert(!ROW.test(card), `v225 ${door} ${kind} ${move}: a finished fight has no stat rows`)
+          } else if (move !== 'run' || ROW.test(paras[0])) {
             assert(ROW.test(paras[0]) && paras[0].startsWith('YOU ♥ ') && ROW.test(paras[1]), `v96 ${door} ${kind} ${move}: stat rows on the round card`)
           }
           assert(!MATH.test(card), `v96 ${door} ${kind} ${move}: no maths in "${card.slice(0, 160)}"`)
@@ -5476,11 +5480,12 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
         if (!card) continue
         assert(!/^Critical Strike! \d+$/m.test(card), `v97: no bare crit line (${card.slice(0, 120)})`)
         const paras = card.split('\n\n')
-        const youHp = Number(paras[0].match(/^YOU ♥ (\d+)/)?.[1])
-        const themHp = Number(paras[1].match(/♥ (\d+)/)?.[1])
-        const out = card.match(/You hit [^\n]+ for (\d+)\./)
+        const youHp = Number(paras[0]?.match(/^YOU ♥ (\d+)/)?.[1])
+        const themHp = Number(paras[1]?.match(/♥ (\d+)/)?.[1])
+        if (!/^YOU ♥/.test(paras[0] ?? '')) continue // v225: a killing blow is the result card only
+        const out = card.match(/You crack [^\n]+ for (\d+)\./)
         const inn = card.match(/(?:hits back|hits you) for (\d+)\./)
-        const iOut = paras.findIndex((p) => /^(Critical Strike! )?You (hit|miss)/.test(p))
+        const iOut = paras.findIndex((p) => /^(Critical Strike! )?You (crack|miss)/.test(p))
         const iIn = paras.findIndex((p) => /hits back for|hits you for|misses you|misses\. Sand/.test(p))
         if (themHp === 0 && iIn === -1 && iOut === 2) continue // v211: a foe that drops does not hit back
         assert(iOut === 2 && iIn === 3, `v97 ${door} ${kind}: stats, your blow, then theirs (${paras.slice(0, 4).join(' | ')})`)
@@ -5489,7 +5494,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
           assert(themHp === Math.max(0, 9 - Number(out?.[1] ?? 0)), `v97 ${door} ${kind}: enemy Health row matches your hit (${card.slice(0, 160)})`)
           assert(youHp === Math.max(0, 6 - Number(inn?.[1] ?? 0)), `v97 ${door} ${kind}: your Health row matches their hit (${card.slice(0, 160)})`)
         }
-        if (!youCrit && /^Critical Strike! You hit/m.test(card)) youCrit = card
+        if (!youCrit && /^Critical Strike! You crack/m.test(card)) youCrit = card
         if (!themCrit && /^Critical Strike! .* hits you for/m.test(card)) themCrit = card
       }
     }
@@ -5670,12 +5675,14 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
 {
   const sw = readFileSync('public/sw.js', 'utf8')
   const want: Record<string, string> = { prisoner: 'rim_gullet', outcast: 'rim_bonewash', vessel: 'rim_pilgrims_scar' }
+  const land: Record<string, string> = { prisoner: 'beat_land_gullet', outcast: 'beat_land_wash', vessel: 'beat_land_scar' }
+  const rim: Record<string, string> = { prisoner: 'rim_gullet', outcast: 'beat_rim_wash', vessel: 'beat_rim_scar' }
   for (const door of ['prisoner', 'outcast', 'vessel'] as const) {
-    for (const id of ['maw:rim', 'ch1:land']) {
+    for (const [id, table] of [['maw:rim', rim], ['ch1:land', land]] as const) {
       const s = { ...newGame(door), sceneId: id }
       s.flags = { ...s.flags, encounterHere: false }
       const k = playCoverKey(s, { id, art: 'hunger', chapterId: 'ch1', hubId: undefined } as never)
-      assert(k === want[door], `v104: ${door} at ${id} shows ${want[door]} (got ${k})`)
+      assert(k === table[door], `v104→v225: ${door} at ${id} shows ${table[door]} (got ${k})`)
     }
     const f = playCoverFile(want[door] as never)
     assert(existsSync(`public/covers/${f}`) && sw.includes(`covers/${f}`), `v104: ${f} on disk and precached`)
@@ -5872,7 +5879,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   fight.flags = { ...fight.flags, encounterHere: true, encounterKind: 'collector' }
   assert(playCoverKey(fight, getScene('spine:ridge')!) === 'stray_collector', 'v113: the collector fight shows the collector')
   const well = { ...newGame('outcast'), sceneId: 'spine:well', hubId: 'spine' }
-  assert(playCoverKey(well, getScene('spine:well')!) === 'spine', 'v113: the Dry Well uses the Spine art, not the title art')
+  assert(playCoverKey(well, getScene('spine:well')!) === 'beat_dry_well', 'v113→v225: the Dry Well has its own throat of dust')
   console.log('v113 collector checks OK')
 }
 
@@ -5964,10 +5971,10 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
   }
   // 2/3. Covers.
   const cover = (door: DoorId, id: string, flags: Record<string, unknown> = {}) => playCoverKey({ ...newGame(door), sceneId: id, flags: { ...newGame(door).flags, ...flags } }, getScene(id)!)
-  assert(cover('vessel', 'ch1:leave') === 'rim_pilgrims_scar' && cover('vessel', 'ch1:v-hymn') === 'rim_pilgrims_scar', 'v115: Vessel Cache Run shows the Scar')
+  assert(cover('vessel', 'ch1:leave') === 'rim_pilgrims_scar' && cover('vessel', 'ch1:v-hymn') === 'beat_hymn_scar', 'v115→v225: Cache Run keeps the Scar; Hymn-Road has its own road')
   assert(cover('prisoner', 'crisis:dunes') === 'down' && cover('vessel', 'crisis:dunes') === 'down', 'v115: The Wash Takes You uses down.jpg')
   assert(cover('vessel', 'ch1:leave', { downed: true }) === 'down', 'v115: Down on the road uses down.jpg')
-  assert(cover('vessel', 'ch1:south-wind') === 'rim_pilgrims_scar', 'v115→v116: South Wind shows the road, not her face')
+  assert(cover('vessel', 'ch1:south-wind') === 'beat_south_vessel', 'v115→v225: Vessel South Wind is its own hull')
   assert(cover('vessel', 'thresh:sift') === 'kaelen', 'v115: Cup-Shadow shows Kaelen')
   assert(ps.includes('<img key={`img:${held ? held.art : artSrc}`} className="scene-img"'), 'v115: the cover remounts per scene (no stale flash)')
   // 4/5. Court Guard: blowing sand caps his hit; he/him.
@@ -6439,7 +6446,7 @@ for (const [door, sceneId, hubId] of [['prisoner', 'camp:tower', 'camp04'], ['ou
     assert(existsSync(new URL(`../public/covers/${f}.jpg`, import.meta.url)) && readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8').includes(`covers/${f}.jpg`), `v124: ${f} cover ships and is precached`)
   }
   const road = (door: 'prisoner' | 'outcast' | 'vessel', id: string) => { const s = GE.applyEffect(newGame(door), { startChapter: 'cache-run', goto: id, flag: { roadHuntDone: 'smoke' } }); const t = { ...s, flags: { ...s.flags, encounterHere: false } }; return A4.playCoverKey(t, sceneOf(t)) }
-  assert(road('prisoner', 'ch1:v-hymn') === 'hymn_road' && road('vessel', 'ch1:v-hymn') === 'rim_pilgrims_scar', 'v124: hymn-road art, Vessel keeps the Scar')
+  assert(road('prisoner', 'ch1:v-hymn') === 'hymn_road' && road('vessel', 'ch1:v-hymn') === 'beat_hymn_scar', 'v124→v225: hymn-road art, Vessel Hymn-Road is its own painting')
   assert(road('prisoner', 'ch1:p-pipe') === 'last_fence' && road('outcast', 'ch1:o-noon') === 'noon_country' && road('prisoner', 'ch1:leave') === 'cache_run', 'v124: road covers')
   // Hauler Pack: +1 scrap on the Wreck haul.
   let w = GE.applyEffect(newGame('prisoner'), { goto: 'maw:tuner', enterHub: 'redmaw' })

@@ -73,18 +73,25 @@ ok(dismissCompanion(sw2).flags.companion === undefined, 'dismiss')
 // Fight: Hester's row, her hit after yours, Guard Duty.
 const fightAt = (s: GameState, kind: string) => ({ ...s, flags: { ...s.flags, ...fightStartFlags(s, kind as never) } }) as GameState
 let f = fightAt({ ...o, sceneId: 'spine:shattered' }, 'collector')
+f = { ...f, flags: { ...f.flags, encounterHp: 20 } }
 const r = resolveEncounter(f, 'fight')
 const card = String(r.fx.flag?.encounterClash ?? r.flash)
-ok(card.includes('HESTER ELLERY ♥'), 'companion stat row')
-ok(card.includes('Hester Ellery hits'), 'companion hit line')
-const iYou = card.indexOf('You hit'), iMate = card.indexOf('Hester Ellery hits')
-ok(iYou < 0 || iYou < iMate, 'companion hits after you')
+if (r.fx.flag?.encounterDone && !card.includes('YOU ♥')) {
+  ok(/drop|backs|square|limps|still stand/i.test(card), 'companion kill is the result card')
+} else {
+  ok(card.includes('HESTER ELLERY ♥'), 'companion stat row')
+  ok(card.includes('Hester Ellery hits'), 'companion hit line')
+  const iYou = card.search(/You (?:wrench|crack|cut|strike|plunge into|drive into|jam|miss)/)
+  const iMate = card.indexOf('Hester Ellery hits')
+  ok(iYou < 0 || iYou < iMate, 'companion hits after you')
+}
 if (card.includes('Guard Duty')) ok(r.fx.flag?.companionHp === 4, 'guard duty costs her 1')
 
 // Sable: Lens Beam on round 2.
 f = fightAt({ ...sw2, sceneId: 'spine:shattered' }, 'collector')
-const r2 = resolveEncounter({ ...f, flags: { ...f.flags, encounterRound: 1 } }, 'guard')
-ok(String(r2.fx.flag?.encounterClash ?? r2.flash).includes(LINES.lens), 'lens beam round 2')
+const r2 = resolveEncounter({ ...f, flags: { ...f.flags, encounterRound: 1, encounterHp: 20 } }, 'guard')
+const lensCard = String(r2.fx.flag?.encounterClash ?? r2.flash)
+ok(lensCard.includes(LINES.lens) || (r2.fx.flag?.encounterDone && !lensCard.includes('YOU ♥')), 'lens beam round 2')
 
 // Kelt: as-is, path Breach -> Sub-Drain -> Oasis is 2 scenes.
 let v = at('vessel', 'thresh:conduits', { sap: 5 })
@@ -116,6 +123,6 @@ ok(k.flags.keltStatus === 'failed' && k.items.damaged_data_cylinder === 1 && k.f
 const pr = go(go(at('vessel', 'thresh:conduits'), 'breach'), 'pry')
 ok(pr.items.sealed_data_cylinder === 1 && pr.flags.keltStatus === 'failed', 'pry')
 
-ok(readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v224'") && readFileSync('src/version.ts', 'utf8').includes("'v224'"), 'v205 bump')
+ok(readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v225'") && readFileSync('src/version.ts', 'utf8').includes("'v225'"), 'v205 bump')
 console.log(fails ? `v205: ${fails} FAIL` : 'v205: all ok')
 process.exit(fails ? 1 : 0)

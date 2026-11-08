@@ -24,8 +24,9 @@ for (const how of ['fight', 'run']) {
 }
 let w = go(s, 'fight')
 const h0 = w.heat.seekers
-w = go(w, 'wait')
-ok(w.heat.seekers === h0 + 1 && !pick(w, 'wait'), 'wait +1 heat once')
+const waited = go(w, 'wait')
+ok(waited.heat.seekers === h0 + 1 && !pick(waited, 'wait'), 'wait +1 heat once')
+ok(pick(waited, 'slip-closed')?.label === 'The wagon has moved' && pick(waited, 'slip-closed')?.sub === 'The window has closed.' && !pick(waited, 'slip'), 'slip locks after the wait')
 w = go(w, 'slip')
 ok(w.sceneId === 'ch3:supply', 'slip to supply')
 const h1 = w.heat.seekers
@@ -47,7 +48,7 @@ ok(f.flags.encounterHere && f.flags.encounterKind === 'vex', 'vex fight opens')
 ok(coverFor(f) === 'ch3_vex_fight', 'fight art')
 for (const id of ['ch3:capture', 'ch3:wagon', 'ch3:supply', 'ch3:tent', 'ch3:crosshaven']) ok(String(coverFor({ ...w, sceneId: id, flags: {} } as GameState)).startsWith('ch3_'), `art ${id}`)
 const sw = readFileSync('public/sw.js', 'utf8')
-ok(sw.includes('amber-shroud-v224') && sw.includes('covers/ch3-tent.jpg'), 'sw')
+ok(sw.includes('amber-shroud-v225') && sw.includes('covers/ch3-tent.jpg'), 'sw')
 // Win both: strong player, strike until done.
 let g: GameState = { ...f, health: 99, healthMax: 99, items: { ...f.items, valerius_baton: 1 } }
 const kinds: string[] = []

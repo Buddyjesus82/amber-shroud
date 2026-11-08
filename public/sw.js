@@ -1,4 +1,4 @@
-const CACHE = 'amber-shroud-v224'
+const CACHE = 'amber-shroud-v225'
 const SCOPE = self.location.pathname.replace(/sw\.js$/, '')
 
 self.addEventListener('install', (event) => {
@@ -28,6 +28,29 @@ self.addEventListener('install', (event) => {
         `${SCOPE}covers/ch3-siphon.jpg`,
         `${SCOPE}covers/bone-wash-hunter.jpg`,
         `${SCOPE}covers/jodi-tarp.jpg`,
+        `${SCOPE}covers/beat-escaped.jpg`,
+        `${SCOPE}covers/beat-kin.jpg`,
+        `${SCOPE}covers/beat-ugly.jpg`,
+        `${SCOPE}covers/beat-ossa-road.jpg`,
+        `${SCOPE}covers/beat-stilts.jpg`,
+        `${SCOPE}covers/beat-the-day.jpg`,
+        `${SCOPE}covers/beat-sybella-road.jpg`,
+        `${SCOPE}covers/beat-skiff-smoke.jpg`,
+        `${SCOPE}covers/beat-her-shadow.jpg`,
+        `${SCOPE}covers/beat-bone-cairn.jpg`,
+        `${SCOPE}covers/beat-bone-market.jpg`,
+        `${SCOPE}covers/beat-hymn-scar.jpg`,
+        `${SCOPE}covers/beat-south-gullet.jpg`,
+        `${SCOPE}covers/beat-south-vessel.jpg`,
+        `${SCOPE}covers/beat-land-gullet.jpg`,
+        `${SCOPE}covers/beat-land-wash.jpg`,
+        `${SCOPE}covers/beat-land-scar.jpg`,
+        `${SCOPE}covers/beat-rim-wash.jpg`,
+        `${SCOPE}covers/beat-rim-scar.jpg`,
+        `${SCOPE}covers/beat-false-cell.jpg`,
+        `${SCOPE}covers/beat-guard-post.jpg`,
+        `${SCOPE}covers/beat-the-wire.jpg`,
+        `${SCOPE}covers/beat-dry-well.jpg`,
         `${SCOPE}covers/ch2-p-supply.jpg`,
         `${SCOPE}covers/ch2-p-drillrun.jpg`,
         `${SCOPE}covers/ch2-survivor.jpg`,

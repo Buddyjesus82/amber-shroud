@@ -36,7 +36,7 @@ ok(heatNow(g('prisoner', 'redmaw', 'maw:hub', { seekers: 0 }, { thaliaFavor: tru
 ok(heatNow(g('vessel', 'threshold', 'thresh:court', { seekers: 0 }, { thaliaFavor: true }), 'seekers')[0] === 'At the Threshold: a Court Guard.', 'favor: Threshold counts +2')
 ok(heatNow(g('prisoner', 'camp04', 'camp:yard', { seekers: 0 }, { thaliaFavor: true }), 'seekers')[0] === 'No one is after you.', 'favor: no effect off those grounds')
 const enc = readFileSync('src/game/encounter.ts', 'utf8')
-ok(enc.includes("state.sceneId === 'thresh:command'") && enc.includes('heat: command ? { seekers: -1 } : { cartel: -1 }'), 'Command win: Seeker Heat -1, Camp-04 unchanged')
+ok(enc.includes("state.sceneId === 'thresh:command'") && enc.includes('seekers: -1') && enc.includes('cartel: -1'), 'Command win: Seeker Heat -1, Camp-04 unchanged')
 // Live: the command-hot choice starts the fight on thresh:command.
 const v = g('vessel', 'threshold', 'thresh:gate', { seekers: 6 }, { noMasked: true })
 const hot = visibleChoices(v).find((c) => c.id === 'command-hot')

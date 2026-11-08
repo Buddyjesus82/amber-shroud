@@ -52,7 +52,7 @@ import {
 import { jaxsonAway, markMetOnLeave, matchPersonQuery, personAtScene } from './people'
 import { downedNote, knotRescue, wakeEffect } from './downed'
 import { campHuntIsValerius, valeriusNodeCooling, valeriusResting } from './valeriusRest'
-import { HANDS_LEFT_SUB, KNOT_FREE_SUB, RUN_OVER_LABEL, RUN_OVER_NOTE, RUN_OVER_SAP_NOTE, RUN_OVER_SUB, handsLeft, restoreCheckpoint, withCheckpoint } from './hands'
+import { HANDS_LEFT_SUB, KNOT_FREE_SUB, RUN_OVER_LABEL, RUN_OVER_NOTE, RUN_OVER_SAP_NOTE, RUN_OVER_SUB, handsLeft, restoreCheckpoint, snapshot, withCheckpoint } from './hands'
 import { markFirstDrop } from './firstDrop'
 import { amberFindSign, downedSign, lowHealthSign, sandTouchReply } from './sandSign'
 import { campFightVerb, isPressureOverlay, isSybellaOverlay, pressureAppend, pressureChoices, pressureVerb, spineGround, spineHunterKindAt, straysHeard } from './hunter'
@@ -479,6 +479,38 @@ const RESCUE_CRISES = new Set(['crisis:dunes', 'crisis:maw', 'crisis:camp', 'cri
 export const AUTO_DRINK_LINE = 'The glass runs dry. Your hand finds a Drop before your knees go. Sap +3.'
 export const RESCUE_GLINT_LINE = 'The rescue is not free. A Glint is gone.'
 export const RESCUE_SCRAP_LINE = 'The rescue is not free. Scrap -1.'
+export const HAND_UP_LINE = 'A hand goes to getting up.'
+
+function inChapterThree(state: Pick<GameState, 'sceneId' | 'chapterId' | 'flags'>): boolean {
+  return state.sceneId.startsWith('ch3:') || state.chapterId === 'luminspire' || !!state.flags.ch3Started
+}
+
+/** Wagon after the strip, when a Chapter 3 run has no chapter checkpoint yet. Ash keeps a key he already took. */
+function ch3StartSnapshot(state: GameState): GameState {
+  const keep = ['chapter1Done', 'chapter2Done', 'chapter2Unlocked', 'ch3Stripped', 'ch3Started', 'ch3KeyTaken', 'ch3Helper', 'ch3GearStash', 'ch3ConsStash', 'ch3SapStash', 'origin']
+  const flags: GameState['flags'] = { ch3Stripped: true, ch3Started: true }
+  for (const k of keep) if (state.flags[k] !== undefined) flags[k] = state.flags[k]
+  const items = { ...state.items }
+  if (flags.ch3KeyTaken) delete items.spire_key
+  return snapshot({
+    ...state,
+    sceneId: 'ch3:wagon',
+    hubId: 'barrow',
+    chapterId: 'luminspire',
+    sap: 0,
+    health: state.healthMax || 6,
+    items,
+    equipped: {},
+    flags,
+    flash: undefined,
+  })
+}
+
+function withCh3Checkpoint(state: GameState): GameState {
+  if (!inChapterThree(state)) return state
+  if (state.checkpoint?.sceneId?.startsWith('ch3:')) return state
+  return { ...state, checkpoint: ch3StartSnapshot(state) }
+}
 
 /** Flags that only last while you stay on one screen. */
 const VISIT_FLAGS = ['restedHere', 'kaelenDropsHere', 'maskedDrop']
@@ -770,16 +802,24 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   const destScene = dest ? getScene(dest) : null
   const recovering = sceneOf(state).kind === 'crisis' && next.sap > 0
   const sapCollapsed = next.sap <= 0
+  const sapTravel = !!dest && dest !== state.sceneId
+  const sapSpent = (fx.sap ?? 0) < 0
+  const traderVisit = dest === 'roam:kaelen' || !!dest?.includes('kaelen')
+  // The capture lands on the wagon, and Slip the Wagon is the stripped walk off it. Both are Sap 0 on purpose.
+  const ch3Opening =
+    (dest === 'ch3:wagon' && (!!fx.flag?.ch3Strip || state.sceneId === 'ch3:capture')) ||
+    (state.sceneId === 'ch3:wagon' && dest === 'ch3:supply' && state.sap <= 0 && !state.flags.ch3TookSap)
   const skipCrisis =
+    // A button that does not travel and does not spend Sap (Buy, Sell, a look) never opens a rescue.
+    (!sapTravel && !sapSpent) ||
+    traderVisit ||
     !!fx.enterHub ||
     !!fx.startChapter ||
     arrivingLand ||
     destScene?.kind === 'crisis' ||
     // Last Fence: a 1-Sap walk on your last Sap arrives at 0; the rescue waits for the next step.
     state.sceneId === 'ch1:p-pipe' ||
-    // v206 DRAFT: Chapter Three opens stripped to Sap 0 on purpose. No Sap collapse on its opening ground.
-    state.sceneId.startsWith('ch3:') ||
-    !!dest?.startsWith('ch3:') ||
+    ch3Opening ||
     recovering
 
   if (dest) {
@@ -900,11 +940,35 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
 
   const rescueAt = sapCollapsed && !skipCrisis && arrived.kind !== 'crisis' ? pickCrisis(next) : null
   const selfDrink = !!rescueAt && RESCUE_CRISES.has(rescueAt) && (next.items.vial_drop ?? 0) > 0
+  const chapterThreeRescue = sapCollapsed && !skipCrisis && arrived.kind !== 'crisis' && (inChapterThree(next) || inChapterThree(state))
   if (selfDrink) {
     // Carrying a Drop: you drink it yourself before anyone has to find you.
     next.items = { ...next.items, vial_drop: (next.items.vial_drop ?? 0) - 1, vial_empty: (next.items.vial_empty ?? 0) + 1 }
     next.sap = 3
     next.flash = AUTO_DRINK_LINE
+  } else if (chapterThreeRescue) {
+    // Chapter 3 stays on the node. The hand comes off the live count. Ash's key flag is not rewritten.
+    next = withCh3Checkpoint(next)
+    if (handsLeft(next) <= 0) {
+      next.sap = 0
+      next.health = 0
+      next.flash = undefined
+      next.flags = { ...next.flags, downed: true, runOver: true, downedNote: RUN_OVER_SAP_NOTE }
+    } else {
+      const handsNow = handsLeft(next)
+      next.hands = handsNow - 1
+      const pay = (next.items.glints ?? 0) > 0 ? 'glints' : (next.items.scrap ?? 0) > 0 ? 'scrap' : null
+      if (pay) {
+        const left = (next.items[pay] ?? 0) - 1
+        const items = { ...next.items }
+        if (left <= 0) delete items[pay]
+        else items[pay] = left
+        next.items = items
+      }
+      next.sap = 3
+      const paid = pay === 'glints' ? RESCUE_GLINT_LINE : pay === 'scrap' ? RESCUE_SCRAP_LINE : ''
+      next.flash = [HAND_UP_LINE, paid].filter(Boolean).join('\n\n')
+    }
   } else if (sapCollapsed && !skipCrisis && arrived.kind !== 'crisis' && handsLeft(next) <= 0) {
     // v148: no hand left for a rescue. The attempt ends here, at once (v176: three hands, three rescues).
     next.sap = 0
