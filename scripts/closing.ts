@@ -17,7 +17,8 @@ function ok(c: unknown, m: string) {
 
 const DOORS: DoorId[] = ['prisoner', 'outcast', 'vessel']
 const HOME: Record<DoorId, { hub: string; rest: string; walkTo: string; faction: Faction; name: string }> = {
-  prisoner: { hub: 'camp04', rest: 'camp:yard', walkTo: 'camp:vents', faction: 'cartel', name: 'Cartel' },
+  // v223: a Prisoner rests on the pens, not the Yard.
+  prisoner: { hub: 'camp04', rest: 'camp:cages', walkTo: 'camp:vents', faction: 'cartel', name: 'Cartel' },
   outcast: { hub: 'spine', rest: 'spine:ridge', walkTo: 'spine:well', faction: 'strays', name: 'Strays' },
   vessel: { hub: 'threshold', rest: 'thresh:court', walkTo: 'thresh:paddock', faction: 'seekers', name: 'Seekers' },
 }

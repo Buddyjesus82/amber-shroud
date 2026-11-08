@@ -6,6 +6,7 @@ import { pressureFace } from './hunter'
 import { check } from './logic'
 import { compassLine, compassMoves, type CompassMove } from './map'
 import { personAtScene } from './people'
+import { DRAFT_LOOK } from './prisonerDraft'
 import type { Effect, GameState, ItemId, Scene } from './types'
 
 export type LookDir = CompassMove['dir']
@@ -50,6 +51,7 @@ const WAY: Record<string, string> = {
   'maw:smoke': 'skiff smoke on the rim',
   'maw:lip': 'the Hollow Lip',
   'maw:tuner': 'the wreck',
+  ...DRAFT_LOOK,
 }
 
 function norm(text: string): string {
