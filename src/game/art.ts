@@ -502,7 +502,7 @@ export const COVER_BAND: Record<CoverKey, [number, number]> = {
   hound: [0.05, 0.8],
   sybella: [0.0, 0.6],
   thalia: [0.05, 0.88],
-  zafir: [0.1, 0.9],
+  zafir: [0.08, 0.78],
   ossa: [0.15, 0.95],
   kaelen: [0.05, 0.72],
   oiltooth: [0.05, 0.78],

@@ -45,6 +45,6 @@ ok(gl.equipped.hands === 'hide_gloves' && gl.equipped.legs === 'shin_wraps', 'Gl
 ok(readFileSync('src/game/engine.ts', 'utf8').includes('next = autoEquip(state, next)\n  return withVerb('), 'Scavenge finds auto-equip')
 // Safe fixes
 ok(!src.includes("locked: 'The vein is already dry.'") && src.includes("label: 'Cut the cord', show"), 'Siphon hidden when dry; Cut the cord label')
-ok(readFileSync('public/sw.js', 'utf8').includes('amber-shroud-v226') && readFileSync('src/version.ts', 'utf8').includes("'v226'"), 'v211 bump')
+ok(readFileSync('public/sw.js', 'utf8').includes('amber-shroud-v227') && readFileSync('src/version.ts', 'utf8').includes("'v227'"), 'v211 bump')
 console.log(fails ? `v211: ${fails} FAIL` : 'v211 ok')
 process.exit(fails ? 1 : 0)

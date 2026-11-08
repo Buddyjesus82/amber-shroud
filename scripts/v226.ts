@@ -12,7 +12,7 @@ const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m
 const LINE = 'The Knot at your brow. Strays who know Ossa ease off.'
 const CUT = "You used her name at the gate. She'll know. So will I."
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v226'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v226'"), 'build v226')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v227'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v227'"), 'build v226')
 ok(ITEMS.ossa_token.perk === LINE && KNOT_STRAYS_NOTE === LINE, 'Knot perk line')
 
 {

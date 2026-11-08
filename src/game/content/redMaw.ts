@@ -1,11 +1,12 @@
 import { SPARE_SAP_LOCK } from '../sapLock'
+import { FIELD_RESIN, FIELD_SCRAP, FIELD_SCRAP_HOT, FIELD_SURGERY, VARRO_CARD, VARRO_KNOT, VARRO_SCRIP } from '../varroCard'
 import { tunnelsEntry } from './newPlaces'
 import { ROADS } from '../roads'
 import { SIPHON_PRISONER, siphonSpotRows } from './intoTheMaw'
 import type { Choice, Cond, ItemId, Scene } from '../types'
 
 // v160: Varro and the Maw Plate.
-export const VARRO_GREETING = `"Keep your hands off the saws unless you're buying. Scrap is scrap, but bone takes patience. What are you looking to trade?"`
+export const VARRO_GREETING = VARRO_CARD
 export const PLATE_HINT = `"See those rib-worms down at the Spine? Their outer hides calcify on pure Shroud resin. You bring me a fresh Maw Plate off one of those beasts, and I can reinforce your gear into something that'll turn a Seeker blade cold."`
 // Literals on purpose: kit.ts and catalog.ts import the content graph, so reading them while this module loads breaks the bundle's load order.
 // scripts/v160.ts checks these match PLATE_LOCKED, PLATE_RECIPE and PLATING.
@@ -167,6 +168,8 @@ Varro is at his stall. He has watched buyers fail and kept the tray anyway. On i
     speaker: 'Varro',
     body: VARRO_GREETING,
     variants: [
+      { if: { any: [{ item: 'ossa_token' }, { item: 'knotted_wrap' }] }, mode: 'append', body: VARRO_KNOT },
+      { if: { item: 'scrip' }, mode: 'append', body: VARRO_SCRIP },
       {
         if: { flag: 'zafirSore' },
         mode: 'append',
@@ -174,6 +177,9 @@ Varro is at his stall. He has watched buyers fail and kept the tray anyway. On i
       },
     ],
     choices: [
+      { id: 'stitch-resin', label: FIELD_SURGERY, sub: FIELD_RESIN, enable: { itemMin: ['salve', 2] }, locked: 'Needs: 2 Resin', effects: { remove: { salve: 2 }, health: 3, ticks: 1 } },
+      { id: 'stitch-scrap', label: FIELD_SURGERY, sub: FIELD_SCRAP, show: { heatMax: ['seekers', 4] }, enable: { itemMin: ['scrap', 4] }, locked: 'Needs: 4 Scrap', effects: { remove: { scrap: 4 }, health: 3, ticks: 1 } },
+      { id: 'stitch-scrap', label: FIELD_SURGERY, sub: FIELD_SCRAP_HOT, show: { heatMin: ['seekers', 5] }, enable: { itemMin: ['scrap', 5] }, locked: 'Needs: 5 Scrap', effects: { remove: { scrap: 5 }, health: 3, ticks: 1 } },
       { id: 'plate-ask', label: 'Ask about the Maw Plate', group: 'talk', show: { flagUnset: 'plateHinted' }, effects: { ticks: 1, flag: { plateHinted: true }, flash: PLATE_HINT } },
       ...plateChoices,
       { id: 'back', label: 'Leave his stall', tone: 'quiet', effects: { goto: 'maw:market' } },
