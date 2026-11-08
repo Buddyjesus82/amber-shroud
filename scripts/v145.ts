@@ -51,7 +51,7 @@ for (let t = 0; t < 300; t++) {
   wins++
   if (/You are at 1 Health/.test(card)) mutual++
   ok(!/They drop\.|On the body:|Scrap \+|Salve \+/.test(card), `no body, no loot (${t})`)
-  ok(/VALERIUS ♥ 0 ⚔ Strike 4 🛡 Shell 3/.test(card), 'stat row clean at 0')
+  ok(!/VALERIUS ♥/.test(card) && /Cartel Heat -1\./.test(card), 'v225: the escape card drops the stat row and names the heat')
   const on = applyEffect(end, visibleChoices(end).find((c) => c.id === 'enc-continue')!.effects)
   ok(on.heat.cartel === 7 - 1 && on.health > 0 && !on.flags.downed, `v152: Cartel -1, standing (${on.heat.cartel}, ${on.health})`)
   ok(on.flags.valeriusBeaten && on.flags.valeriusCool && !on.flags.hunterHere && !on.flags.encounterHere, 'hunt cleared, cooldown on')

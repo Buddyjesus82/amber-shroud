@@ -156,6 +156,29 @@ export type CoverKey =
   | 'ch3_siphon'
   | 'bone_wash_hunter'
   | 'jodi_tarp'
+  | 'beat_escaped'
+  | 'beat_kin'
+  | 'beat_ugly'
+  | 'beat_ossa_road'
+  | 'beat_stilts'
+  | 'beat_the_day'
+  | 'beat_sybella_road'
+  | 'beat_skiff_smoke'
+  | 'beat_her_shadow'
+  | 'beat_bone_cairn'
+  | 'beat_bone_market'
+  | 'beat_hymn_scar'
+  | 'beat_south_gullet'
+  | 'beat_south_vessel'
+  | 'beat_land_gullet'
+  | 'beat_land_wash'
+  | 'beat_land_scar'
+  | 'beat_rim_wash'
+  | 'beat_rim_scar'
+  | 'beat_false_cell'
+  | 'beat_guard_post'
+  | 'beat_the_wire'
+  | 'beat_dry_well'
   | 'ch3_vault_fight'
   | 'ch3_vex_fight'
   | 'ch3_ash_fight'
@@ -334,6 +357,29 @@ const FILES: Record<CoverKey, string> = {
   ch3_siphon: 'ch3-siphon.jpg',
   bone_wash_hunter: 'bone-wash-hunter.jpg',
   jodi_tarp: 'jodi-tarp.jpg',
+  beat_escaped: 'beat-escaped.jpg',
+  beat_kin: 'beat-kin.jpg',
+  beat_ugly: 'beat-ugly.jpg',
+  beat_ossa_road: 'beat-ossa-road.jpg',
+  beat_stilts: 'beat-stilts.jpg',
+  beat_the_day: 'beat-the-day.jpg',
+  beat_sybella_road: 'beat-sybella-road.jpg',
+  beat_skiff_smoke: 'beat-skiff-smoke.jpg',
+  beat_her_shadow: 'beat-her-shadow.jpg',
+  beat_bone_cairn: 'beat-bone-cairn.jpg',
+  beat_bone_market: 'beat-bone-market.jpg',
+  beat_hymn_scar: 'beat-hymn-scar.jpg',
+  beat_south_gullet: 'beat-south-gullet.jpg',
+  beat_south_vessel: 'beat-south-vessel.jpg',
+  beat_land_gullet: 'beat-land-gullet.jpg',
+  beat_land_wash: 'beat-land-wash.jpg',
+  beat_land_scar: 'beat-land-scar.jpg',
+  beat_rim_wash: 'beat-rim-wash.jpg',
+  beat_rim_scar: 'beat-rim-scar.jpg',
+  beat_false_cell: 'beat-false-cell.jpg',
+  beat_guard_post: 'beat-guard-post.jpg',
+  beat_the_wire: 'beat-the-wire.jpg',
+  beat_dry_well: 'beat-dry-well.jpg',
   ch3_vault_fight: 'ch3-vault-fight.jpg',
   ch3_vex_fight: 'ch3-vex-fight.jpg',
   ch3_ash_fight: 'ch3-ash-fight.jpg',
@@ -555,6 +601,29 @@ export const COVER_BAND: Record<CoverKey, [number, number]> = {
   ch3_siphon: [0.08, 0.78],
   bone_wash_hunter: [0.05, 0.72],
   jodi_tarp: [0.08, 0.72],
+  beat_escaped: [0.06, 0.62],
+  beat_kin: [0.06, 0.62],
+  beat_ugly: [0.06, 0.62],
+  beat_ossa_road: [0.06, 0.62],
+  beat_stilts: [0.06, 0.62],
+  beat_the_day: [0.06, 0.62],
+  beat_sybella_road: [0.06, 0.62],
+  beat_skiff_smoke: [0.06, 0.62],
+  beat_her_shadow: [0.06, 0.62],
+  beat_bone_cairn: [0.06, 0.62],
+  beat_bone_market: [0.06, 0.62],
+  beat_hymn_scar: [0.06, 0.62],
+  beat_south_gullet: [0.06, 0.62],
+  beat_south_vessel: [0.06, 0.62],
+  beat_land_gullet: [0.06, 0.62],
+  beat_land_wash: [0.06, 0.62],
+  beat_land_scar: [0.06, 0.62],
+  beat_rim_wash: [0.06, 0.62],
+  beat_rim_scar: [0.06, 0.62],
+  beat_false_cell: [0.06, 0.62],
+  beat_guard_post: [0.06, 0.62],
+  beat_the_wire: [0.06, 0.62],
+  beat_dry_well: [0.06, 0.62],
   ch3_vault_fight: [0.1, 0.8],
   ch3_vex_fight: [0.05, 0.85],
   ch3_ash_fight: [0.05, 0.85],
@@ -659,6 +728,36 @@ function fightGround(state: GameState, scene: Pick<Scene, 'id' | 'chapterId' | '
   return 'rim_gullet'
 }
 
+/** v225: one painting per Hunger, Maw, or reused map beat. The shared portrait stays on the beat that owns the person. */
+function hungerBeatCover(id: string, door: GameState['door']): CoverKey | null {
+  if (id === 'ch1:v-hymn' && door === 'vessel') return 'beat_hymn_scar'
+  if (id === 'ch1:south-wind' && door === 'prisoner') return 'beat_south_gullet'
+  if (id === 'ch1:south-wind' && door === 'vessel') return 'beat_south_vessel'
+  if (id === 'ch1:land' && door === 'prisoner') return 'beat_land_gullet'
+  if (id === 'ch1:land' && door === 'outcast') return 'beat_land_wash'
+  if (id === 'ch1:land' && door === 'vessel') return 'beat_land_scar'
+  if (id === 'maw:rim' && door === 'outcast') return 'beat_rim_wash'
+  if (id === 'maw:rim' && door === 'vessel') return 'beat_rim_scar'
+  const fixed: Record<string, CoverKey> = {
+    'ch1:p-ossa': 'beat_escaped',
+    'ch1:o-ossa': 'beat_kin',
+    'ch1:ossa-rob': 'beat_ugly',
+    'ch1:ossa-talk': 'beat_ossa_road',
+    'maw:stilt': 'beat_stilts',
+    'maw:ossa-day': 'beat_the_day',
+    'ch1:sybella': 'beat_sybella_road',
+    'maw:smoke': 'beat_skiff_smoke',
+    'maw:sybella-shadow': 'beat_her_shadow',
+    'ch1:v-zafir': 'beat_bone_cairn',
+    'maw:market': 'beat_bone_market',
+    'thresh:cell': 'beat_false_cell',
+    'thresh:guard': 'beat_guard_post',
+    'camp:wire': 'beat_the_wire',
+    'spine:well': 'beat_dry_well',
+  }
+  return fixed[id] ?? null
+}
+
 /** Interrupt faces first, then the door's land, then Hunger / world. */
 export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' | 'chapterId' | 'hubId'>): CoverKey {
   const id = scene.id
@@ -717,6 +816,8 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   if (state.flags.strayHunterHere && state.sceneId === 'ch1:leave' && state.door === 'outcast') return 'bone_wash_hunter'
   if (state.flags.strayHunterHere) return (STRAY_HUNTER_COVER as CoverKey | null) ?? fightGround(state, scene)
   if (id === 'spine:jodi-tarp') return 'jodi_tarp'
+  const beat = hungerBeatCover(id, state.door)
+  if (beat) return beat
   if (isSybellaOverlay(state) || id.startsWith('maw:sybella')) return 'sybella'
   if (isCampHunt(state)) return campHuntIsValerius(state) ? 'valerius' : 'handler'
   if (id === 'camp:hunter' || id === 'camp:valerius' || id === 'camp:tower') return 'valerius'

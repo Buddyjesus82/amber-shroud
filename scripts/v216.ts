@@ -19,7 +19,7 @@ let w = go(go(go(base, 'run'), 'slip'), 'leave')
 ok(!w.items.salve, 'consumables taken at capture')
 let f = go(w, 'fight')
 const label = visibleChoices(f).find((c: any) => c.id === 'enc-fight')?.label ?? ''
-ok(label === 'Fight Vex Ironhand', `button label (${label})`)
+ok(label === 'Strike Vex Ironhand', `button label (${label})`)
 const h = f.heat.seekers
 let g: GameState = { ...f, health: 99, healthMax: 99, items: { ...f.items, valerius_baton: 1 } }
 let sawAsh = false

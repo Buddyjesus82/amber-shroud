@@ -118,9 +118,9 @@ function fightOut(s: GameState): GameState {
     const c = clashOf(s)
     const n = applyEffect(s, visibleChoices(s).find((r) => r.id === 'enc-fight')!.effects)
     const card = String(n.flags.encounterClash ?? '')
-    const m = /You hit [^\n]* for (\d+)\./.exec(card)
+    const m = /You (?:wrench|strike|crack|cut|jam) [^\n]* for (\d+)\.|You (?:plunge|drive) into [^\n]* for (\d+)\./.exec(card)
     if (!m || /Critical/.test(card)) continue
-    const hit = Number(m[1])
+    const hit = Number(m[1] ?? m[2])
     const base = Math.max(1, c.strike - c.spec.shell)
     const extras = [...card.matchAll(/: \+(\d+) to your hit\./g)].reduce((a, x) => a + Number(x[1]), 0)
     const minus = [...card.matchAll(/: −(\d+) to your hit\./g)].reduce((a, x) => a + Number(x[1]), 0)

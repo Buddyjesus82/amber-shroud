@@ -7,7 +7,8 @@ import { getScene } from './content'
 import { check } from './logic'
 import { disguiseActive, equippedShell, equippedStrike, extractorHeld, machineryBonus, piercedShell, shockBatonHeld, wearsCloth } from './kit'
 import { CARAPACE_HUNTER, SPINE_HUNTER } from './content/spineHunter'
-import { BATON_SKIP_LINE, BATON_STUN_LINE, FOREMAN_LINE, PACK_CALL_LINE, PACK_HOUND_LINE, PIERCE_LINE, RIG_GUARDS_LINE, RIG_PATROL_LINE, SEEKER_HANDLER_LINE, SKIFF_BOARD_LABEL, SKIFF_BOARD_SUB, SKIFF_CRASH, SKIFF_HIT_BARE, SKIFF_HIT_BLUNT, SKIFF_HIT_EDGE, SKIFF_HULL_LINE, SKIFF_LINE, SKIFF_REWARD, SKIFF_RUN_LINE, SKIFF_RUN_SUB, SKIFF_STEER_LABEL, SKIFF_STEER_SUB, SKIFF_WIN, WRENCH_MECH_LINE } from './v203Lines'
+import { fightVerbButton, fightVerbHit } from './fightVerbs'
+import { BATON_SKIP_LINE, BATON_STUN_LINE, FOREMAN_LINE, PACK_CALL_LINE, PACK_HOUND_LINE, PIERCE_LINE, RIG_GUARDS_LINE, RIG_PATROL_LINE, SEEKER_HANDLER_LINE, SKIFF_BOARD_LABEL, SKIFF_BOARD_SUB, SKIFF_CRASH, SKIFF_HULL_LINE, SKIFF_LINE, SKIFF_REWARD, SKIFF_RUN_LINE, SKIFF_RUN_SUB, SKIFF_STEER_LABEL, SKIFF_STEER_SUB, SKIFF_WIN, WRENCH_MECH_LINE } from './v203Lines'
 export { OVERTIME_LINE, PACK_HOUND_LINE, RIG_GUARDS_LINE } from './v203Lines'
 import type { Choice, Effect, FlagMap, GameState, ItemId } from './types'
 import { hash, OPENERS, sandAnswers, PAIR_LINE, HUSK_CONTROLLER_LINE, sandGripLine, TERRAINS, terrainPool, type Terrain, type TerrainId } from './fightTricks'
@@ -610,7 +611,7 @@ export function encounterChoices(state: GameState): Choice[] {
   const rows: Choice[] = [
     {
       id: 'enc-fight',
-      label: `Fight ${whoOf(spec)}`,
+      label: fightVerbButton(state, whoOf(spec)),
       sub: f.encounterFeint ? 'Strike. Your feint is set: next hit +2.' : 'Swing at them. Health takes the hits.',
       tone: 'danger',
       enable: { healthMin: 1 },
@@ -894,27 +895,6 @@ export function dropNoun(name: string): string {
   return `${/^[aeiou]/i.test(name) ? 'an' : 'a'} ${name}`
 }
 
-function lootLine(add: Partial<Record<ItemId, number>>, dropped = false): string {
-  const pockets: string[] = []
-  const gear: string[] = []
-  for (const id of Object.keys(add) as ItemId[]) {
-    const n = add[id] ?? 0
-    if (n <= 0) continue
-    const item = ITEMS[id]
-    const name = item?.name ?? id
-    const bit = `${name} +${n}`
-    if (item?.slot) gear.push(name)
-    else pockets.push(bit)
-  }
-  const held = pockets.join(', ')
-  const worn = gear.join(', ')
-  // The Hound-handler walks away, so his gear is dropped, not taken off a body.
-  const gearText = dropped ? `He drops ${gear.map(dropNoun).join(' and ')}` : `On the body: ${worn}`
-  if (held && worn) return `${held}. ${gearText}`
-  if (worn) return gearText
-  return held
-}
-
 export const PASSAGE_LINE = "A block runner steps off the tier rotation and cuts you off. Shock baton angled low. 'Tags. Show 'em.'"
 export const PASSAGE_WIN_LINE = 'The runner hits the grating with a dull thud. Two pieces of scrap in his palm. Nobody turned around. Yet.'
 
@@ -989,6 +969,51 @@ export function pronounText(kind: EncounterKind | undefined, text: string): stri
   return HE_SWAPS.reduce((t, [re, to]) => t.replace(re, to), text)
 }
 
+/** v225: a finished fight is the result, then each payout, then one button. No stat rows, no swing history. */
+function paragraphs(parts: Array<string | false | undefined>): string {
+  return parts
+    .map((p) => (typeof p === 'string' ? p.trim() : ''))
+    .filter(Boolean)
+    .join('\n\n')
+}
+
+function heatParagraphs(heat?: Effect['heat']): string[] {
+  if (!heat) return []
+  const name = { cartel: 'Cartel', seekers: 'Seeker', strays: 'Stray' } as const
+  const out: string[] = []
+  for (const f of ['cartel', 'seekers', 'strays'] as const) {
+    const n = heat[f]
+    if (!n) continue
+    out.push(n > 0 ? `${name[f]} Heat +${n}.` : `${name[f]} Heat ${n}.`)
+  }
+  return out
+}
+
+function lootParagraphs(add: Partial<Record<ItemId, number>>, dropped = false): string[] {
+  const pockets: string[] = []
+  const gear: string[] = []
+  for (const id of Object.keys(add) as ItemId[]) {
+    const n = add[id] ?? 0
+    if (n <= 0) continue
+    const item = ITEMS[id]
+    const name = item?.name ?? id
+    if (item?.slot) gear.push(name)
+    else pockets.push(`${name} +${n}`)
+  }
+  const lines: string[] = []
+  if (pockets.length) lines.push(`${pockets.join(', ')}.`)
+  if (gear.length) {
+    const gearText = dropped ? `He drops ${gear.map(dropNoun).join(' and ')}` : `On the body: ${gear.join(', ')}`
+    lines.push(`${gearText}.`)
+  }
+  return lines
+}
+
+function holdKill(state: GameState, spec: Spec, lines: Array<string | false | undefined>, extra: Effect = {}) {
+  const card = paragraphs(lines)
+  return holdCard(state, spec, card, card, extra)
+}
+
 function holdCard(state: GameState, spec: Spec, card: string, short: string, extra: Effect = {}): { fx: Effect; flash: string } {
   card = pronounText(spec.kind, card)
   short = pronounText(spec.kind, short)
@@ -1039,15 +1064,6 @@ function sv(spec: Spec, one: string, many: string): string {
 function whoOf(spec: Spec): string {
   if (spec.kind === 'masked') return 'the masked figure'
   return PROPER_KINDS.includes(spec.kind) ? spec.name : `the ${spec.name}`
-}
-
-/** Edged: Seeker blade, shivs, knives. Everything else in hand is blunt. Bare hands stay bare. */
-function skiffHitLine(state: GameState): string {
-  const id = state.equipped?.weapon
-  const def = id ? ITEMS[id] : undefined
-  if (!id || !def || def.strike == null) return SKIFF_HIT_BARE
-  const edged = def.offhand === 'blade' || id === 'seeker_extractor' || /\b(blade|knife|shiv)\b/i.test(def.name)
-  return (edged ? SKIFF_HIT_EDGE : SKIFF_HIT_BLUNT).replaceAll('{weapon}', def.name)
 }
 
 function cap(s: string): string {
@@ -1145,14 +1161,11 @@ function resolveEncounterCore(
   }
   if (how === 'board' || how === 'steer') {
     if (spec.kind === 'skiff') {
-      const c = clashOf(state)
-      const top = statRows(c.yourHp, c.strike, c.shell, spec, 0)
       if (how === 'board' && state.flags.stealthHidden) {
-        return holdCard(state, spec, `${top}\n\n${SKIFF_WIN}`, SKIFF_WIN, { add: { scrap: 1 }, unsetFlag: ['stealthHidden'] })
+        return holdKill(state, spec, [SKIFF_WIN, SKIFF_REWARD], { add: { scrap: 1 }, unsetFlag: ['stealthHidden'] })
       }
       if (how === 'steer' && (state.items.scrap ?? 0) >= 2) {
-        const outcome = `${SKIFF_CRASH}\n\n${SKIFF_REWARD}`
-        return holdCard(state, spec, `${top}\n\n${outcome}`, outcome, { add: { scrap: 1 }, remove: { scrap: 2 } })
+        return holdKill(state, spec, [SKIFF_CRASH, SKIFF_REWARD], { add: { scrap: 1 }, remove: { scrap: 2 } })
       }
     }
     return { fx: {}, flash: '' }
@@ -1498,11 +1511,7 @@ function resolveEncounterCore(
     ? 'You do not attack this round.'
     : dmgOut <= 0
       ? `You miss ${who}.`
-      : spec.kind === 'skiff'
-        ? skiffHitLine(state)
-        : critOut
-          ? `Critical Strike! You hit ${who} for ${dmgOut}.`
-          : `You hit ${who} for ${dmgOut}.`
+      : fightVerbHit(state, who, dmgOut, !!critOut)
   const pl = PLURAL_KINDS.includes(spec.kind)
   const vb = (one: string, many: string) => (pl ? many : one)
   const themLine = f.encounterStunBaton
@@ -1538,42 +1547,52 @@ function resolveEncounterCore(
     return holdCard(state, spec, card, outcome, { health: attacking ? 0 : healthDelta, sap, flag: { maskedFought: true } })
   }
 
+  const stood = mutualWin ? 'You are at 1 Health.' : ''
+
   // v218: a Clean Passage check is the Vent patrol off the bolt. Beating it does not drop the station.
   if (theirHp <= 0 && spec.kind === 'patrol' && state.flags.passagePatrol) {
-    const said = `${PASSAGE_WIN_LINE}${mutualWin ? MUTUAL_WIN_LINE : ''}`
-    return holdCard(state, spec, `${hitCard}\n\n${said}`, said, { health: healthDelta, add: { scrap: 2 }, heat: { cartel: 1 }, pressure: 1, sap, flag: { encounterGrip: grip } })
-  }
-  if (theirHp <= 0 && spec.kind === 'patrol') {
-    const outcome = `The clerk drops. Scrap. Shock Baton. The bolt is open.${mutualWin ? MUTUAL_WIN_LINE : ''}`
-    const salve = carriesSalve(state, 'patrol')
-    const said = salve ? `${outcome} A Resin Salve in his belt pouch.` : outcome
-    return holdCard(state, spec, `${hitCard}\n\n${said}`, said, {
+    return holdKill(state, spec, [PASSAGE_WIN_LINE, 'Scrap +2.', ...heatParagraphs({ cartel: 1 }), stood], {
       health: healthDelta,
-      add: salve ? { scrap: 1, salve: 1 } : { scrap: 1 },
+      add: { scrap: 2 },
       heat: { cartel: 1 },
       pressure: 1,
       sap,
-      flag: { guardDown: true, ventLoot: true, encounterGrip: grip },
+      flag: { encounterGrip: grip },
     })
+  }
+  if (theirHp <= 0 && spec.kind === 'patrol') {
+    const salve = carriesSalve(state, 'patrol')
+    return holdKill(
+      state,
+      spec,
+      ['The clerk drops.', 'Scrap +1.', 'Shock Baton +1.', salve ? 'Resin Salve +1.' : '', 'The bolt is open.', ...heatParagraphs({ cartel: 1 }), stood],
+      {
+        health: healthDelta,
+        add: salve ? { scrap: 1, salve: 1 } : { scrap: 1 },
+        heat: { cartel: 1 },
+        pressure: 1,
+        sap,
+        flag: { guardDown: true, ventLoot: true, encounterGrip: grip },
+      },
+    )
   }
 
   if (theirHp <= 0 && spec.kind === 'overseer') {
     // v202: at Seeker Command he is the Seekers' commander, so the win cools Seeker Heat. Camp-04 wins are unchanged.
     const command = state.sceneId === 'thresh:command'
-    const outcome = `${VALERIUS_ESCAPES} ${command ? 'Seeker' : 'Cartel'} Heat -1.${mutualWin ? MUTUAL_WIN_LINE : ''}`
-    return holdCard(state, spec, `${hitCard}\n\n${outcome}`, outcome, {
+    const heat = command ? { seekers: -1 as const } : { cartel: -1 as const }
+    return holdKill(state, spec, [VALERIUS_ESCAPES, ...heatParagraphs(heat), stood], {
       health: healthDelta,
       sap,
       // v152: beating him is a reward. Cartel -1 (was +2 in v145).
-      heat: command ? { seekers: -1 } : { cartel: -1 },
+      heat,
       pressure: dmgIn > 0 ? 1 : undefined,
       flag: { encounterGrip: grip, valeriusBeaten: true, valeriusCool: true, huntQuiet: 0 },
     })
   }
 
   if (theirHp <= 0 && spec.kind === 'skiff') {
-    const said = `${SKIFF_WIN}${mutualWin ? MUTUAL_WIN_LINE : ''}`
-    return holdCard(state, spec, `${hitCard}\n\n${said}`, said, {
+    return holdKill(state, spec, [SKIFF_WIN, SKIFF_REWARD, stood], {
       health: healthDelta,
       add: { scrap: 1 },
       sap,
@@ -1583,8 +1602,7 @@ function resolveEncounterCore(
   }
 
   if (theirHp <= 0 && (spec.kind === 'strayhunter' || spec.kind === 'strayhound') && state.flags.boneWashFight) {
-    const outcome = `${BONE_WASH_WIN}\n\n${STRAY_KILL_LINE}\n\n${BONE_WASH_SCRAP}${mutualWin ? MUTUAL_WIN_LINE : ''}`
-    return holdCard(state, spec, `${hitCard}\n\n${outcome}`, outcome, {
+    return holdKill(state, spec, [BONE_WASH_WIN, STRAY_KILL_LINE, BONE_WASH_SCRAP, stood], {
       health: healthDelta,
       sap,
       add: { scrap: 2 },
@@ -1601,8 +1619,7 @@ function resolveEncounterCore(
     if (spec.kind === 'ribworm' && add.maw_plate) plateAdd.maw_plate = add.maw_plate
     const lootAdd = { ...add }
     if (plateAdd.maw_plate) delete lootAdd.maw_plate
-    const loot = lootLine(lootAdd, spec.kind === 'handler')
-    const back = snatched ? ` You take back your ${ITEMS[snatched]?.name ?? snatched}.` : ''
+    const back = snatched ? `You take back your ${ITEMS[snatched]?.name ?? snatched}.` : ''
     const huskWin = spec.kind === 'husk'
     const wormWin = spec.kind === 'ribworm'
     const creatureWin = spec.kind === 'leech' ? LEECH_WIN : spec.kind === 'moth' ? MOTH_WIN : ''
@@ -1611,27 +1628,32 @@ function resolveEncounterCore(
     // v205: Orla Lusk: Scrap +1 on a win on Cartel ground or over a scavenger, on its own line.
     const orlaScrap = mate?.id === 'orla' && (spec.kind === 'scavenger' || state.hubId === 'camp04' || state.sceneId.startsWith('camp:'))
     if (orlaScrap) add.scrap = (add.scrap ?? 0) + 1
-    const won = `${mutualWin ? MUTUAL_WIN_LINE : ''}${orlaScrap ? `\n\n${PARTY_LINES.orlaScrap}` : ''}`
-    const outcome = handlerWin
-      ? `${HANDLER_BEATEN} ${loot}.${back}${won}`
+    const heat = spec.kind === 'hound' ? { cartel: 1 as const } : handlerWin ? { cartel: 2 as const } : undefined
+    const result = handlerWin
+      ? HANDLER_BEATEN
       : wormWin
-        ? `${RIBWORM_WIN}\n\n${loot}.${back}${won}\n\n${lootLine(plateAdd)}.`
+        ? RIBWORM_WIN
         : creatureWin
-        ? `${creatureWin} ${loot}.${back}${won}`
-        : huskWin
-        ? `The amber heart shatters. The husk falls still. ${loot}.${back}${won}`
-        : `They drop.${loot ? ` ${loot}.` : ''}${back}${won}`
-    return holdCard(state, spec, `${hitCard}\n\n${outcome}`, outcome, {
-      health: healthDelta,
-      add,
-      sap,
-      // Cartel property: killing the hound is on the ledger.
-      // Beating the handler: Cartel +2.
-      heat: spec.kind === 'hound' ? { cartel: 1 } : handlerWin ? { cartel: 2 } : undefined,
-      pressure: dmgIn > 0 ? 1 : undefined,
-      // v153: beating the hound or the handler keeps Valerius himself away for 10 quiet scenes (hunts still come).
-      flag: { encounterGrip: grip, ...(spec.kind === 'tick' && add.vial_drop ? { tickDropped: true } : {}), ...Object.fromEntries(ONCE_GEAR.filter((id) => add[id]).map((id) => [gearDropFlag(id), true])), ...(handlerWin ? { handlerInjured: true } : {}), ...(handlerWin || spec.kind === 'hound' ? { valeriusRest: true, valeriusQuiet: 0 } : {}), ...(state.sceneId === 'thresh:court-guard' && spec.kind === 'courtguard' ? { crucibleGuardBeaten: true } : {}), ...(spec.kind === 'sablewave' && f.sableFight ? { sableWon: true } : {}), ...(spec.kind === 'vex' ? { ch3VexWon: true } : {}), ...(spec.kind === 'ash' ? { ch3AshWon: true } : {}), ...(spec.kind === 'strayhunter' || spec.kind === 'strayhound' ? { strayLooted: true } : {}) },
-    })
+          ? creatureWin
+          : huskWin
+            ? 'The amber heart shatters. The husk falls still.'
+            : 'They drop.'
+    return holdKill(
+      state,
+      spec,
+      [result, ...lootParagraphs(lootAdd, handlerWin), back, stood, orlaScrap ? PARTY_LINES.orlaScrap : '', ...lootParagraphs(plateAdd), ...heatParagraphs(heat)],
+      {
+        health: healthDelta,
+        add,
+        sap,
+        // Cartel property: killing the hound is on the ledger.
+        // Beating the handler: Cartel +2.
+        heat,
+        pressure: dmgIn > 0 ? 1 : undefined,
+        // v153: beating the hound or the handler keeps Valerius himself away for 10 quiet scenes (hunts still come).
+        flag: { encounterGrip: grip, ...(spec.kind === 'tick' && add.vial_drop ? { tickDropped: true } : {}), ...Object.fromEntries(ONCE_GEAR.filter((id) => add[id]).map((id) => [gearDropFlag(id), true])), ...(handlerWin ? { handlerInjured: true } : {}), ...(handlerWin || spec.kind === 'hound' ? { valeriusRest: true, valeriusQuiet: 0 } : {}), ...(state.sceneId === 'thresh:court-guard' && spec.kind === 'courtguard' ? { crucibleGuardBeaten: true } : {}), ...(spec.kind === 'sablewave' && f.sableFight ? { sableWon: true } : {}), ...(spec.kind === 'vex' ? { ch3VexWon: true } : {}), ...(spec.kind === 'ash' ? { ch3AshWon: true } : {}), ...(spec.kind === 'strayhunter' || spec.kind === 'strayhound' ? { strayLooted: true } : {}) },
+      },
+    )
   }
 
   if (yourHp <= 0) {
