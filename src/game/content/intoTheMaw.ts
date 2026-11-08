@@ -120,6 +120,7 @@ const gregWarn = (c: Choice): Choice[] => [
   { ...c, show: c.show ? { all: [c.show, GREG_ALIVE, { not: GREG_LOW }] } : { all: [GREG_ALIVE, { not: GREG_LOW }] } },
   { ...c, sub: c.sub ? `${GREG_LAST_STAND}. ${c.sub}` : GREG_LAST_STAND, show: c.show ? { all: [c.show, GREG_ALIVE, GREG_LOW] } : { all: [GREG_ALIVE, GREG_LOW] } },
 ]
+export const GREG_GATE_EMPTY = "Greg's platform stands empty. Horn static, then a long low whistle."
 export const GREG_TOLL_BODY = `Horn static, then a long low whistle. Greg Ambergrin stands on his elevated steel platform: oil-stained optics, an iron chain.
 
 Greg, over the horn: "Tell that runner down in the dirt to stop staring up at my brass. The price is fifteen scraps or two vials of refined sap—no credit, no speeches. If they haven't dropped the weight into the bucket by the count of three... paint the sand with 'em and haul their skiff to the scrap heap."`
@@ -302,7 +303,7 @@ The Hollow looks at the tags on you, then at your shaved head. 'Pens. They tagge
       { id: 'ride', label: 'Ride it down', tone: 'hunger', show: { all: [{ flag: 'murchScrap' }, { not: reckonDue }] }, effects: { ticks: 1, flag: { ch2LiftRoll: true }, goto: 'ch2:cache' } },
       { id: 'vex', label: 'Let the Hollow lead down the dead stops', sub: '1 Sap.', tone: 'hunger', show: { all: [{ flagUnset: 'murchScrap' }, { flag: 'vexFreed' }, { not: reckonDue }] }, effects: { ticks: 1, sap: -1, flag: { vexLed: true }, goto: 'ch2:cache' } },
       // v214: the cage stays hidden until Murch's lift motor is paid. Unpaid, the way back to his bays stays open.
-      { id: 'back', label: 'Back to the bays', tone: 'quiet', show: { all: [{ flagUnset: 'murchScrap' }, { flagUnset: 'vexFreed' }, { flagUnset: 'murchAbandoned' }] }, effects: { goto: 'ch2:p-bays' } },
+      { id: 'back', label: 'Back to the bays', sub: "Murch's lift is still dead.", tone: 'quiet', show: { all: [{ flagUnset: 'murchScrap' }, { flagUnset: 'vexFreed' }, { flagUnset: 'murchAbandoned' }] }, effects: { goto: 'ch2:p-bays' } },
       { id: 'sealed', label: 'Try the cage', tone: 'quiet', show: { all: [{ flagUnset: 'murchScrap' }, { flagUnset: 'vexFreed' }, { flag: 'murchAbandoned' }] }, effects: { goto: 'ch2:trapped' } },
     ],
   },
@@ -491,9 +492,6 @@ The Hollow stares at the cup on your belt. 'They hung one of those on me once. I
     kind: 'story',
     title: 'The Collapse',
     body: "Valerius's trail turns back toward the inner garrison, leaving the forward path clear.",
-    variants: [
-      { if: { flag: 'ch2SybellaNamed' }, mode: 'append', body: "'You used her name at the gate. She'll know. So will I.'" },
-    ],
     choices: abyssChoices('Use the Spire Key on the ribs'),
   },
 
@@ -658,8 +656,8 @@ Off the road, smoke rises from a drainage ditch.`,
     kind: 'story',
     title: 'The Main Gate',
     body: GREG_TOLL_BODY,
-    // v214: Greg dead, the gate is only its horn. The lines about him on his platform are cut (no new text).
-    variants: [{ if: { door: 'prisoner' }, mode: 'append', body: GREG_TOLL_PENS }, { if: { flag: 'gregDead' }, body: 'Horn static, then a long low whistle.' }],
+    // v226: Greg dead, his platform stands empty. The living toll speech is replaced.
+    variants: [{ if: { door: 'prisoner' }, mode: 'append', body: GREG_TOLL_PENS }, { if: { flag: 'gregDead' }, body: GREG_GATE_EMPTY }],
     choices: [
       { id: 'iron', label: GREG_TOLL_IRON, sub: '15 scrap.', show: GREG_OPEN, enable: { itemMin: ['scrap', 15] }, locked: 'Needs: 15 scrap', effects: { remove: { scrap: 15 }, flag: { gregStanding: 'paid' }, goto: 'ch2:irongut', flash: 'The winch opens the gate.' } },
       { id: 'resin', label: GREG_TOLL_RESIN, sub: '2 vials.', show: GREG_OPEN, enable: { itemMin: ['vial_drop', 2] }, locked: 'Needs: 2 vials', effects: { remove: { vial_drop: 2 }, flag: { gregStanding: 'paid' }, goto: 'ch2:irongut', flash: 'Greg checks the seals and waves you through.' } },

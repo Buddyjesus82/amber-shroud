@@ -32,7 +32,8 @@ ok(KNOT_TAG === 'Relic: Ancient Ward' && gearStat(ITEMS.ossa_token) === KNOT_TAG
 {
   const s = applyEffect(newGame('prisoner'), { goto: 'ch2:greg-toll' })
   const dead = sceneProse({ ...s, flags: { ...s.flags, gregDead: true } })
-  ok(!/Greg/.test(dead), 'gate text without Greg once dead')
+  ok(dead === "Greg's platform stands empty. Horn static, then a long low whistle.", 'gate after Greg dies')
+  ok(!/Ambergrin|paint the sand/.test(dead), 'living Greg is gone from the dead gate')
   ok(/Greg/.test(sceneProse(s)), 'gate text keeps Greg alive')
 }
 console.log(fails ? `v214 FAILED ${fails}` : 'v214 ok')

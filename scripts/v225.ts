@@ -13,7 +13,7 @@ import type { GameState, ItemId } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v225'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v225'"), 'build v225')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v226'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v226'"), 'build v225')
 
 const verbFor: Record<string, string> = {
   wrench: 'wrench',

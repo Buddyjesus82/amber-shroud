@@ -434,7 +434,7 @@ export function knotCarried(state: Pick<GameState, 'items'>): boolean {
   return (state.items.ossa_token ?? 0) > 0 || (state.items.knotted_wrap ?? 0) > 0
 }
 export const KNOT_TIE_LOCKED = "Needs Ossa's Knot and a Head Wrap"
-export const KNOT_STRAYS_NOTE = 'The Knot at your brow: Strays who know Ossa let some of that go.'
+export const KNOT_STRAYS_NOTE = 'The Knot at your brow. Strays who know Ossa ease off.'
 
 // ── v160: Maw Plate work (Varro, Red Maw only) ──
 
