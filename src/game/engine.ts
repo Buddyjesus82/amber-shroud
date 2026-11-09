@@ -1363,6 +1363,7 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   // The masked figure: a sighting on a new scene, or a hunt he stops.
   next = maskedPass(state, next, fx)
   next = fitBag(state, next)
+  next = stripCellCloth(state, next)
 
   next.updatedAt = Date.now()
   return persist(next)
@@ -1527,6 +1528,35 @@ export function travelTo(state: GameState, sceneId: string): GameState {
 /** Sap the readied runner saves on the first stretch of the Hunger. */
 export const STRIDER_READY_SAP = 2
 export const STRIDER_READY_FLASH = 'The readied runner takes the first stretch. Two Sap you did not spend.'
+
+/** v228: a typed pour with no Pour button on this screen. The vial stays. */
+export const POUR_NOWHERE = 'There is nothing here to pour into.'
+
+function pourButton(state: GameState, said: string): Choice | null {
+  const rows = visibleChoices(state).filter((c) => c.id === 'pour' || /^pour\b/i.test(c.label))
+  if (!rows.length) return null
+  if (rows.length === 1) return rows[0]
+  return scoreChoiceText(said, rows)?.choice ?? rows[0]
+}
+
+/** Entering the False Vessel Cell takes the Vessel Cloth off the body and out of the bag. */
+function stripCellCloth(state: GameState, next: GameState): GameState {
+  if (next.sceneId !== 'thresh:cell' || state.sceneId === 'thresh:cell') return next
+  const items = { ...next.items }
+  const equipped = { ...(next.equipped ?? {}) }
+  let changed = false
+  if ((items.ceremonial_cloth ?? 0) > 0) {
+    delete items.ceremonial_cloth
+    changed = true
+  }
+  for (const slot of Object.keys(equipped) as (keyof typeof equipped)[]) {
+    if (equipped[slot] === 'ceremonial_cloth') {
+      delete equipped[slot]
+      changed = true
+    }
+  }
+  return changed ? { ...next, items, equipped } : next
+}
 
 export function drinkDrop(state: GameState): GameState {
   if (!(state.items.vial_drop ?? 0)) {
@@ -1936,6 +1966,17 @@ export function interpret(state: GameState, raw: string): GameState {
       if (ans?.run) return withVerb(applyEffect(state, ans.run.effects), ans.verb)
       if (ans) return withVerb(persist({ ...state, flash: ans.flash, updatedAt: Date.now() }), ans.verb)
     }
+  }
+
+  // v228: "pour ..." is the Pour button, or a refusal. It runs before the global drink/drop rule,
+  // so the word Drop cannot drink the vial, and "runners" cannot bolt.
+  if (/^pour\b/.test(said)) {
+    const pour = pourButton(state, said)
+    if (pour) {
+      if (isChoiceOn(state, pour.enable)) return withVerb(applyEffect(state, pour.effects), 'pour')
+      return withVerb(persist({ ...state, flash: pour.locked ?? POUR_NOWHERE, updatedAt: Date.now() }), 'pour')
+    }
+    return withVerb(persist({ ...state, flash: POUR_NOWHERE, updatedAt: Date.now() }), 'pour')
   }
 
   // Using something you carry is inventory, not a shelf or a scene guess. Same result as the

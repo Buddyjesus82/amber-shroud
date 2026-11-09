@@ -24,7 +24,7 @@ import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v227'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v227'"), 'build v221')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v228'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v228'"), 'build v221')
 ok(BARROW_BYPASS_LOCK === `Requires: ${ITEMS.rig_passkey.name} or ${ITEMS.cipher_key.name}`, 'bypass names the keys')
 
 function at(sceneId: string, extra: Partial<GameState> = {}): GameState {
