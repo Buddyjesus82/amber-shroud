@@ -41,7 +41,9 @@ export function chapterThreeAfter(state: GameState, next: GameState, _fx?: Effec
     next.hubId = 'barrow'
   }
   // v222: the map may walk these scenes only after the story has already opened them.
+  // v229: arriving at the supply wagon is the escape. The collar choices do not come back.
   if (next.sceneId === 'ch3:supply' || next.sceneId === 'ch3:tent' || next.sceneId === 'ch3:crosshaven') f.ch3SupplyOpen = true
+  if (next.sceneId === 'ch3:supply') f.ch3Out = true
   if (next.sceneId === 'ch3:tent' || next.sceneId === 'ch3:crosshaven') f.ch3TentOpen = true
   // The capture: both choices land here. Strip gear, consumables, Sap, the key and the party.
   if (f.ch3Strip && !f.ch3Stripped) {

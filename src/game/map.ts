@@ -217,8 +217,14 @@ export const FOG_HUBS: Record<string, { seen: string; full: string }> = {
   threshold: { seen: 'threshSeen', full: 'threshMap' },
   barrow: { seen: 'barrowSeen', full: 'barrowMap' },
 }
-/** v222: a Barrow Trails story scene the map must not open before its beat. */
-export function ch3MapLocked(state: Pick<GameState, 'flags'>, sceneId: string): boolean {
+/** v222: a Barrow Trails story scene the map must not open before its beat.
+ * v229: the collared wagon has no road out until Wait (then only Supply). The Exit stays sealed after capture. */
+export function ch3MapLocked(state: Pick<GameState, 'flags' | 'sceneId'>, sceneId: string): boolean {
+  if (sceneId === 'ch3:capture' && (state.flags.ch3Stripped || state.flags.ch3Started)) return true
+  if (state.sceneId === 'ch3:wagon' && !state.flags.ch3Out) {
+    if (sceneId === 'ch3:supply' && state.flags.ch3Waited) return false
+    return true
+  }
   if (sceneId === 'ch3:wagon') return !state.flags.ch3Stripped
   // v228: Wait closes Slip. The 1-Sap walk to the supply wagon is the way on. Arrival still opens the rest.
   if (sceneId === 'ch3:supply') return !state.flags.ch3SupplyOpen && !state.flags.ch3Waited
