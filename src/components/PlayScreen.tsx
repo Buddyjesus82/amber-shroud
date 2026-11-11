@@ -1,5 +1,5 @@
 import { PartyCard } from './PartyCard'
-import { CRUCIBLE_SCENES, STAIRS } from '../game/content/crucible'
+import { STAIRS } from '../game/content/crucible'
 import { typedHints } from '../game/politeAsk'
 import { Fragment, useEffect, useRef, useState, type CSSProperties } from 'react'
 import { HUBS } from '../game/content/catalog'
@@ -24,7 +24,7 @@ import {
 } from '../game/engine'
 import { heatFactions, heatRiseLine } from '../game/heat'
 import { effectPills, listedKit } from '../game/kit'
-import { isMawExit } from '../game/map'
+import { isMawExit, showMapButton } from '../game/map'
 import { roadChoice } from '../game/returnRoad'
 import { encounterSpeaker, isEncounterResult } from '../game/encounter'
 import { coverBand, playCoverFile, playCoverKey } from '../game/art'
@@ -48,6 +48,8 @@ import { HelpTopicCard } from './HelpTopicCard'
 import { HeatExplainer, HeatTip } from './HeatGuide'
 import { HelpCard } from './HelpCard'
 import { InventorySheet } from './InventorySheet'
+import { ReportCard } from './ReportCard'
+import { REPORT_LABEL, pushReportAction } from '../game/reportLog'
 import { JournalSheet } from './JournalSheet'
 import { MapSheet } from './MapSheet'
 
@@ -148,6 +150,8 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
   const [kit, setKit] = useState(false)
   const [mapOpen, setMapOpen] = useState(false)
   const [journalOpen, setJournalOpen] = useState(false)
+  const [reportOpen, setReportOpen] = useState(false)
+  const pendingReport = useRef<{ kind: 'button' | 'do'; id: string; label: string } | null>(null)
   const [heatInfo, setHeatInfo] = useState<Faction | null>(null)
   const [toast, setToast] = useState<string | null>(null)
   // An action that moves you on shows its result here first, on the screen you acted on, with Continue.
@@ -159,18 +163,8 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
   const toastTimer = useRef<number | undefined>(undefined)
   const toastAt = useRef(0)
   // No Map in the Crucible Chambers: the only way up is the stairs.
-  // Map on every hub and road screen, but not in a crisis, a fight, Down, or the Crucible Chambers (the only way up is the stairs).
-  const showNav =
-    (!!hub || state.chapterId === 'cache-run') &&
-    scene.kind !== 'crisis' &&
-    scene.kind !== 'ending' &&
-    !state.flags.encounterHere &&
-    !state.flags.strayHunterHere &&
-    !state.flags.maskedHere &&
-    !state.flags.downed &&
-    !isPressureOverlay(state) &&
-    state.health > 0 &&
-    !(CRUCIBLE_SCENES as readonly string[]).includes(scene.id)
+  // Map on every hub, the Cache Run, and the Barrow Trails. Not in a crisis, a fight, Down, an ending, pressure, or the Crucible.
+  const showNav = showMapButton(state)
   const hook = hub?.hungerHook
   const hookOn = hook && isChoiceOn(state, hook.show) && isMawExit(state) && !(state.flags.chapter1Done && hub?.id !== 'redmaw')
   const road = roadChoice(state)
@@ -195,6 +189,14 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     return `${s.sceneId}|${isPressureOverlay(s) ? 1 : 0}|${s.flags.encounterHere ? 1 : 0}|${s.flags.downed || s.health <= 0 ? 1 : 0}`
   }
   /** Choice and typed results: if the act moves you to another screen, hold its result on this one first. */
+  function play(next: GameState) {
+    const log = pendingReport.current
+    if (log) {
+      pendingReport.current = null
+      pushReportAction({ ...log, from: state.sceneId, to: next.sceneId })
+    }
+    onChange(next)
+  }
   function act(next: GameState) {
     const moved = screenKey(next) !== screenKey(state)
     const fightResult = isEncounterResult(state) || !!next.flags.encounterHere
@@ -229,7 +231,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     } catch {
       setHeld(null)
     }
-    onChange(next)
+    play(next)
   }
   // iOS can leave the page scrolled after the keyboard closes, which pushes the buttons off the bottom.
   function resetPageScroll() {
@@ -243,7 +245,8 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     // v214: the Heat banner belongs to the result it came with. Continue leaves both behind (Rig into The Stairs).
     window.clearTimeout(toastTimer.current)
     setToast(null)
-    onChange({ ...state, flash: undefined })
+    pendingReport.current = { kind: 'button', id: 'held-continue', label: 'Continue' }
+    play({ ...state, flash: undefined })
   }
   const coverKey = playCoverKey(state, scene)
   const artSrc = `${import.meta.env.BASE_URL}covers/${playCoverFile(coverKey)}?v=82`
@@ -267,7 +270,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
       sub: 'Scrap, trade goods. Sometimes a Drop.',
       locked: !!scavengeLock(state),
       lockedNote: scavengeLock(state) ?? undefined,
-      onClick: () => !scavengeLock(state) && onChange(scavenge(state)),
+      onClick: () => !scavengeLock(state) && play(scavenge(state)),
     })
   }
   if (!overlay && !shopOpen && canDrawResin(state)) {
@@ -276,7 +279,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
       tone: 'quiet',
       label: 'Draw resin',
       sub: state.flags.siphonTuned ? DRAW_RESIN_SUB_TUNED : DRAW_RESIN_SUB,
-      onClick: () => onChange(drawResin(state)),
+      onClick: () => play(drawResin(state)),
     })
   }
   const hasSceneSkim = choices.some((c) => c.id === 'skim')
@@ -286,7 +289,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
       tone: 'danger',
       label: 'Skim a drip',
       sub: 'Risky Drop. Costs Heat.',
-      onClick: () => onChange(skim(state)),
+      onClick: () => play(skim(state)),
     })
   }
   if (hookRow && hook) {
@@ -296,7 +299,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
       label: shownText(state, hook.label),
       sub: shownText(state, hook.sub),
       onClick: () =>
-        onChange(
+        play(
           applyEffect(state, {
             goto: hook.sceneId,
             startChapter: state.flags.chapter1Done ? undefined : 'cache-run',
@@ -324,7 +327,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
       label: shownText(state, 'The desert is closing. Take the Gullet.'),
       sub: 'Pressure. The camp will not hold the hour.',
       onClick: () =>
-        onChange(
+        play(
           applyEffect(state, {
             startChapter: 'cache-run',
             goto: 'ch1:leave',
@@ -350,7 +353,20 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
       locked: !on,
       lockedNote: !on ? shownText(state, c.locked) : undefined,
       pills: effectPills(c.effects, state.heat),
-      onClick: () => on && (scene.id === CHAPTER_ONE_END && c.id === 'title' ? onTitle() : (scene.id === 'ch2:end' || scene.id === 'ch3:crosshaven') && c.id === 'title' ? (act(applyEffect(state, c.effects)), onTitle()) : act(applyEffect(state, c.effects))),
+      onClick: () => {
+        if (!on) return
+        if (scene.id === CHAPTER_ONE_END && c.id === 'title') {
+          pendingReport.current = null
+          onTitle()
+          return
+        }
+        if ((scene.id === 'ch2:end' || scene.id === 'ch3:crosshaven') && c.id === 'title') {
+          act(applyEffect(state, c.effects))
+          onTitle()
+          return
+        }
+        act(applyEffect(state, c.effects))
+      },
     })
   }
   if (held) {
@@ -360,7 +376,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
   // Never leave a screen with nothing to press: fall back to a look, and keep the Do box.
   const stuck = !held && optionRows.length === 0
   if (stuck) {
-    optionRows.push({ key: 'look-around', tone: 'quiet', label: 'Look around', sub: 'Take stock of where you are.', onClick: () => onChange(interpret({ ...state, flash: undefined }, 'look')) })
+    optionRows.push({ key: 'look-around', tone: 'quiet', label: 'Look around', sub: 'Take stock of where you are.', onClick: () => play(interpret({ ...state, flash: undefined }, 'look')) })
   }
   const split = optionRows.length >= 4
   // The Do box is on every screen.
@@ -389,7 +405,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
   // Jodi's Heat: rushing and stalling on danger ground. Visible, online time only; at most +1 a scene.
   const liveState = useRef(state)
   liveState.current = state
-  const paused = helpOpen || !!topicOpen || kit || mapOpen || journalOpen || !!held
+  const paused = helpOpen || !!topicOpen || kit || mapOpen || journalOpen || reportOpen || !!held
   const pausedRef = useRef(paused)
   pausedRef.current = paused
   const moves = useRef<number[]>([])
@@ -464,6 +480,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
       return
     }
     setDraft('')
+    pendingReport.current = { kind: 'do', id: 'do', label: t }
     act(interpret(state, t))
   }
 
@@ -541,6 +558,9 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
               Map
             </button>
           ) : null}
+          <button type="button" className="text-link report-btn" onClick={() => setReportOpen(true)}>
+            {REPORT_LABEL}
+          </button>
         </div>
         <PartyCard state={state} onOpen={() => setKit(true)} />
         <div className="place-line">
@@ -608,7 +628,11 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
                   id={row.key === HELD_CONTINUE_KEY ? HELD_CONTINUE_KEY : undefined}
                   className={`choice ${row.tone}${row.group ? ` shop-row` : ''}${row.key === HELD_CONTINUE_KEY ? ' held-continue' : ''}`}
                   disabled={row.locked}
-                  onClick={row.onClick}
+                  onClick={() => {
+                    if (row.locked) return
+                    pendingReport.current = { kind: 'button', id: String(row.key), label: row.label }
+                    row.onClick()
+                  }}
                 >
                   <span className="choice-copy">
                     {row.label}
@@ -632,7 +656,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
 
         {/* With the actions, above the Do box: at narrow widths it sat under the form like a stray footnote. */}
         {(state.items.vial_drop ?? 0) > 0 && !held ? (
-          <button type="button" className="text-link drink" onClick={() => onChange(drinkDrop(state))}>
+          <button type="button" className="text-link drink" onClick={() => { pendingReport.current = { kind: 'button', id: 'drink', label: 'Drink a Drop' }; play(drinkDrop(state)) }}>
             Drink a Drop · +3 Sap
           </button>
         ) : null}
@@ -693,6 +717,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
       {mapOpen ? <MapSheet state={state} onClose={() => setMapOpen(false)} onChange={onChange} /> : null}
       {journalOpen ? <JournalSheet state={state} onClose={() => setJournalOpen(false)} /> : null}
       {heatInfo ? <HeatExplainer faction={heatInfo} door={state.door} state={state} onClose={() => setHeatInfo(null)} /> : null}
+      {reportOpen ? <ReportCard state={state} onClose={() => setReportOpen(false)} /> : null}
       {!state.flags.heatTaught ? (
         <HeatTip door={state.door} onDismiss={() => onChange(applyEffect(state, { flag: { heatTaught: true } }))} />
       ) : null}

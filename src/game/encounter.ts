@@ -990,21 +990,15 @@ function heatParagraphs(heat?: Effect['heat']): string[] {
 }
 
 function lootParagraphs(add: Partial<Record<ItemId, number>>, dropped = false): string[] {
-  const pockets: string[] = []
-  const gear: string[] = []
+  const lines: string[] = []
   for (const id of Object.keys(add) as ItemId[]) {
     const n = add[id] ?? 0
     if (n <= 0) continue
     const item = ITEMS[id]
     const name = item?.name ?? id
-    if (item?.slot) gear.push(name)
-    else pockets.push(`${name} +${n}`)
-  }
-  const lines: string[] = []
-  if (pockets.length) lines.push(`${pockets.join(', ')}.`)
-  if (gear.length) {
-    const gearText = dropped ? `He drops ${gear.map(dropNoun).join(' and ')}` : `On the body: ${gear.join(', ')}`
-    lines.push(`${gearText}.`)
+    // v228: one reward per line. Pockets stay "Name +n." Gear keeps its own sentence, once each.
+    if (item?.slot) lines.push(dropped ? `He drops ${dropNoun(name)}.` : `On the body: ${name}.`)
+    else lines.push(`${name} +${n}.`)
   }
   return lines
 }
