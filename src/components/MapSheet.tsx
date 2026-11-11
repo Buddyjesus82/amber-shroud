@@ -1,6 +1,7 @@
 import { useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { HUBS } from '../game/content/catalog'
 import { CH2_BACKTRACK, chapterTwoLocked, travelTo } from '../game/engine'
+import { pushReportAction } from '../game/reportLog'
 import { adjacency, ch3MapLocked, currentNode, fogged, drawnMap, edgeSap as rawEdgeSap, nodeById } from '../game/map'
 import { ROAD_SAP } from '../game/returnRoad'
 import { estimateLabel, layoutLabels, type Box } from '../game/mapLabels'
@@ -70,7 +71,10 @@ export function MapSheet({ state, onChange, onClose }: Props) {
             hint={hint}
             onHint={setHint}
             onTravel={(sceneId) => {
-              onChange(travelTo(state, sceneId))
+              const next = travelTo(state, sceneId)
+              const node = map.nodes.find((n) => n.sceneId === sceneId)
+              pushReportAction({ kind: 'map', id: node?.id ?? sceneId, label: node?.name ?? sceneId, from: state.sceneId, to: next.sceneId })
+              onChange(next)
               onClose()
             }}
           />
@@ -205,6 +209,7 @@ function HubMapView({
       return
     }
     if (ch3MapLocked(state, node.sceneId)) {
+      pushReportAction({ kind: 'map', id: node.id, label: node.name, from: state.sceneId, to: state.sceneId })
       onHint('Not now.')
       return
     }

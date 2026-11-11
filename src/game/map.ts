@@ -1,4 +1,8 @@
+import { getScene } from './content'
+import { HUBS } from './content/catalog'
+import { CRUCIBLE_SCENES } from './content/crucible'
 import { HUB_MAPS } from './content/maps'
+import { isPressureOverlay } from './hunter'
 import type { GameState, HubMapDef, HubMapEdge, HubMapNode } from './types'
 
 export { HUB_MAPS }
@@ -216,10 +220,30 @@ export const FOG_HUBS: Record<string, { seen: string; full: string }> = {
 /** v222: a Barrow Trails story scene the map must not open before its beat. */
 export function ch3MapLocked(state: Pick<GameState, 'flags'>, sceneId: string): boolean {
   if (sceneId === 'ch3:wagon') return !state.flags.ch3Stripped
-  if (sceneId === 'ch3:supply') return !state.flags.ch3SupplyOpen
+  // v228: Wait closes Slip. The 1-Sap walk to the supply wagon is the way on. Arrival still opens the rest.
+  if (sceneId === 'ch3:supply') return !state.flags.ch3SupplyOpen && !state.flags.ch3Waited
   if (sceneId === 'ch3:tent') return !state.flags.ch3TentOpen
   if (sceneId === 'ch3:crosshaven') return !state.flags.ch3VaultDone
   return false
+}
+
+/** Map button: hubs, the Cache Run, and the Barrow Trails. Hidden in a fight, Down, crisis, ending, pressure, or the Crucible. */
+export function showMapButton(state: GameState): boolean {
+  const scene = getScene(state.sceneId, state.door)
+  const hub = state.hubId ? HUBS[state.hubId] : null
+  const barrow = state.hubId === 'barrow' && state.sceneId.startsWith('ch3:')
+  return (
+    (!!hub || state.chapterId === 'cache-run' || barrow) &&
+    scene.kind !== 'crisis' &&
+    scene.kind !== 'ending' &&
+    !state.flags.encounterHere &&
+    !state.flags.strayHunterHere &&
+    !state.flags.maskedHere &&
+    !state.flags.downed &&
+    !isPressureOverlay(state) &&
+    (state.health ?? 0) > 0 &&
+    !(CRUCIBLE_SCENES as readonly string[]).includes(state.sceneId)
+  )
 }
 /** v219: the last map node you stood on, as `hub:node`. Off-map screens hold the pin here instead of the hub default. */
 export const MAP_HERE_FLAG = 'mapHere'
