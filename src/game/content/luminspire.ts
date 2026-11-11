@@ -58,9 +58,9 @@ export const chapterThreeScenes: Scene[] = [
       { if: { flagEq: ['ch3Helper', 'corvus'] }, body: 'A Retriever transport wagon. Collared. The crystal walls of Luminspire climb ahead.\n\nCorvus calls a false scent to the east. The squad turns its head.' },
     ],
     choices: [
-      { id: 'slip', label: 'Slip the Wagon', sub: 'Out the back while they look away.', tone: 'hunger', show: { flagUnset: 'ch3Waited' }, effects: { goto: 'ch3:supply', flash: CH3_SLIP } },
-      { id: 'slip-closed', label: CH3_WAGON_GONE, sub: CH3_WAGON_CLOSED, tone: 'quiet', show: { flag: 'ch3Waited' }, enable: { flag: '__no__' }, effects: {} },
-      { id: 'wait', label: 'Wait', sub: 'The window will not stay open.', tone: 'quiet', show: { flagUnset: 'ch3Waited' }, effects: { heat: { seekers: 1 }, flag: { ch3Waited: true }, flash: CH3_WAIT } },
+      { id: 'slip', label: 'Slip the Wagon', sub: 'Out the back while they look away.', tone: 'hunger', show: { all: [{ flagUnset: 'ch3Waited' }, { flagUnset: 'ch3Out' }] }, effects: { goto: 'ch3:supply', flash: CH3_SLIP } },
+      { id: 'slip-closed', label: CH3_WAGON_GONE, sub: CH3_WAGON_CLOSED, tone: 'quiet', show: { all: [{ flag: 'ch3Waited' }, { flagUnset: 'ch3Out' }] }, enable: { flag: '__no__' }, effects: {} },
+      { id: 'wait', label: 'Wait', sub: 'The window will not stay open.', tone: 'quiet', show: { all: [{ flagUnset: 'ch3Waited' }, { flagUnset: 'ch3Out' }] }, effects: { heat: { seekers: 1 }, flag: { ch3Waited: true }, flash: CH3_WAIT } },
     ],
   },
   {

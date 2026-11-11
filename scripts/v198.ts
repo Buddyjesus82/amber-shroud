@@ -32,6 +32,6 @@ for (const role of ['prisoner', 'vessel', 'outcast'] as const) {
 ok(DRAW_RESIN_SUB === 'Resin +1. Scrap +1. Once per spot.' && DRAW_RESIN_SUB_TUNED === 'Resin +2. Scrap +1. Once per spot.', 'sub labels')
 const ps = readFileSync('src/components/PlayScreen.tsx', 'utf8')
 ok(ps.includes('DRAW_RESIN_SUB_TUNED : DRAW_RESIN_SUB') && !/Sap \+[12]\. Once per spot/.test(ps), 'button uses new subs')
-ok(readFileSync('public/sw.js', 'utf8').startsWith("const CACHE = 'amber-shroud-v228'"), 'sw cache v198')
+ok(readFileSync('public/sw.js', 'utf8').startsWith("const CACHE = 'amber-shroud-v229'"), 'sw cache v198')
 console.log(fails ? `v198: ${fails} fail(s)` : 'v198: ok')
 if (fails) process.exit(1)
