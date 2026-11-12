@@ -29,6 +29,8 @@ export const CH3_SPOTTED = 'A board creaks. Vex Ironhand turns.'
 export const CH3_VEX_IN = 'The first: Vex Ironhand.'
 export const CH3_ASH_IN = 'The second: Ash Vane steps in behind him.'
 export const CH3_FIGHT_HEAT = 'Seeker Heat +2.'
+export const CH3_RUN_SAP = 'Sap −2.'
+export const CH3_FIGHT_HEALTH = 'Health −1.'
 export const CH3_WREN_LINE = "Wren Blackthorn: 'Help me end them. Not here. At the sealed Spire.'"
 export const CH3_WREN_UNLATCH = 'She leaves the lockbox unlatched.'
 export const CH3_WREN_WORD = 'You gave Wren your word.'
@@ -43,8 +45,8 @@ export const chapterThreeScenes: Scene[] = [
     title: 'Collapsed Threshold Exit',
     body: capture,
     choices: [
-      { id: 'fight', label: 'Fight', sub: 'Six of them. One of you.', tone: 'danger', effects: { goto: 'ch3:wagon', flag: { ch3Strip: 'fight' } } },
-      { id: 'run', label: 'Run', sub: 'The perimeter is already closed.', tone: 'danger', effects: { goto: 'ch3:wagon', flag: { ch3Strip: 'run' } } },
+      { id: 'fight', label: 'Fight', sub: 'Six of them. One of you.', tone: 'danger', effects: { goto: 'ch3:wagon', health: -1, flag: { ch3Strip: 'fight' } } },
+      { id: 'run', label: 'Run', sub: 'The perimeter is already closed.', tone: 'danger', effects: { goto: 'ch3:wagon', sap: -2, heat: { seekers: 2 }, flag: { ch3Strip: 'run' } } },
     ],
   },
   {

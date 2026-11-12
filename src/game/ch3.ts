@@ -1,6 +1,6 @@
 import {
-  CH3_ARMOR, CH3_ASH_IN, CH3_CHAPTER, CH3_ENTRY, CH3_FIGHT_HEAT, CH3_FIGHT_RESULT, CH3_KEY_BACK, CH3_KEY_HANDOFF, CH3_NO_KEY, CH3_NOISE,
-  CH3_RUN_RESULT, CH3_SAP, CH3_STRIP_GEAR, CH3_STRIP_KEY, CH3_STRIP_PARTY, CH3_STRIP_SAP, CH3_WEAPON, CH3_WREN_LINE, CH3_WREN_UNLATCH, CH3_WREN_WORD,
+  CH3_ARMOR, CH3_ASH_IN, CH3_CHAPTER, CH3_ENTRY, CH3_FIGHT_HEALTH, CH3_FIGHT_HEAT, CH3_FIGHT_RESULT, CH3_KEY_BACK, CH3_KEY_HANDOFF, CH3_NO_KEY, CH3_NOISE,
+  CH3_RUN_RESULT, CH3_RUN_SAP, CH3_SAP, CH3_STRIP_GEAR, CH3_STRIP_KEY, CH3_STRIP_PARTY, CH3_STRIP_SAP, CH3_WEAPON, CH3_WREN_LINE, CH3_WREN_UNLATCH, CH3_WREN_WORD,
 } from './content/luminspire'
 import { ITEMS } from './content/catalog'
 import { fightStartFlags } from './encounter'
@@ -63,7 +63,12 @@ export function chapterThreeAfter(state: GameState, next: GameState, _fx?: Effec
     f.ch3SapStash = next.sap
     next.sap = 0
     next.equipped = {}
-    const lines = [how === 'run' ? CH3_RUN_RESULT : CH3_FIGHT_RESULT, CH3_STRIP_GEAR, CH3_STRIP_SAP]
+    const lines = [
+      ...(how === 'run' ? [CH3_RUN_SAP, CH3_FIGHT_HEAT] : [CH3_FIGHT_HEALTH]),
+      how === 'run' ? CH3_RUN_RESULT : CH3_FIGHT_RESULT,
+      CH3_STRIP_GEAR,
+      CH3_STRIP_SAP,
+    ]
     if ((next.items.spire_key ?? 0) > 0) {
       delete next.items.spire_key
       f.ch3KeyTaken = true
