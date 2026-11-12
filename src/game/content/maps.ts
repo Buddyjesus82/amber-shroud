@@ -205,7 +205,7 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
       'maw:tuner': 'tuner',
     },
   },
-  /** v222: Chapter 3, the Barrow Trails. Fogged until walked. Every edge is 1 Sap. */
+  /** v222: Chapter 3, the Barrow Trails. Fogged until walked. Edges are 1 Sap, except the open stretch from the tent to Crosshaven. */
   barrow: {
     hubId: 'barrow',
     ready: true,
@@ -230,7 +230,7 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
       { a: 'relay', b: 'wagon', sap: 1 },
       { a: 'wagon', b: 'supply', sap: 1 },
       { a: 'supply', b: 'tent', sap: 1 },
-      { a: 'tent', b: 'crosshaven', sap: 1 },
+      { a: 'tent', b: 'crosshaven', sap: 2 },
       { a: 'relay', b: 'siphon', sap: 1 },
     ],
     sceneNode: {

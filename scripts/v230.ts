@@ -1,7 +1,9 @@
-/** v230: capture Run/Fight costs, Chapter 3 scavenge stays picked clean, the Do box hides on a Sap-zero rescue. */
+/** v230: capture costs, picked-clean Chapter 3 scavenge, the Do box, the empty wagon, and the 2-Sap Crosshaven leg. */
 import { readFileSync } from 'node:fs'
-import { applyEffect, hideDoBox, newGame, scavenge, visibleChoices } from '../src/game/engine.ts'
+import { CH3_WAGON_EMPTY } from '../src/game/content/luminspire.ts'
+import { applyEffect, bodyOf, hideDoBox, newGame, scavenge, travelTo, visibleChoices } from '../src/game/engine.ts'
 import { handsLeft } from '../src/game/hands.ts'
+import { effectPills } from '../src/game/kit.ts'
 import { PICKED_CLEAN, scavengeLock } from '../src/game/scavenge.ts'
 import type { GameState } from '../src/game/types.ts'
 
@@ -65,6 +67,41 @@ ok(scavenge(rested).flash !== COOL, 'the refilled camp patch can be worked again
 const crisis = { ...newGame('vessel'), sceneId: 'crisis:thresh' as const, sap: 0 }
 ok(hideDoBox(crisis), 'the Sap-zero rescue screen hides the Do box')
 ok(!hideDoBox({ ...crisis, sap: 3 }), 'a recovered rescue screen keeps the Do box')
+
+const collared = press(capture(), 'fight')
+const COLLARED = 'A Retriever transport wagon. Collared. The crystal walls of Luminspire climb ahead.'
+ok(bodyOf(collared).startsWith(COLLARED) && !bodyOf(collared).includes('wagon frame is empty'), 'before the escape the wagon stays collared')
+ok(bodyOf({ ...collared, flags: { ...collared.flags, ch3Helper: 'wren' } }).includes("Wren Blackthorn's hand stops on the latch."), 'the Wren wagon line stays')
+ok(bodyOf({ ...collared, flags: { ...collared.flags, ch3Helper: 'corvus' } }).includes('Corvus calls a false scent to the east.'), 'the Corvus wagon line stays')
+let escaped = { ...collared, sap: 6 }
+escaped = press(escaped, 'slip')
+ok(!!escaped.flags.ch3Out && escaped.sceneId === 'ch3:supply', 'slip is the escape')
+escaped = { ...escaped, sap: 4 }
+const back = visibleChoices(escaped).find((c) => c.effects.goto === 'ch3:wagon' && c.id.startsWith('walk-'))
+if (!back) throw new Error('no walk back to the wagon')
+const emptyWagon = applyEffect(escaped, back.effects)
+ok(bodyOf(emptyWagon) === CH3_WAGON_EMPTY, 'after the escape the wagon body is the empty frame')
+ok(bodyOf({ ...emptyWagon, flags: { ...emptyWagon.flags, ch3Helper: 'wren' } }) === CH3_WAGON_EMPTY, 'the empty frame replaces the Wren line')
+ok(bodyOf({ ...emptyWagon, flags: { ...emptyWagon.flags, ch3Helper: 'corvus' } }) === CH3_WAGON_EMPTY, 'the empty frame replaces the Corvus line')
+
+let tent = press(escaped, 'leave')
+tent = { ...tent, sap: 6, items: { ...tent.items }, flags: { ...tent.flags, ch3VaultDone: true } }
+delete tent.items.vial_drop
+const go = visibleChoices(tent).find((c) => c.id === 'go')
+const fringeWalk = visibleChoices(tent).find((c) => c.id === 'walk-crosshaven')
+ok(!!go && go.label === 'Crosshaven Fringe' && go.sub === '2 Sap.' && go.effects.sap === -2, 'the tent button charges 2 Sap')
+ok(!!fringeWalk && fringeWalk.sub === '2 Sap.' && fringeWalk.effects.sap === -2, 'the walk charges 2 Sap')
+ok(effectPills(go!.effects).some((p) => p.text === 'Sap -2') && effectPills(fringeWalk!.effects).some((p) => p.text === 'Sap -2'), 'both buttons show the Sap -2 chip')
+const byButton = applyEffect(tent, go!.effects)
+ok(byButton.sceneId === 'ch3:crosshaven' && byButton.sap === 4, 'the button spends 2 Sap and arrives')
+const hopped = travelTo(tent, 'ch3:crosshaven')
+ok(hopped.sceneId === 'ch3:crosshaven' && hopped.sap === 4, 'the map hop spends 2 Sap and arrives')
+const backEdge = travelTo({ ...hopped, sap: 6 }, 'ch3:tent')
+ok(backEdge.sceneId === 'ch3:tent' && backEdge.sap === 4, 'the road back to the tent is also 2 Sap')
+const dryLeg = applyEffect({ ...tent, sap: 2 }, go!.effects)
+ok(dryLeg.sceneId === 'ch3:crosshaven' && dryLeg.sap === 3 && handsLeft(dryLeg) === handsLeft(tent) - 1 && !dryLeg.flags.runOver, 'emptying the leg spends a hand and stays on the fringe')
+const dryHop = travelTo({ ...tent, sap: 2 }, 'ch3:crosshaven')
+ok(dryHop.sceneId === 'ch3:crosshaven' && dryHop.sap === 3 && handsLeft(dryHop) === handsLeft(tent) - 1, 'an emptying map hop uses the same rescue')
 
 console.log(fails ? `v230 FAILED ${fails}` : 'v230: all pass')
 process.exit(fails ? 1 : 0)

@@ -15,6 +15,7 @@ export const CH3_SLIP = 'You drop into the dust. The convoy rolls on.'
 export const CH3_WAIT = 'The window closes. Seeker Heat +1.'
 export const CH3_WAGON_GONE = 'The wagon has moved'
 export const CH3_WAGON_CLOSED = 'The window has closed.'
+export const CH3_WAGON_EMPTY = 'The wagon frame is empty now, its iron shackles sprung and scored where you tore free. Nothing left here but cold timber and spilled grease.'
 /** Tent, before anyone has said where the key went. */
 export const CH3_TENT_BODY = "The command tent. A lockbox under Ash Vane's cot."
 /** Only after captor dialogue already named the key. The lockbox itself still has to be opened. */
@@ -58,6 +59,7 @@ export const chapterThreeScenes: Scene[] = [
     variants: [
       { if: { flagEq: ['ch3Helper', 'wren'] }, body: "A Retriever transport wagon. Collared. The crystal walls of Luminspire climb ahead.\n\nWren Blackthorn's hand stops on the latch. She looks at Roth. She does not lock it." },
       { if: { flagEq: ['ch3Helper', 'corvus'] }, body: 'A Retriever transport wagon. Collared. The crystal walls of Luminspire climb ahead.\n\nCorvus calls a false scent to the east. The squad turns its head.' },
+      { if: { flag: 'ch3Out' }, body: CH3_WAGON_EMPTY },
     ],
     choices: [
       { id: 'slip', label: 'Slip the Wagon', sub: 'Out the back while they look away.', tone: 'hunger', show: { all: [{ flagUnset: 'ch3Waited' }, { flagUnset: 'ch3Out' }] }, effects: { goto: 'ch3:supply', flash: CH3_SLIP } },
@@ -89,7 +91,7 @@ export const chapterThreeScenes: Scene[] = [
       { id: 'sneak', label: 'Solo Stealth', sub: "Alone. No one to cover you. If they hear, it's a fight.", tone: 'hunger', show: { flagUnset: 'ch3VaultDone' }, effects: { flag: { ch3VaultOpen: 'sneak' }, sneak: { odds: 2, kind: 'vex', spotted: `${CH3_SPOTTED}\n\n${CH3_VEX_IN}`, forfeit: true } } },
       { id: 'fight', label: 'Forced Fight', sub: 'A hard fight: Vex Ironhand, then Ash Vane (back-to-back).', tone: 'danger', show: { flagUnset: 'ch3VaultDone' }, effects: { ambush: { kind: 'vex', line: CH3_VEX_IN } } },
       { id: 'wren', label: "Wren's Deal", sub: 'Your word: help her dismantle the Retrievers at the sealed Spire, via Red Maw.', tone: 'quiet', show: { all: [{ flagUnset: 'ch3VaultDone' }, { flagEq: ['ch3Helper', 'wren'] }] }, effects: { flag: { ch3VaultOpen: 'wren', wrenPromise: true } } },
-      { id: 'go', label: 'Crosshaven Fringe', sub: 'Out past the perimeter.', tone: 'quiet', show: { flag: 'ch3VaultDone' }, effects: { goto: 'ch3:crosshaven' } },
+      { id: 'go', label: 'Crosshaven Fringe', sub: '2 Sap.', tone: 'quiet', show: { flag: 'ch3VaultDone' }, effects: { sap: -2, goto: 'ch3:crosshaven' } },
     ],
   },
   {
