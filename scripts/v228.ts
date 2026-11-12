@@ -9,7 +9,7 @@ import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v229'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v229'"), 'build v228')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v230'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v230'"), 'build v228')
 
 function vesselAt(sceneId: string, extra: Partial<GameState> = {}): GameState {
   const b = newGame('vessel')
@@ -89,7 +89,7 @@ for (let i = 0; i < REPORT_LIMIT + 5; i++) pushReportAction({ kind: 'button', id
 const kept = reportActions()
 ok(kept.length === REPORT_LIMIT && kept[0]?.id === 'b5' && kept[kept.length - 1]?.id === `b${REPORT_LIMIT + 4}`, 'the report log keeps the last 50 moves')
 const bundle = reportBundle(run, 'wagon closed')
-ok(bundle.includes('Build: v229') && bundle.includes('Scene: ch3:crosshaven') && bundle.includes('Sap:') && bundle.includes('Health:') && bundle.includes('Hands:') && bundle.includes('Heat:') && bundle.includes('Note: wagon closed') && bundle.includes(`b${REPORT_LIMIT + 4}`) && !bundle.includes('\n1. button [b0]'), 'the bundle has build, scene, stats, and the kept actions')
+ok(bundle.includes('Build: v230') && bundle.includes('Scene: ch3:crosshaven') && bundle.includes('Sap:') && bundle.includes('Health:') && bundle.includes('Hands:') && bundle.includes('Heat:') && bundle.includes('Note: wagon closed') && bundle.includes(`b${REPORT_LIMIT + 4}`) && !bundle.includes('\n1. button [b0]'), 'the bundle has build, scene, stats, and the kept actions')
 
 console.log(fails ? `v228 FAILED ${fails}` : 'v228: all pass')
 process.exit(fails ? 1 : 0)

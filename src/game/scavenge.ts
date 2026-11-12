@@ -83,7 +83,11 @@ export function canScavenge(state: GameState): boolean {
   return true
 }
 
+const CH3_SCAVENGE_SCENES = new Set(['ch3:trench', 'ch3:relay'])
+
+/** Chapter 3 trench and relay: one pick for the rest of the chapter. Elsewhere the patch refills after two ticks. */
 export function scavengeCooldown(state: GameState): boolean {
+  if (CH3_SCAVENGE_SCENES.has(state.sceneId) && state.flags[`ch3Scavenged:${state.sceneId}`]) return true
   const key = `scavenge:${state.sceneId}`
   const last = Number(state.flags[key] ?? -99)
   return last >= 0 && state.ticks - last < 2
@@ -236,7 +240,11 @@ export function applyScavenge(state: GameState): GameState {
     add: loot.add,
     ticks: 1,
     pressure: 1,
-    flag: { [`scavenge:${here}`]: state.ticks + 1, scavenged: true },
+    flag: {
+      [`scavenge:${here}`]: state.ticks + 1,
+      scavenged: true,
+      ...(CH3_SCAVENGE_SCENES.has(here) ? { [`ch3Scavenged:${here}`]: true } : {}),
+    },
   })
   if (loot.add.vial_drop && (state.items.vial_empty ?? 0) > 0) {
     next = applyDelta(next, { remove: { vial_empty: 1 } })

@@ -25,14 +25,17 @@ import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v229'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v229'"), 'build v222')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v230'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v230'"), 'build v222')
 for (const f of ['ch3-trench.jpg', 'ch3-relay.jpg', 'ch3-siphon.jpg']) {
   ok(readFileSync('public/sw.js', 'utf8').includes(`covers/${f}`), `sw precaches ${f}`)
 }
 
 const map = HUB_MAPS.barrow
 ok(map?.ready && map.nodes.length === 8 && map.edges.length === 7, 'barrow map has the trail and the siphon spur')
-for (const e of map.edges) ok(e.sap === 1 && !e.oneWay && edgeSap(map, e.a, e.b) === 1 && edgeSap(map, e.b, e.a) === 1, `${e.a}-${e.b} costs 1 Sap both ways`)
+for (const e of map.edges) {
+  const sap = e.a === 'tent' && e.b === 'crosshaven' ? 2 : 1
+  ok(e.sap === sap && !e.oneWay && edgeSap(map, e.a, e.b) === sap && edgeSap(map, e.b, e.a) === sap, `${e.a}-${e.b} costs ${sap} Sap both ways`)
+}
 
 const BODIES: Record<string, string> = {
   'ch3:trench': 'The earth gives way to a massive industrial gash. Heavy iron screens and severed conduit lines lie choked under drifts of amber grit. Wind whistles hollowly through the open pipe ends.',
@@ -75,10 +78,8 @@ let story = applyEffect({ ...newGame('prisoner'), sap: 8, items: { scrap: 3, spi
 story = applyEffect(story, visibleChoices(story).find((c) => c.id === 'fight')!.effects)
 ok(story.sceneId === 'ch3:wagon' && story.flags.ch3Stripped && story.sap === 0 && !story.items.spire_key, 'Fight still strips and lands on the wagon')
 story = { ...story, sap: 6 }
-story = walk(story, 'ch3:relay')
-ok(story.sceneId === 'ch3:relay' && story.sap === 5, 'after the strip, the road back costs 1 Sap')
-story = walk(story, 'ch3:wagon')
-ok(story.sceneId === 'ch3:wagon' && story.flags.ch3Stripped && story.sap === 4, 'the Approach is a walk once the capture is done, and it does not strip again')
+const relayLocked = visibleChoices(story).find((c) => c.id === 'walk-relay')
+ok(!!relayLocked && !isChoiceOn(story, relayLocked.enable) && travelTo(story, 'ch3:relay').sceneId === 'ch3:wagon', 'the collared wagon has no road back to the relay')
 const toSupply = visibleChoices(story).find((c) => c.id === 'walk-supply')
 ok(toSupply && !isChoiceOn(story, toSupply.enable), 'Supply Wagon is not yet reachable')
 ok(travelTo(story, 'ch3:supply').sceneId === 'ch3:wagon', 'map tap cannot skip Slip the Wagon')
@@ -87,6 +88,9 @@ ok(story.sceneId === 'ch3:supply' && story.flags.ch3SupplyOpen, 'Slip the Wagon 
 story = { ...story, sap: 4 }
 story = walk(story, 'ch3:wagon')
 ok(story.sceneId === 'ch3:wagon' && story.sap === 3, 'the opened supply road costs 1 Sap')
+const relay = walk(story, 'ch3:relay')
+ok(relay.sceneId === 'ch3:relay' && relay.sap === 2 && relay.flags.ch3Stripped, 'after the escape, the road back costs 1 Sap and does not strip again')
+story = walk(relay, 'ch3:wagon')
 story = walk(story, 'ch3:supply')
 const toTent = visibleChoices(story).find((c) => c.id === 'walk-tent')
 ok(toTent && !isChoiceOn(story, toTent.enable), 'Command Tent is not yet reachable')
@@ -97,7 +101,7 @@ ok(toHaven && !isChoiceOn(story, toHaven.enable) && travelTo({ ...story, sap: 4 
 const vaulted = { ...story, sap: 4, flags: { ...story.flags, ch3VaultDone: true } }
 ok(isChoiceOn(vaulted, visibleChoices(vaulted).find((c) => c.id === 'go')!.enable), 'the story button still waits on the vault')
 const haven = walk(vaulted, 'ch3:crosshaven')
-ok(haven.sceneId === 'ch3:crosshaven' && haven.sap === 3, 'after the vault, the fringe costs 1 Sap')
+ok(haven.sceneId === 'ch3:crosshaven' && haven.sap === 2, 'after the vault, the fringe costs 2 Sap')
 
 // Siphon spur is a dead end and a high-yield cache.
 let side = applyEffect({ ...newGame('prisoner'), sap: 8 }, { goto: 'ch3:capture' })

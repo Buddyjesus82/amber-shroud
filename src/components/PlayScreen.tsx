@@ -14,6 +14,7 @@ import {
   interpret,
   isChoiceOn,
   persist,
+  hideDoBox,
   sapLabel,
   scavenge,
   sceneOf,
@@ -381,7 +382,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
   const split = optionRows.length >= 4
   // The Do box is on every screen.
   // Held too: typing drops the hold and acts on the new screen, so a held result never hides the Do box.
-  const showDo = true
+  const showDo = !hideDoBox(state)
 
   const scrolledScene = useRef(state.sceneId)
   useEffect(() => {

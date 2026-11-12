@@ -512,6 +512,37 @@ function withCh3Checkpoint(state: GameState): GameState {
   return { ...state, checkpoint: ch3StartSnapshot(state) }
 }
 
+/** Chapter 3 Sap-zero rescue, after the capture strip has already taken the bag. Stays on the wagon. */
+function rescueChapterThreeSap(next: GameState): GameState {
+  next = withCh3Checkpoint(next)
+  if (handsLeft(next) <= 0) {
+    next.sap = 0
+    next.health = 0
+    next.flash = undefined
+    next.flags = { ...next.flags, downed: true, runOver: true, downedNote: RUN_OVER_SAP_NOTE }
+    return next
+  }
+  next.hands = handsLeft(next) - 1
+  const pay = (next.items.glints ?? 0) > 0 ? 'glints' : (next.items.scrap ?? 0) > 0 ? 'scrap' : null
+  if (pay) {
+    const left = (next.items[pay] ?? 0) - 1
+    const items = { ...next.items }
+    if (left <= 0) delete items[pay]
+    else items[pay] = left
+    next.items = items
+  }
+  next.sap = 3
+  const paid = pay === 'glints' ? RESCUE_GLINT_LINE : pay === 'scrap' ? RESCUE_SCRAP_LINE : ''
+  const hand = [HAND_UP_LINE, paid].filter(Boolean).join('\n\n')
+  next.flash = [next.flash, hand].filter(Boolean).join('\n\n')
+  return next
+}
+
+/** The dry-out card and a spent chapter: the Do box has nothing to answer. */
+export function hideDoBox(state: Pick<GameState, 'sap' | 'sceneId' | 'flags'>): boolean {
+  return state.sap <= 0 && (getScene(state.sceneId).kind === 'crisis' || !!state.flags.runOver)
+}
+
 /** Flags that only last while you stay on one screen. */
 const VISIT_FLAGS = ['restedHere', 'kaelenDropsHere', 'maskedDrop']
 
@@ -809,6 +840,8 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   const ch3Opening =
     (dest === 'ch3:wagon' && (!!fx.flag?.ch3Strip || state.sceneId === 'ch3:capture')) ||
     (state.sceneId === 'ch3:wagon' && dest === 'ch3:supply' && state.sap <= 0 && !state.flags.ch3TookSap)
+  // Run's own Sap −2 can empty the vial. The strip still lands on the wagon; the hand rescue follows it.
+  const captureSapOut = dest === 'ch3:wagon' && !!fx.flag?.ch3Strip && (fx.sap ?? 0) < 0 && next.sap <= 0
   const skipCrisis =
     // A button that does not travel and does not spend Sap (Buy, Sell, a look) never opens a rescue.
     (!sapTravel && !sapSpent) ||
@@ -1297,6 +1330,9 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   // v166: Chapter Two upkeep (chapter, checkpoint, fights, drill clock).
   next = chapterTwoAfter(state, next, fx)
   next = chapterThreeAfter(state, next, fx)
+  if (captureSapOut && next.sceneId === 'ch3:wagon' && !next.flags.downed && !next.flags.runOver) {
+    next = rescueChapterThreeSap(next)
+  }
   // v179: the Memory Siphon comes with Chapter Two (Continue at the End of Chapter One card, or the code), every door.
   // v187: keyed on chapter2Unlocked, not chapter1Done, so finishing Chapter One alone does not grant it.
   // v209: new weapons and armor land in an empty slot, so nobody walks into a fight barehanded.

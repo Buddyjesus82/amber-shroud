@@ -4,9 +4,9 @@ import { INTRO_CARDS } from '../src/game/intro.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 const sw = readFileSync('public/sw.js', 'utf8')
-ok(sw.includes("CACHE = 'amber-shroud-v229'"), 'SW cache v201')
+ok(sw.includes("CACHE = 'amber-shroud-v230'"), 'SW cache v201')
 ok(sw.includes('intro/great-bleed.jpg'), 'map precached')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v229'"), 'Build v201')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v230'"), 'Build v201')
 ok(existsSync('public/intro/great-bleed.jpg'), 'map file')
 ok(INTRO_CARDS.length === 6, 'still six slides')
 const w = INTRO_CARDS[0]
