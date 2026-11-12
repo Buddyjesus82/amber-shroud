@@ -91,7 +91,7 @@ export const chapterThreeScenes: Scene[] = [
       { id: 'sneak', label: 'Solo Stealth', sub: "Alone. No one to cover you. If they hear, it's a fight.", tone: 'hunger', show: { flagUnset: 'ch3VaultDone' }, effects: { flag: { ch3VaultOpen: 'sneak' }, sneak: { odds: 2, kind: 'vex', spotted: `${CH3_SPOTTED}\n\n${CH3_VEX_IN}`, forfeit: true } } },
       { id: 'fight', label: 'Forced Fight', sub: 'A hard fight: Vex Ironhand, then Ash Vane (back-to-back).', tone: 'danger', show: { flagUnset: 'ch3VaultDone' }, effects: { ambush: { kind: 'vex', line: CH3_VEX_IN } } },
       { id: 'wren', label: "Wren's Deal", sub: 'Your word: help her dismantle the Retrievers at the sealed Spire, via Red Maw.', tone: 'quiet', show: { all: [{ flagUnset: 'ch3VaultDone' }, { flagEq: ['ch3Helper', 'wren'] }] }, effects: { flag: { ch3VaultOpen: 'wren', wrenPromise: true } } },
-      { id: 'go', label: 'Crosshaven Fringe', sub: '2 Sap.', tone: 'quiet', show: { flag: 'ch3VaultDone' }, effects: { sap: -2, goto: 'ch3:crosshaven' } },
+      { id: 'go', label: 'Crosshaven Fringe', sub: 'Out past the perimeter.\n2 Sap.', tone: 'quiet', show: { flag: 'ch3VaultDone' }, effects: { sap: -2, goto: 'ch3:crosshaven' } },
     ],
   },
   {

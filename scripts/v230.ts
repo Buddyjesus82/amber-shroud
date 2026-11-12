@@ -89,7 +89,7 @@ tent = { ...tent, sap: 6, items: { ...tent.items }, flags: { ...tent.flags, ch3V
 delete tent.items.vial_drop
 const go = visibleChoices(tent).find((c) => c.id === 'go')
 const fringeWalk = visibleChoices(tent).find((c) => c.id === 'walk-crosshaven')
-ok(!!go && go.label === 'Crosshaven Fringe' && go.sub === '2 Sap.' && go.effects.sap === -2, 'the tent button charges 2 Sap')
+ok(!!go && go.label === 'Crosshaven Fringe' && go.sub === 'Out past the perimeter.\n2 Sap.' && go.effects.sap === -2, 'the tent button keeps the perimeter line above 2 Sap')
 ok(!!fringeWalk && fringeWalk.sub === '2 Sap.' && fringeWalk.effects.sap === -2, 'the walk charges 2 Sap')
 ok(effectPills(go!.effects).some((p) => p.text === 'Sap -2') && effectPills(fringeWalk!.effects).some((p) => p.text === 'Sap -2'), 'both buttons show the Sap -2 chip')
 const byButton = applyEffect(tent, go!.effects)
