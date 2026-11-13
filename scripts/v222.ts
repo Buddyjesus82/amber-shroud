@@ -31,11 +31,13 @@ for (const f of ['ch3-trench.jpg', 'ch3-relay.jpg', 'ch3-siphon.jpg']) {
 }
 
 const map = HUB_MAPS.barrow
-ok(map?.ready && map.nodes.length === 8 && map.edges.length === 7, 'barrow map has the trail and the siphon spur')
+ok(map?.ready && map.nodes.length === 8 && map.edges.length === 8, 'barrow map has the trail, the siphon spur, and the free walk back')
 for (const e of map.edges) {
-  const sap = e.a === 'tent' && e.b === 'crosshaven' ? 2 : 1
-  ok(e.sap === sap && !e.oneWay && edgeSap(map, e.a, e.b) === sap && edgeSap(map, e.b, e.a) === sap, `${e.a}-${e.b} costs ${sap} Sap both ways`)
+  const sap = e.a === 'tent' && e.b === 'crosshaven' ? 2 : e.a === 'crosshaven' && e.b === 'tent' ? 0 : 1
+  ok(e.sap === sap && edgeSap(map, e.a, e.b) === sap, `${e.a}-${e.b} costs ${sap} Sap`)
+  if (!e.oneWay) ok(edgeSap(map, e.b, e.a) === sap, `${e.b}-${e.a} costs ${sap} Sap`)
 }
+ok(edgeSap(map, 'tent', 'crosshaven') === 2 && edgeSap(map, 'crosshaven', 'tent') === 0, 'the fringe costs 2 Sap out and the tent is free back')
 
 const BODIES: Record<string, string> = {
   'ch3:trench': 'The earth gives way to a massive industrial gash. Heavy iron screens and severed conduit lines lie choked under drifts of amber grit. Wind whistles hollowly through the open pipe ends.',
@@ -80,8 +82,7 @@ ok(story.sceneId === 'ch3:wagon' && story.flags.ch3Stripped && story.sap === 0 &
 story = { ...story, sap: 6 }
 const relayLocked = visibleChoices(story).find((c) => c.id === 'walk-relay')
 ok(!!relayLocked && !isChoiceOn(story, relayLocked.enable) && travelTo(story, 'ch3:relay').sceneId === 'ch3:wagon', 'the collared wagon has no road back to the relay')
-const toSupply = visibleChoices(story).find((c) => c.id === 'walk-supply')
-ok(toSupply && !isChoiceOn(story, toSupply.enable), 'Supply Wagon is not yet reachable')
+ok(!visibleChoices(story).some((c) => c.id === 'walk-supply'), 'Slip is the supply choice, so no second walk')
 ok(travelTo(story, 'ch3:supply').sceneId === 'ch3:wagon', 'map tap cannot skip Slip the Wagon')
 story = applyEffect(story, visibleChoices(story).find((c) => c.id === 'slip')!.effects)
 ok(story.sceneId === 'ch3:supply' && story.flags.ch3SupplyOpen, 'Slip the Wagon still opens the supply')
@@ -92,15 +93,17 @@ const relay = walk(story, 'ch3:relay')
 ok(relay.sceneId === 'ch3:relay' && relay.sap === 2 && relay.flags.ch3Stripped, 'after the escape, the road back costs 1 Sap and does not strip again')
 story = walk(relay, 'ch3:wagon')
 story = walk(story, 'ch3:supply')
-const toTent = visibleChoices(story).find((c) => c.id === 'walk-tent')
-ok(toTent && !isChoiceOn(story, toTent.enable), 'Command Tent is not yet reachable')
+ok(!visibleChoices(story).some((c) => c.id === 'walk-tent'), 'Leave Now is the tent choice, so no second walk')
+ok(travelTo(story, 'ch3:tent').sceneId === 'ch3:supply', 'a map tap cannot skip Leave Now')
 story = applyEffect(story, visibleChoices(story).find((c) => c.id === 'leave')!.effects)
 ok(story.sceneId === 'ch3:tent' && story.flags.ch3TentOpen, 'Leave Now still opens the tent')
 const toHaven = visibleChoices({ ...story, sap: 4 }).find((c) => c.id === 'walk-crosshaven')
 ok(toHaven && !isChoiceOn(story, toHaven.enable) && travelTo({ ...story, sap: 4 }, 'ch3:crosshaven').sceneId === 'ch3:tent', 'Crosshaven stays behind the vault')
 const vaulted = { ...story, sap: 4, flags: { ...story.flags, ch3VaultDone: true } }
 ok(isChoiceOn(vaulted, visibleChoices(vaulted).find((c) => c.id === 'go')!.enable), 'the story button still waits on the vault')
-const haven = walk(vaulted, 'ch3:crosshaven')
+const go = visibleChoices(vaulted).find((c) => c.id === 'go')
+ok(!!go && !visibleChoices(vaulted).some((c) => c.id === 'walk-crosshaven'), 'the tent keeps one Crosshaven button')
+const haven = applyEffect(vaulted, go!.effects)
 ok(haven.sceneId === 'ch3:crosshaven' && haven.sap === 2, 'after the vault, the fringe costs 2 Sap')
 
 // Siphon spur is a dead end and a high-yield cache.

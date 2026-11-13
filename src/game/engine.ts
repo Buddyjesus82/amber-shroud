@@ -2446,6 +2446,7 @@ function visibleChoicesRaw(state: GameState): Choice[] {
 /** Camp-04 before the Overlook map: every map road is also a button, so the blank scrap never gates movement.
  * v219: the Spine and the Threshold too (their scraps stay blank until walked). Roads out of the hub stay on their own buttons. */
 function campWalkRows(state: GameState, rows: Choice[]): Choice[] {
+  if (getScene(state.sceneId, state.door).kind === 'ending') return []
   const map = state.hubId ? HUB_MAPS[state.hubId] : undefined
   if (!map || !fogged(state)) return []
   const here = map.sceneNode[state.sceneId] ?? map.nodes.find((n) => n.sceneId === state.sceneId)?.id
@@ -2453,11 +2454,11 @@ function campWalkRows(state: GameState, rows: Choice[]): Choice[] {
   const has = new Set(rows.map((c) => c.effects?.goto ?? c.effects?.travel).filter(Boolean))
   const out: Choice[] = []
   for (const e of map.edges) {
-    const other = e.a === here ? e.b : e.b === here ? e.a : null
+    const other = e.a === here ? e.b : !e.oneWay && e.b === here ? e.a : null
     const to = other ? map.nodes.find((n) => n.id === other) : null
     if (!to || to.sceneId === state.sceneId || getScene(to.sceneId, state.door).hubId !== state.hubId) continue
-    // A story button may share the destination. On the Barrow trail the walk still shows, and a gate keeps it locked.
-    if (has.has(to.sceneId) && state.hubId !== 'barrow') continue
+    // An authored choice already walks there. A second Walk row would only repeat it.
+    if (has.has(to.sceneId)) continue
     const sap = e.sap ?? 1
     const locked = ch3MapLocked(state, to.sceneId)
     out.push({

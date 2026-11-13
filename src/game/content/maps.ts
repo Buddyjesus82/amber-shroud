@@ -230,7 +230,8 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
       { a: 'relay', b: 'wagon', sap: 1 },
       { a: 'wagon', b: 'supply', sap: 1 },
       { a: 'supply', b: 'tent', sap: 1 },
-      { a: 'tent', b: 'crosshaven', sap: 2 },
+      { a: 'tent', b: 'crosshaven', sap: 2, oneWay: true },
+      { a: 'crosshaven', b: 'tent', sap: 0, oneWay: true },
       { a: 'relay', b: 'siphon', sap: 1 },
     ],
     sceneNode: {
