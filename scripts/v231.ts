@@ -88,7 +88,7 @@ let shelf = applyEffect({ ...newGame('outcast'), sap: 6 }, { goto: 'spine:silas'
 const buy = visibleChoices(shelf).find((c) => c.id === 'shop-buy')
 if (buy) shelf = applyEffect(shelf, buy.effects)
 const knife = visibleChoices(shelf).find((c) => c.id === 'knife')
-ok(knife?.label === 'Buy Needle Knife — 1 scrap' && knife.effects.pay?.scrap === 1, 'proposed: Silas sells the Needle Knife for 1 scrap')
+ok(knife?.label === 'Buy Needle Knife — 2 scrap' && knife.effects.pay?.scrap === 2 && knife.effects.flash === '"Thin and mean. For resin and Hounds." He counts the scrap twice.', 'Silas still sells the Needle Knife for 2 scrap, with his line intact')
 
 console.log(fails ? `v231 FAILED ${fails}` : 'v231: all pass')
 process.exit(fails ? 1 : 0)
