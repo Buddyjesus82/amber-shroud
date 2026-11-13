@@ -259,11 +259,12 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
       ? encounterSpeaker(state)
       : (pressureFace(state) ?? shownText(state, scene.title) ?? hub?.name ?? 'The dunes')
   const shopOpen = isShopOpen(state)
-  const hookRow = !!(!overlay && !shopOpen && hub && hookOn && hook && showNav)
-  const closeRow = !!(!overlay && !shopOpen && closing && showNav)
+  const confirming = typeof state.flags.cachePending === 'string'
+  const hookRow = !confirming && !!(!overlay && !shopOpen && hub && hookOn && hook && showNav)
+  const closeRow = !confirming && !!(!overlay && !shopOpen && closing && showNav)
   // Every selectable quest/story/hub action belongs in this list — never pinned above .choices.
   const optionRows: OptionRow[] = []
-  if (!overlay && !shopOpen && roam && !barrowScene(state)) {
+  if (!confirming && !overlay && !shopOpen && roam && !barrowScene(state)) {
     optionRows.push({
       key: 'scavenge',
       tone: 'quiet',
@@ -274,7 +275,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
       onClick: () => !scavengeLock(state) && play(scavenge(state)),
     })
   }
-  if (!overlay && !shopOpen && canDrawResin(state)) {
+  if (!confirming && !overlay && !shopOpen && canDrawResin(state)) {
     optionRows.push({
       key: 'draw-resin',
       tone: 'quiet',
@@ -284,7 +285,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
     })
   }
   const hasSceneSkim = choices.some((c) => c.id === 'skim')
-  if (!overlay && !shopOpen && skimOn && !hasSceneSkim) {
+  if (!confirming && !overlay && !shopOpen && skimOn && !hasSceneSkim) {
     optionRows.push({
       key: 'skim',
       tone: 'danger',
@@ -309,7 +310,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
         ),
     })
   }
-  if (road && !overlay && !shopOpen && showNav) {
+  if (!confirming && road && !overlay && !shopOpen && showNav) {
     const on = isChoiceOn(state, road.enable)
     optionRows.push({
       key: road.id,

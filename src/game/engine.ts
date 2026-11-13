@@ -613,7 +613,85 @@ function endCardContinue(state: GameState): Effect {
 export const WIRE_BLOCKED =
   "The Overseer's tower is still live—searchlights cut the sand to ribbons. You can't break the wire until that station is dropped."
 
+export const CACHE_CONFIRM = "Once you take this road, there's no walking back until you reach the Maw."
+export const CACHE_TAKE = 'Take the road'
+export const CACHE_STAY = 'Stay'
+export const TURN_BACK = 'Turn back'
+export const TURN_BACK_SUB = 'Back the way you came.'
+export const TURN_BACK_FLASH = 'You turn your back on the road before the storm can close it behind you.'
+
+function cacheSnapOf(state: GameState): string {
+  const { checkpoint: _c, flash: _f, updatedAt: _u, ...rest } = state
+  const flags = { ...rest.flags }
+  delete flags.cachePending
+  return JSON.stringify({ ...rest, flags })
+}
+
+function opensCacheRun(state: GameState, fx: Effect): boolean {
+  if (fx.cacheCommit || fx.cacheTurn || fx.flag?.cacheStay) return false
+  if (state.chapterId === 'cache-run' || state.flags.chapter1Done) return false
+  if (fx.startChapter === 'cache-run') return true
+  return !!fx.goto && getScene(fx.goto, state.door).chapterId === 'cache-run'
+}
+
+function showCacheConfirm(state: GameState, fx: Effect): GameState {
+  const pending = { ...fx }
+  delete pending.cacheCommit
+  delete pending.cacheTurn
+  return persist({
+    ...state,
+    flash: CACHE_CONFIRM,
+    flags: { ...state.flags, cachePending: JSON.stringify(pending) },
+  })
+}
+
+function turnBackFromCache(state: GameState): GameState {
+  const raw = state.flags.cacheSnap
+  if (typeof raw !== 'string') return state
+  let snap: GameState
+  try {
+    snap = JSON.parse(raw) as GameState
+  } catch {
+    return state
+  }
+  const flags = { ...(snap.flags ?? {}) }
+  delete flags.cacheSnap
+  delete flags.cacheFirst
+  delete flags.cachePending
+  delete flags.cacheStay
+  const home: GameState = {
+    ...state,
+    ...snap,
+    checkpoint: state.checkpoint,
+    flash: TURN_BACK_FLASH,
+    flags,
+    updatedAt: Date.now(),
+  }
+  const kind = pickEncounterKind(home)
+  home.flags = { ...home.flags, ...fightStartFlags(home, kind), roadFightSeen: true }
+  return persist(home)
+}
+
 export function applyEffect(state: GameState, fx: Effect): GameState {
+  if (fx.cacheTurn) return turnBackFromCache(state)
+  if (fx.flag?.cacheStay) {
+    const flags = { ...state.flags }
+    delete flags.cachePending
+    delete flags.cacheStay
+    return persist({ ...state, flags, flash: undefined })
+  }
+  if (fx.cacheCommit && typeof state.flags.cachePending === 'string') {
+    let pending: Effect
+    try {
+      pending = JSON.parse(state.flags.cachePending) as Effect
+    } catch {
+      return state
+    }
+    const flags = { ...state.flags }
+    delete flags.cachePending
+    return applyEffect({ ...state, flags, flash: undefined }, { ...pending, cacheCommit: true })
+  }
+  if (opensCacheRun(state, fx)) return showCacheConfirm(state, fx)
   // v218: Clean Passage. Leaving a trader stays roll-free (v89).
   if (!isVendorScene(state.sceneId)) fx = passageCheck(state, fx)
   // v186: Chapter Two released, the End card's Continue opens it in place (same as the code on that card).
@@ -972,6 +1050,9 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   const arrived = getScene(next.sceneId)
   if (arrived.hubId) next.hubId = arrived.hubId
   if (arrived.chapterId) next.chapterId = arrived.chapterId
+  if (state.chapterId !== 'cache-run' && next.chapterId === 'cache-run' && !next.flags.cacheSnap) {
+    next.flags = { ...next.flags, cacheSnap: cacheSnapOf(state), cacheFirst: next.sceneId }
+  }
 
   const rescueAt = sapCollapsed && !skipCrisis && arrived.kind !== 'crisis' ? pickCrisis(next) : null
   const selfDrink = !!rescueAt && RESCUE_CRISES.has(rescueAt) && (next.items.vial_drop ?? 0) > 0
@@ -1905,6 +1986,12 @@ export const SHADOW_NO_FIGHT = 'She is a shadow, not a body. If you mean it, swi
 
 export function interpret(state: GameState, raw: string): GameState {
   const text = phoneText(raw)
+  if (typeof state.flags.cachePending === 'string') {
+    const hay = text.trim().toLowerCase()
+    if (hay === 'stay' || hay === 'wait') return withVerb(applyEffect(state, { flag: { cacheStay: true } }), 'stay')
+    if (hay === 'take the road' || hay === 'take' || hay === 'go') return withVerb(applyEffect(state, { cacheCommit: true }), 'road')
+    return withVerb(persist({ ...state, flash: CACHE_CONFIRM }), 'road')
+  }
   const scene = sceneOf(state)
   const bare = text.trim().toLowerCase()
   const said = bare === 'l' || /^l\s/.test(bare) ? bare.replace(/^l\b/, 'look') : bare
@@ -2401,7 +2488,15 @@ function noEscapeAfterChapterOne(state: GameState, rows: Choice[]): Choice[] {
 }
 
 export function visibleChoices(state: GameState): Choice[] {
-  return partySwap(state, noEscapeAfterChapterOne(state, visibleChoicesRaw(state)))
+  const rows = partySwap(state, noEscapeAfterChapterOne(state, visibleChoicesRaw(state)))
+  if (typeof state.flags.cachePending === 'string' || state.flags.encounterHere || state.flags.downed) return rows
+  if (state.chapterId === 'cache-run' && state.flags.cacheFirst === state.sceneId) {
+    return [
+      ...rows,
+      { id: 'turn-back', label: TURN_BACK, sub: TURN_BACK_SUB, tone: 'quiet', effects: { cacheTurn: true } },
+    ]
+  }
+  return rows
 }
 
 /** v205: one party slot. A recruit row says who it swaps out. */
@@ -2412,6 +2507,12 @@ function partySwap(state: GameState, rows: Choice[]): Choice[] {
 }
 
 function visibleChoicesRaw(state: GameState): Choice[] {
+  if (typeof state.flags.cachePending === 'string') {
+    return [
+      { id: 'cache-take', label: CACHE_TAKE, tone: 'hunger', effects: { cacheCommit: true } },
+      { id: 'cache-stay', label: CACHE_STAY, tone: 'quiet', effects: { flag: { cacheStay: true } } },
+    ]
+  }
   if (state.flags.runOver) {
     return [{ id: 'wake', label: RUN_OVER_LABEL, sub: RUN_OVER_SUB, tone: 'quiet', effects: { restoreCheckpoint: true } }]
   }

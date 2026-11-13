@@ -1,6 +1,6 @@
 /** v233: three Chapter 2 sheets, one per door, each with one map pickup. */
 import { readFileSync } from 'node:fs'
-import { applyEffect, CH2_BACKTRACK, newGame, travelTo, visibleChoices } from '../src/game/engine.ts'
+import { applyEffect, CACHE_CONFIRM, CACHE_STAY, CACHE_TAKE, CH2_BACKTRACK, interpret, newGame, travelTo, TURN_BACK, TURN_BACK_FLASH, TURN_BACK_SUB, visibleChoices } from '../src/game/engine.ts'
 import { HUB_MAPS } from '../src/game/content/maps.ts'
 import { restoreCheckpoint } from '../src/game/hands.ts'
 import { ch2MapLocked, drawnMap, fogged, hubMapOf, showMapButton } from '../src/game/map.ts'
@@ -95,6 +95,44 @@ restarted = applyEffect(restarted, { flag: { ch2pMap: true } })
 const again = restoreCheckpoint(restarted)
 ok(!!again && !again.flags.ch2pMap && !!again.flags.ch2Started, 'a chapter restart clears the Chapter 2 map the way a camp map taken after the checkpoint does')
 ok(!showMapButton({ ...jaws, flags: { ...jaws.flags, encounterHere: true } }), 'a fight hides the map')
+
+function ready(door: GameState['door'], sceneId: GameState['sceneId'], hubId: GameState['hubId']): GameState {
+  const base = newGame(door)
+  return { ...base, sceneId, hubId, sap: 4, flags: { ...base.flags, hungerKnown: true }, items: { ...base.items } }
+}
+function ids(s: GameState) {
+  return visibleChoices(s).map((c) => c.id)
+}
+const wash = ready('outcast', 'spine:ridge', 'spine')
+const asked = applyEffect(wash, visibleChoices(wash).find((c) => c.id === 'hunger')!.effects)
+ok(asked.sceneId === 'spine:ridge' && asked.sap === wash.sap && asked.chapterId !== 'cache-run' && asked.flash === CACHE_CONFIRM, 'the Bone Wash road asks before it starts')
+ok(ids(asked).join(',') === 'cache-take,cache-stay' && visibleChoices(asked).every((c) => !c.effects.sap), 'only Take the road and Stay, and Stay has no cost')
+const stayed = applyEffect(asked, visibleChoices(asked).find((c) => c.label === CACHE_STAY)!.effects)
+ok(stayed.sceneId === 'spine:ridge' && stayed.sap === wash.sap && !stayed.flags.cachePending && stayed.chapterId !== 'cache-run', 'Stay puts nothing on the road')
+const mapped = travelTo(wash, 'ch1:leave')
+ok(mapped.sceneId === 'spine:ridge' && mapped.flash === CACHE_CONFIRM && mapped.sap === wash.sap, 'a map hop onto the Bone Wash asks first')
+const typed = interpret(wash, 'walk the gullet')
+ok(typed.sceneId === 'spine:ridge' && typed.flash === CACHE_CONFIRM, 'typing the road asks first')
+const hound = ready('outcast', 'spine:hound', 'spine')
+const walk = visibleChoices(hound).find((c) => c.effects.goto === 'ch1:leave')
+ok(!!walk && applyEffect(hound, walk.effects).flash === CACHE_CONFIRM && applyEffect(hound, walk.effects).sap === hound.sap, 'the camp walk onto the Bone Wash asks first')
+const camp = applyEffect(ready('prisoner', 'camp:wire', 'camp04'), { startChapter: 'cache-run', goto: 'ch1:leave', wireExit: true })
+ok(camp.sceneId === 'camp:wire' && camp.flash === CACHE_CONFIRM, 'the Wire asks before the Cache Run')
+const paddock = applyEffect(ready('vessel', 'thresh:paddock', 'threshold'), { startChapter: 'cache-run', goto: 'ch1:leave' })
+ok(paddock.sceneId === 'thresh:paddock' && paddock.flash === CACHE_CONFIRM, 'the Strider Paddock asks before the Cache Run')
+const took = applyEffect(asked, visibleChoices(asked).find((c) => c.label === CACHE_TAKE)!.effects)
+ok(took.chapterId === 'cache-run' && took.sceneId === 'ch1:leave' && took.flags.cacheFirst === 'ch1:leave', 'Take the road still opens the Cache Run')
+const quiet = { ...took, flags: { ...took.flags, encounterHere: false } }
+const back = visibleChoices(quiet).find((c) => c.label === TURN_BACK)
+ok(!!back && back.sub === TURN_BACK_SUB && !back.effects.sap, 'Turn back is on the first beat and costs nothing')
+const home = applyEffect(quiet, back!.effects)
+ok(home.sceneId === 'spine:ridge' && home.hubId === 'spine' && home.chapterId !== 'cache-run' && home.flash === TURN_BACK_FLASH && !!home.flags.encounterHere, 'Turn back is free, lands home, and starts a fight')
+ok(home.sap === wash.sap && !home.flags.hungerLocked && !home.flags.cacheFirst, 'turning back clears the run so it can be taken again')
+const onward = applyEffect(took, { goto: 'ch1:o-noon', sap: -1, ticks: 1 })
+ok(!visibleChoices(onward).some((c) => c.label === TURN_BACK), 'Turn back is gone after the first beat')
+const campAsk = applyEffect(ready('prisoner', 'camp:yard', 'camp04'), { startChapter: 'cache-run', goto: 'ch1:leave' })
+const stormed = applyEffect(campAsk, { cacheCommit: true })
+ok(stormed.sceneId === 'ch1:storm' && visibleChoices(stormed).some((c) => c.label === TURN_BACK), 'the Prisoner lands on the storm, and that is the beat they can leave')
 
 console.log(fails ? `v233 FAILED ${fails}` : 'v233: all pass')
 process.exit(fails ? 1 : 0)
