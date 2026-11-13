@@ -232,9 +232,9 @@ const SILAS_STOCK: StockOffer[] = [
   {
     id: 'knife',
     item: 'needle_knife',
-    label: 'Buy a Needle Knife — two scrap',
+    label: 'Buy a Needle Knife — one scrap',
     sub: 'Dry-well needle. Weapon · Strike 3. Scrapes hard resin and meets a Hound. Equip it in Gear.',
-    cost: { scrap: 2 },
+    cost: { scrap: 1 },
     onceFlag: 'silasSoldKnife',
     extraFlag: { silasSoldKnife: true },
     flash: '"Thin and mean. For resin and Hounds." He counts the scrap twice.',

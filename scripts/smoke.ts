@@ -3599,7 +3599,7 @@ function assertHelpResolves(s: GameState, where: string) {
   shelf = openShop(shelf, 'buy')
   for (const want of ['drop-glint', 'drop-scrap', 'knife', 'salve', 'wrap', 'cloak-glint']) assert(ids(shelf).includes(want), `Silas shelf has ${want}`)
   const bought = pick(pick(shelf, 'drop-scrap'), 'knife')
-  assert((bought.items.vial_drop ?? 0) >= 1 && (bought.items.needle_knife ?? 0) === 1 && bought.items.scrap === 2, 'Silas sells a Drop for 2 scrap and the knife for 2 scrap')
+  assert((bought.items.vial_drop ?? 0) >= 1 && (bought.items.needle_knife ?? 0) === 1 && bought.items.scrap === 3, 'Silas sells a Drop for 2 scrap and the knife for 1 scrap')
   assert(!ids(openShop(bought, 'buy')).includes('knife'), 'Silas sells one knife')
   const sold = openShop(unworn(applyEffect(shelf, { unsetFlag: ['shopShelf'], add: { shiv: 1 } })), 'sell')
   assert(ids(sold).some((i) => /shiv/.test(i)), 'Silas buys unequipped junk on the Sell shelf')
