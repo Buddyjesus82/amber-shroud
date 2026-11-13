@@ -29,6 +29,7 @@ import { classifyLook, directedLookFlash, pressureLookFlash, roomLookEffect } fr
 import { ch3MapLocked, fogged, markCampSeen, matchCompass, travelGate } from './map'
 import { isChapterReleased } from './chapters'
 import { chapterThreeAfter } from './ch3'
+import { kaelenAsk } from './content/kaelen'
 import { rubbleResolve } from './content/phase2Camps'
 import { chapterTwoAfter, chapterTwoUnlock, isChapterTwoCode } from './ch2'
 import { CH2_ENTRY, chapterTwoSummary } from './content/intoTheMaw'
@@ -1332,6 +1333,14 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   next = chapterTwoAfter(state, next, fx)
   next = chapterThreeAfter(state, next, fx)
   next = rubbleResolve(state, next, fx)
+  if (fx.flag?.kaelenAsk) {
+    const ask = kaelenAsk(state)
+    const flags = { ...next.flags }
+    delete flags.kaelenAsk
+    flags.kaelenRumorAt = ask.next
+    next.flags = flags
+    next.flash = ask.line
+  }
   if (captureSapOut && next.sceneId === 'ch3:wagon' && !next.flags.downed && !next.flags.runOver) {
     next = rescueChapterThreeSap(next)
   }
