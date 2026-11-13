@@ -29,6 +29,7 @@ import { classifyLook, directedLookFlash, pressureLookFlash, roomLookEffect } fr
 import { ch3MapLocked, fogged, markCampSeen, matchCompass, travelGate } from './map'
 import { isChapterReleased } from './chapters'
 import { chapterThreeAfter } from './ch3'
+import { rubbleResolve } from './content/phase2Camps'
 import { chapterTwoAfter, chapterTwoUnlock, isChapterTwoCode } from './ch2'
 import { CH2_ENTRY, chapterTwoSummary } from './content/intoTheMaw'
 import { ROAD_NOT_NOW, roadChoice, isTravelText, roadPhrase, roadToMaw, roadHome } from './returnRoad'
@@ -1330,6 +1331,7 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   // v166: Chapter Two upkeep (chapter, checkpoint, fights, drill clock).
   next = chapterTwoAfter(state, next, fx)
   next = chapterThreeAfter(state, next, fx)
+  next = rubbleResolve(state, next, fx)
   if (captureSapOut && next.sceneId === 'ch3:wagon' && !next.flags.downed && !next.flags.runOver) {
     next = rescueChapterThreeSap(next)
   }

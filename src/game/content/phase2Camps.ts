@@ -1,13 +1,49 @@
+import { applyDelta } from '../logic'
 import { SPARE_SAP_LOCK } from '../sapLock'
-import type { Choice, Cond, Scene } from '../types'
+import type { Choice, Cond, Effect, GameState, Scene } from '../types'
 import { HEAVY_TOOL, VEIN_KEY } from './newPlaces'
 import { FOREMAN_LINE, VALVE_GUARDS_LINE } from '../v203Lines'
 
 // v200 DRAFT: Phase 2 deep camps (Jeramie's spec). Descriptions verbatim.
 // Flash lines marked NEW await approval. Numbers marked PROPOSED map his 100-scale to Health 6 / Sap 8 / Heat 8.
 
-/** NEW */ export const RUBBLE_PICK = 'You pick a path through the slabs. It takes time and breath.'
-/** NEW */ export const RUBBLE_FORCE = 'You lever the slabs apart and walk through.'
+export const RUBBLE_PICK = "You spend the energy, picking through the jagged seam block by block. It's slow work, but your hands stay clean and the salvage yields."
+export const RUBBLE_FORCE = 'You wedge your shoulder against the loose slab and shove. The noise echoes down the corridor, and the rough concrete bites deep.'
+export const RUBBLE_SAP = 'Sap −1.'
+export const RUBBLE_HEALTH = 'Health −1.'
+/** The Rubble Crawl is the Stray Rust-Pockets. Force raises the heat that route already uses. */
+export const RUBBLE_HEAT = 'Stray Heat +1.'
+
+const RUBBLE_LOOT = [
+  { item: 'scrap' as const, line: 'Scrap +1.' },
+  { item: 'salve' as const, line: 'Resin +1.' },
+  { item: 'vial_drop' as const, line: 'Drop +1.' },
+]
+
+/** One of Scrap, Resin, or a Drop. Same seed as the rest of the crawl, so a reload does not reroll the seam. */
+export function rubbleLoot(state: Pick<GameState, 'ticks' | 'sap' | 'sceneId' | 'flags'>): (typeof RUBBLE_LOOT)[number] {
+  let h = (state.ticks * 17 + (state.sap + 3) * 13 + Number(state.flags.sceneSteps ?? 0)) >>> 0
+  for (const ch of state.sceneId) h = Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0
+  return RUBBLE_LOOT[(h >>> 0) % RUBBLE_LOOT.length]
+}
+
+/** Stat lines land after the strip and the rescue, and a crisis flash is left alone. */
+export function rubbleResolve(before: GameState, next: GameState, fx: Effect): GameState {
+  if (!fx.flag?.rubblePick && !fx.flag?.rubbleForce) return next
+  const flags = { ...next.flags }
+  delete flags.rubblePick
+  delete flags.rubbleForce
+  next = { ...next, flags }
+  const stayed = next.sceneId === 'deep:shanty' && !next.flags.runOver && !String(next.sceneId).startsWith('crisis:')
+  if (fx.flag.rubblePick) {
+    const loot = rubbleLoot(before)
+    next = applyDelta(next, { add: { [loot.item]: 1 } })
+    if (stayed) next.flash = [RUBBLE_PICK, RUBBLE_SAP, loot.line].join('\n')
+    return next
+  }
+  if (stayed) next.flash = [RUBBLE_FORCE, RUBBLE_HEAT, RUBBLE_HEALTH].join('\n')
+  return next
+}
 /** NEW */ export const SIFTER_REST = 'The fire is low and warm. Nobody bothers you.'
 /** NEW */ export const SIPHON_TUNE_LINE = 'A scavenger seats the Module deeper and files the reservoir seal.\n\nSap Harvest +1.'
 /** NEW */ export const SIPHON_TUNE_LOCK = 'Needs: the Memory Siphon in a Seeker Extractor, and 2 scrap'
@@ -41,10 +77,10 @@ export const phase2Scenes: Scene[] = [
     id: 'deep:rubble',
     kind: 'story',
     title: 'The Rubble Crawl',
-    body: 'Dust still hangs thick in the air from the collapse. Twisted scrap and fallen ceiling slabs choke the passage.',
+    body: 'The passage is choked with split concrete and rusted lathe. Clear it with care or muscle past.',
     choices: [
-      { id: 'squeeze', label: 'Pick through the Rubble', sub: '1 Sap.', effects: { sap: -1, goto: 'deep:shanty', flash: RUBBLE_PICK } },
-      { id: 'clear', label: 'Force a Clearance', sub: 'Needs a heavy tool.', enable: HEAVY_TOOL, locked: 'Needs: a heavy tool', effects: { goto: 'deep:shanty', flash: RUBBLE_FORCE } },
+      { id: 'squeeze', label: 'Pick through the Rubble', sub: '1 Sap.', effects: { sap: -1, goto: 'deep:shanty', flag: { rubblePick: true }, flash: RUBBLE_PICK } },
+      { id: 'clear', label: 'Force a Clearance', sub: 'Needs a heavy tool.', enable: HEAVY_TOOL, locked: 'Needs: a heavy tool', effects: { health: -1, heat: { strays: 1 }, goto: 'deep:shanty', flag: { rubbleForce: true }, flash: RUBBLE_FORCE } },
     ],
   },
   {
