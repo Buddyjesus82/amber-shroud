@@ -1,6 +1,7 @@
 import { ITEMS, getScene, hasScene } from './content'
 import type { DoorId, GameState } from './types'
 import { EQUIP_SLOTS, slotsFor } from './kit'
+import { seedCh2Seen, seedMawSeen } from './map'
 
 /**
  * Old saves parked Vessel Cloth on armor, and the Dust Cloak on armor before the Cloak slot existed.
@@ -155,7 +156,7 @@ export function repairLoadedState(state: GameState): GameState {
     let next = base
     if (scene.hubId && base.hubId !== scene.hubId) next = { ...next, hubId: scene.hubId }
     if (scene.chapterId && base.chapterId !== scene.chapterId) next = { ...next, chapterId: scene.chapterId }
-    return next
+    return seedCh2Seen(seedMawSeen(next))
   }
   const scene = getScene(sceneId, base.door)
   const next: GameState = { ...base, sceneId }
@@ -171,7 +172,7 @@ export function repairLoadedState(state: GameState): GameState {
   else if (scene.chapterId === 'cache-run') next.hubId = null
   if (scene.chapterId) next.chapterId = scene.chapterId
   else if (scene.hubId && next.chapterId === 'cache-run' && !next.sceneId.startsWith('ch1:')) next.chapterId = null
-  return next
+  return seedCh2Seen(seedMawSeen(next))
 }
 
 export function repairedSlotChanged(before: GameState, after: GameState): boolean {

@@ -351,6 +351,16 @@ Kaelen the Sifter is here when the road says he is here. He will pay for a way o
     ],
     choices: [
       {
+        id: 'take-map',
+        label: 'Take the Threshold plan',
+        tone: 'quiet',
+        show: { flagUnset: 'threshMap' },
+        effects: {
+          flag: { threshMap: true },
+          flash: 'You pull a heavy waxed-hide floor plan from behind the cracked slate housing. The inner court, paddock perimeter, and vessel cells are cleanly marked in faded blue ink.',
+        },
+      },
+      {
         id: 'kaelen',
         label: 'Step into the pack-shade. Kaelen the Sifter.',
         sub: 'Buy. Sell. Rumors.',

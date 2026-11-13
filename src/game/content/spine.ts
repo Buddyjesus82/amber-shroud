@@ -174,6 +174,16 @@ The Gullet is a red bruise to the south. You could fill the empty vial with this
 Three Strays share the shade. A man with amber over half his face sits where the canvas runs out. A woman with one hand sifts sand by the tent pole. A third woman sits on a scrap pile with a snake across her shoulders. Everyone else in the shade has turned their back to you.`,
     choices: [
       {
+        id: 'take-map',
+        label: 'Take the Spine survey chart',
+        tone: 'quiet',
+        show: { flagUnset: 'spineMap' },
+        effects: {
+          flag: { spineMap: true },
+          flash: 'You pry open the dented lock-box on the bench. Inside rests a crisp, grease-sealed vellum sheet charting every ridge, dry wash, and shelter marker along the Bleached Spine.',
+        },
+      },
+      {
         id: 'talk',
         label: 'Sit in the expensive shade',
         sub: 'You pay for the minute by sitting down to talk. He still charges for a Drop.',

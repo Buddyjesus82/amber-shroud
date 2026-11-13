@@ -160,6 +160,10 @@ export type Effect = {
   /** Map-gated walk. Uses travelGate / travelTo — never a silent hop. */
   travel?: string
   startChapter?: string
+  /** v233: the player already confirmed the Cache Run. Do not ask again. */
+  cacheCommit?: boolean
+  /** v233: leave the first Cache Run beat and go home. */
+  cacheTurn?: boolean
   enterHub?: string
   /** The road between a home camp and the Red Maw (after Chapter One). The masked figure never meets you on it. */
   homeRoad?: boolean
