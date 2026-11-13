@@ -489,7 +489,7 @@ function inChapterThree(state: Pick<GameState, 'sceneId' | 'chapterId' | 'flags'
 
 /** Wagon after the strip, when a Chapter 3 run has no chapter checkpoint yet. Ash keeps a key he already took. */
 function ch3StartSnapshot(state: GameState): GameState {
-  const keep = ['chapter1Done', 'chapter2Done', 'chapter2Unlocked', 'ch3Stripped', 'ch3Started', 'ch3KeyTaken', 'ch3Helper', 'ch3GearStash', 'ch3ConsStash', 'ch3SapStash', 'origin']
+  const keep = ['chapter1Done', 'chapter2Done', 'chapter2Unlocked', 'ch3Stripped', 'ch3Started', 'ch3KeyTaken', 'ch3Helper', 'ch3GearStash', 'ch3ConsStash', 'ch3SapStash', 'origin', 'barrowMap']
   const flags: GameState['flags'] = { ch3Stripped: true, ch3Started: true }
   for (const k of keep) if (state.flags[k] !== undefined) flags[k] = state.flags[k]
   const items = { ...state.items }
