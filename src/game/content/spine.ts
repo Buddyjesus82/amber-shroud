@@ -68,7 +68,7 @@ ${SCOUT_CAMP_LINE}`,
         id: 'shade',
         label: "Walk to Silas's tent",
         sub: 'Shade is a country. He sells it by the minute.',
-        effects: { goto: 'spine:shade', ticks: 1 },
+        effects: { goto: 'spine:shade', ticks: 1, sap: -1 },
       },
       {
         id: 'well',

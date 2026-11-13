@@ -29,6 +29,8 @@ import { classifyLook, directedLookFlash, pressureLookFlash, roomLookEffect } fr
 import { ch3MapLocked, fogged, markCampSeen, matchCompass, travelGate } from './map'
 import { isChapterReleased } from './chapters'
 import { chapterThreeAfter } from './ch3'
+import { kaelenAsk } from './kaelenAsks'
+import { rubbleResolve } from './rubble'
 import { chapterTwoAfter, chapterTwoUnlock, isChapterTwoCode } from './ch2'
 import { CH2_ENTRY, chapterTwoSummary } from './content/intoTheMaw'
 import { ROAD_NOT_NOW, roadChoice, isTravelText, roadPhrase, roadToMaw, roadHome } from './returnRoad'
@@ -1330,6 +1332,15 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   // v166: Chapter Two upkeep (chapter, checkpoint, fights, drill clock).
   next = chapterTwoAfter(state, next, fx)
   next = chapterThreeAfter(state, next, fx)
+  next = rubbleResolve(state, next, fx)
+  if (fx.flag?.kaelenAsk) {
+    const ask = kaelenAsk(state.flags)
+    const flags = { ...next.flags }
+    delete flags.kaelenAsk
+    flags.kaelenRumorAt = ask.next
+    next.flags = flags
+    next.flash = ask.line
+  }
   if (captureSapOut && next.sceneId === 'ch3:wagon' && !next.flags.downed && !next.flags.runOver) {
     next = rescueChapterThreeSap(next)
   }
@@ -2446,6 +2457,7 @@ function visibleChoicesRaw(state: GameState): Choice[] {
 /** Camp-04 before the Overlook map: every map road is also a button, so the blank scrap never gates movement.
  * v219: the Spine and the Threshold too (their scraps stay blank until walked). Roads out of the hub stay on their own buttons. */
 function campWalkRows(state: GameState, rows: Choice[]): Choice[] {
+  if (getScene(state.sceneId, state.door).kind === 'ending') return []
   const map = state.hubId ? HUB_MAPS[state.hubId] : undefined
   if (!map || !fogged(state)) return []
   const here = map.sceneNode[state.sceneId] ?? map.nodes.find((n) => n.sceneId === state.sceneId)?.id
@@ -2453,11 +2465,11 @@ function campWalkRows(state: GameState, rows: Choice[]): Choice[] {
   const has = new Set(rows.map((c) => c.effects?.goto ?? c.effects?.travel).filter(Boolean))
   const out: Choice[] = []
   for (const e of map.edges) {
-    const other = e.a === here ? e.b : e.b === here ? e.a : null
+    const other = e.a === here ? e.b : !e.oneWay && e.b === here ? e.a : null
     const to = other ? map.nodes.find((n) => n.id === other) : null
     if (!to || to.sceneId === state.sceneId || getScene(to.sceneId, state.door).hubId !== state.hubId) continue
-    // A story button may share the destination. On the Barrow trail the walk still shows, and a gate keeps it locked.
-    if (has.has(to.sceneId) && state.hubId !== 'barrow') continue
+    // An authored choice already walks there. A second Walk row would only repeat it.
+    if (has.has(to.sceneId)) continue
     const sap = e.sap ?? 1
     const locked = ch3MapLocked(state, to.sceneId)
     out.push({

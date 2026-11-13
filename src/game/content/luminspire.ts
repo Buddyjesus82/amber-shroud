@@ -120,10 +120,10 @@ export const chapterThreeScenes: Scene[] = [
   },
   {
     id: 'ch3:crosshaven',
-    kind: 'ending',
+    kind: 'story',
     hubId: 'barrow',
     title: 'Crosshaven Fringe',
-    body: 'The Spire Key is cold against your palm, heavy with stolen brass. Behind you, the horn static of the Citadel perimeter fades into the freezing mist; ahead, the rot and oil-smoke of Crosshaven begin to take shape.',
-    choices: [{ id: 'title', label: 'Back to the title', sub: 'Your game is saved.', tone: 'quiet', effects: { flag: { ch3StubSeen: true } } }],
+    body: "The noise of the perimeter drops behind you, replaced by the low hum of Crosshaven's outer filters. Lantern light cuts through the grease-haze on the shanties. You've made it off the flats, but the inner gates are locked tight.",
+    choices: [{ id: 'walk-tent', label: 'Walk to Command Tent', tone: 'quiet', effects: { goto: 'ch3:tent' } }],
   },
 ]

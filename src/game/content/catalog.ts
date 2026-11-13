@@ -397,7 +397,7 @@ export const DOORS: Record<string, DoorDef> = {
     epithet: 'the Noon-Empty',
     blurb:
       'Face-down in the sand, empty pockets, a brand on your face. Silas tosses you an empty vial: earn your keep. Get a Drop before noon.',
-    sap: 2,
+    sap: 3,
     heat: { cartel: 0, seekers: 1, strays: 2 },
     items: {},
     flags: { origin: 'outcast', noonEmpty: true, silasTip: true },

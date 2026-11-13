@@ -590,9 +590,8 @@ export const roamKaelenScenes: Scene[] = [
         label: 'Ask if there is anything new',
         show: { flag: 'heardKallik' },
         effects: {
-          flag: { kaelenKnown: true },
+          flag: { kaelenKnown: true, kaelenAsk: true },
           ticks: 1,
-          flash: '"Nothing new on the road. You already have Kallik. The rib is where I said."',
         },
       },
       {

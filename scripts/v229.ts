@@ -8,7 +8,7 @@ import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v230'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v230'"), 'build v229')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v231'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v231'"), 'build v229')
 
 function wagon(): GameState {
   const base = newGame('vessel')
@@ -25,10 +25,9 @@ function walk(state: GameState, id: string): GameState {
 
 let s = wagon()
 ok(s.sceneId === 'ch3:wagon' && !s.flags.ch3Out && !!s.flags.ch3Stripped, 'fight lands collared on the wagon')
-for (const id of ['walk-relay', 'walk-supply']) {
-  const row = visibleChoices(s).find((c) => c.id === id)
-  ok(!!row && !isChoiceOn(s, row.enable) && row.locked === ROAD_NOT_NOW, `${id} is locked before the escape`)
-}
+ok(!visibleChoices(s).some((c) => c.id === 'walk-supply'), 'slip is the supply choice, so no second walk')
+const relayLocked = visibleChoices(s).find((c) => c.id === 'walk-relay')
+ok(!!relayLocked && !isChoiceOn(s, relayLocked.enable) && relayLocked.locked === ROAD_NOT_NOW, 'walk-relay is locked before the escape')
 const hop = travelTo(s, 'ch3:relay')
 ok(hop.sceneId === 'ch3:wagon' && hop.flash === ROAD_NOT_NOW && hop.sap === s.sap, 'a map hop off the wagon is refused')
 const trenchHop = travelTo(s, 'ch3:trench')

@@ -5,9 +5,6 @@ import { FOREMAN_LINE, VALVE_GUARDS_LINE } from '../v203Lines'
 
 // v200 DRAFT: Phase 2 deep camps (Jeramie's spec). Descriptions verbatim.
 // Flash lines marked NEW await approval. Numbers marked PROPOSED map his 100-scale to Health 6 / Sap 8 / Heat 8.
-
-/** NEW */ export const RUBBLE_PICK = 'You pick a path through the slabs. It takes time and breath.'
-/** NEW */ export const RUBBLE_FORCE = 'You lever the slabs apart and walk through.'
 /** NEW */ export const SIFTER_REST = 'The fire is low and warm. Nobody bothers you.'
 /** NEW */ export const SIPHON_TUNE_LINE = 'A scavenger seats the Module deeper and files the reservoir seal.\n\nSap Harvest +1.'
 /** NEW */ export const SIPHON_TUNE_LOCK = 'Needs: the Memory Siphon in a Seeker Extractor, and 2 scrap'
@@ -41,10 +38,10 @@ export const phase2Scenes: Scene[] = [
     id: 'deep:rubble',
     kind: 'story',
     title: 'The Rubble Crawl',
-    body: 'Dust still hangs thick in the air from the collapse. Twisted scrap and fallen ceiling slabs choke the passage.',
+    body: 'The passage is choked with split concrete and rusted lathe. Clear it with care or muscle past.',
     choices: [
-      { id: 'squeeze', label: 'Pick through the Rubble', sub: '1 Sap.', effects: { sap: -1, goto: 'deep:shanty', flash: RUBBLE_PICK } },
-      { id: 'clear', label: 'Force a Clearance', sub: 'Needs a heavy tool.', enable: HEAVY_TOOL, locked: 'Needs: a heavy tool', effects: { goto: 'deep:shanty', flash: RUBBLE_FORCE } },
+      { id: 'squeeze', label: 'Pick through the Rubble', sub: '1 Sap.', effects: { sap: -1, goto: 'deep:shanty', flag: { rubblePick: true } } },
+      { id: 'clear', label: 'Force a Clearance', sub: 'Needs a heavy tool.', enable: HEAVY_TOOL, locked: 'Needs: a heavy tool', effects: { health: -1, heat: { strays: 1 }, goto: 'deep:shanty', flag: { rubbleForce: true } } },
     ],
   },
   {
