@@ -207,8 +207,8 @@ export function isMawExit(state: GameState): boolean {
   return !!currentNode(state)?.mawExit
 }
 
-/** Camp-04 starts as a blank scrap: places draw in as you reach them, until the Overlook map is taken.
- * v219: the Spine and the Threshold draw in the same way. They have no full map to pick up (yet). */
+/** Each hub sheet starts blank and fills in as you walk it, until its map is taken.
+ * Camp-04: the Overlook. Spine: Silas's Shade. Threshold: Cup-Shadow. Red Maw: the Rim. Barrow: the Sunken Relay. */
 export const CAMP_MAP_FLAG = 'camp04Map'
 export const CAMP_SEEN_FLAG = 'camp04Seen'
 export const FOG_HUBS: Record<string, { seen: string; full: string }> = {
@@ -216,6 +216,7 @@ export const FOG_HUBS: Record<string, { seen: string; full: string }> = {
   spine: { seen: 'spineSeen', full: 'spineMap' },
   threshold: { seen: 'threshSeen', full: 'threshMap' },
   barrow: { seen: 'barrowSeen', full: 'barrowMap' },
+  redmaw: { seen: 'mawSeen', full: 'mawMap' },
 }
 /** v222: a Barrow Trails story scene the map must not open before its beat.
  * v229: the collared wagon has no road out until Wait (then only Supply). The Exit stays sealed after capture. */
@@ -296,6 +297,29 @@ export function markCampSeen(state: GameState): GameState {
 }
 export const markMapSeen = markCampSeen
 
+/** The Red Maw sheet was never fogged, so an older save already shows every node. Seed that seen-list once. A new run has no Maw progress and stays fogged until the Rim map. */
+export function seedMawSeen(state: GameState): GameState {
+  if (state.flags.mawSeen !== undefined || state.flags.mawMap) return state
+  const cp = state.checkpoint
+  const stood =
+    state.sceneId.startsWith('maw:') ||
+    state.hubId === 'redmaw' ||
+    !!cp?.sceneId?.startsWith('maw:') ||
+    cp?.hubId === 'redmaw' ||
+    !!state.flags.chapter1Done ||
+    !!state.flags.zafirMet ||
+    !!state.flags.metZafir ||
+    !!state.flags.ossaMet ||
+    !!state.flags.ribOpen ||
+    !!state.flags.sawCacheGleam ||
+    !!state.flags.hollowMarked ||
+    !!state.flags.oilMended
+  if (!stood) return state
+  const map = HUB_MAPS.redmaw
+  if (!map) return state
+  return { ...state, flags: { ...state.flags, mawSeen: map.nodes.map((n) => n.id).join(',') } }
+}
+
 /** The map as drawn on the player's scrap: the full sheet, or only the places (and roads between them) reached so far.
  * A road out of the hub (a node whose scene is not in the hub, like the Bone Wash) shows once the place beside it is drawn. */
 export function drawnMap(state: GameState): HubMapDef | null {
@@ -304,7 +328,7 @@ export function drawnMap(state: GameState): HubMapDef | null {
   const seen = seenOf(state, map.hubId)
   const here = currentNode(state)?.id
   if (here) seen.add(here)
-  const prefix = map.hubId === 'camp04' ? 'camp:' : map.hubId === 'spine' ? 'spine:' : map.hubId === 'threshold' ? 'thresh:' : map.hubId === 'barrow' ? 'ch3:' : `${map.hubId}:`
+  const prefix = map.hubId === 'camp04' ? 'camp:' : map.hubId === 'spine' ? 'spine:' : map.hubId === 'threshold' ? 'thresh:' : map.hubId === 'barrow' ? 'ch3:' : map.hubId === 'redmaw' ? 'maw:' : `${map.hubId}:`
   const exit = (id: string) => {
     const n = nodeById(map, id)
     return !!n && !n.sceneId.startsWith(prefix)

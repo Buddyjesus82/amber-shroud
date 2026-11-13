@@ -108,7 +108,18 @@ export const chapterThreeScenes: Scene[] = [
     hubId: 'barrow',
     title: 'Sunken Relay',
     body: 'A buried junction chamber exposed by centuries of erosion. Stagnant runoff laps against brass-capped conduits, and a dull hum vibrates through the damp stone floor.',
-    choices: [],
+    choices: [
+      {
+        id: 'take-map',
+        label: "Take the trail-runner's map",
+        tone: 'quiet',
+        show: { flagUnset: 'barrowMap' },
+        effects: {
+          flag: { barrowMap: true },
+          flash: 'You crack the wax off a battered tin tube wedged beneath the relay housing and unroll a stitched hide map. All the old runoff paths and dead-end cuts through the Barrow Trails are drawn in clean charcoal.',
+        },
+      },
+    ],
   },
   {
     id: 'ch3:siphon',

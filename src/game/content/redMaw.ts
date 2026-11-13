@@ -92,6 +92,16 @@ The ground out here takes more than the camp ever did. Sap goes faster. Hunters 
     ],
     choices: [
       {
+        id: 'take-map',
+        label: 'Take the Maw marker map',
+        tone: 'quiet',
+        show: { flagUnset: 'mawMap' },
+        effects: {
+          flag: { mawMap: true },
+          flash: 'You unclip a heavy hide marker map pinned to the wooden guide-post. All six rim paths, trading stalls, and wreckage drops across the Maw are clearly laid out.',
+        },
+      },
+      {
         id: 'look',
         label: "Look for Kallik's second rib",
         sub: 'Costs sap. You search the ribs for the gear-mark he cut.',
