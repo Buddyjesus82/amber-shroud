@@ -29,8 +29,8 @@ import { classifyLook, directedLookFlash, pressureLookFlash, roomLookEffect } fr
 import { ch3MapLocked, fogged, markCampSeen, matchCompass, travelGate } from './map'
 import { isChapterReleased } from './chapters'
 import { chapterThreeAfter } from './ch3'
-import { kaelenAsk } from './content/kaelen'
-import { rubbleResolve } from './content/phase2Camps'
+import { kaelenAsk } from './kaelenAsks'
+import { rubbleResolve } from './rubble'
 import { chapterTwoAfter, chapterTwoUnlock, isChapterTwoCode } from './ch2'
 import { CH2_ENTRY, chapterTwoSummary } from './content/intoTheMaw'
 import { ROAD_NOT_NOW, roadChoice, isTravelText, roadPhrase, roadToMaw, roadHome } from './returnRoad'
@@ -1334,7 +1334,7 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   next = chapterThreeAfter(state, next, fx)
   next = rubbleResolve(state, next, fx)
   if (fx.flag?.kaelenAsk) {
-    const ask = kaelenAsk(state)
+    const ask = kaelenAsk(state.flags)
     const flags = { ...next.flags }
     delete flags.kaelenAsk
     flags.kaelenRumorAt = ask.next

@@ -10,7 +10,7 @@ import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v230'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v230'"), 'build v230')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v231'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v231'"), 'build v230')
 
 function capture(patch: Partial<GameState> = {}): GameState {
   const base = newGame('vessel')
