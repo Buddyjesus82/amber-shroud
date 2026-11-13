@@ -2,7 +2,7 @@ import { useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from '
 import { HUBS } from '../game/content/catalog'
 import { CH2_BACKTRACK, chapterTwoLocked, travelTo } from '../game/engine'
 import { pushReportAction } from '../game/reportLog'
-import { adjacency, ch3MapLocked, currentNode, fogged, drawnMap, edgeSap as rawEdgeSap, nodeById } from '../game/map'
+import { adjacency, ch2MapLocked, ch3MapLocked, currentNode, fogged, drawnMap, edgeSap as rawEdgeSap, nodeById } from '../game/map'
 import { ROAD_SAP } from '../game/returnRoad'
 import { estimateLabel, layoutLabels, type Box } from '../game/mapLabels'
 import type { GameState, HubMapDef, HubMapNode } from '../game/types'
@@ -51,13 +51,13 @@ export function MapSheet({ state, onChange, onClose }: Props) {
         <header className="sheet-head">
           <div>
             <p className="kicker map-kicker">scavenged scrap</p>
-            <h2>{map && !chapterTwoLocked(state) ? titleFor(state, map) : 'Unmapped'}</h2>
+            <h2>{map && (!chapterTwoLocked(state) || map.hubId.startsWith('ch2')) ? titleFor(state, map) : 'Unmapped'}</h2>
           </div>
           <button type="button" className="text-link scrap-stow" onClick={onClose}>
             Stow
           </button>
         </header>
-        {chapterTwoLocked(state) ? (
+        {chapterTwoLocked(state) && !map?.hubId.startsWith('ch2') ? (
           <p className="map-coming">{CH2_BACKTRACK}</p>
         ) : state.chapterId === 'cache-run' ? (
           <p className="map-coming">{ROAD_MAP_LINE}</p>
@@ -90,6 +90,9 @@ function titleFor(state: GameState, map: HubMapDef) {
   if (map.hubId === 'threshold') return 'Outer Threshold'
   if (map.hubId === 'redmaw') return 'Red Maw Approach'
   if (map.hubId === 'barrow') return 'Barrow Trails'
+  if (map.hubId === 'ch2p') return 'Prisoner: Cartel Stock'
+  if (map.hubId === 'ch2o') return 'Outcast: Cast Out Twice'
+  if (map.hubId === 'ch2v') return 'Vessel: The False Cup Inside'
   return state.hubId ?? 'Map'
 }
 
@@ -208,7 +211,7 @@ function HubMapView({
       onHint(`You are at ${node.name}.`)
       return
     }
-    if (ch3MapLocked(state, node.sceneId)) {
+    if (ch3MapLocked(state, node.sceneId) || ch2MapLocked(state, node.sceneId)) {
       pushReportAction({ kind: 'map', id: node.id, label: node.name, from: state.sceneId, to: state.sceneId })
       onHint('Not now.')
       return
@@ -272,7 +275,7 @@ function HubMapView({
         <div className="hub-map-nodes">
           {map.nodes.map((n, i) => {
             const mine = here?.id === n.id
-            const sealed = ch3MapLocked(state, n.sceneId)
+            const sealed = ch3MapLocked(state, n.sceneId) || ch2MapLocked(state, n.sceneId)
             const next = adjIds.has(n.id) && !sealed
             const sap = here && next ? edgeSap(map, here.id, n.id, state) : null
             const cls = mine ? 'map-node here' : next ? 'map-node next' : 'map-node far'

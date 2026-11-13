@@ -26,7 +26,7 @@ import { helpText } from './help'
 import { helpRoute, HELP_HINT, HELP_TOPICS, topicText } from './helpTopics'
 import { isBayScene } from './content/bayHands'
 import { classifyLook, directedLookFlash, pressureLookFlash, roomLookEffect } from './look'
-import { ch3MapLocked, fogged, markCampSeen, matchCompass, travelGate } from './map'
+import { ch2MapLocked, ch3MapLocked, fogged, markCampSeen, matchCompass, travelGate } from './map'
 import { isChapterReleased } from './chapters'
 import { chapterThreeAfter } from './ch3'
 import { kaelenAsk } from './kaelenAsks'
@@ -1525,7 +1525,7 @@ export function chapterTwoLocked(state: Pick<GameState, 'flags'>): boolean {
 
 export function travelTo(state: GameState, sceneId: string): GameState {
   if (state.sceneId === sceneId) return state
-  if (ch3MapLocked(state, sceneId)) return persist({ ...state, flash: ROAD_NOT_NOW })
+  if (ch3MapLocked(state, sceneId) || ch2MapLocked(state, sceneId)) return persist({ ...state, flash: ROAD_NOT_NOW })
   if (chapterTwoLocked(state) && !sceneId.startsWith('ch2:')) {
     // A button on this screen that goes there (the Vessel market and stilt rows, a Back) still works.
     const row = visibleChoices(state).find((c) => c.effects?.goto === sceneId && isChoiceOn(state, c.enable))

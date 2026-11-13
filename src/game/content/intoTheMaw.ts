@@ -248,6 +248,16 @@ Greg unhooks a chain from his belt. "No toll for stock. Stock goes back in the p
 
 "Don't. Don't yell. You're off the haul. Nobody comes off the haul." He squints through amber lenses. "Pen tags. Shaved. Camp-04. Greg chains people for Camp-04. He tried to chain me."`,
     choices: [
+      {
+        id: 'take-map',
+        label: 'Take the shaft survey chart',
+        tone: 'quiet',
+        show: { flagUnset: 'ch2pMap' },
+        effects: {
+          flag: { ch2pMap: true },
+          flash: 'You slide a folded, grease-smudged hide chart out from a parts drawer beneath the gantry. The Sift Line, the Old Shaft, and the Drill Line dropping down toward the Shaft Foot are marked in heavy charcoal.',
+        },
+      },
       { id: 'help', label: 'Finish his lift motor', sub: '3 scrap.', show: { all: [{ flagUnset: 'murchScrap' }, { flagUnset: 'murchAbandoned' }] }, enable: { itemMin: ['scrap', 3] }, locked: 'Needs: 3 scrap', effects: { remove: { scrap: 3 }, flag: { murchScrap: true, murchProtected: true }, flash: "He takes the scrap like water. 'Old shaft. Goes straight down to the cache. Lift's dead. Was dead.'" } },
       { id: 'shaftask', label: 'Ask about the shaft', group: 'talk', show: { all: [{ flagUnset: 'murchAbandoned' }, { flagUnset: 'murchShaftAsked' }] }, effects: { flag: { murchShaftAsked: true }, flash: "'Under the sift line, under the barge. Miller sealed it. I can unseal anything Miller seals.'" } },
       { id: 'leave', label: 'Leave him', tone: 'quiet', show: { all: [{ flagUnset: 'murchScrap' }, { flagUnset: 'murchAbandoned' }] }, effects: { flag: { murchAbandoned: true }, flash: 'You walk. Behind you, the spanner hits the floor, and somebody shouts for Greg.' } },
@@ -363,6 +373,16 @@ Greg sees the gold dust on you and steps back. 'Seeker business goes through. Se
       { tags: ['ossa', 'stilt', 'where is ossa'], reply: '', effects: { flag: { ch2TownFrom: 'ch2:v-outpost' }, goto: 'maw:stilt' } },
     ],
     choices: [
+      {
+        id: 'take-map',
+        label: 'Take the inner sanctum plan',
+        tone: 'quiet',
+        show: { flagUnset: 'ch2vMap' },
+        effects: {
+          flag: { ch2vMap: true },
+          flash: 'You slide a stiff vellum plan out from beneath a brass weight on the desk. The Pilgrim Stair, the Cup Test, and the lower passages running past the Transport Bay toward Oram\'s Lower Stair are inked in sharp detail.',
+        },
+      },
       { ...hiddenExitChoice, show: { all: [{ flag: 'hasBargainFlag' }, unblown] } },
       { id: 'test', label: 'Submit to the test', show: { all: [unblown, { flagUnset: 'cupPassed' }] }, effects: { goto: 'ch2:v-test' } },
       { id: 'murch', label: 'The transport bay', show: { all: [unblown, { flagUnset: 'murchProtected' }, { flagUnset: 'murchCaptured' }] }, effects: { goto: 'ch2:v-murch' } },
@@ -548,6 +568,16 @@ The horn rasps again: "Not that one, Greg. The Strays want that one. Hold it for
 
 He doesn't look up. 'Sand gives. Sand takes back. You pay the difference.'`,
     choices: [
+      {
+        id: 'take-map',
+        label: 'Take the Spine Root chart',
+        tone: 'quiet',
+        show: { flagUnset: 'ch2oMap' },
+        effects: {
+          flag: { ch2oMap: true },
+          flash: 'You pull a tightly rolled piece of cured hide from a hollowed rib-bone beside the ash-pit. Every switchback from the Stake Line and Deep Camp out to Ossa\'s Stilt-Walk and the Spine Root\'s Foot is scratched in dark pigment.',
+        },
+      },
       { id: 'mark-glint', label: "Trade a Glint for Kallik's Mark", sub: '1 Glint. Once.', show: { flagUnset: 'hermitTraded' }, enable: { item: 'glints' }, locked: 'Needs: 1 Glint', effects: { remove: { glints: 1 }, add: { kallik_mark: 1 }, flag: { hermitTraded: true }, ticks: 1, flash: "He holds the Glint to the light, then drops the token in your palm. Kallik's Mark +1." } },
       { id: 'mark-scrap', label: "Trade 3 scrap for Kallik's Mark", sub: '3 scrap. Once.', show: { flagUnset: 'hermitTraded' }, enable: { itemMin: ['scrap', 3] }, locked: 'Needs: 3 scrap', effects: { remove: { scrap: 3 }, add: { kallik_mark: 1 }, flag: { hermitTraded: true }, ticks: 1, flash: "He weighs the scrap in one hand and drops the token in your palm. Kallik's Mark +1." } },
       BACK_TO('ch2:o-root'),
