@@ -296,7 +296,7 @@ assert(Object.keys(outcast.items).length === 0, 'outcast wakes with empty pocket
   assert(stood.items.vial_empty === 1 && stood.items.silas_tip === 1, 'Silas tosses the empty vial and scratches his shade-cut on standing')
 }
 assert(!outcast.items.wrench && !outcast.items.scrip && !outcast.items.oram_map, 'outcast kit unique')
-assert(outcast.sap === 2, 'outcast sap is thin')
+assert(outcast.sap === 3, 'outcast sap is thin')
 assert(outcast.heat.strays === 2, 'outcast stray lean')
 
 assert(vessel.items.rusted_dagger === 1 && vessel.items.oram_map === 1, 'vessel kit: dagger + oram map')
@@ -580,7 +580,7 @@ s = pick(s, 'hub')
 assert(s.hubId === 'redmaw', 'red maw hub')
 
 s = newGame('outcast')
-assert(s.sap === 2, 'outcast starts thin')
+assert(s.sap === 3, 'outcast starts thin')
 {
   const button = pick(s, 'stand')
   for (const typed of ['pick up the vial and stand', 'stand up', 'get up', 'pick up the vial']) {
