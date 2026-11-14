@@ -821,7 +821,8 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
       ...rest,
       add: { ...rest.add, [loot.item]: (rest.add?.[loot.item] ?? 0) + 1 },
       flag: { ...rest.flag, courtyardPulls: pulls + 1, ...(done ? { courtyardCleared: true } : {}) },
-      flash: (how === 'slow' ? [COURTYARD_SLOW, RUBBLE_SAP, loot.line] : [COURTYARD_RIP, BARROW_CARTEL_1, loot.line]).join('\n'),
+      // v243: at Cartel Heat 8 the meter can't climb, so the rip prints no Heat line (Jeramie, t1258u).
+      flash: (how === 'slow' ? [COURTYARD_SLOW, RUBBLE_SAP, loot.line] : [COURTYARD_RIP, ...((state.heat.cartel ?? 0) >= 8 ? [] : [BARROW_CARTEL_1]), loot.line]).join('\n'),
     }
   }
   if (fx.risk) {
