@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v237'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v237'"), 'build v235')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v238'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v238'"), 'build v235')
 const app = readFileSync('src/App.tsx', 'utf8')
 ok(app.includes("IN_PLAY_KEY = 'amber-shroud.inPlay'"), 'in-play marker key')
 ok(/sessionStorage\.setItem\(IN_PLAY_KEY, door\)/.test(app), 'marker set while playing')
