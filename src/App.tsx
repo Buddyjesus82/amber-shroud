@@ -21,6 +21,24 @@ import type { DoorId, GameState } from './game/types'
 
 type View = 'title' | 'intro' | 'doors' | 'play'
 
+/** v235: the door being played in this tab. A reload (new build, cover fix) goes straight back to it. */
+const IN_PLAY_KEY = 'amber-shroud.inPlay'
+function markInPlay(door: DoorId | null) {
+  try {
+    if (door) sessionStorage.setItem(IN_PLAY_KEY, door)
+    else sessionStorage.removeItem(IN_PLAY_KEY)
+  } catch {
+    /* private mode: the title screen still works */
+  }
+}
+function readInPlay(): DoorId | null {
+  try {
+    return (sessionStorage.getItem(IN_PLAY_KEY) as DoorId | null) || null
+  } catch {
+    return null
+  }
+}
+
 function saveSnapshot() {
   return {
     doors: listSaves(),
@@ -77,10 +95,24 @@ export default function App() {
   }, [state])
 
   useEffect(() => {
+    if (booting) return
+    markInPlay(view === 'play' && state ? state.door : null)
+  }, [view, state, booting])
+
+  useEffect(() => {
     let live = true
     void hydrateSaves().then(() => {
       if (!live) return
       refreshSaves()
+      const door = readInPlay()
+      const resumed = door ? loadDoor(door) : null
+      if (resumed) {
+        stateRef.current = resumed
+        setState(resumed)
+        setView('play')
+      } else if (door) {
+        markInPlay(null)
+      }
       setBooting(false)
     })
     return () => {

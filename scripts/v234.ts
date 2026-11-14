@@ -4,7 +4,7 @@ import { readFileSync, statSync } from 'node:fs'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v234'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v234'"), 'build v234')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v235'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v235'"), 'build v234')
 ok(readFileSync('src/game/art.ts', 'utf8').includes("courtguard: 'courtguard.jpg'"), 'court guard art still mapped')
 ok(statSync('public/covers/courtguard.jpg').size > 20000, 'court guard art present')
 
