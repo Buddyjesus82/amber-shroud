@@ -1,5 +1,6 @@
 import { SPARE_SAP_LOCK } from './sapLock'
-import { companionOf, keltStep, LINES as PARTY_LINES, recruitFx, sneakOdds } from './companions'
+import { COMPANIONS, companionOf, confirmPending, keltStep, LINES as PARTY_LINES, recruitFx, recruitPendingOf, sneakOdds, type RecruitPending } from './companions'
+export { confirmPending, recruitPendingOf } from './companions'
 import { STAIRS, STAIRS_CLEARED, STAIRS_TO } from './content/crucible'
 import { hash as hashRoll } from './fightTricks'
 import { BARROW_EMPTY, barrowCache, barrowLooted, barrowRows, barrowScene, heatReliefRows, passageCheck } from './heatRelief'
@@ -625,10 +626,26 @@ export const TURN_BACK = 'Turn back'
 export const TURN_BACK_SUB = 'Back the way you came.'
 export const TURN_BACK_FLASH = 'You turn your back on the road before the storm can close it behind you.'
 
+/** v239: Jeramie's swap confirm (t1243u). One party slot, so a recruit that replaces a helper asks first. */
+export const SWAP_CONFIRM = (current: string, next: string) => `${current} will leave the party. Take ${next} instead?`
+export const SWAP_TAKE = 'Swap'
+export const SWAP_KEEP = (current: string) => `Keep ${current.includes("'") ? current : current.split(' ')[0]}`
+
+function swapConfirmText(state: GameState, p: RecruitPending): string {
+  return SWAP_CONFIRM(companionOf(state)!.name, COMPANIONS[p.fx.recruit!].name)
+}
+
+function needsSwapConfirm(state: GameState, fx: Effect): boolean {
+  if (!fx.recruit || fx.recruitSwap) return false
+  const mate = companionOf(state)
+  return !!mate && mate.id !== fx.recruit
+}
+
 function cacheSnapOf(state: GameState): string {
   const { checkpoint: _c, flash: _f, updatedAt: _u, ...rest } = state
   const flags = { ...rest.flags }
   delete flags.cachePending
+  delete flags.recruitPending
   return JSON.stringify({ ...rest, flags })
 }
 
@@ -678,6 +695,24 @@ function turnBackFromCache(state: GameState): GameState {
 }
 
 export function applyEffect(state: GameState, fx: Effect): GameState {
+  // v239: the helper swap confirm. Keep clears it; Swap runs the original recruit choice in full.
+  if (typeof state.flags.recruitPending === 'string') {
+    const pending = recruitPendingOf(state)
+    const flags = { ...state.flags }
+    delete flags.recruitPending
+    if (fx.recruitKeep) return persist({ ...state, flags, flash: undefined })
+    if (fx.recruitSwap && pending) return applyEffect({ ...state, flags, flash: undefined }, { ...pending.fx, recruitSwap: true })
+    state = { ...state, flags }
+  }
+  if (fx.recruitKeep || (fx.recruitSwap && !fx.recruit)) return persist(state)
+  if (needsSwapConfirm(state, fx)) {
+    const p: RecruitPending = { scene: state.sceneId, fx: { ...fx } }
+    return persist({ ...state, flash: swapConfirmText(state, p), flags: { ...state.flags, recruitPending: JSON.stringify(p) } })
+  }
+  if (fx.recruitSwap) {
+    const { recruitSwap: _s, ...rest } = fx
+    fx = rest
+  }
   if (fx.cacheTurn) return turnBackFromCache(state)
   if (fx.flag?.cacheStay) {
     const flags = { ...state.flags }
@@ -1993,6 +2028,14 @@ export const SHADOW_NO_FIGHT = 'She is a shadow, not a body. If you mean it, swi
 
 export function interpret(state: GameState, raw: string): GameState {
   const text = phoneText(raw)
+  const swap = recruitPendingOf(state)
+  if (swap) {
+    const hay = text.trim().toLowerCase()
+    const keep = SWAP_KEEP(companionOf(state)!.name).toLowerCase()
+    if (hay === 'swap' || hay === 'yes' || hay === 'take') return withVerb(applyEffect(state, { recruitSwap: true }), 'swap')
+    if (hay === keep || hay === 'keep' || hay === 'no' || hay === 'stay') return withVerb(applyEffect(state, { recruitKeep: true }), 'keep')
+    return withVerb(persist({ ...state, flash: swapConfirmText(state, swap) }), 'swap')
+  }
   if (typeof state.flags.cachePending === 'string') {
     const hay = text.trim().toLowerCase()
     if (hay === 'stay' || hay === 'wait') return withVerb(applyEffect(state, { flag: { cacheStay: true } }), 'stay')
@@ -2496,7 +2539,7 @@ function noEscapeAfterChapterOne(state: GameState, rows: Choice[]): Choice[] {
 
 export function visibleChoices(state: GameState): Choice[] {
   const rows = partySwap(state, noEscapeAfterChapterOne(state, visibleChoicesRaw(state)))
-  if (typeof state.flags.cachePending === 'string' || state.flags.encounterHere || state.flags.downed) return rows
+  if (confirmPending(state) || state.flags.encounterHere || state.flags.downed) return rows
   if (state.chapterId === 'cache-run' && state.flags.cacheFirst === state.sceneId) {
     return [
       ...rows,
@@ -2514,6 +2557,13 @@ function partySwap(state: GameState, rows: Choice[]): Choice[] {
 }
 
 function visibleChoicesRaw(state: GameState): Choice[] {
+  const swap = recruitPendingOf(state)
+  if (swap) {
+    return [
+      { id: 'swap-take', label: SWAP_TAKE, tone: 'default', effects: { recruitSwap: true } },
+      { id: 'swap-keep', label: SWAP_KEEP(companionOf(state)!.name), tone: 'quiet', effects: { recruitKeep: true } },
+    ]
+  }
   if (typeof state.flags.cachePending === 'string') {
     return [
       { id: 'cache-take', label: CACHE_TAKE, tone: 'hunger', effects: { cacheCommit: true } },

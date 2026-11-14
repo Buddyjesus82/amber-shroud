@@ -6,7 +6,7 @@ import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v238'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v238'"), 'build v236')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v239'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v239'"), 'build v236')
 ok(SPINE_TOP_HEAT_GAP === 4, 'Spine Heat 8 gap is 4')
 ok(huntGap(8) === 2, 'other grounds keep their Heat 8 pace')
 ok(/heat >= 8 && spineGround\(state\)\) gap = Math\.max\(gap, SPINE_TOP_HEAT_GAP\)/.test(readFileSync('src/game/engine.ts', 'utf8')), 'Spine hunt uses the 4-scene gap')

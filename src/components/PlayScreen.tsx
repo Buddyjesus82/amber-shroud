@@ -40,7 +40,7 @@ import { kaelenNamed, ROADS, shownText } from '../game/roads'
 import { canDrawResin, DRAW_RESIN_SUB, DRAW_RESIN_SUB_TUNED, scavengeLock } from '../game/scavenge'
 import { barrowScene } from '../game/heatRelief'
 import { RUSH_CHANCE, RUSH_MOVES, RUSH_WINDOW_MS, STALL_BASE, STALL_MAX_S, STALL_MIN_S, STALL_STEP, STALL_TICK_S } from '../game/noticeHeat'
-import { fightLocked, noticeOn, timingNotice } from '../game/engine'
+import { confirmPending, fightLocked, noticeOn, timingNotice } from '../game/engine'
 import { isShopOpen } from '../game/trade'
 import type { Choice, Faction, GameState } from '../game/types'
 import { helpEntries } from '../game/help'
@@ -259,7 +259,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
       ? encounterSpeaker(state)
       : (pressureFace(state) ?? shownText(state, scene.title) ?? hub?.name ?? 'The dunes')
   const shopOpen = isShopOpen(state)
-  const confirming = typeof state.flags.cachePending === 'string'
+  const confirming = confirmPending(state)
   const hookRow = !confirming && !!(!overlay && !shopOpen && hub && hookOn && hook && showNav)
   const closeRow = !confirming && !!(!overlay && !shopOpen && closing && showNav)
   // Every selectable quest/story/hub action belongs in this list — never pinned above .choices.
