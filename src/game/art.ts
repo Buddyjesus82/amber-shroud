@@ -797,7 +797,7 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
     if (kind === 'dragoon') return 'courtguard'
     if (kind === 'patrol') return 'rell'
     if (kind === 'courtguard' || kind === 'thaliaguard') return 'courtguard'
-    if (kind === 'collector') return SPINE_HUNTER.art
+    if (kind === 'collector' || kind === 'sablewave') return SPINE_HUNTER.art
     if (kind === 'carapace') return CARAPACE_HUNTER.art
     if (kind === 'runner') return 'brin'
     if (kind === 'cutter') return 'rim_cutter'

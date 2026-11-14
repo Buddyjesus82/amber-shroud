@@ -24,7 +24,7 @@ const verbFor: Record<string, string> = {
   needle_knife: 'cut',
   seeker_extractor: 'plunge',
 }
-const names: Record<string, string> = { wrench: 'Wrench', crack: 'Crack', cut: 'Cut', plunge: 'Plunge', strike: 'Strike' }
+const names: Record<string, string> = { wrench: 'Wrench', crack: 'Crack', cut: 'Fight', plunge: 'Plunge', strike: 'Strike' }
 for (const [id, verb] of Object.entries(verbFor)) {
   const st = { equipped: { weapon: id as ItemId } } as GameState
   ok(fightVerbId(st) === verb, `${id} is ${verb} (${fightVerbId(st)})`)
