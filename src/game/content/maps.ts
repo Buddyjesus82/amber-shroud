@@ -223,6 +223,7 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
       { id: 'supply', name: 'Supply Wagon', short: 'Wagon', sceneId: 'ch3:supply', x: 32, y: 140, labelSide: 'above' },
       { id: 'tent', name: 'Command Tent', short: 'Tent', sceneId: 'ch3:tent', x: 32, y: 166, labelSide: 'above' },
       { id: 'crosshaven', name: 'Crosshaven Fringe', short: 'Fringe', sceneId: 'ch3:crosshaven', x: 32, y: 192, labelSide: 'above' },
+      { id: 'gatehouse', name: 'The Iron Gatehouse', short: 'Gatehouse', sceneId: 'ch3:gatehouse', x: 78, y: 192, labelSide: 'above' },
     ],
     edges: [
       { a: 'capture', b: 'trench', sap: 1 },
@@ -233,6 +234,7 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
       { a: 'tent', b: 'crosshaven', sap: 2, oneWay: true },
       { a: 'crosshaven', b: 'tent', sap: 0, oneWay: true },
       { a: 'relay', b: 'siphon', sap: 1 },
+      { a: 'crosshaven', b: 'gatehouse', sap: 0 },
     ],
     sceneNode: {
       'ch3:capture': 'capture',
@@ -243,6 +245,7 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
       'ch3:supply': 'supply',
       'ch3:tent': 'tent',
       'ch3:crosshaven': 'crosshaven',
+      'ch3:gatehouse': 'gatehouse',
     },
   },
   /** v233: Chapter 2, Prisoner route "Cartel Stock". Fogged until the shaft survey is taken. */

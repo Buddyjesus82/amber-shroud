@@ -8,7 +8,7 @@ import type { DoorId, GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v240'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v240'"), 'build v240')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v241'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v241'"), 'build v241')
 
 const LOCKED = 'The cables are bound too thick to pull. You need a blade.'
 const CUT = 'The rotted bindings part under the blade, one braid at a time. The drum is free of rope, but silt has welded it solid.'
@@ -58,7 +58,7 @@ for (const door of ['prisoner', 'outcast', 'vessel'] as DoorId[]) {
     ok(m.flash === SLIP && m.health === 4 && !m.flags.crosshavenGateOpen && !!row(m, 'crank-drum') && m.sceneId === 'ch3:crosshaven', `${door}: slip costs 1 Health, crank stays`)
     const h = applyEffect(hit, row(hit, 'crank-drum')!.effects)
     ok(h.flash === OPEN && h.flags.crosshavenGateOpen === true && h.health === 5 && h.items.needle_knife === 1, `${door}: crank opens`)
-    ok(!row(h, 'crank-drum') && !row(h, 'cut-cables') && visibleChoices(h).map((c) => c.id).join() === 'walk-tent', `${door}: buttons gone once open`)
+    ok(!row(h, 'crank-drum') && !row(h, 'cut-cables') && visibleChoices(h).map((c) => c.id).join() === 'walk-gatehouse,walk-tent', `${door}: buttons gone once open`)
     ok(getScene(h.sceneId).body === FRINGE, `${door}: body unchanged after opening`)
     ok(interpret(hit, 'crank the drum').flags.crosshavenGateOpen === true, `${door}: typed crank`)
     ok(interpret(miss, 'open the gate').flash === SLIP, `${door}: typed open gate pulls`)
