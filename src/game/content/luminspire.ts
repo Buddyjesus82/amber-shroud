@@ -17,6 +17,18 @@ export const GATEHOUSE_PRY = 'The hasp gives with a crack. Inside, rusted fittin
 export const GATEHOUSE_GUARD = 'His pockets hold sand and a Cartel tally chit, stamped and worthless now.'
 export const GATEHOUSE_PRY_LOCKED = 'Needs: the Needle Knife'
 
+/** v242: the Silt-Choked Courtyard and the Deep Junction (Jeramie, t1253u–t1256u). Approved lines, word for word. */
+export const COURTYARD_TITLE = 'The Silt-Choked Courtyard'
+export const COURTYARD_BODY = 'The walls open onto a staging yard big enough to swallow a caravan. Transport frames lie rusted to their axles, half-buried in drifted silt, and collapsed scaffolding leans against the inner wall like broken ribs. The wind finds you here.'
+export const COURTYARD_SLOW = 'You lift and set aside, lift and set aside, until your arms shake. Under a frame you find what the silt was hiding.'
+export const COURTYARD_RIP = 'Metal shrieks across the yard. A Cartel look-out on the upper tier stops pacing and listens.'
+export const COURTYARD_CLEARED = 'The loose junk is cleared out. Nothing left here worth the sweat.'
+/** Both scavenge buttons share this many pulls. */
+export const COURTYARD_PULLS = 3
+export const JUNCTION_TITLE = 'The Deep Junction'
+export const JUNCTION_BODY = 'The drainage tunnels meet here in a wide, dripping fork. Old runoff channels split off into the dark on either side, and between them a broad cut of worn stone runs on, rutted by wheels that stopped turning long ago. The old trade road.'
+export const JUNCTION_ROAD = "The old trade road runs on into the dark, choked with collapse and silence. You'll need a reason—and a route—before pushing deeper."
+
 export const CH3_FIGHT_RESULT = 'It ends before it starts.'
 export const CH3_RUN_RESULT = 'Dorn Vane is already there.'
 export const CH3_STRIP_GEAR = 'Weapons taken. Armor taken.'
@@ -195,7 +207,51 @@ export const chapterThreeScenes: Scene[] = [
         show: { flagUnset: 'gatehouseGuardSearched' },
         effects: { still: true, flag: { gatehouseGuardSearched: true }, flash: GATEHOUSE_GUARD },
       },
+      { id: 'walk-courtyard', label: 'Walk into the courtyard', tone: 'quiet', effects: { goto: 'ch3:courtyard' } },
       { id: 'back-fringe', label: 'Back to the Fringe', tone: 'quiet', effects: { goto: 'ch3:crosshaven' } },
+    ],
+  },
+  {
+    id: 'ch3:courtyard',
+    kind: 'story',
+    hubId: 'barrow',
+    title: COURTYARD_TITLE,
+    body: COURTYARD_BODY,
+    choices: [
+      {
+        id: 'clear-debris',
+        label: 'Clear the debris slowly',
+        sub: 'Sap −1. Quiet work.',
+        tone: 'quiet',
+        show: { flagUnset: 'courtyardCleared' },
+        enable: { sapMin: 1 },
+        locked: 'Needs: 1 Sap',
+        effects: { still: true, sap: -1, courtyardPull: 'slow' },
+      },
+      {
+        id: 'rip-wreckage',
+        label: 'Rip through the wreckage',
+        sub: 'Fast and loud.',
+        tone: 'danger',
+        show: { flagUnset: 'courtyardCleared' },
+        effects: { still: true, heat: { cartel: 1 }, courtyardPull: 'rip' },
+      },
+      // After the third pull, both stay up but greyed, with the approved cleared line.
+      { id: 'clear-debris-done', label: 'Clear the debris slowly', sub: 'Sap −1. Quiet work.', tone: 'quiet', show: { flag: 'courtyardCleared' }, enable: { flag: '__no__' }, locked: COURTYARD_CLEARED, effects: {} },
+      { id: 'rip-wreckage-done', label: 'Rip through the wreckage', sub: 'Fast and loud.', tone: 'danger', show: { flag: 'courtyardCleared' }, enable: { flag: '__no__' }, locked: COURTYARD_CLEARED, effects: {} },
+      { id: 'walk-junction', label: 'Walk to the Deep Junction', tone: 'quiet', effects: { goto: 'ch3:junction' } },
+      { id: 'back-gatehouse', label: 'Back to the Gatehouse', tone: 'quiet', effects: { goto: 'ch3:gatehouse' } },
+    ],
+  },
+  {
+    id: 'ch3:junction',
+    kind: 'story',
+    hubId: 'barrow',
+    title: JUNCTION_TITLE,
+    body: JUNCTION_BODY,
+    choices: [
+      { id: 'follow-road', label: 'Follow the old trade road', sub: 'Into the Barrow Trails.', tone: 'quiet', effects: { still: true, flash: JUNCTION_ROAD } },
+      { id: 'back-courtyard', label: 'Back to the Courtyard', tone: 'quiet', effects: { goto: 'ch3:courtyard' } },
     ],
   },
 ]

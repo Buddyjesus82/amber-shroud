@@ -10,7 +10,7 @@ import type { DoorId, GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v241'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v241'"), 'build v241')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v242'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v242'"), 'build v242')
 
 const BODY = "A narrow vaulted passage, stone sweating in the dead air. An old Cartel post rots against the wall, a stool, a rack with no spears, and a guard who never got relieved, still sitting in what's left of his coat. A footlocker sits at his boots, padlocked and rust-sealed."
 const PRY = 'The hasp gives with a crack. Inside, rusted fittings and a twist of dry rations, wrapped like someone meant to come back.'
@@ -28,7 +28,7 @@ const row = (s: GameState, id: string) => visibleChoices(s).find((c) => c.id ===
 
 const g = getScene('ch3:gatehouse')
 ok(g.title === 'The Iron Gatehouse' && g.body === BODY && g.hubId === 'barrow', 'gatehouse scene text exact')
-ok(!visibleChoices(at('ch3:gatehouse', 'outcast', true)).some((c) => /courtyard/i.test(c.label)), 'no courtyard button yet')
+ok(visibleChoices(at('ch3:gatehouse', 'outcast', true)).filter((c) => /courtyard/i.test(c.label)).map((c) => c.id).join() === 'walk-courtyard', 'v242: one courtyard button')
 
 for (const door of ['prisoner', 'outcast', 'vessel'] as DoorId[]) {
   // Fringe: the walk only shows once the gate is open.
@@ -41,7 +41,7 @@ for (const door of ['prisoner', 'outcast', 'vessel'] as DoorId[]) {
   const inside = applyEffect(open, walk!.effects)
   ok(inside.sceneId === 'ch3:gatehouse', `${door}: walk goes in`)
   ok(!ch3MapLocked(open, 'ch3:gatehouse') && travelTo(open, 'ch3:gatehouse').sceneId === 'ch3:gatehouse', `${door}: map walks in once open`)
-  ok(visibleChoices(inside).map((c) => c.id).join() === 'pry-footlocker,search-guard,back-fringe', `${door}: gatehouse rows`)
+  ok(visibleChoices(inside).map((c) => c.id).join() === 'pry-footlocker,search-guard,walk-courtyard,back-fringe', `${door}: gatehouse rows`)
 
   // No knife: footlocker locked.
   const bare = at('ch3:gatehouse', door, false)
@@ -81,7 +81,7 @@ ok(file === 'ch3-gatehouse.jpg' && existsSync(`public/covers/${file}`) && statSy
 
 // A reload keeps the gatehouse state.
 const done = repairLoadedState(JSON.parse(JSON.stringify(at('ch3:gatehouse', 'vessel', true, { gatehouseLockerPried: true, gatehouseGuardSearched: true }))) as GameState)
-ok(done.sceneId === 'ch3:gatehouse' && visibleChoices(done).map((c) => c.id).join() === 'back-fringe', 'reload keeps the gatehouse done')
+ok(done.sceneId === 'ch3:gatehouse' && visibleChoices(done).map((c) => c.id).join() === 'walk-courtyard,back-fringe', 'reload keeps the gatehouse done')
 
 if (fails) { console.log(`v241: ${fails} failure(s)`); process.exit(1) }
 console.log('v241 ok')

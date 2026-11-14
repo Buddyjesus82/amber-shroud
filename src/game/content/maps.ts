@@ -224,6 +224,8 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
       { id: 'tent', name: 'Command Tent', short: 'Tent', sceneId: 'ch3:tent', x: 32, y: 166, labelSide: 'above' },
       { id: 'crosshaven', name: 'Crosshaven Fringe', short: 'Fringe', sceneId: 'ch3:crosshaven', x: 32, y: 192, labelSide: 'above' },
       { id: 'gatehouse', name: 'The Iron Gatehouse', short: 'Gatehouse', sceneId: 'ch3:gatehouse', x: 78, y: 192, labelSide: 'above' },
+      { id: 'courtyard', name: 'The Silt-Choked Courtyard', short: 'Courtyard', sceneId: 'ch3:courtyard', x: 78, y: 166, labelSide: 'above' },
+      { id: 'junction', name: 'The Deep Junction', short: 'Junction', sceneId: 'ch3:junction', x: 78, y: 140, labelSide: 'above' },
     ],
     edges: [
       { a: 'capture', b: 'trench', sap: 1 },
@@ -235,6 +237,8 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
       { a: 'crosshaven', b: 'tent', sap: 0, oneWay: true },
       { a: 'relay', b: 'siphon', sap: 1 },
       { a: 'crosshaven', b: 'gatehouse', sap: 0 },
+      { a: 'gatehouse', b: 'courtyard', sap: 0 },
+      { a: 'courtyard', b: 'junction', sap: 0 },
     ],
     sceneNode: {
       'ch3:capture': 'capture',
@@ -246,6 +250,8 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
       'ch3:tent': 'tent',
       'ch3:crosshaven': 'crosshaven',
       'ch3:gatehouse': 'gatehouse',
+      'ch3:courtyard': 'courtyard',
+      'ch3:junction': 'junction',
     },
   },
   /** v233: Chapter 2, Prisoner route "Cartel Stock". Fogged until the shaft survey is taken. */
