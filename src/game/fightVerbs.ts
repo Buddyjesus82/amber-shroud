@@ -7,7 +7,7 @@ export type FightVerbId = 'wrench' | 'crack' | 'cut' | 'plunge' | 'drive' | 'jam
 const BUTTON: Record<FightVerbId, string> = {
   wrench: 'Wrench',
   crack: 'Crack',
-  cut: 'Cut',
+  cut: 'Fight',
   plunge: 'Plunge',
   drive: 'Drive',
   jam: 'Jam',
