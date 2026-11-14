@@ -7,7 +7,7 @@ import type { DoorId, GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v233'"), 'SW cache v197')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v233'"), 'Build label v197')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v234'"), 'Build label v197')
 const SPOTS: [DoorId, string, string, string, string, Record<string, unknown>][] = [
   ['prisoner', 'ch1:end', 'stash', SIPHON_PRISONER, 'stash', {}],
   ['vessel', 'ch2:v-outpost', 'locker', SIPHON_VESSEL, 'locker', { chapter1Done: true, chapter2Unlocked: true }],
