@@ -152,6 +152,7 @@ export type CoverKey =
   | 'ch3_supply'
   | 'ch3_tent'
   | 'ch3_crosshaven'
+  | 'ch3_gatehouse'
   | 'ch3_trench'
   | 'ch3_relay'
   | 'ch3_siphon'
@@ -354,6 +355,7 @@ const FILES: Record<CoverKey, string> = {
   ch3_supply: 'ch3-supply.jpg',
   ch3_tent: 'ch3-tent.jpg',
   ch3_crosshaven: 'ch3-crosshaven.jpg',
+  ch3_gatehouse: 'ch3-gatehouse.jpg',
   ch3_trench: 'ch3-trench.jpg',
   ch3_relay: 'ch3-relay.jpg',
   ch3_siphon: 'ch3-siphon.jpg',
@@ -599,6 +601,8 @@ export const COVER_BAND: Record<CoverKey, [number, number]> = {
   ch3_supply: [0.1, 0.8],
   ch3_tent: [0.1, 0.8],
   ch3_crosshaven: [0.1, 0.8],
+  // v241: the guard's skull down to the padlocked footlocker at his boots.
+  ch3_gatehouse: [0.12, 0.88],
   ch3_trench: [0.08, 0.72],
   ch3_relay: [0.08, 0.72],
   ch3_siphon: [0.08, 0.78],
@@ -868,7 +872,7 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   const NEW_PLACE_ART: Record<string, CoverKey> = {'deep:rubble': 'p2_rubble', 'deep:shanty': 'p2_shanty', 'deep:anvil': 'p2_anvil', 'deep:drill-deck': 'p2_drill_deck', 'deep:vents': 'p2_vents', 'deep:vein-approach': 'p2_vein_approach', 'deep:crucible': 'p2_crucible', 'deep:lock': 'p2_lock', 'camp:sift-gate': 'p1_sift_gate', 'camp:log-vents': 'p1_log_vents', 'camp:log-deck': 'p1_log_deck', 'spine:dugouts': 'p1_dugouts', 'spine:sable': 'p1_sable_tent', 'spine:skimmer': 'p1_skimmer', 'spine:dusteye': 'p1_dusteye', 'thresh:echo-gate': 'p1_echo_gate', 'thresh:conduits': 'p1_conduits', 'thresh:parade': 'p1_parade', 'thresh:breach': 'v205_breach', 'thresh:subdrain': 'v205_subdrain', 'thresh:oasis': 'v205_oasis', 'thresh:canyon': 'np_canyon', 'thresh:gate': 'np_gate', 'thresh:command': 'np_command', 'camp:overlook': 'np_overlook', 'camp:siftline': 'np_siftline', 'camp:ration': 'np_ration', 'camp:genpop': 'np_genpop', 'spine:shattered': 'np_shattered', 'spine:ossuary': 'np_ossuary', 'maw:tunnels': 'np_tunnels', 'maw:gullet': 'np_gullet', 'maw:bargain': 'np_bargain', 'ch2:v-hidden': 'np_hidden', 'maw:mill': 'np_mill', 'camp:jammed': 'np_shim'}
   if (NEW_PLACE_ART[id]) return NEW_PLACE_ART[id]
   // v206 DRAFT: Chapter Three covers.
-  const CH3_ART: Record<string, CoverKey> = { 'ch3:capture': 'ch3_capture', 'ch3:wagon': 'ch3_wagon', 'ch3:supply': 'ch3_supply', 'ch3:tent': 'ch3_tent', 'ch3:crosshaven': 'ch3_crosshaven', 'ch3:trench': 'ch3_trench', 'ch3:relay': 'ch3_relay', 'ch3:siphon': 'ch3_siphon' }
+  const CH3_ART: Record<string, CoverKey> = { 'ch3:capture': 'ch3_capture', 'ch3:wagon': 'ch3_wagon', 'ch3:supply': 'ch3_supply', 'ch3:tent': 'ch3_tent', 'ch3:crosshaven': 'ch3_crosshaven', 'ch3:gatehouse': 'ch3_gatehouse', 'ch3:trench': 'ch3_trench', 'ch3:relay': 'ch3_relay', 'ch3:siphon': 'ch3_siphon' }
   // v216: Wren's own art (from her portrait card) when she is the helper.
   if (id === 'ch3:wagon' && state.flags.ch3Helper === 'wren') return 'ch3_wagon_wren'
   if (id === 'ch3:tent' && state.flags.wrenPromise) return 'ch3_wren_deal'

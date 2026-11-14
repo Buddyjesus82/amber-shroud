@@ -10,6 +10,13 @@ export const CROSSHAVEN_CABLES_CUT = 'The rotted bindings part under the blade, 
 export const CROSSHAVEN_GATE_OPENS = 'Iron groans across the fringe, a sound you feel in your teeth. The portcullis drags upward and locks high. The way in is open.'
 export const CROSSHAVEN_CRANK_SLIPS = "The handle kicks back and cracks your knuckles. The drum doesn't move. Yet."
 
+/** v241: the Iron Gatehouse behind the opened gate (Jeramie, t1252u). Approved lines, word for word. */
+export const GATEHOUSE_TITLE = 'The Iron Gatehouse'
+export const GATEHOUSE_BODY = "A narrow vaulted passage, stone sweating in the dead air. An old Cartel post rots against the wall, a stool, a rack with no spears, and a guard who never got relieved, still sitting in what's left of his coat. A footlocker sits at his boots, padlocked and rust-sealed."
+export const GATEHOUSE_PRY = 'The hasp gives with a crack. Inside, rusted fittings and a twist of dry rations, wrapped like someone meant to come back.'
+export const GATEHOUSE_GUARD = 'His pockets hold sand and a Cartel tally chit, stamped and worthless now.'
+export const GATEHOUSE_PRY_LOCKED = 'Needs: the Needle Knife'
+
 export const CH3_FIGHT_RESULT = 'It ends before it starts.'
 export const CH3_RUN_RESULT = 'Dorn Vane is already there.'
 export const CH3_STRIP_GEAR = 'Weapons taken. Armor taken.'
@@ -160,7 +167,35 @@ export const chapterThreeScenes: Scene[] = [
         show: { all: [{ flag: 'crosshavenCablesCut' }, { flagUnset: 'crosshavenGateOpen' }] },
         effects: { still: true, crankWinch: true },
       },
+      { id: 'walk-gatehouse', label: 'Walk into the Gatehouse', tone: 'quiet', show: { flag: 'crosshavenGateOpen' }, effects: { goto: 'ch3:gatehouse' } },
       { id: 'walk-tent', label: 'Walk to Command Tent', tone: 'quiet', effects: { goto: 'ch3:tent' } },
+    ],
+  },
+  {
+    id: 'ch3:gatehouse',
+    kind: 'story',
+    hubId: 'barrow',
+    title: GATEHOUSE_TITLE,
+    body: GATEHOUSE_BODY,
+    choices: [
+      {
+        id: 'pry-footlocker',
+        label: 'Pry the footlocker',
+        sub: 'Needs the Needle Knife.',
+        tone: 'quiet',
+        show: { flagUnset: 'gatehouseLockerPried' },
+        enable: { item: 'needle_knife' },
+        locked: GATEHOUSE_PRY_LOCKED,
+        effects: { still: true, add: { scrap: 1, seeker_rations: 1 }, flag: { gatehouseLockerPried: true }, flash: GATEHOUSE_PRY },
+      },
+      {
+        id: 'search-guard',
+        label: 'Search the guard',
+        tone: 'quiet',
+        show: { flagUnset: 'gatehouseGuardSearched' },
+        effects: { still: true, flag: { gatehouseGuardSearched: true }, flash: GATEHOUSE_GUARD },
+      },
+      { id: 'back-fringe', label: 'Back to the Fringe', tone: 'quiet', effects: { goto: 'ch3:crosshaven' } },
     ],
   },
 ]

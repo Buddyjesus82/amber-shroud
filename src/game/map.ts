@@ -254,6 +254,8 @@ export function ch3MapLocked(state: Pick<GameState, 'flags' | 'sceneId'>, sceneI
   if (sceneId === 'ch3:supply') return !state.flags.ch3SupplyOpen && !state.flags.ch3Waited
   if (sceneId === 'ch3:tent') return !state.flags.ch3TentOpen
   if (sceneId === 'ch3:crosshaven') return !state.flags.ch3VaultDone
+  // v241: the Gatehouse is behind the Crosshaven portcullis. The map never walks past a shut gate.
+  if (sceneId === 'ch3:gatehouse') return !state.flags.crosshavenGateOpen
   return false
 }
 

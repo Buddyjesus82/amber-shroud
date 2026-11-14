@@ -2044,6 +2044,15 @@ export const SHADOW_NO_FIGHT = 'She is a shadow, not a body. If you mean it, swi
 
 /** v240: 'cut the cables' / 'crank the drum' / 'open the gate' at the Fringe, while that button is up. */
 function winchButton(state: GameState, said: string): Choice | null {
+  if (state.sceneId === 'ch3:gatehouse') {
+    // v241: 'pry/open the footlocker' and 'search the guard/body' at the Gatehouse, while those buttons are up.
+    const rows = visibleChoices(state)
+    const pry = rows.find((c) => c.id === 'pry-footlocker')
+    const guard = rows.find((c) => c.id === 'search-guard')
+    if (pry && /\b(?:pry|open|force|break|crack)\b.*\b(?:footlocker|locker|chest|box|padlock|lock)\b/.test(said)) return pry
+    if (guard && /\b(?:search|loot|check|frisk|rob)\b.*\b(?:guard|body|corpse|skeleton|pockets?|coat)\b/.test(said)) return guard
+    return null
+  }
   if (state.sceneId !== 'ch3:crosshaven') return null
   const rows = visibleChoices(state)
   const cut = rows.find((c) => c.id === 'cut-cables')
@@ -2664,6 +2673,8 @@ function campWalkRows(state: GameState, rows: Choice[]): Choice[] {
     if (!to || to.sceneId === state.sceneId || getScene(to.sceneId, state.door).hubId !== state.hubId) continue
     // An authored choice already walks there. A second Walk row would only repeat it.
     if (has.has(to.sceneId)) continue
+    // v241: the Gatehouse has its own approved buttons ('Walk into the Gatehouse' / 'Back to the Fringe'); no auto Walk row.
+    if (to.sceneId === 'ch3:gatehouse') continue
     const sap = e.sap ?? 1
     const locked = ch3MapLocked(state, to.sceneId)
     out.push({
