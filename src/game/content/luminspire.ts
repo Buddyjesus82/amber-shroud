@@ -4,6 +4,12 @@ import type { Scene } from '../types'
 export const CH3_CHAPTER = 'luminspire'
 export const CH3_ENTRY = 'ch3:capture'
 
+/** v240: the Crosshaven inner gates (Jeramie, t1251u). Approved lines, word for word. */
+export const CROSSHAVEN_CABLES_LOCKED = 'The cables are bound too thick to pull. You need a blade.'
+export const CROSSHAVEN_CABLES_CUT = 'The rotted bindings part under the blade, one braid at a time. The drum is free of rope, but silt has welded it solid.'
+export const CROSSHAVEN_GATE_OPENS = 'Iron groans across the fringe, a sound you feel in your teeth. The portcullis drags upward and locks high. The way in is open.'
+export const CROSSHAVEN_CRANK_SLIPS = "The handle kicks back and cracks your knuckles. The drum doesn't move. Yet."
+
 export const CH3_FIGHT_RESULT = 'It ends before it starts.'
 export const CH3_RUN_RESULT = 'Dorn Vane is already there.'
 export const CH3_STRIP_GEAR = 'Weapons taken. Armor taken.'
@@ -135,6 +141,26 @@ export const chapterThreeScenes: Scene[] = [
     hubId: 'barrow',
     title: 'Crosshaven Fringe',
     body: "The noise of the perimeter drops behind you, replaced by the low hum of Crosshaven's outer filters. Lantern light cuts through the grease-haze on the shanties. You've made it off the flats, but the inner gates are locked tight.",
-    choices: [{ id: 'walk-tent', label: 'Walk to Command Tent', tone: 'quiet', effects: { goto: 'ch3:tent' } }],
+    choices: [
+      {
+        id: 'cut-cables',
+        label: 'Cut the winch cables',
+        sub: 'Needs the Needle Knife.',
+        tone: 'quiet',
+        show: { all: [{ flagUnset: 'crosshavenCablesCut' }, { flagUnset: 'crosshavenGateOpen' }] },
+        enable: { item: 'needle_knife' },
+        locked: CROSSHAVEN_CABLES_LOCKED,
+        effects: { still: true, flag: { crosshavenCablesCut: true }, flash: CROSSHAVEN_CABLES_CUT },
+      },
+      {
+        id: 'crank-drum',
+        label: 'Crank the drum',
+        sub: 'A heavy pull. Health −1 if it slips.',
+        tone: 'danger',
+        show: { all: [{ flag: 'crosshavenCablesCut' }, { flagUnset: 'crosshavenGateOpen' }] },
+        effects: { still: true, crankWinch: true },
+      },
+      { id: 'walk-tent', label: 'Walk to Command Tent', tone: 'quiet', effects: { goto: 'ch3:tent' } },
+    ],
   },
 ]

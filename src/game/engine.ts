@@ -34,6 +34,7 @@ import { kaelenAsk } from './kaelenAsks'
 import { rubbleResolve } from './rubble'
 import { chapterTwoAfter, chapterTwoUnlock, isChapterTwoCode } from './ch2'
 import { CH2_ENTRY, chapterTwoSummary } from './content/intoTheMaw'
+import { CROSSHAVEN_CRANK_SLIPS, CROSSHAVEN_GATE_OPENS } from './content/luminspire'
 import { ROAD_NOT_NOW, roadChoice, isTravelText, roadPhrase, roadToMaw, roadHome } from './returnRoad'
 import { CLOSING_PRESSURE, FORCED_PRESSURE, closingNow, homeFaction, restCoolLine, restCools } from './closing'
 import {
@@ -694,6 +695,11 @@ function turnBackFromCache(state: GameState): GameState {
   return persist(home)
 }
 
+/** v240: does this pull free the drum? Seeded on the pull count, so every press is a fresh 50/50. */
+export function winchOpens(state: GameState, pulls = Number(state.flags.crosshavenPulls ?? 0)): boolean {
+  return hashRoll(state, `winch${pulls}`) % 2 === 0
+}
+
 export function applyEffect(state: GameState, fx: Effect): GameState {
   // v239: the helper swap confirm. Keep clears it; Swap runs the original recruit choice in full.
   if (typeof state.flags.recruitPending === 'string') {
@@ -788,6 +794,16 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
   if (state.sceneId === STAIRS && fx.goto === 'thresh:crucible-stairs') {
     const to = state.flags[STAIRS_TO]
     fx = { ...fx, goto: typeof to === 'string' && to ? to : fx.goto, unsetFlag: [...(fx.unsetFlag ?? []), STAIRS_TO] }
+  }
+  // v240: the Crosshaven winch. Each pull is its own seeded 50/50 (the pull count is in the salt), no cap on retries.
+  if (fx.crankWinch) {
+    const { crankWinch: _c, ...rest } = fx
+    if (state.flags.crosshavenGateOpen || !state.flags.crosshavenCablesCut) return persist(state)
+    const pulls = Number(state.flags.crosshavenPulls ?? 0)
+    const opens = winchOpens(state, pulls)
+    fx = opens
+      ? { ...rest, flag: { ...rest.flag, crosshavenGateOpen: true, crosshavenPulls: pulls + 1 }, flash: CROSSHAVEN_GATE_OPENS }
+      : { ...rest, health: (rest.health ?? 0) - 1, flag: { ...rest.flag, crosshavenPulls: pulls + 1 }, flash: CROSSHAVEN_CRANK_SLIPS }
   }
   if (fx.risk) {
     const { risk, ...rest } = fx
@@ -2026,6 +2042,18 @@ const BARE_FIGHT = /^(?:i\s+)?(?:attack|fight|kill|stab|hit|punch|strike)(?:\s+(
 export const NOTHING_TO_FIGHT = 'Nothing here to fight.'
 export const SHADOW_NO_FIGHT = 'She is a shadow, not a body. If you mean it, swing at the shadow.'
 
+/** v240: 'cut the cables' / 'crank the drum' / 'open the gate' at the Fringe, while that button is up. */
+function winchButton(state: GameState, said: string): Choice | null {
+  if (state.sceneId !== 'ch3:crosshaven') return null
+  const rows = visibleChoices(state)
+  const cut = rows.find((c) => c.id === 'cut-cables')
+  const crank = rows.find((c) => c.id === 'crank-drum')
+  if (cut && /\b(?:cut|slice|saw)\b.*\b(?:cables?|bindings?|ropes?|winch)\b/.test(said)) return cut
+  const gate = /\b(?:crank|winch|drum)\b/.test(said) || /\b(?:open|lift|raise)\b.*\b(?:gates?|portcullis)\b/.test(said)
+  if (gate) return crank ?? cut ?? null
+  return null
+}
+
 export function interpret(state: GameState, raw: string): GameState {
   const text = phoneText(raw)
   const swap = recruitPendingOf(state)
@@ -2045,6 +2073,14 @@ export function interpret(state: GameState, raw: string): GameState {
   const scene = sceneOf(state)
   const bare = text.trim().toLowerCase()
   const said = bare === 'l' || /^l\s/.test(bare) ? bare.replace(/^l\b/, 'look') : bare
+  // v240: typed winch lines at the Crosshaven Fringe are the Cut / Crank buttons (or their locked line).
+  {
+    const winch = winchButton(state, said)
+    if (winch) {
+      if (isChoiceOn(state, winch.enable)) return withVerb(applyEffect(state, winch.effects), winch.id)
+      return withVerb(persist({ ...state, flash: winch.locked, updatedAt: Date.now() }), winch.id)
+    }
+  }
   // v166: the Chapter Two vault code. Only at the Chapter One end card or the Legacy box; anywhere else it does nothing.
   if (isChapterTwoCode(raw)) {
     if (state.sceneId === 'ch1:end') return applyEffect(state, chapterTwoUnlock())

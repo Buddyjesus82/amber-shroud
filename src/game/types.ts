@@ -137,6 +137,8 @@ export type Effect = {
   ruse?: boolean
   /** An ambush that opens on arrival and cannot be skipped (Run still can). Ignores Health. */
   ambush?: { kind: string; line: string }
+  /** v240: one pull on the Crosshaven winch. Seeded 50/50: the gate opens, or Health -1. */
+  crankWinch?: boolean
   /** v155: a 1-in-oneIn seeded chance of losing `health`. The loss shows on its own line. */
   risk?: { oneIn: number; health: number }
   /** v192: a 1-in-oneIn seeded chance of `scrap` more Scrap. The extra shows on its own line. */
