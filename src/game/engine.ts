@@ -3,7 +3,7 @@ import { COMPANIONS, companionOf, confirmPending, keltStep, LINES as PARTY_LINES
 export { confirmPending, recruitPendingOf } from './companions'
 import { STAIRS, STAIRS_CLEARED, STAIRS_TO } from './content/crucible'
 import { hash as hashRoll } from './fightTricks'
-import { BARROW_EMPTY, barrowCache, barrowLooted, barrowRows, barrowScene, heatReliefRows, passageCheck } from './heatRelief'
+import { BARROW_CARTEL_1, BARROW_EMPTY, barrowCache, barrowLooted, barrowRows, barrowScene, heatReliefRows, passageCheck } from './heatRelief'
 import { isMaskedBlock, MASKED_BLOCK_LINE, maskedBody, maskedChoices, maskedPass, maskedPickup } from './masked'
 import { boneWashTrade, isStrayHunt, STRAY_ARRIVAL_LINE, STRAY_CUT_LINE, STRAY_HOUND_HEAT, STRAY_HOUND_LINE, STRAY_KILL_LINE, strayHuntBody, strayHuntChoices, strayHunterArrives } from './strayHunter'
 import { HUB_MAPS } from './content/maps'
@@ -31,10 +31,10 @@ import { ch2MapLocked, ch3MapLocked, fogged, markCampSeen, matchCompass, travelG
 import { isChapterReleased } from './chapters'
 import { chapterThreeAfter } from './ch3'
 import { kaelenAsk } from './kaelenAsks'
-import { rubbleResolve } from './rubble'
+import { RUBBLE_SAP, rubbleLoot, rubbleResolve } from './rubble'
 import { chapterTwoAfter, chapterTwoUnlock, isChapterTwoCode } from './ch2'
 import { CH2_ENTRY, chapterTwoSummary } from './content/intoTheMaw'
-import { CROSSHAVEN_CRANK_SLIPS, CROSSHAVEN_GATE_OPENS } from './content/luminspire'
+import { COURTYARD_CLEARED, COURTYARD_PULLS, COURTYARD_RIP, COURTYARD_SLOW, CROSSHAVEN_CRANK_SLIPS, CROSSHAVEN_GATE_OPENS } from './content/luminspire'
 import { ROAD_NOT_NOW, roadChoice, isTravelText, roadPhrase, roadToMaw, roadHome } from './returnRoad'
 import { CLOSING_PRESSURE, FORCED_PRESSURE, closingNow, homeFaction, restCoolLine, restCools } from './closing'
 import {
@@ -700,6 +700,11 @@ export function winchOpens(state: GameState, pulls = Number(state.flags.crosshav
   return hashRoll(state, `winch${pulls}`) % 2 === 0
 }
 
+/** v242: the Rubble Pick's Scrap / Resin / Drop roll, salted with the Courtyard pull number so each pull rolls fresh. */
+export function courtyardLoot(state: GameState, pulls = Number(state.flags.courtyardPulls ?? 0)) {
+  return rubbleLoot({ ...state, sceneId: `${state.sceneId}#pull${pulls}` })
+}
+
 export function applyEffect(state: GameState, fx: Effect): GameState {
   // v239: the helper swap confirm. Keep clears it; Swap runs the original recruit choice in full.
   if (typeof state.flags.recruitPending === 'string') {
@@ -804,6 +809,20 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
     fx = opens
       ? { ...rest, flag: { ...rest.flag, crosshavenGateOpen: true, crosshavenPulls: pulls + 1 }, flash: CROSSHAVEN_GATE_OPENS }
       : { ...rest, health: (rest.health ?? 0) - 1, flag: { ...rest.flag, crosshavenPulls: pulls + 1 }, flash: CROSSHAVEN_CRANK_SLIPS }
+  }
+  // v242: the Courtyard scavenge. Three pulls shared by both buttons; each pull rolls the Rubble Pick loot, seeded on the pull count.
+  if (fx.courtyardPull) {
+    const { courtyardPull: how, ...rest } = fx
+    const pulls = Number(state.flags.courtyardPulls ?? 0)
+    if (pulls >= COURTYARD_PULLS) return persist({ ...state, flash: COURTYARD_CLEARED, updatedAt: Date.now() })
+    const loot = courtyardLoot(state, pulls)
+    const done = pulls + 1 >= COURTYARD_PULLS
+    fx = {
+      ...rest,
+      add: { ...rest.add, [loot.item]: (rest.add?.[loot.item] ?? 0) + 1 },
+      flag: { ...rest.flag, courtyardPulls: pulls + 1, ...(done ? { courtyardCleared: true } : {}) },
+      flash: (how === 'slow' ? [COURTYARD_SLOW, RUBBLE_SAP, loot.line] : [COURTYARD_RIP, BARROW_CARTEL_1, loot.line]).join('\n'),
+    }
   }
   if (fx.risk) {
     const { risk, ...rest } = fx
@@ -2044,6 +2063,21 @@ export const SHADOW_NO_FIGHT = 'She is a shadow, not a body. If you mean it, swi
 
 /** v240: 'cut the cables' / 'crank the drum' / 'open the gate' at the Fringe, while that button is up. */
 function winchButton(state: GameState, said: string): Choice | null {
+  if (state.sceneId === 'ch3:courtyard') {
+    // v242: typed scavenge and walk lines at the Courtyard (the greyed rows answer with the cleared line).
+    const rows = visibleChoices(state)
+    const slow = rows.find((c) => c.id === 'clear-debris' || c.id === 'clear-debris-done')
+    const rip = rows.find((c) => c.id === 'rip-wreckage' || c.id === 'rip-wreckage-done')
+    if (rip && /\b(?:rip|tear|smash|wreck|bash)\b.*\b(?:wreckage|wreck|frames?|junk|debris|scaffolding)\b/.test(said)) return rip
+    if (slow && /\b(?:clear|search|scavenge|sift|dig)\b.*\b(?:debris|wreckage|junk|yard|silt|frames?)\b/.test(said)) return slow
+    return null
+  }
+  if (state.sceneId === 'ch3:junction') {
+    // v242: 'follow the road' at the Junction.
+    const road = visibleChoices(state).find((c) => c.id === 'follow-road')
+    if (road && /\b(?:follow|take|walk|go|push)\b.*\b(?:old trade road|trade road|road|deeper)\b/.test(said) && !/\bback\b/.test(said)) return road
+    return null
+  }
   if (state.sceneId === 'ch3:gatehouse') {
     // v241: 'pry/open the footlocker' and 'search the guard/body' at the Gatehouse, while those buttons are up.
     const rows = visibleChoices(state)
@@ -2674,7 +2708,7 @@ function campWalkRows(state: GameState, rows: Choice[]): Choice[] {
     // An authored choice already walks there. A second Walk row would only repeat it.
     if (has.has(to.sceneId)) continue
     // v241: the Gatehouse has its own approved buttons ('Walk into the Gatehouse' / 'Back to the Fringe'); no auto Walk row.
-    if (to.sceneId === 'ch3:gatehouse') continue
+    if (to.sceneId === 'ch3:gatehouse' || to.sceneId === 'ch3:courtyard' || to.sceneId === 'ch3:junction') continue
     const sap = e.sap ?? 1
     const locked = ch3MapLocked(state, to.sceneId)
     out.push({
