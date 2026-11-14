@@ -322,6 +322,9 @@ export const HUNTER_QUIET_GAPS = [
 ] as const
 
 /** Scenes that must pass before the same hunter can hit again. Null means that Heat does not interrupt. */
+/** v236: quiet scenes between Spine hunts at Stray Heat 8 (Jeramie: "Slow the Heat 8 hunt to every 4 scenes"). */
+export const SPINE_TOP_HEAT_GAP = 4
+
 export function huntGap(heat: number): number | null {
   const h = Math.max(0, Math.min(8, Math.floor(heat)))
   const row = HUNTER_QUIET_GAPS.find((r) => h >= r.heatMin && h <= r.heatMax)
@@ -379,6 +382,8 @@ function hunterScene(state: GameState, walked = true): string | null {
   let gap = huntGap(heat)
   // Vessel ground answers sooner: from Seeker Heat 2 the Threshold hunts at the 4-5 Heat pace.
   if (gap != null && heat >= 2 && seekerHuntGround(state)) gap = Math.min(gap, 6)
+  // v236: on the Spine, Stray Heat 8 brings Nim every SPINE_TOP_HEAT_GAP scenes, not every 2.
+  if (gap != null && heat >= 8 && spineGround(state)) gap = Math.max(gap, SPINE_TOP_HEAT_GAP)
   if (gap == null || quiet < gap) return null
   if (state.hubId === 'redmaw' || state.sceneId.startsWith('maw:')) {
     if (state.sceneId === 'maw:sybella' || state.sceneId === 'maw:sybella-shadow' || state.sceneId === 'maw:smoke') {
@@ -1785,6 +1790,8 @@ export function noticeHunt(state: GameState): GameState {
   if (maw && Number(state.flags.sceneSteps ?? 0) - Number(state.flags.sybellaShadowStep ?? -99) < SYBELLA_GAP) return state
   if ((state.hubId === 'camp04' || state.sceneId.startsWith('camp:')) && valeriusCooling(state)) return state
   if ((state.hubId === 'threshold' || state.sceneId.startsWith('thresh:')) && guardCooling(state)) return state
+  // v236: a notice at Stray Heat 8 on the Spine still waits out the 4-scene gap.
+  if (spineGround(state) && Number(state.flags.huntQuiet ?? 0) < SPINE_TOP_HEAT_GAP) return state
   const flags = {
     ...state.flags,
     hunterHere: true,

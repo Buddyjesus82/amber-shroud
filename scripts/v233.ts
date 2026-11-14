@@ -11,7 +11,7 @@ import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v235'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v235'"), 'build v233')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v236'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v236'"), 'build v233')
 
 const PICKS = [
   {
