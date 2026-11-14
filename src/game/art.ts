@@ -609,7 +609,8 @@ export const COVER_BAND: Record<CoverKey, [number, number]> = {
   p1_log_deck: [0.08, 0.72],
   p1_dugouts: [0.08, 0.72],
   // Her face to the blade and the ember.
-  p1_sable_tent: [0.12, 0.92],
+  // v248: her hair starts ~5% down; a 0.12 top let short stages clip her head on phones.
+  p1_sable_tent: [0.02, 0.92],
   p1_skimmer: [0.08, 0.72],
   p1_dusteye: [0.08, 0.72],
   p1_echo_gate: [0.08, 0.72],
