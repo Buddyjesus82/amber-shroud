@@ -1,4 +1,5 @@
 import type { GameState } from './types'
+import { sideQuestLog } from './sideQuests'
 
 export type Rumor = {
   id: string
@@ -47,5 +48,6 @@ export const RUMORS: Rumor[] = [
 ]
 
 export function knownRumors(state: GameState): Rumor[] {
-  return RUMORS.filter((r) => !!state.flags[r.flag])
+  // v245: side quests share the log: the taken line, then the done line.
+  return [...RUMORS.filter((r) => !!state.flags[r.flag]), ...sideQuestLog(state).map((q) => ({ ...q, flag: `${q.id}Taken` }))]
 }
