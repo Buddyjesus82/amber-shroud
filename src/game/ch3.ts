@@ -104,7 +104,7 @@ export function chapterThreeAfter(state: GameState, next: GameState, _fx?: Effec
       lines.push(CH3_SAP)
     }
     if (n >= 1) {
-      next.heat.seekers += 1
+      next.heat.seekers = Math.min(8, next.heat.seekers + 1)
       lines.push(CH3_NOISE)
     }
     next.flash = lines.join('\n')
@@ -131,7 +131,7 @@ export function chapterThreeAfter(state: GameState, next: GameState, _fx?: Effec
   if (f.ch3AshWon && !f.encounterHere) {
     delete f.ch3AshWon
     f.ch3VaultDone = true
-    next.heat.seekers += 2
+    next.heat.seekers = Math.min(8, next.heat.seekers + 2)
     addFlash(next, `${giveKey(next)}\n${CH3_FIGHT_HEAT}`)
   }
   return next

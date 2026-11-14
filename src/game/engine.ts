@@ -1,3 +1,4 @@
+import { honestHeat } from './heatLines'
 import { SPARE_SAP_LOCK } from './sapLock'
 import { COMPANIONS, companionOf, confirmPending, keltStep, LINES as PARTY_LINES, recruitFx, recruitPendingOf, sneakOdds, type RecruitPending } from './companions'
 export { confirmPending, recruitPendingOf } from './companions'
@@ -705,7 +706,18 @@ export function courtyardLoot(state: GameState, pulls = Number(state.flags.court
   return rubbleLoot({ ...state, sceneId: `${state.sceneId}#pull${pulls}` })
 }
 
+/** v244: every exported step goes through honestHeat, so a printed Heat gain never claims more than the meter rose. */
+function honest(before: GameState, after: GameState): GameState {
+  const out = honestHeat(before, after)
+  if (out !== after) writeSave(out)
+  return out
+}
+
 export function applyEffect(state: GameState, fx: Effect): GameState {
+  return honest(state, applyEffectRaw(state, fx))
+}
+
+function applyEffectRaw(state: GameState, fx: Effect): GameState {
   // v239: the helper swap confirm. Keep clears it; Swap runs the original recruit choice in full.
   if (typeof state.flags.recruitPending === 'string') {
     const pending = recruitPendingOf(state)
@@ -1208,7 +1220,7 @@ export function applyEffect(state: GameState, fx: Effect): GameState {
       next.flash = fx.sneak.spotted
       // v205: Sable Varn's Heat Affinity. A spotted sneak draws more eyes.
       if (companionOf(state)?.id === 'sable') {
-        next.heat = { ...next.heat, strays: next.heat.strays + 1, seekers: next.heat.seekers + 1 }
+        next.heat = { ...next.heat, strays: Math.min(8, next.heat.strays + 1), seekers: Math.min(8, next.heat.seekers + 1) }
         next.flash = `${next.flash}\n\n${PARTY_LINES.sableHeat}`
       }
       // v200: a spotted sneak keeps nothing it would have taken.
@@ -1681,6 +1693,10 @@ export function chapterTwoLocked(state: Pick<GameState, 'flags'>): boolean {
 }
 
 export function travelTo(state: GameState, sceneId: string): GameState {
+  return honest(state, travelToRaw(state, sceneId))
+}
+
+function travelToRaw(state: GameState, sceneId: string): GameState {
   if (state.sceneId === sceneId) return state
   if (ch3MapLocked(state, sceneId) || ch2MapLocked(state, sceneId)) return persist({ ...state, flash: ROAD_NOT_NOW })
   if (chapterTwoLocked(state) && !sceneId.startsWith('ch2:')) {
@@ -1884,6 +1900,10 @@ export function noticeHunt(state: GameState): GameState {
  * At most +1 per scene from timing; never off danger ground.
  */
 export function timingNotice(state: GameState, kind: 'rush' | 'stall'): GameState {
+  return honest(state, timingNoticeRaw(state, kind))
+}
+
+function timingNoticeRaw(state: GameState, kind: 'rush' | 'stall'): GameState {
   if (!noticeOn(state) || state.flags.timingNoticeAt === state.sceneId) return state
   const f = noticeFaction(state)
   const line = noticeLine(state, kind)
@@ -1898,6 +1918,10 @@ export function timingNotice(state: GameState, kind: 'rush' | 'stall'): GameStat
 }
 
 export function scavenge(state: GameState): GameState {
+  return honest(state, scavengeRaw(state))
+}
+
+function scavengeRaw(state: GameState): GameState {
   // v221: the Barrow cache replaces Scavenge. A typed scavenge does not loot or cool Heat.
   if (barrowScene(state)) {
     if (!barrowLooted(state)) return state
@@ -2099,6 +2123,10 @@ function winchButton(state: GameState, said: string): Choice | null {
 }
 
 export function interpret(state: GameState, raw: string): GameState {
+  return honest(state, interpretRaw(state, raw))
+}
+
+function interpretRaw(state: GameState, raw: string): GameState {
   const text = phoneText(raw)
   const swap = recruitPendingOf(state)
   if (swap) {
