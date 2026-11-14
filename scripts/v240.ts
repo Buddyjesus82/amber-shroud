@@ -8,7 +8,7 @@ import type { DoorId, GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v245'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v245'"), 'build v245')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v246'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v246'"), 'build v246')
 
 const LOCKED = 'The cables are bound too thick to pull. You need a blade.'
 const CUT = 'The rotted bindings part under the blade, one braid at a time. The drum is free of rope, but silt has welded it solid.'
