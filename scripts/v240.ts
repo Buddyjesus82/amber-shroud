@@ -8,7 +8,7 @@ import type { DoorId, GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v246'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v246'"), 'build v246')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v247'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v247'"), 'build v247')
 
 const LOCKED = 'The cables are bound too thick to pull. You need a blade.'
 const CUT = 'The rotted bindings part under the blade, one braid at a time. The drum is free of rope, but silt has welded it solid.'
@@ -20,6 +20,9 @@ const fringe = (door: DoorId, knife: boolean, flags: GameState['flags'] = {}, ex
   const base = newGame(door)
   const items = { ...base.items }
   delete items.needle_knife
+  // v247: a dagger or shiv also cuts now; the no-knife case means no blade at all.
+  delete items.rusted_dagger
+  delete items.shiv
   if (knife) items.needle_knife = 1
   return { ...base, sceneId: 'ch3:crosshaven', hubId: 'barrow', chapterId: 'luminspire', sap: 4, items, ...extra, flags: { ...base.flags, ch3Started: true, ch3Stripped: true, ch3VaultDone: true, ch3TentOpen: true, ...flags } }
 }
@@ -30,8 +33,9 @@ ok(getScene('ch3:crosshaven').body === FRINGE, 'fringe body unchanged')
 for (const door of ['prisoner', 'outcast', 'vessel'] as DoorId[]) {
   // No knife: the cut button is up but locked, with the approved line.
   const bare = fringe(door, false)
-  const cut0 = row(bare, 'cut-cables')
-  ok(!!cut0 && cut0.label === 'Cut the winch cables' && cut0.sub === 'Needs the Needle Knife.' && !isChoiceOn(bare, cut0.enable) && cut0.locked === LOCKED, `${door}: cut locked without knife`)
+  // v247: with no blade the row is the rough-blade one, sub reworded.
+  const cut0 = row(bare, 'cut-cables-rough')
+  ok(!!cut0 && cut0.label === 'Cut the winch cables' && cut0.sub === 'Needle Knife, or any blade (Health −1).' && !isChoiceOn(bare, cut0.enable) && cut0.locked === LOCKED, `${door}: cut locked without knife`)
   ok(!row(bare, 'crank-drum'), `${door}: no crank before the cut`)
   ok(interpret(bare, 'cut the cables').flash === LOCKED && !interpret(bare, 'cut the cables').flags.crosshavenCablesCut, `${door}: typed cut, locked line`)
 
