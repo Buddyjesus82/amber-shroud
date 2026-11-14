@@ -153,6 +153,14 @@ export type CoverKey =
   | 'ch3_tent'
   | 'ch3_crosshaven'
   | 'ch3_gatehouse'
+  | 'sq_sluice_spine'
+  | 'sq_sluice_camp'
+  | 'sq_sluice_thresh'
+  | 'sq_chute'
+  | 'sq_beacon'
+  | 'sq_culvert'
+  | 'sq_seam'
+  | 'sq_drywell'
   | 'ch3_courtyard'
   | 'ch3_junction'
   | 'ch3_trench'
@@ -358,6 +366,14 @@ const FILES: Record<CoverKey, string> = {
   ch3_tent: 'ch3-tent.jpg',
   ch3_crosshaven: 'ch3-crosshaven.jpg',
   ch3_gatehouse: 'ch3-gatehouse.jpg',
+  sq_sluice_spine: 'sq-sluice-spine.jpg',
+  sq_sluice_camp: 'sq-sluice-camp.jpg',
+  sq_sluice_thresh: 'sq-sluice-thresh.jpg',
+  sq_chute: 'sq-chute.jpg',
+  sq_beacon: 'sq-beacon.jpg',
+  sq_culvert: 'sq-culvert.jpg',
+  sq_seam: 'sq-seam.jpg',
+  sq_drywell: 'sq-drywell.jpg',
   ch3_courtyard: 'ch3-courtyard.jpg',
   ch3_junction: 'ch3-junction.jpg',
   ch3_trench: 'ch3-trench.jpg',
@@ -607,6 +623,15 @@ export const COVER_BAND: Record<CoverKey, [number, number]> = {
   ch3_crosshaven: [0.1, 0.8],
   // v241: the guard's skull down to the padlocked footlocker at his boots.
   ch3_gatehouse: [0.12, 0.88],
+  // v245: side-quest spots. The crate, sack, box, pouch, seam and slate stay above the story panel.
+  sq_sluice_spine: [0.1, 0.88],
+  sq_sluice_camp: [0.05, 0.7],
+  sq_sluice_thresh: [0.1, 0.9],
+  sq_chute: [0.05, 0.85],
+  sq_beacon: [0.05, 0.85],
+  sq_culvert: [0.1, 0.85],
+  sq_seam: [0.15, 0.8],
+  sq_drywell: [0.05, 0.9],
   // v242: the look-out on the wall down to the sunk frames; the road and both channels at the Junction.
   ch3_courtyard: [0.12, 0.85],
   ch3_junction: [0.2, 0.8],
@@ -884,6 +909,9 @@ export function playCoverKey(state: GameState, scene: Pick<Scene, 'id' | 'art' |
   if (id === 'ch3:wagon' && state.flags.ch3Helper === 'wren') return 'ch3_wagon_wren'
   if (id === 'ch3:tent' && state.flags.wrenPromise) return 'ch3_wren_deal'
   if (CH3_ART[id]) return CH3_ART[id]
+  // v245: Kaelen's and Varro's side-quest spots.
+  const SQ_ART: Record<string, CoverKey> = { 'spine:sq-sluice': 'sq_sluice_spine', 'camp:sq-sluice': 'sq_sluice_camp', 'thresh:sq-sluice': 'sq_sluice_thresh', 'maw:sq-chute': 'sq_chute', 'maw:sq-beacon': 'sq_beacon', 'ch3:sq-culvert': 'sq_culvert', 'ch3:sq-seam': 'sq_seam', 'ch3:sq-drywell': 'sq_drywell' }
+  if (SQ_ART[id]) return SQ_ART[id]
   const CH2_ART: Record<string, CoverKey> = {'ch2:greg-toll': 'greg', 'ch2:gate': 'ch2_s_gate', 'ch2:cache': 'ch2_s_cache', 'ch2:trapped': 'ch2_s_trapped', 'ch2:heart': 'ch2_s_heart', 'ch2:end': 'ch2_s_end', 'ch2:o-abyss': 'ch2_o_abyss', 'ch2:o-bounty': 'ch2_o_bounty', 'ch2:o-cage': 'ch2_o_cage', 'ch2:o-hounds': 'ch2_o_hounds', 'ch2:o-hermit': 'ch2_o_hermit', 'ch2:o-root': 'ch2_o_root', 'ch2:o-stakes': 'ch2_o_stakes', 'ch2:o-stilts': 'ch2_o_stilts', 'ch2:o-strays': 'ch2_o_strays', 'ch2:o-wash': 'ch2_o_wash', 'ch2:p-abyss': 'ch2_p_abyss', 'ch2:p-bays': 'ch2_p_bays', 'ch2:p-bilge': 'ch2_p_bilge', 'ch2:p-haul': 'ch2_p_haul', 'ch2:p-jaws': 'ch2_p_jaws', 'ch2:p-shaft': 'ch2_p_shaft', 'ch2:p-sift': 'ch2_p_sift', 'ch2:v-bleed': 'ch2_v_bleed', 'ch2:v-blown': 'ch2_v_blown', 'ch2:v-garden': 'ch2_v_garden', 'ch2:v-greg': 'ch2_v_greg', 'ch2:v-murch': 'ch2_v_murch', 'ch2:v-outpost': 'ch2_v_outpost', 'ch2:v-ribs': 'ch2_v_ribs', 'ch2:v-scar': 'ch2_v_scar', 'ch2:v-stair': 'ch2_v_stair', 'ch2:v-test': 'ch2_v_test', 'ch2:p-supply': 'ch2_s_p_supply', 'ch2:p-drillrun': 'ch2_s_p_drillrun', 'ch2:survivor': 'ch2_s_survivor', 'ch2:approach': 'ch2_s_approach', 'ch2:ditch': 'ch2_s_ditch', 'ch2:gully': 'ch2_s_gully', 'ch2:irongut': 'ch2_s_irongut', 'ch2:ribs': 'ch2_s_ribs', 'ch2:vein': 'ch2_s_vein'}
   // v179: Valerius has moved on; the test chamber shows the outpost, not him.
   if (id === 'ch2:greg-toll' && state.flags.gregDead) return 'greg_empty'

@@ -11,7 +11,7 @@ let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 void getScene
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v244'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v244'"), 'build v244')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v245'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v245'"), 'build v245')
 
 const has = (t: unknown, line: string) => typeof t === 'string' && t.includes(line)
 const anyHeat = (t: unknown, name: string) => typeof t === 'string' && new RegExp(`${name} Heat \\+\\d`).test(t)

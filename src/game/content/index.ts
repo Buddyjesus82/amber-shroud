@@ -5,6 +5,7 @@ import { crisisScenes } from './crises'
 import { campKaelenScenes, roamKaelenScenes, threshKaelenScenes } from './kaelen'
 import { openingScenes } from './openings'
 import { rumorSpotScenes } from './rumorSpots'
+import { sideQuestScenes } from '../sideQuests'
 import { crucibleScenes } from './crucible'
 import { redMawScenes } from './redMaw'
 import { chapterTwoScenes } from './intoTheMaw'
@@ -25,6 +26,7 @@ const all: Scene[] = [
   ...campKaelenScenes,
   ...roamKaelenScenes,
   ...rumorSpotScenes,
+  ...sideQuestScenes,
   ...spineScenes,
   ...shadeHandScenes(),
   ...threshKaelenScenes,
