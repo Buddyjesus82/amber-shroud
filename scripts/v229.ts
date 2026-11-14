@@ -8,7 +8,7 @@ import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v233'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v233'"), 'build v229')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v234'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v234'"), 'build v229')
 
 function wagon(): GameState {
   const base = newGame('vessel')

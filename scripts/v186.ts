@@ -6,7 +6,7 @@ import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v233'"), 'SW cache v186')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v233'"), 'Build label v186')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v234'"), 'Build label v186')
 // 1 release switch (v187: Chapter Two released): End card Continue opens Chapter Two in place
 ok(RELEASED_CHAPTERS.two === true, 'Chapter Two released')
 const end = { ...newGame('vessel'), sceneId: CHAPTER_ONE_END, flags: { ...newGame('vessel').flags, chapter1EndSeen: true } } as GameState

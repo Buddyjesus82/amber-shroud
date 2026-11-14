@@ -6,7 +6,7 @@ import { newGame } from '../src/game/engine.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v233'"), 'SW cache v170')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v233'"), 'Build label v170')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v234'"), 'Build label v170')
 const seen = new Set<string>()
 for (const n of ['p-supply', 'p-drillrun', 'survivor', 'approach', 'ditch', 'gully', 'irongut', 'ribs', 'vein', 'cache', 'heart', 'trapped', 'end', 'gate']) {
   const sc = getScene(`ch2:${n}`)

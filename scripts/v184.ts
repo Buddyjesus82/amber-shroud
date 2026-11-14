@@ -5,7 +5,7 @@ import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v233'"), 'SW cache v184')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v233'"), 'Build label v184')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v234'"), 'Build label v184')
 ok(CH2_BACKTRACK === 'The upper wash is behind you. The descent only goes deeper.', 'exact line')
 const v = chapterTwoFromCode('vessel')
 let s = applyEffect(v, visibleChoices(v)[0].effects)

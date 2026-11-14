@@ -8,7 +8,7 @@ const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m
 ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v233'"), 'SW cache v195')
 ok(readFileSync('public/sw.js', 'utf8').includes('covers/jaxson-reunion.jpg'), 'reunion cover precached')
 ok(existsSync('public/covers/jaxson-reunion.jpg'), 'reunion cover file')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v233'"), 'Build label v195')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v234'"), 'Build label v195')
 ok(ITEMS.wire_cutter_shim?.desc === 'An improvised scrap shim Kaelen filed down for the perimeter wire.', 'shim desc')
 const at = (sceneId: string, flags: Record<string, unknown>, door: 'prisoner' | 'outcast' = 'prisoner', pressure = 0): GameState => {
   const g = newGame(door)
