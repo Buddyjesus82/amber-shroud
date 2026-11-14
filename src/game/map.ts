@@ -2,6 +2,7 @@ import { getScene } from './content'
 import { HUBS } from './content/catalog'
 import { CRUCIBLE_SCENES } from './content/crucible'
 import { HUB_MAPS } from './content/maps'
+import { confirmPending } from './companions'
 import { isPressureOverlay } from './hunter'
 import type { GameState, HubMapDef, HubMapEdge, HubMapNode } from './types'
 
@@ -340,7 +341,7 @@ function ch2RoadOpen(state: GameState, from: string, to: string): boolean {
 
 /** Map button: hubs, the Cache Run, and the Barrow Trails. Hidden in a fight, Down, crisis, ending, pressure, or the Crucible. */
 export function showMapButton(state: GameState): boolean {
-  if (typeof state.flags.cachePending === 'string') return false
+  if (confirmPending(state)) return false
   const scene = getScene(state.sceneId, state.door)
   const hub = state.hubId ? HUBS[state.hubId] : null
   const barrow = state.hubId === 'barrow' && state.sceneId.startsWith('ch3:')

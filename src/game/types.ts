@@ -164,6 +164,10 @@ export type Effect = {
   cacheCommit?: boolean
   /** v233: leave the first Cache Run beat and go home. */
   cacheTurn?: boolean
+  /** v239: the player confirmed a helper swap. Do not ask again. */
+  recruitSwap?: boolean
+  /** v239: the player kept the current helper. Clears the pending swap. */
+  recruitKeep?: boolean
   enterHub?: string
   /** The road between a home camp and the Red Maw (after Chapter One). The masked figure never meets you on it. */
   homeRoad?: boolean

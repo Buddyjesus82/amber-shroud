@@ -59,6 +59,29 @@ export function companionOf(state: Pick<GameState, 'flags'>): (CompanionDef & { 
   return { ...def, hp: Number(state.flags.companionHp ?? def.hp) }
 }
 
+export type RecruitPending = { scene: string; fx: Effect }
+
+/** v239: the pending swap, only while it still applies (same scene, a helper in the slot, a different recruit). */
+export function recruitPendingOf(state: Pick<GameState, 'flags' | 'sceneId'>): RecruitPending | null {
+  const raw = state.flags.recruitPending
+  if (typeof raw !== 'string') return null
+  let p: RecruitPending
+  try {
+    p = JSON.parse(raw) as RecruitPending
+  } catch {
+    return null
+  }
+  if (!p || p.scene !== state.sceneId || !p.fx?.recruit || !(p.fx.recruit in COMPANIONS)) return null
+  const mate = companionOf(state)
+  if (!mate || mate.id === p.fx.recruit) return null
+  return p
+}
+
+/** v239: a confirm card is up (the Cache Run or a helper swap). Nav, hooks and roam rows hide. */
+export function confirmPending(state: Pick<GameState, 'flags' | 'sceneId'>): boolean {
+  return typeof state.flags.cachePending === 'string' || !!recruitPendingOf(state)
+}
+
 export function companionMaxHp(state: Pick<GameState, 'flags'>): number {
   const c = companionOf(state)
   if (!c) return 0

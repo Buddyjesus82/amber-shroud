@@ -2,6 +2,7 @@ import { ITEMS, getScene, hasScene } from './content'
 import type { DoorId, GameState } from './types'
 import { EQUIP_SLOTS, slotsFor } from './kit'
 import { seedCh2Seen, seedMawSeen } from './map'
+import { recruitPendingOf } from './companions'
 
 /**
  * Old saves parked Vessel Cloth on armor, and the Dust Cloak on armor before the Cloak slot existed.
@@ -148,8 +149,16 @@ export function restoreLostWrench(state: GameState): GameState {
   return { ...state, items: { ...state.items, wrench: 1 }, flags: { ...f, wrenchRestored: true, wrenchRestoredV144: true } }
 }
 
+/** v239: a saved helper-swap confirm that no longer applies (other scene, slot changed, bad data) is dropped on load. */
+function clearStaleSwap(state: GameState): GameState {
+  if (typeof state.flags?.recruitPending !== 'string' || recruitPendingOf(state)) return state
+  const flags = { ...state.flags }
+  delete flags.recruitPending
+  return { ...state, flags }
+}
+
 export function repairLoadedState(state: GameState): GameState {
-  const base = clearMaskedBlock(markOldFirstDrop(restoreLostWrench(migrateNimFlags(migrateEquipped(state)))))
+  const base = clearStaleSwap(clearMaskedBlock(markOldFirstDrop(restoreLostWrench(migrateNimFlags(migrateEquipped(state))))))
   const sceneId = repairSceneId(base)
   if (sceneId === base.sceneId && hasScene(sceneId) && sceneFitsDoor(sceneId, base.door)) {
     const scene = getScene(sceneId, base.door)
