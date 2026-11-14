@@ -6,6 +6,9 @@ export const CH3_ENTRY = 'ch3:capture'
 
 /** v240: the Crosshaven inner gates (Jeramie, t1251u). Approved lines, word for word. */
 export const CROSSHAVEN_CABLES_LOCKED = 'The cables are bound too thick to pull. You need a blade.'
+export const CROSSHAVEN_CABLES_SUB = 'Needle Knife, or any blade (Health −1).'
+export const CROSSHAVEN_CABLES_ROUGH = 'The rust bites back. The edge skips and opens your palm, but the braids part one by one.'
+export const CH3_TRENCH_DAGGER = 'Under a fallen iron screen, a blade someone lost to the grit. Rusted, but it still holds an edge.'
 export const CROSSHAVEN_CABLES_CUT = 'The rotted bindings part under the blade, one braid at a time. The drum is free of rope, but silt has welded it solid.'
 export const CROSSHAVEN_GATE_OPENS = 'Iron groans across the fringe, a sound you feel in your teeth. The portcullis drags upward and locks high. The way in is open.'
 export const CROSSHAVEN_CRANK_SLIPS = "The handle kicks back and cracks your knuckles. The drum doesn't move. Yet."
@@ -125,7 +128,15 @@ export const chapterThreeScenes: Scene[] = [
     hubId: 'barrow',
     title: 'Primary Sift Trench',
     body: 'The earth gives way to a massive industrial gash. Heavy iron screens and severed conduit lines lie choked under drifts of amber grit. Wind whistles hollowly through the open pipe ends.',
-    choices: [],
+    choices: [
+      {
+        id: 'dig-screens',
+        label: 'Dig through the screens',
+        tone: 'quiet',
+        show: { flagUnset: 'ch3TrenchDagger' },
+        effects: { still: true, add: { rusted_dagger: 1 }, flag: { ch3TrenchDagger: true }, flash: CH3_TRENCH_DAGGER },
+      },
+    ],
   },
   {
     id: 'ch3:relay',
@@ -165,12 +176,23 @@ export const chapterThreeScenes: Scene[] = [
       {
         id: 'cut-cables',
         label: 'Cut the winch cables',
-        sub: 'Needs the Needle Knife.',
+        sub: CROSSHAVEN_CABLES_SUB,
         tone: 'quiet',
-        show: { all: [{ flagUnset: 'crosshavenCablesCut' }, { flagUnset: 'crosshavenGateOpen' }] },
+        show: { all: [{ flagUnset: 'crosshavenCablesCut' }, { flagUnset: 'crosshavenGateOpen' }, { item: 'needle_knife' }] },
         enable: { item: 'needle_knife' },
         locked: CROSSHAVEN_CABLES_LOCKED,
         effects: { still: true, flag: { crosshavenCablesCut: true }, flash: CROSSHAVEN_CABLES_CUT },
+      },
+      {
+        // v247: no Needle Knife. The trench dagger or a shiv cuts the same braids, at a cost.
+        id: 'cut-cables-rough',
+        label: 'Cut the winch cables',
+        sub: CROSSHAVEN_CABLES_SUB,
+        tone: 'quiet',
+        show: { all: [{ flagUnset: 'crosshavenCablesCut' }, { flagUnset: 'crosshavenGateOpen' }, { not: { item: 'needle_knife' } }] },
+        enable: { any: [{ item: 'rusted_dagger' }, { item: 'shiv' }] },
+        locked: CROSSHAVEN_CABLES_LOCKED,
+        effects: { still: true, health: -1, flag: { crosshavenCablesCut: true }, flash: CROSSHAVEN_CABLES_ROUGH },
       },
       {
         id: 'crank-drum',

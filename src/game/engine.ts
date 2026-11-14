@@ -2117,7 +2117,7 @@ function winchButton(state: GameState, said: string): Choice | null {
   }
   if (state.sceneId !== 'ch3:crosshaven') return null
   const rows = visibleChoices(state)
-  const cut = rows.find((c) => c.id === 'cut-cables')
+  const cut = rows.find((c) => c.id === 'cut-cables' || c.id === 'cut-cables-rough')
   const crank = rows.find((c) => c.id === 'crank-drum')
   if (cut && /\b(?:cut|slice|saw)\b.*\b(?:cables?|bindings?|ropes?|winch)\b/.test(said)) return cut
   const gate = /\b(?:crank|winch|drum)\b/.test(said) || /\b(?:open|lift|raise)\b.*\b(?:gates?|portcullis)\b/.test(said)
