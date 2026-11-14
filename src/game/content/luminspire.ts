@@ -160,6 +160,7 @@ export const chapterThreeScenes: Scene[] = [
     hubId: 'barrow',
     title: 'Crosshaven Fringe',
     body: "The noise of the perimeter drops behind you, replaced by the low hum of Crosshaven's outer filters. Lantern light cuts through the grease-haze on the shanties. You've made it off the flats, but the inner gates are locked tight.",
+    variants: [{ if: { flag: 'crosshavenGateOpen' }, mode: 'replace', body: 'The noise of the perimeter drops behind you. The portcullis hangs high on its rusted drum, and the way in stands open.' }],
     choices: [
       {
         id: 'cut-cables',
