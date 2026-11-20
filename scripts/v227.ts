@@ -10,7 +10,7 @@ import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v234'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v234'"), 'build v227')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v254'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v254'"), 'build v227')
 ok(existsSync('public/covers/bonewright.jpg'), 'Varro portrait ships')
 
 function at(seekers = 0, items: Record<string, number> = {}, flags: Record<string, unknown> = {}): GameState {
@@ -62,7 +62,9 @@ ok(bodyOf(market).includes(VARRO_MARKET) && !bodyOf(market).includes('pawned sho
 ok(visibleChoices(market).find((c) => c.id === 'zafir')?.sub === VARRO_TALK, 'talk subtitle')
 const shelves = visibleChoices(card)
 ok(shelves.find((c) => c.id === 'shop-buy')?.sub === VARRO_BUY && shelves.find((c) => c.id === 'shop-sell')?.sub === VARRO_SELL, 'Varro shelf subtitles')
-const cairn = applyEffect(newGame('vessel'), { goto: 'ch1:v-zafir' })
+// v233: walking onto the Cache Run asks first; Take it commits.
+const cairnAsk = applyEffect(newGame('vessel'), { goto: 'ch1:v-zafir' })
+const cairn = typeof cairnAsk.flags.cachePending === 'string' ? applyEffect(cairnAsk, { cacheCommit: true }) : cairnAsk
 ok(bodyOf(cairn).includes('You walked out of a wreck still open.') && bodyOf(cairn).includes('He keeps his eyes on the needle.') && bodyOf(cairn).includes('I left the lamps.') && bodyOf(cairn).includes("Oram's map is already better"), 'Bone Cairn 1-4')
 ok(!bodyOf(cairn).includes('walking batteries') && !bodyOf(cairn).includes('Bonewright'), 'the cairn drops the merchant pitch')
 ok(interpret(cairn, 'talk').flash === 'I do not sell a cup a road. She already knows. Walk.', 'cairn talk')

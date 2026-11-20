@@ -5,17 +5,19 @@ import { ITEMS } from '../src/game/content/index.ts'
 import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v233'"), 'SW cache v195')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v254'"), 'SW cache v195')
 ok(readFileSync('public/sw.js', 'utf8').includes('covers/jaxson-reunion.jpg'), 'reunion cover precached')
 ok(existsSync('public/covers/jaxson-reunion.jpg'), 'reunion cover file')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v234'"), 'Build label v195')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v254'"), 'Build label v195')
 ok(ITEMS.wire_cutter_shim?.desc === 'An improvised scrap shim Kaelen filed down for the perimeter wire.', 'shim desc')
 const at = (sceneId: string, flags: Record<string, unknown>, door: 'prisoner' | 'outcast' = 'prisoner', pressure = 0): GameState => {
   const g = newGame(door)
   return { ...g, hubId: 'camp04', sceneId, pressure, flags: { ...g.flags, noMasked: true, kaelenJob: true, ...flags } } as GameState
 }
 const ids = (s: GameState) => visibleChoices(s).map((c) => c.id)
-const pick = (s: GameState, id: string) => { const c = visibleChoices(s).find((x) => x.id === id); ok(c, `${s.sceneId}: ${id} visible (${ids(s)})`); return c ? applyEffect(s, c.effects) : s }
+// v233: a Cache Run start asks first; Take it commits.
+const take = (s: GameState) => (typeof s.flags.cachePending === 'string' ? applyEffect(s, { cacheCommit: true }) : s)
+const pick = (s: GameState, id: string) => { const c = visibleChoices(s).find((x) => x.id === id); ok(c, `${s.sceneId}: ${id} visible (${ids(s)})`); return c ? take(applyEffect(s, c.effects)) : s }
 // Availability.
 ok(!ids(at('camp:kaelen', {})).includes('grate'), 'no grate at calm with no plan')
 ok(ids(at('camp:kaelen', { jaxsonPlan: true })).includes('grate'), 'grate after Jaxson plan')
@@ -48,8 +50,9 @@ ok(!ids(at('camp:cages', cold)).includes('stash'), 'stash locked')
 ok(!ids(at('camp:jaxson', cold)).includes('paid'), 'paid locked')
 // Normal Jaxson route unchanged.
 ok(ids(at('camp:cages', { jaxsonFavor: true })).includes('stash'), 'stash still there normally')
-const storm = applyEffect(at('camp:forced', { guardDown: true, striderHot: true, hungerKnown: true }), { startChapter: 'cache-run', goto: 'ch1:leave' })
-ok(ids(storm).join() === 'continue', 'normal storm has one Continue')
+const storm = take(applyEffect(at('camp:forced', { guardDown: true, striderHot: true, hungerKnown: true }), { startChapter: 'cache-run', goto: 'ch1:leave' }))
+// v233: the first Cache Run beat also carries Turn back.
+ok(ids(storm).filter((id) => id !== 'turn-back').join() === 'continue', 'normal storm has one Continue')
 ok(pick(storm, 'continue').sceneId === 'ch1:leave', 'normal storm → ch1:leave')
 console.log(fails ? `v195: ${fails} fail(s)` : 'v195: ok')
 if (fails) process.exit(1)

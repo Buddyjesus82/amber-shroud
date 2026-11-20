@@ -148,7 +148,9 @@ for (const door of DOORS) {
     const goFx = getScene('camp:forced').choices.find((c) => c.id === 'go')!.effects
     const held = applyEffect(nf, goFx)
     ok(held.sceneId === 'camp:forced' && !held.chapterId, `prisoner: Take the Gullet holds with the guard up (${held.sceneId})`)
-    const go = applyEffect({ ...nf, flags: { ...nf.flags, guardDown: true } }, goFx)
+    // v233: a Cache Run start asks first; Take it commits.
+    const asked = applyEffect({ ...nf, flags: { ...nf.flags, guardDown: true } }, goFx)
+    const go = typeof asked.flags.cachePending === 'string' ? applyEffect(asked, { cacheCommit: true }) : asked
     ok(go.chapterId === 'cache-run', `prisoner: Take the Gullet starts the run (${go.sceneId})`)
     // Not on a talk scene.
     const talk = applyEffect({ ...f, flags: { ...f.flags, huntQuiet: 0 } }, { ticks: 1, pressure: 1, goto: 'camp:kaelen' })

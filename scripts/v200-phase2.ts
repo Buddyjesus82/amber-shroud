@@ -20,7 +20,8 @@ const targets = new Set<string>()
 for (const s of ALL_SCENES) for (const c of s.choices ?? []) if (c.effects.goto && c.effects.goto !== s.id) targets.add(c.effects.goto)
 for (const id of NEW) ok(targets.has(id), `${id} has an inbound door`)
 for (const t of ['ch2:p-drillrun', 'ch2:p-abyss', 'ch2:v-blown', 'ch2:cache', 'ch2:vein', 'ch2:heart']) ok(hasScene(t), `${t} exists`)
-ok(getScene('deep:rubble').body === 'Dust still hangs thick in the air from the collapse. Twisted scrap and fallen ceiling slabs choke the passage.', 'rubble verbatim')
+// v231 (rubble crawl) rewrote the rubble body.
+ok(getScene('deep:rubble').body === 'The passage is choked with split concrete and rusted lathe. Clear it with care or muscle past.', 'rubble verbatim')
 ok(getScene('deep:lock').body === 'A massive reinforced pressure door blocking access to the Bleached Heart. Heavy runes pulsate across the frame.', 'lock verbatim')
 // entries gated
 ok(!ids(at('prisoner', 'ch2:p-abyss')).includes('rustpockets'), 'rust-pockets hidden before Valerius')

@@ -50,7 +50,8 @@ for (const [door, hub] of [['outcast', 'spine'], ['vessel', 'threshold']] as con
   for (const n of map.nodes.filter((n) => got.has(n.sceneId))) explored = markCampSeen({ ...explored, sceneId: n.sceneId })
   assert(drawnMap(explored)!.nodes.length === map.nodes.length, `${hub} draws in as walked (including exit)`)
   for (const e of map.edges) {
-    for (const [from, to] of [[e.a, e.b], [e.b, e.a]]) {
+    // v231: Walk rows follow one-way roads (the Paddock -> Guard Post has no walk back, v200).
+    for (const [from, to] of e.oneWay ? [[e.a, e.b]] : [[e.a, e.b], [e.b, e.a]]) {
       const a = map.nodes.find((n) => n.id === from)!
       const b = map.nodes.find((n) => n.id === to)!
       if (!a.sceneId.startsWith(hub === 'spine' ? 'spine:' : 'thresh:') || !b.sceneId.startsWith(hub === 'spine' ? 'spine:' : 'thresh:')) continue

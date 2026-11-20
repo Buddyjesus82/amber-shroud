@@ -66,7 +66,8 @@ ok(ref.flags.sableRefused && !pick(ref, 'sable'), 'refuse locks')
 // Swap: recruiting a second asks to swap and says who leaves.
 const sw = { ...at('outcast', 'spine:sable'), flags: { ...o.flags, sableWon: true } } as GameState
 ok(pick(sw, 'sable_recruit')?.sub?.endsWith('Swaps out Hester Ellery.'), 'swap sub')
-const sw2 = go(sw, 'sable_recruit')
+// v239: recruiting over a current helper asks first; Swap runs the recruit.
+const sw2 = go(go(sw, 'sable_recruit'), 'swap-take')
 ok(companionOf(sw2)?.id === 'sable' && sw2.flash?.includes('Hester Ellery leaves the party.'), 'swap done')
 ok(dismissCompanion(sw2).flags.companion === undefined, 'dismiss')
 
@@ -123,6 +124,6 @@ ok(k.flags.keltStatus === 'failed' && k.items.damaged_data_cylinder === 1 && k.f
 const pr = go(go(at('vessel', 'thresh:conduits'), 'breach'), 'pry')
 ok(pr.items.sealed_data_cylinder === 1 && pr.flags.keltStatus === 'failed', 'pry')
 
-ok(readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v234'") && readFileSync('src/version.ts', 'utf8').includes("'v234'"), 'v205 bump')
+ok(readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v254'") && readFileSync('src/version.ts', 'utf8').includes("'v254'"), 'v205 bump')
 console.log(fails ? `v205: ${fails} FAIL` : 'v205: all ok')
 process.exit(fails ? 1 : 0)
