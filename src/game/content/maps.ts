@@ -228,6 +228,7 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
       { id: 'junction', name: 'The Deep Junction', short: 'Junction', sceneId: 'ch3:junction', x: 78, y: 140, labelSide: 'above' },
       { id: 'rustvein', name: 'The Rustvein Gateway', short: 'Rustvein', sceneId: 'ch3:rustvein', x: 78, y: 114, labelSide: 'above' },
       { id: 'causeway', name: 'The Barrow Causeway', short: 'Causeway', sceneId: 'ch3:causeway', x: 56, y: 126, labelSide: 'below' },
+      { id: 'ossuary', name: 'The Ossuary Cut', short: 'Ossuary', sceneId: 'ch3:ossuary', x: 56, y: 100, labelSide: 'above' },
     ],
     edges: [
       { a: 'capture', b: 'trench', sap: 1 },
@@ -243,6 +244,7 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
       { a: 'courtyard', b: 'junction', sap: 0 },
       { a: 'junction', b: 'rustvein', sap: 0 },
       { a: 'rustvein', b: 'causeway', sap: 0 },
+      { a: 'causeway', b: 'ossuary', sap: 0 },
     ],
     sceneNode: {
       'ch3:capture': 'capture',
@@ -258,6 +260,7 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
       'ch3:junction': 'junction',
       'ch3:rustvein': 'rustvein',
       'ch3:causeway': 'causeway',
+      'ch3:ossuary': 'ossuary',
     },
   },
   /** v233: Chapter 2, Prisoner route "Cartel Stock". Fogged until the shaft survey is taken. */

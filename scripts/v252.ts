@@ -9,7 +9,7 @@ import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v252'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v252'"), 'build v252')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v253'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v253'"), 'build v253')
 
 // ── The two approved tails, from the live content ──
 const WATCHER = 'He stays. A Watcher on the stair sees you: Seeker Heat +1.'
@@ -48,7 +48,6 @@ for (const w of ['Seeker Heat rises.', 'Sap and Cartel Heat.', 'You leave the tr
 // ── The Causeway cairn ──
 const CAIRN = 'Halfway up the ridge, a flat slate sits balanced on three dark stones, the same mark inked on your map. Under it, someone left a wrapped bundle.'
 const EMPTY = 'The slate sits empty on its stones.'
-const ROAD = 'The flagstones run on, down toward a low choke in the rock. Not yet.'
 const og = newGame('outcast')
 const cw: GameState = { ...og, sceneId: 'ch3:causeway', hubId: 'barrow', chapterId: 'luminspire', sap: 4, health: 5, items: { ...og.items, scrap: 1, salve: 0 }, flags: { ...og.flags, ch3Started: true, ch3Stripped: true, ch3Out: true, ch3SupplyOpen: true, ch3TentOpen: true, ch3VaultDone: true, crosshavenGateOpen: true, barrowMap: true, causewayCrossed: true, noMasked: true } } as GameState
 const rowOf = (s: GameState, id: string) => visibleChoices(s).find((c) => c.id === id)
@@ -66,7 +65,7 @@ ok(emptyRow?.label === 'Climb to the barrow mounds' && emptyRow.sub === 'A stack
 const again = press({ ...got, flash: undefined }, 'climb-mounds-empty')
 ok(again.sceneId === 'ch3:causeway' && again.flash === EMPTY && again.items.salve === 1 && again.items.scrap === 2, 'after: empty line, no reward')
 ok(press(again, 'climb-mounds-empty').items.scrap === 2, 'never pays twice')
-ok(press(cw, 'sunken-road').flash === ROAD && press(cw, 'sunken-road').sceneId === 'ch3:causeway', 'sunken road unchanged')
+ok(rowOf(cw, 'sunken-road')?.label === 'Follow the sunken road', 'sunken road row still there (v253: it walks to the Ossuary Cut)')
 
 if (fails) { console.log(`v252: ${fails} failure(s)`); process.exit(1) }
 console.log('v252 ok')

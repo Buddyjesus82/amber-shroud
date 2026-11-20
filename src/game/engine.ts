@@ -2760,7 +2760,7 @@ function campWalkRows(state: GameState, rows: Choice[]): Choice[] {
     // An authored choice already walks there. A second Walk row would only repeat it.
     if (has.has(to.sceneId)) continue
     // v241: the Gatehouse has its own approved buttons ('Walk into the Gatehouse' / 'Back to the Fringe'); no auto Walk row.
-    if (to.sceneId === 'ch3:gatehouse' || to.sceneId === 'ch3:courtyard' || to.sceneId === 'ch3:junction' || to.sceneId === 'ch3:rustvein' || to.sceneId === 'ch3:causeway') continue
+    if (to.sceneId === 'ch3:gatehouse' || to.sceneId === 'ch3:courtyard' || to.sceneId === 'ch3:junction' || to.sceneId === 'ch3:rustvein' || to.sceneId === 'ch3:causeway' || to.sceneId === 'ch3:ossuary') continue
     const sap = e.sap ?? 1
     const locked = ch3MapLocked(state, to.sceneId)
     out.push({

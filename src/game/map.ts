@@ -260,6 +260,8 @@ export function ch3MapLocked(state: Pick<GameState, 'flags' | 'sceneId'>, sceneI
   if (sceneId === 'ch3:rustvein') return !state.flags.crosshavenGateOpen || !state.flags.barrowMap
   // v250: the map never crosses the Rustvein toll for you. Once you have crossed, the walk is open.
   if (sceneId === 'ch3:causeway') return !state.flags.causewayCrossed
+  // v253: the Ossuary Cut is past the Causeway, so the same crossing opens it.
+  if (sceneId === 'ch3:ossuary') return !state.flags.causewayCrossed
   return false
 }
 
