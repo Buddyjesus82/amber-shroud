@@ -39,7 +39,7 @@ export const PEOPLE: Record<PersonId, Person> = {
     // Nim is his Dune-Stray name. Caius Draven is his old Cartel name. Never "Shard-Hound"; shard-hounds are beasts.
     aliases: ['nim', 'carapace hunter', 'carapace', 'bounty hunter', 'tracker', 'harpoon', 'draven', 'caius', 'caius draven'],
     metFlag: 'metCarapace',
-    card: `Nim, the Carapace hunter. A scarred bounty hunter in patched armor made from the glassy black carapace of Shard-Born Striders he has killed. A cracked respirator mask under a hood. A heavy serrated harpoon rifle.
+    card: `Nim, the Carapace hunter. A scarred bounty hunter in patched armor made from the glassy black carapace of Shard-Born Striders he has killed. A cracked respirator mask under a hood. A heavy serrated spring-harpoon.
 
 He was a high-ranking Cartel mercenary until a failed expedition got him cast out. He took the Dune-Stray name Nim after he left. His old Cartel name is Caius Draven, and Cartel people still use it. Now he tracks runaways and stolen Glance-Shards for whoever pays. Cold, relentless, superstitious. He believes the amber sands demand blood and treats every hunt as a ritual. Someone hired him to track you.`,
     scenes: [],
@@ -87,7 +87,7 @@ Dark, funny, a little wild. She has been through worse than most on the Spine an
     name: 'Corvin Pryce',
     aliases: ['corvin', 'pryce', 'corvin pryce', 'deserter'],
     metFlag: 'metCorvin',
-    card: `Corvin Pryce. A Cartel security conscript who guarded ironwood harvesters out by the Gilded Hollows. He watched the Cartel execute Dune-Stray refugees for siphoning sap. When they ordered him to fire on the families, he dropped his rifle and deserted into the deep sand. The Cartel and the Seekers both hunt him.
+    card: `Corvin Pryce. A Cartel security conscript who guarded ironwood harvesters out by the Gilded Hollows. He watched the Cartel execute Dune-Stray refugees for siphoning sap. When they ordered him to cut down the families, he dropped his spear and deserted into the deep sand. The Cartel and the Seekers both hunt him.
 
 He knows the traps on the dry ford and uses them to protect Dune-Strays, as penance. He does not ask what your brand is for.`,
     scenes: ['spine:corvin'],

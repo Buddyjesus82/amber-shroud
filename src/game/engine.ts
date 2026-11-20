@@ -35,7 +35,7 @@ import { kaelenAsk } from './kaelenAsks'
 import { RUBBLE_SAP, rubbleLoot, rubbleResolve } from './rubble'
 import { chapterTwoAfter, chapterTwoUnlock, isChapterTwoCode } from './ch2'
 import { CH2_ENTRY, chapterTwoSummary } from './content/intoTheMaw'
-import { COURTYARD_CLEARED, COURTYARD_PULLS, COURTYARD_RIP, COURTYARD_SLOW, CROSSHAVEN_CRANK_SLIPS, CROSSHAVEN_GATE_OPENS } from './content/luminspire'
+import { COURTYARD_CLEARED, COURTYARD_PULLS, COURTYARD_RIP, COURTYARD_SLOW, CROSSHAVEN_CRANK_SLIPS, CROSSHAVEN_GATE_OPENS, MARTA_SPEAKER } from './content/luminspire'
 import { ROAD_NOT_NOW, roadChoice, isTravelText, roadPhrase, roadToMaw, roadHome } from './returnRoad'
 import { CLOSING_PRESSURE, FORCED_PRESSURE, closingNow, homeFaction, restCoolLine, restCools } from './closing'
 import {
@@ -224,6 +224,8 @@ export function sceneOf(state: GameState): Scene {
   const scene = getScene(state.sceneId, state.door)
   // v146: Jaxson has left Camp-04 after Chapter One; his stall has no voice.
   if (scene.speaker === 'Jaxson Vance' && jaxsonAway(state, scene.id)) return { ...scene, speaker: undefined }
+  // v249: Marta speaks only once you have knocked.
+  if (scene.id === 'ch3:rustvein' && state.flags.martaMet) return { ...scene, speaker: MARTA_SPEAKER }
   // v179: after the lost test fight Valerius has moved on. The test chamber has no voice and no Valerius.
   // v185: only once the test is behind you. While a Drop can still pass it, he is still at the lamp.
   if (scene.id === 'ch2:v-blown' && !state.flags.coverBlown) return { ...scene, title: 'The Drill Line' }
@@ -2102,7 +2104,7 @@ function winchButton(state: GameState, said: string): Choice | null {
   }
   if (state.sceneId === 'ch3:junction') {
     // v242: 'follow the road' at the Junction.
-    const road = visibleChoices(state).find((c) => c.id === 'follow-road')
+    const road = visibleChoices(state).find((c) => c.id === 'follow-road' || c.id === 'follow-road-map')
     if (road && /\b(?:follow|take|walk|go|push)\b.*\b(?:old trade road|trade road|road|deeper)\b/.test(said) && !/\bback\b/.test(said)) return road
     return null
   }
@@ -2747,7 +2749,7 @@ function campWalkRows(state: GameState, rows: Choice[]): Choice[] {
     // An authored choice already walks there. A second Walk row would only repeat it.
     if (has.has(to.sceneId)) continue
     // v241: the Gatehouse has its own approved buttons ('Walk into the Gatehouse' / 'Back to the Fringe'); no auto Walk row.
-    if (to.sceneId === 'ch3:gatehouse' || to.sceneId === 'ch3:courtyard' || to.sceneId === 'ch3:junction') continue
+    if (to.sceneId === 'ch3:gatehouse' || to.sceneId === 'ch3:courtyard' || to.sceneId === 'ch3:junction' || to.sceneId === 'ch3:rustvein') continue
     const sap = e.sap ?? 1
     const locked = ch3MapLocked(state, to.sceneId)
     out.push({

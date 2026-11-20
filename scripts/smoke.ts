@@ -3762,7 +3762,7 @@ function assertHelpResolves(s: GameState, where: string) {
   const hi = spineAt(4)
   assert(hi.flags.hunterHere && pressureFace(hi) === 'Nim', 'Stray Heat 4 fields the Carapace hunter')
   assert(hi.flags.spineHunterKind === 'carapace' && hi.flags.metCarapace, 'the hunt locks the carapace face and marks him met')
-  assert(/harpoon rifle with a serrated head/.test(bodyOf(hi)) && /Someone paid me for yours/.test(bodyOf(hi)), 'his append shows on the Spine ground')
+  assert(/spring-harpoon with a serrated head/.test(bodyOf(hi)) && /Someone paid me for yours/.test(bodyOf(hi)), 'his append shows on the Spine ground')
   assert(playCoverKey(hi, sceneOf(hi)) === 'carapace', 'his portrait is the scene art during the hunt')
   const cooled = { ...hi, heat: { ...hi.heat, strays: 1 } }
   assert(pressureFace(cooled) === 'Nim', 'cooling Heat mid-hunt keeps the same face')

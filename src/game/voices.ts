@@ -180,7 +180,7 @@ export const VOICES: Record<string, Voice> = {
     ],
     want: '"I have nothing to give. Water, or my prints gone from the wash, and I walk you past the traps."',
     price: '"I sell nothing. I know where the traps are."',
-    who: '"Corvin. I guarded harvesters once. I put the rifle down."',
+    who: '"Corvin. I guarded harvesters once. I put the spear down."',
     doing: '"Hiding. Watching for Hounds. Both are the same job."',
     what: '"Wire for the ford. Nothing else now."',
     refuse: 'He keeps his hands on the wire. "I am not picking anything up for you."',

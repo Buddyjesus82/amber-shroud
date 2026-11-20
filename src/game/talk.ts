@@ -557,7 +557,7 @@ const corvin: IntentRule[] = [
   },
   {
     tags: THREAT,
-    reply: 'He holds his empty hands up. "I put the rifle down. I\'m not picking anything up for you."',
+    reply: 'He holds his empty hands up. "I put the spear down. I\'m not picking anything up for you."',
     effects: { pressure: 1, ticks: 1 },
   },
 ]

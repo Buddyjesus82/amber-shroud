@@ -256,6 +256,8 @@ export function ch3MapLocked(state: Pick<GameState, 'flags' | 'sceneId'>, sceneI
   if (sceneId === 'ch3:crosshaven') return !state.flags.ch3VaultDone
   // v241: the Gatehouse is behind the Crosshaven portcullis. The map never walks past a shut gate.
   if (sceneId === 'ch3:gatehouse' || sceneId === 'ch3:courtyard' || sceneId === 'ch3:junction') return !state.flags.crosshavenGateOpen
+  // v249: the trade road past the Junction needs the trail-runner's map.
+  if (sceneId === 'ch3:rustvein') return !state.flags.crosshavenGateOpen || !state.flags.barrowMap
   return false
 }
 

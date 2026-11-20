@@ -14,8 +14,8 @@ export const STRAY_KILL_LINE = 'Stray Heat +1.'
 
 /** v224: the Bone Wash Stray. Unnamed. A type, met once on this road as an individual. */
 export const BONE_WASH_HOT =
-  'A stake in the sand. Fresh cord. A Stray on the ridge, chitin stitched over leather, a long rifle across the knees. Shard-hounds pace the wash below. "Trail\'s loud. Stake\'s set."'
-export const BONE_WASH_TRADE = 'Same figure, rifle down. "You brought something that keeps. I trade. I don\'t guide."'
+  'A stake in the sand. Fresh cord. A Stray on the ridge, chitin stitched over leather, a sinew-backed bow across the knees. Shard-hounds pace the wash below. "Trail\'s loud. Stake\'s set."'
+export const BONE_WASH_TRADE = 'Same figure, bow down. "You brought something that keeps. I trade. I don\'t guide."'
 export const BONE_WASH_WIN = 'The cord goes slack. Another stake will come.'
 export const BONE_WASH_SCRAP = 'Scrap +2.'
 export const BONE_SLIP_SUB = 'Needs the Dust Cloak.'

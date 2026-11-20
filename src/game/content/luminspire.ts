@@ -32,6 +32,19 @@ export const JUNCTION_TITLE = 'The Deep Junction'
 export const JUNCTION_BODY = 'The drainage tunnels meet here in a wide, dripping fork. Old runoff channels split off into the dark on either side, and between them a broad cut of worn stone runs on, rutted by wheels that stopped turning long ago. The old trade road.'
 export const JUNCTION_ROAD = "The old trade road runs on into the dark, choked with collapse and silence. You'll need a reason—and a route—before pushing deeper."
 
+/** v249: the Rustvein Gateway and Marta Pryce (Jeramie, t1270u). Approved lines, word for word. */
+export const RUSTVEIN_TITLE = 'The Rustvein Gateway'
+export const RUSTVEIN_BODY = 'The old trade road climbs out of the runoff into a cut of rust-stained rock. An iron gate spans the cut, older than Crosshaven, its bars bleeding orange down the stone. Behind it a lamp burns in a toll hut, and someone inside is still writing.'
+export const RUSTVEIN_WREN = "Wren pointed past Red Maw toward the deep cuts—and you gave her your word you wouldn't stop halfway."
+export const RUSTVEIN_CORVUS = "The tallies on the gate don't add up. Somebody out here is hiding what this cut gives up."
+export const RUSTVEIN_KNOCK = "The lamp gutters. A woman opens the shutter a hand's width, ink on her fingers, a tally book pinned under her palm. 'Road's closed past dusk. Toll's still owed.'"
+export const RUSTVEIN_TALLIES = 'Rows of Cartel marks, scratched deep and recent. Half the counts have been cut over and made smaller.'
+export const MARTA_SPEAKER = 'Marta Pryce, toll clerk'
+export const MARTA_ROAD = "'Deeper. Fewer come back each season. The books say otherwise.'"
+export const MARTA_TALLIES = "'The Cartel counts what it wants counted. I just hold the pen.'"
+export const MARTA_TALLIES_NAME = 'Her pen stops over one column, a name scratched out and written back in, smaller. She turns the page before you can read it.'
+export const MARTA_TOLL = "She takes it and writes something that isn't your name."
+
 export const CH3_FIGHT_RESULT = 'It ends before it starts.'
 export const CH3_RUN_RESULT = 'Dorn Vane is already there.'
 export const CH3_STRIP_GEAR = 'Weapons taken. Armor taken.'
@@ -273,8 +286,30 @@ export const chapterThreeScenes: Scene[] = [
     title: JUNCTION_TITLE,
     body: JUNCTION_BODY,
     choices: [
-      { id: 'follow-road', label: 'Follow the old trade road', sub: 'Into the Barrow Trails.', tone: 'quiet', effects: { still: true, flash: JUNCTION_ROAD } },
+      { id: 'follow-road', label: 'Follow the old trade road', sub: 'Into the Barrow Trails.', tone: 'quiet', show: { flagUnset: 'barrowMap' }, effects: { still: true, flash: JUNCTION_ROAD } },
+      // v249: with the trail-runner's map, the road goes on to the Rustvein Gateway.
+      { id: 'follow-road-map', label: 'Follow the old trade road', sub: 'Into the Barrow Trails.', tone: 'quiet', show: { flag: 'barrowMap' }, effects: { goto: 'ch3:rustvein' } },
       { id: 'back-courtyard', label: 'Back to the Courtyard', tone: 'quiet', effects: { goto: 'ch3:courtyard' } },
+    ],
+  },
+  {
+    id: 'ch3:rustvein',
+    kind: 'story',
+    hubId: 'barrow',
+    title: RUSTVEIN_TITLE,
+    body: RUSTVEIN_BODY,
+    variants: [
+      { if: { flag: 'wrenPromise' }, mode: 'append', body: RUSTVEIN_WREN },
+      { if: { flagEq: ['ch3Helper', 'corvus'] }, mode: 'append', body: RUSTVEIN_CORVUS },
+    ],
+    choices: [
+      { id: 'knock', label: 'Knock at the toll hut', sub: 'Someone keeps the books out here.', tone: 'quiet', show: { flagUnset: 'martaMet' }, effects: { still: true, flag: { martaMet: true }, flash: RUSTVEIN_KNOCK } },
+      { id: 'read-tallies', label: 'Read the gate tallies', sub: 'Cartel marks, scratched into the iron.', tone: 'quiet', effects: { still: true, flash: RUSTVEIN_TALLIES } },
+      { id: 'ask-road', label: 'Ask about the road', sub: 'Where does the trade road go?', tone: 'quiet', show: { flag: 'martaMet' }, effects: { still: true, flash: MARTA_ROAD } },
+      { id: 'ask-tallies', label: 'Ask about the tallies', sub: 'The marks on the gate.', tone: 'quiet', show: { all: [{ flag: 'martaMet' }, { flagUnset: 'martaTalliesSeen' }] }, effects: { still: true, flag: { martaTalliesSeen: true }, flash: `${MARTA_TALLIES}\n\n${MARTA_TALLIES_NAME}` } },
+      { id: 'ask-tallies-again', label: 'Ask about the tallies', sub: 'The marks on the gate.', tone: 'quiet', show: { all: [{ flag: 'martaMet' }, { flag: 'martaTalliesSeen' }] }, effects: { still: true, flash: MARTA_TALLIES } },
+      { id: 'pay-toll', label: 'Pay the toll', sub: 'Needs: 1 Scrap.', tone: 'quiet', show: { all: [{ flag: 'martaMet' }, { flagUnset: 'martaTollPaid' }] }, enable: { itemMin: ['scrap', 1] }, locked: 'Needs: 1 Scrap.', effects: { still: true, remove: { scrap: 1 }, flag: { martaTollPaid: true }, flash: MARTA_TOLL } },
+      { id: 'back-junction', label: 'Back to the Deep Junction', tone: 'quiet', effects: { goto: 'ch3:junction' } },
     ],
   },
 ]

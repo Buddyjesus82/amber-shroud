@@ -6,7 +6,7 @@ import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v248'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v248'"), 'build v248')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v249'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v249'"), 'build v249')
 
 const DIG = 'Under a fallen iron screen, a blade someone lost to the grit. Rusted, but it still holds an edge.'
 const ROUGH = 'The rust bites back. The edge skips and opens your palm, but the braids part one by one.'
