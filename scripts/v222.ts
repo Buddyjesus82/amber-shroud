@@ -31,9 +31,9 @@ for (const f of ['ch3-trench.jpg', 'ch3-relay.jpg', 'ch3-siphon.jpg']) {
 }
 
 const map = HUB_MAPS.barrow
-ok(map?.ready && map.nodes.length === 13 && map.edges.length === 13, 'barrow map has the trail, the siphon spur, the free walk back, (v241) the Gatehouse, (v249) Rustvein, and (v250) the Causeway')
+ok(map?.ready && map.nodes.length === 14 && map.edges.length === 14, 'barrow map has the trail, the siphon spur, the free walk back, (v241) the Gatehouse, (v249) Rustvein, (v250) the Causeway, and (v253) the Ossuary Cut')
 for (const e of map.edges) {
-  const sap = e.a === 'tent' && e.b === 'crosshaven' ? 2 : e.a === 'crosshaven' && e.b === 'tent' ? 0 : ['gatehouse', 'courtyard', 'junction', 'rustvein', 'causeway'].includes(e.b) ? 0 : 1
+  const sap = e.a === 'tent' && e.b === 'crosshaven' ? 2 : e.a === 'crosshaven' && e.b === 'tent' ? 0 : ['gatehouse', 'courtyard', 'junction', 'rustvein', 'causeway', 'ossuary'].includes(e.b) ? 0 : 1
   ok(e.sap === sap && edgeSap(map, e.a, e.b) === sap, `${e.a}-${e.b} costs ${sap} Sap`)
   if (!e.oneWay) ok(edgeSap(map, e.b, e.a) === sap, `${e.b}-${e.a} costs ${sap} Sap`)
 }

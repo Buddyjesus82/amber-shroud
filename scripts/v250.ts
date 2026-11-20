@@ -9,14 +9,14 @@ import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v252'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v252'"), 'build v252')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v253'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v253'"), 'build v253')
 
 const BODY = 'Past the gate, the trade road sinks into the earth. Old flagstones run on under a skin of wind-packed grit, split by drainage ribs that broke long ago. Along the ridge above, low barrow mounds stand in a crooked line against the sky.'
 const PAID = "Nobody calls out behind you. Whatever Marta wrote, it wasn't trouble."
 const SLIP = 'You keep low under the shutter. The pen stops scratching for a breath, then starts again.'
 // v252: the mounds placeholder became the cairn pickup (see scripts/v252.ts).
 const MOUNDS = "Halfway up the ridge, a flat slate sits balanced on three dark stones, the same mark inked on your map. Under it, someone left a wrapped bundle.\n\nResin +1.\nScrap +1."
-const ROAD = 'The flagstones run on, down toward a low choke in the rock. Not yet.'
+// v253: the sunken road's 'Not yet.' placeholder became the walk to ch3:ossuary.
 
 const row = (s: GameState, id: string) => visibleChoices(s).find((c) => c.id === id)
 const ids = (s: GameState) => visibleChoices(s).map((c) => c.id)
@@ -68,8 +68,8 @@ ok(row(cw, 'back-rustvein')?.label === 'Back to the Rustvein Gateway', 'back row
 const m = press(cw, 'climb-mounds')
 ok(m.sceneId === 'ch3:causeway' && m.flash === MOUNDS && m.sap === 4 && m.health === 5, 'mounds: stays, flash')
 const r = press(cw, 'sunken-road')
-ok(r.sceneId === 'ch3:causeway' && r.flash === ROAD && r.sap === 4, 'road: stays, flash')
-ok(press(m, 'climb-mounds-empty').flash === 'The slate sits empty on its stones.' && press(r, 'sunken-road').flash === ROAD, 'both repeatable (v252: the cairn is empty after)')
+ok(r.sceneId === 'ch3:ossuary' && r.sap === 4, 'road: (v253) walks on to the Ossuary Cut, free')
+ok(press(m, 'climb-mounds-empty').flash === 'The slate sits empty on its stones.' , 'cairn repeatable (v252: empty after)')
 ok(press(cw, 'back-rustvein').sceneId === 'ch3:rustvein', 'back to Rustvein')
 
 // ── Map ──

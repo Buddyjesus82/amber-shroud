@@ -56,7 +56,13 @@ export const CAUSEWAY_MOUNDS_SUB = 'A stack of stones on the crest.'
 export const CAUSEWAY_CAIRN = 'Halfway up the ridge, a flat slate sits balanced on three dark stones, the same mark inked on your map. Under it, someone left a wrapped bundle.'
 export const CAUSEWAY_CAIRN_EMPTY = 'The slate sits empty on its stones.'
 export const CAUSEWAY_CAIRN_PAY = ['Resin +1.', 'Scrap +1.']
-export const CAUSEWAY_ROAD = 'The flagstones run on, down toward a low choke in the rock. Not yet.'
+/** v253: the Ossuary Cut, at the end of the sunken road (Jeramie). Approved lines, word for word. */
+export const OSSUARY_TITLE = 'The Ossuary Cut'
+export const OSSUARY_BODY = 'The flagstones tip down into a dry wash. Bleached ribs stick out of the sand like fence posts, and Cartel mile-markers lie snapped and half-buried among them. Boot tracks come in from every direction. Far fewer lead back out.'
+export const OSSUARY_MARKERS = 'The numbers count down toward Red Maw on one stone, toward nothing on another. Someone chiseled the second one blank.'
+export const OSSUARY_TRACKS = 'The prints crowd together at the choke, then thin to a few pairs. One set ends at a rib, as if whoever made it simply sat down.'
+export const OSSUARY_REDMAW = 'The wash bends east toward the red cuts. Not yet.'
+export const OSSUARY_UNMARKED = "A narrow trail slips between the ribs, scuffed by hand-carts. Not yet."
 
 export const CH3_FIGHT_RESULT = 'It ends before it starts.'
 export const CH3_RUN_RESULT = 'Dorn Vane is already there.'
@@ -338,8 +344,22 @@ export const chapterThreeScenes: Scene[] = [
     choices: [
       { id: 'climb-mounds', label: 'Climb to the barrow mounds', sub: CAUSEWAY_MOUNDS_SUB, tone: 'quiet', show: { flagUnset: 'causewayCairnTaken' }, effects: { still: true, add: { salve: 1, scrap: 1 }, flag: { causewayCairnTaken: true }, flash: `${CAUSEWAY_CAIRN}\n\n${CAUSEWAY_CAIRN_PAY.join('\n')}` } },
       { id: 'climb-mounds-empty', label: 'Climb to the barrow mounds', sub: CAUSEWAY_MOUNDS_SUB, tone: 'quiet', show: { flag: 'causewayCairnTaken' }, effects: { still: true, flash: CAUSEWAY_CAIRN_EMPTY } },
-      { id: 'sunken-road', label: 'Follow the sunken road', sub: 'Deeper into the Barrow Trails.', tone: 'quiet', effects: { still: true, flash: CAUSEWAY_ROAD } },
+      { id: 'sunken-road', label: 'Follow the sunken road', sub: 'Deeper into the Barrow Trails.', tone: 'quiet', effects: { goto: 'ch3:ossuary' } },
       { id: 'back-rustvein', label: 'Back to the Rustvein Gateway', tone: 'quiet', effects: { goto: 'ch3:rustvein' } },
+    ],
+  },
+  {
+    id: 'ch3:ossuary',
+    kind: 'story',
+    hubId: 'barrow',
+    title: OSSUARY_TITLE,
+    body: OSSUARY_BODY,
+    choices: [
+      { id: 'read-markers', label: 'Read the mile-markers', sub: 'Cartel paint, sun-stripped.', tone: 'quiet', effects: { still: true, flash: OSSUARY_MARKERS } },
+      { id: 'follow-tracks', label: 'Follow the tracks in', sub: 'Most of them stop here.', tone: 'quiet', effects: { still: true, flash: OSSUARY_TRACKS } },
+      { id: 'toward-redmaw', label: 'Toward Red Maw', sub: 'Where Wren pointed.', tone: 'quiet', effects: { still: true, flash: OSSUARY_REDMAW } },
+      { id: 'unmarked-track', label: 'The unmarked track', sub: "Off the Cartel's books.", tone: 'quiet', effects: { still: true, flash: OSSUARY_UNMARKED } },
+      { id: 'back-causeway', label: 'Back up the causeway', tone: 'quiet', effects: { goto: 'ch3:causeway' } },
     ],
   },
 ]

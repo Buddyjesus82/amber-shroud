@@ -8,7 +8,7 @@ import type { DoorId, GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v252'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v252'"), 'build v252')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v253'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v253'"), 'build v253')
 
 const row = (s: GameState, id: string) => visibleChoices(s).find((c) => c.id === id)
 const at = (door: DoorId, sceneId: string, heat: Partial<GameState['heat']>, flags: GameState['flags'] = {}, hubId: string | null = null): GameState => {

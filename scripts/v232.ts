@@ -10,7 +10,7 @@ import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v252'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v252'"), 'build v232')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v253'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v253'"), 'build v232')
 
 const PICKS: { door: GameState['door']; sceneId: GameState['sceneId']; hubId: NonNullable<GameState['hubId']>; label: string; flag: string; flash: string }[] = [
   {
