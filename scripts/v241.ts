@@ -10,7 +10,7 @@ import type { DoorId, GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v248'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v248'"), 'build v248')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v249'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v249'"), 'build v249')
 
 const BODY = "A narrow vaulted passage, stone sweating in the dead air. An old Cartel post rots against the wall, a stool, a rack with no spears, and a guard who never got relieved, still sitting in what's left of his coat. A footlocker sits at his boots, padlocked and rust-sealed."
 const PRY = 'The hasp gives with a crack. Inside, rusted fittings and a twist of dry rations, wrapped like someone meant to come back.'

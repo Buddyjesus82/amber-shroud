@@ -226,6 +226,7 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
       { id: 'gatehouse', name: 'The Iron Gatehouse', short: 'Gatehouse', sceneId: 'ch3:gatehouse', x: 78, y: 192, labelSide: 'above' },
       { id: 'courtyard', name: 'The Silt-Choked Courtyard', short: 'Courtyard', sceneId: 'ch3:courtyard', x: 78, y: 166, labelSide: 'above' },
       { id: 'junction', name: 'The Deep Junction', short: 'Junction', sceneId: 'ch3:junction', x: 78, y: 140, labelSide: 'above' },
+      { id: 'rustvein', name: 'The Rustvein Gateway', short: 'Rustvein', sceneId: 'ch3:rustvein', x: 78, y: 114, labelSide: 'above' },
     ],
     edges: [
       { a: 'capture', b: 'trench', sap: 1 },
@@ -239,6 +240,7 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
       { a: 'crosshaven', b: 'gatehouse', sap: 0 },
       { a: 'gatehouse', b: 'courtyard', sap: 0 },
       { a: 'courtyard', b: 'junction', sap: 0 },
+      { a: 'junction', b: 'rustvein', sap: 0 },
     ],
     sceneNode: {
       'ch3:capture': 'capture',
@@ -252,6 +254,7 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
       'ch3:gatehouse': 'gatehouse',
       'ch3:courtyard': 'courtyard',
       'ch3:junction': 'junction',
+      'ch3:rustvein': 'rustvein',
     },
   },
   /** v233: Chapter 2, Prisoner route "Cartel Stock". Fogged until the shaft survey is taken. */

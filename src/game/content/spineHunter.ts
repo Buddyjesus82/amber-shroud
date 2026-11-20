@@ -59,21 +59,21 @@ export const CARAPACE_HUNTER_HEAT = 4
 export const CARAPACE_HUNTER: SpineHunter = {
   kind: 'carapace',
   face: 'Nim',
-  append: `A man in a hood walks up the slope without hurrying. His armor is patched together from glassy black carapace, plates cut off Shard-Born Striders he has killed. A cracked respirator covers his face. A heavy harpoon rifle with a serrated head rides across his back. Scars show where the plates do not meet.
+  append: `A man in a hood walks up the slope without hurrying. His armor is patched together from glassy black carapace, plates cut off Shard-Born Striders he has killed. A cracked respirator covers his face. A heavy spring-harpoon with a serrated head rides across his back. Scars show where the plates do not meet.
 
 He stops at a distance he has chosen and kneels. He pours a pinch of amber sand from his glove onto the ground between you, the way someone else would say a prayer.
 
 "The sands want blood for what they give," he says through the mask. "I am Nim. Someone paid me for yours." A Cartel rank mark has been scraped off one of his shoulder plates. You stay on this ground. Fight, hide, or pick a road. He does not take scrap.`,
-  look: 'Nim, the Carapace hunter, is on this ground: carapace armor, cracked respirator, a serrated harpoon rifle. He was hired for you. He does not take scrap.',
+  look: 'Nim, the Carapace hunter, is on this ground: carapace armor, cracked respirator, a serrated spring-harpoon. He was hired for you. He does not take scrap.',
   fightLabel: 'Fight Nim',
   fightSub: 'Strike 4, Shell 2, Health 3. A weapon and armor help.',
-  fightOpen: 'He stands, unslings the harpoon rifle, and holds it like a spear. This ground is the fight.',
+  fightOpen: 'He stands, unslings the spring-harpoon, and holds it like a spear. This ground is the fight.',
   encounter: {
     name: 'Nim',
     strike: 4,
     shell: 2,
     hp: 3,
-    line: 'Nim, the Carapace hunter. Shard-Born carapace plates, a cracked respirator, a serrated harpoon rifle held like a spear. He was Cartel once. Now he hunts runaways and stolen Glance-Shards for pay.',
+    line: 'Nim, the Carapace hunter. Shard-Born carapace plates, a cracked respirator, a serrated spring-harpoon held like a spear. He was Cartel once. Now he hunts runaways and stolen Glance-Shards for pay.',
   },
   art: 'carapace',
 }

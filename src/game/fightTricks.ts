@@ -144,7 +144,7 @@ export const OPENERS: Record<EncounterKind, string[]> = {
   ],
   carapace: [
     '',
-    'Nim levels the harpoon rifle from range. The barbed head points at your chest.',
+    'Nim levels the spring-harpoon from range. The barbed head points at your chest.',
     'He fires first and says nothing. The harpoon line is already in the air.',
   ],
   husk: [

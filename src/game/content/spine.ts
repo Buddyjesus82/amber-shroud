@@ -649,11 +649,11 @@ You can run south, or get back under Silas's canvas.`,
     kind: 'talk',
     title: 'Corvin Pryce',
     speaker: 'Corvin Pryce',
-    body: `Beside a lone tent and a low, dry stone well, out of sight of the Hound prints, a man crouches on the cracked ground. Blowing sand. He is weathered and stubbled, somewhere between thirty and forty, in a dark buttoned coat with no Cartel markings left on it. He carries no rifle. A coil of barbed wire sits under his hands for the traps on the dry ford. His hands stay steady when he hears you. His eyes stay wary.
+    body: `Beside a lone tent and a low, dry stone well, out of sight of the Hound prints, a man crouches on the cracked ground. Blowing sand. He is weathered and stubbled, somewhere between thirty and forty, in a dark buttoned coat with no Cartel markings left on it. He carries no spear. A coil of barbed wire sits under his hands for the traps on the dry ford. His hands stay steady when he hears you. His eyes stay wary.
 
 He looks at the brand. He does not turn away.
 
-"I'm Corvin," he says. "I don't ask what that mark is for. I guarded the Cartel's ironwood harvesters out by the Gilded Hollows. Dune-Stray families came to siphon sap from the cut trees, and the Cartel shot them for it. When they ordered me to fire on the families, I dropped my rifle and walked into the deep sand. The Cartel hunts me for that. So do the Seekers.
+"I'm Corvin," he says. "I don't ask what that mark is for. I guarded the Cartel's ironwood harvesters out by the Gilded Hollows. Dune-Stray families came to siphon sap from the cut trees, and the Cartel cut them down for it. When they ordered me to turn on the families, I dropped my spear and walked into the deep sand. The Cartel hunts me for that. So do the Seekers.
 
 "I know every trap on the dry ford south of here. I use that to keep Strays alive. It doesn't pay back what I watched, but it's what I have."`,
     variants: [
@@ -734,8 +734,8 @@ He looks at the brand. He does not turn away.
         effects: { ticks: 1 },
       },
       {
-        tags: ['rifle', 'cartel', 'hollow', 'hollows', 'desert', 'deserter', 'families'],
-        reply: '"I put the rifle down. That is the whole story I tell. The rest I carry."',
+        tags: ['rifle', 'spear', 'cartel', 'hollow', 'hollows', 'desert', 'deserter', 'families'],
+        reply: '"I put the spear down. That is the whole story I tell. The rest I carry."',
         effects: { ticks: 1 },
       },
     ],
