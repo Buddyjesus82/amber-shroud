@@ -5,7 +5,7 @@ import { COVER_BAND, coverBand } from '../src/game/art.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v251'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v251'"), 'build v251')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v252'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v252'"), 'build v252')
 
 /** Fraction of the cover hidden above the art frame, for a stage of width w and height h (px). */
 function hiddenTop(key: Parameters<typeof coverBand>[0], w: number, h: number): number {

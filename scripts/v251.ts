@@ -8,7 +8,7 @@ import type { DoorId, GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v251'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v251'"), 'build v251')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v252'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v252'"), 'build v252')
 
 const row = (s: GameState, id: string) => visibleChoices(s).find((c) => c.id === id)
 const at = (door: DoorId, sceneId: string, heat: Partial<GameState['heat']>, flags: GameState['flags'] = {}, hubId: string | null = null): GameState => {
@@ -46,8 +46,8 @@ ok(capHeatSub('Seeker Heat +2.', { seekers: 8 }) === undefined && capHeatSub('Se
 ok(capHeatSub('Seekers Heat +1.', { seekers: 8 }) === undefined, 'Seekers spelling')
 ok(capHeatSub('Two Glints. Stray Heat +1.', { strays: 8 }) === 'Two Glints.' && capHeatSub('Strays Heat +1.', { strays: 8 }) === undefined, 'Stray lines')
 ok(capHeatSub('Two Glints. Stray Heat +1.', { strays: 7, cartel: 8 }) === 'Two Glints. Stray Heat +1.', 'Stray below cap stays')
-// A Heat line inside a sentence is left alone (dropping it would break the sentence).
-ok(capHeatSub('Two Glints. The collector hunts you next: Strays Heat +1.', { strays: 8 }) === 'Two Glints. The collector hunts you next: Strays Heat +1.', 'in-sentence Heat left alone')
+// v252: a ': X Heat +N.' tail inside a sentence now closes with a full stop (see scripts/v252.ts).
+ok(capHeatSub('Two Glints. The collector hunts you next: Strays Heat +1.', { strays: 8 }) === 'Two Glints. The collector hunts you next.', 'in-sentence Heat tail trimmed (v252)')
 // Falls and non-number Heat words are not touched.
 ok(capHeatSub('Cartel Heat −1. Once.', { cartel: 8 }) === 'Cartel Heat −1. Once.' && capHeatSub('Sap and Cartel Heat.', { cartel: 8 }) === 'Sap and Cartel Heat.', 'falls and prose untouched')
 ok(capHeatSub('Seeker Heat +1. Cartel Heat +2.', { seekers: 8, cartel: 8 }) === undefined && capHeatSub('Seeker Heat +1. Cartel Heat +2.', { seekers: 8 }) === 'Cartel Heat +2.', 'two lines, per meter')

@@ -9,12 +9,13 @@ import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v251'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v251'"), 'build v251')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v252'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v252'"), 'build v252')
 
 const BODY = 'Past the gate, the trade road sinks into the earth. Old flagstones run on under a skin of wind-packed grit, split by drainage ribs that broke long ago. Along the ridge above, low barrow mounds stand in a crooked line against the sky.'
 const PAID = "Nobody calls out behind you. Whatever Marta wrote, it wasn't trouble."
 const SLIP = 'You keep low under the shutter. The pen stops scratching for a breath, then starts again.'
-const MOUNDS = "The ridge is steep and loose. You'll come back to the mounds when you have a reason to climb."
+// v252: the mounds placeholder became the cairn pickup (see scripts/v252.ts).
+const MOUNDS = "Halfway up the ridge, a flat slate sits balanced on three dark stones, the same mark inked on your map. Under it, someone left a wrapped bundle.\n\nResin +1.\nScrap +1."
 const ROAD = 'The flagstones run on, down toward a low choke in the rock. Not yet.'
 
 const row = (s: GameState, id: string) => visibleChoices(s).find((c) => c.id === id)
@@ -61,14 +62,14 @@ ok(crossing(lateP).join() === 'walk-causeway', 'paying after crossing: still the
 const cw = at('ch3:causeway', { causewayCrossed: true })
 ok(sceneOf(cw).title === 'The Barrow Causeway' && sceneProse(cw) === BODY, 'title and body')
 ok(ids(cw).join() === 'climb-mounds,sunken-road,back-rustvein', `causeway rows: ${ids(cw).join()}`)
-ok(row(cw, 'climb-mounds')?.label === 'Climb to the barrow mounds' && row(cw, 'climb-mounds')?.sub === 'Old graves on the ridge.', 'mounds row')
+ok(row(cw, 'climb-mounds')?.label === 'Climb to the barrow mounds' && row(cw, 'climb-mounds')?.sub === 'A stack of stones on the crest.', 'mounds row (v252 sub)')
 ok(row(cw, 'sunken-road')?.label === 'Follow the sunken road' && row(cw, 'sunken-road')?.sub === 'Deeper into the Barrow Trails.', 'road row')
 ok(row(cw, 'back-rustvein')?.label === 'Back to the Rustvein Gateway', 'back row')
 const m = press(cw, 'climb-mounds')
 ok(m.sceneId === 'ch3:causeway' && m.flash === MOUNDS && m.sap === 4 && m.health === 5, 'mounds: stays, flash')
 const r = press(cw, 'sunken-road')
 ok(r.sceneId === 'ch3:causeway' && r.flash === ROAD && r.sap === 4, 'road: stays, flash')
-ok(press(m, 'climb-mounds').flash === MOUNDS && press(r, 'sunken-road').flash === ROAD, 'both repeatable')
+ok(press(m, 'climb-mounds-empty').flash === 'The slate sits empty on its stones.' && press(r, 'sunken-road').flash === ROAD, 'both repeatable (v252: the cairn is empty after)')
 ok(press(cw, 'back-rustvein').sceneId === 'ch3:rustvein', 'back to Rustvein')
 
 // ── Map ──
