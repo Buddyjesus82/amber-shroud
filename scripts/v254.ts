@@ -8,7 +8,7 @@ let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 const assert = ok
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v254'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v254'"), 'build v254')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v255'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v255'"), 'build v254')
 
 // Barrow geography holds: the chain and the Causeway -> Ossuary sunken road.
 {
@@ -17,7 +17,8 @@ ok(readFileSync('src/version.ts', 'utf8').includes("'v254'") && readFileSync('pu
   ok(has('causeway', 'ossuary'), 'barrow: the Causeway still runs on to the Ossuary')
   const n = (id: string) => m.nodes.find((x) => x.id === id)!
   ok(n('ossuary').y < n('causeway').y && Math.abs(n('ossuary').x - n('causeway').x) < 10, 'barrow: the Ossuary sits straight on from the Causeway')
-  for (const id of ['siphon', 'causeway', 'ossuary']) ok(n(id).labelSide === 'above', `barrow: ${id} label sits above`)
+  // v255: Causeway moved down with its label below so the Ossuary stem reads clear (see scripts/v255.ts).
+  for (const id of ['siphon', 'ossuary']) ok(n(id).labelSide === 'above', `barrow: ${id} label sits above`)
 }
 
 // The smoke label check, every map and every "you are here" node: zero clashes.
