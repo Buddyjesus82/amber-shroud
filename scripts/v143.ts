@@ -93,7 +93,8 @@ for (const [scene, id, typed] of BAY) {
 
 // 4. Chapter One's loss takes a spare piece before the one on your body.
 {
-  const s = at('prisoner', 'ch1:p-ossa', { items: { wrench: 1, shiv: 1 }, equipped: { weapon: 'wrench' } })
+  // v233: entering the Cache Run from outside asks first, so stand already on the run like real play.
+  const s = at('prisoner', 'ch1:p-ossa', { items: { wrench: 1, shiv: 1 }, equipped: { weapon: 'wrench' }, chapterId: 'cache-run' })
   const n = applyEffect(s, { goto: 'ch1:hollow' })
   ok(n.items.wrench === 1 && !n.items.shiv && n.equipped.weapon === 'wrench', 'the spare shiv goes, the worn wrench stays')
   const only = applyEffect({ ...s, items: { wrench: 1 } }, { goto: 'ch1:hollow' })

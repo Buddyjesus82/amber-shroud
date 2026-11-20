@@ -111,7 +111,18 @@ function key(s: GameState) {
   return [s.sceneId, s.chapterId ?? '', s.hubId ?? '', s.sap, flags, items].join('|')
 }
 
+// v233: a Cache Run start asks first (Take it / Stay); the search takes it in the same step.
+function committed(s: GameState): GameState {
+  return typeof s.flags.cachePending === 'string' ? applyEffect(s, { cacheCommit: true }) : s
+}
+
 function thumbActions(s: GameState): { name: string; next: GameState }[] {
+  const out: { name: string; next: GameState }[] = []
+  for (const a of rawThumbActions(s)) out.push({ name: a.name, next: committed(a.next) })
+  return out
+}
+
+function rawThumbActions(s: GameState): { name: string; next: GameState }[] {
   const out: { name: string; next: GameState }[] = []
   for (const c of visibleChoices(s)) {
     if (c.id.startsWith('walk-') || c.id === 'kick-up' || c.id === 'lay-low' || c.id.startsWith('barrow-')) continue // Map roads, heat relief, and the Barrow cache stand in for Scavenge. Not story exits.

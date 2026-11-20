@@ -9,7 +9,7 @@ import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v253'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v253'"), 'build v253')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v254'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v254'"), 'build v253')
 
 const BODY = 'The old trade road climbs out of the runoff into a cut of rust-stained rock. An iron gate spans the cut, older than Crosshaven, its bars bleeding orange down the stone. Behind it a lamp burns in a toll hut, and someone inside is still writing.'
 const WREN = "Wren pointed past Red Maw toward the deep cuts—and you gave her your word you wouldn't stop halfway."

@@ -2747,6 +2747,8 @@ function visibleChoicesRaw(state: GameState): Choice[] {
  * v219: the Spine and the Threshold too (their scraps stay blank until walked). Roads out of the hub stay on their own buttons. */
 function campWalkRows(state: GameState, rows: Choice[]): Choice[] {
   if (getScene(state.sceneId, state.door).kind === 'ending') return []
+  // v254: Chapter Two never walks back to Chapter One ground (v184). The v233 Red Maw fog must not add those rows.
+  if (chapterTwoLocked(state)) return []
   const map = state.hubId ? HUB_MAPS[state.hubId] : undefined
   if (!map || !fogged(state)) return []
   const here = map.sceneNode[state.sceneId] ?? map.nodes.find((n) => n.sceneId === state.sceneId)?.id

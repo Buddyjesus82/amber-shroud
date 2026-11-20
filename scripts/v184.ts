@@ -4,8 +4,8 @@ import { chapterTwoFromCode, visibleChoices, applyEffect, interpret, travelTo, C
 import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v233'"), 'SW cache v184')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v234'"), 'Build label v184')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v254'"), 'SW cache v184')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v254'"), 'Build label v184')
 ok(CH2_BACKTRACK === 'The upper wash is behind you. The descent only goes deeper.', 'exact line')
 const v = chapterTwoFromCode('vessel')
 let s = applyEffect(v, visibleChoices(v)[0].effects)
@@ -23,6 +23,7 @@ const t2 = travelTo(mk, 'maw:stilt'); ok(t2.sceneId === 'maw:market' && t2.flash
 const ty = interpret(mk, 'go to the stilt shade'); ok(ty.sceneId === 'maw:market', 'typed go-to blocked from Ch2 market')
 ok(pick(mk, 'back-ch2').sceneId === 'ch2:v-outpost', 'Back still works')
 ok(interpret(at('ch2:v-outpost'), 'go to the bone market').sceneId === 'maw:market', 'typed Vessel market row still works')
-ok(/chapterTwoLocked\(state\) \?/.test(readFileSync('src/components/MapSheet.tsx', 'utf8')), 'Map sheet shows no Ch1 places in Ch2')
+// v233: the sheet now shows the Chapter 2 maps; any Chapter One sheet still reads the backtrack line.
+ok(/chapterTwoLocked\(state\) && !map\?\.hubId\.startsWith\('ch2'\) \?/.test(readFileSync('src/components/MapSheet.tsx', 'utf8')), 'Map sheet shows no Ch1 places in Ch2')
 if (fails) { console.log(`${fails} FAILED`); process.exit(1) }
 console.log('v184 ok')
