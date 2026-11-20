@@ -1,4 +1,4 @@
-import { honestHeat } from './heatLines'
+import { capHeatSub, honestHeat } from './heatLines'
 import { SPARE_SAP_LOCK } from './sapLock'
 import { COMPANIONS, companionOf, confirmPending, keltStep, LINES as PARTY_LINES, recruitFx, recruitPendingOf, sneakOdds, type RecruitPending } from './companions'
 export { confirmPending, recruitPendingOf } from './companions'
@@ -2650,7 +2650,18 @@ function noEscapeAfterChapterOne(state: GameState, rows: Choice[]): Choice[] {
   return kept.length ? kept : rows
 }
 
+/** v251: button subs drop a Heat line the meter can no longer take (at 8). Locked/needs text is untouched. */
 export function visibleChoices(state: GameState): Choice[] {
+  const rows = visibleChoicesUncapped(state)
+  if (!['cartel', 'seekers', 'strays'].some((f) => (state.heat?.[f as 'cartel'] ?? 0) >= 8)) return rows
+  return rows.map((c) => {
+    if (!c.sub) return c
+    const sub = capHeatSub(c.sub, state.heat)
+    return sub === c.sub ? c : { ...c, sub }
+  })
+}
+
+function visibleChoicesUncapped(state: GameState): Choice[] {
   const rows = partySwap(state, noEscapeAfterChapterOne(state, visibleChoicesRaw(state)))
   if (confirmPending(state) || state.flags.encounterHere || state.flags.downed) return rows
   if (state.chapterId === 'cache-run' && state.flags.cacheFirst === state.sceneId) {

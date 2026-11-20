@@ -9,7 +9,7 @@ import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v250'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v250'"), 'build v250')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v251'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v251'"), 'build v251')
 
 const BODY = 'Past the gate, the trade road sinks into the earth. Old flagstones run on under a skin of wind-packed grit, split by drainage ribs that broke long ago. Along the ridge above, low barrow mounds stand in a crooked line against the sky.'
 const PAID = "Nobody calls out behind you. Whatever Marta wrote, it wasn't trouble."
