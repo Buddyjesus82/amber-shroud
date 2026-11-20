@@ -9,7 +9,7 @@ import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v249'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v249'"), 'build v249')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v250'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v250'"), 'build v250')
 
 const BODY = 'The old trade road climbs out of the runoff into a cut of rust-stained rock. An iron gate spans the cut, older than Crosshaven, its bars bleeding orange down the stone. Behind it a lamp burns in a toll hut, and someone inside is still writing.'
 const WREN = "Wren pointed past Red Maw toward the deep cuts—and you gave her your word you wouldn't stop halfway."
@@ -62,9 +62,9 @@ ok(readFileSync('public/sw.js', 'utf8').includes('covers/ch3-rustvein.jpg'), 'Ru
 const [bt, bb] = coverBand('ch3_rustvein')
 ok(bt === 0.05 && bb === 0.85, 'Rustvein band')
 
-// Before knocking: knock, gate tallies, back. No Marta rows, no speaker.
+// Before knocking: knock, gate tallies, (v250) the slip past, back. No Marta rows, no speaker.
 const s0 = at('ch3:rustvein')
-ok(ids(s0).join() === 'knock,read-tallies,back-junction', `before knock: ${ids(s0).join()}`)
+ok(ids(s0).join() === 'knock,read-tallies,slip-toll,back-junction', `before knock: ${ids(s0).join()}`)
 ok(row(s0, 'knock')?.label === 'Knock at the toll hut' && row(s0, 'knock')?.sub === 'Someone keeps the books out here.', 'knock row')
 ok(row(s0, 'read-tallies')?.label === 'Read the gate tallies' && row(s0, 'read-tallies')?.sub === 'Cartel marks, scratched into the iron.', 'tallies row')
 ok(row(s0, 'back-junction')?.label === 'Back to the Deep Junction', 'back row')
@@ -79,7 +79,7 @@ ok(back.sceneId === 'ch3:junction', 'back to the Junction')
 // Knock reveals Marta.
 const k = press(s0, 'knock')
 ok(k.sceneId === 'ch3:rustvein' && k.flash === KNOCK && k.flags.martaMet === true, 'knock flash and flag')
-ok(ids(k).join() === 'read-tallies,ask-road,ask-tallies,pay-toll,back-junction', `after knock: ${ids(k).join()}`)
+ok(ids(k).join() === 'read-tallies,ask-road,ask-tallies,pay-toll,slip-toll,back-junction', `after knock: ${ids(k).join()}`)
 ok(sceneOf(k).speaker === 'Marta Pryce, toll clerk', 'speaker after knocking')
 ok(row(k, 'ask-road')?.label === 'Ask about the road' && row(k, 'ask-road')?.sub === 'Where does the trade road go?', 'road row')
 ok(row(k, 'ask-tallies')?.label === 'Ask about the tallies' && row(k, 'ask-tallies')?.sub === 'The marks on the gate.', 'tallies ask row')

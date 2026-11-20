@@ -45,6 +45,15 @@ export const MARTA_TALLIES = "'The Cartel counts what it wants counted. I just h
 export const MARTA_TALLIES_NAME = 'Her pen stops over one column, a name scratched out and written back in, smaller. She turns the page before you can read it.'
 export const MARTA_TOLL = "She takes it and writes something that isn't your name."
 
+/** v250: the Barrow Causeway (Jeramie, t1275u). Approved lines, word for word. */
+export const CAUSEWAY_TITLE = 'The Barrow Causeway'
+export const CAUSEWAY_BODY = 'Past the gate, the trade road sinks into the earth. Old flagstones run on under a skin of wind-packed grit, split by drainage ribs that broke long ago. Along the ridge above, low barrow mounds stand in a crooked line against the sky.'
+export const CAUSEWAY_PAID = "Nobody calls out behind you. Whatever Marta wrote, it wasn't trouble."
+export const CAUSEWAY_SLIP = 'You keep low under the shutter. The pen stops scratching for a breath, then starts again.'
+export const CAUSEWAY_SLIP_HEAT = 'Cartel Heat +1.'
+export const CAUSEWAY_MOUNDS = "The ridge is steep and loose. You'll come back to the mounds when you have a reason to climb."
+export const CAUSEWAY_ROAD = 'The flagstones run on, down toward a low choke in the rock. Not yet.'
+
 export const CH3_FIGHT_RESULT = 'It ends before it starts.'
 export const CH3_RUN_RESULT = 'Dorn Vane is already there.'
 export const CH3_STRIP_GEAR = 'Weapons taken. Armor taken.'
@@ -309,7 +318,23 @@ export const chapterThreeScenes: Scene[] = [
       { id: 'ask-tallies', label: 'Ask about the tallies', sub: 'The marks on the gate.', tone: 'quiet', show: { all: [{ flag: 'martaMet' }, { flagUnset: 'martaTalliesSeen' }] }, effects: { still: true, flag: { martaTalliesSeen: true }, flash: `${MARTA_TALLIES}\n\n${MARTA_TALLIES_NAME}` } },
       { id: 'ask-tallies-again', label: 'Ask about the tallies', sub: 'The marks on the gate.', tone: 'quiet', show: { all: [{ flag: 'martaMet' }, { flag: 'martaTalliesSeen' }] }, effects: { still: true, flash: MARTA_TALLIES } },
       { id: 'pay-toll', label: 'Pay the toll', sub: 'Needs: 1 Scrap.', tone: 'quiet', show: { all: [{ flag: 'martaMet' }, { flagUnset: 'martaTollPaid' }] }, enable: { itemMin: ['scrap', 1] }, locked: 'Needs: 1 Scrap.', effects: { still: true, remove: { scrap: 1 }, flag: { martaTollPaid: true }, flash: MARTA_TOLL } },
+      // v250: the way through. One crossing row at a time; after the first crossing it is a plain free walk.
+      { id: 'walk-causeway-paid', label: 'Walk the causeway', tone: 'quiet', show: { all: [{ flag: 'martaTollPaid' }, { flagUnset: 'causewayCrossed' }] }, effects: { goto: 'ch3:causeway', flag: { causewayCrossed: true }, flash: CAUSEWAY_PAID } },
+      { id: 'slip-toll', label: 'Slip past the toll hut', sub: CAUSEWAY_SLIP_HEAT, tone: 'danger', show: { all: [{ flagUnset: 'martaTollPaid' }, { flagUnset: 'causewayCrossed' }] }, effects: { goto: 'ch3:causeway', heat: { cartel: 1 }, flag: { causewayCrossed: true }, flash: `${CAUSEWAY_SLIP}\n${CAUSEWAY_SLIP_HEAT}` } },
+      { id: 'walk-causeway', label: 'Walk the causeway', tone: 'quiet', show: { flag: 'causewayCrossed' }, effects: { goto: 'ch3:causeway' } },
       { id: 'back-junction', label: 'Back to the Deep Junction', tone: 'quiet', effects: { goto: 'ch3:junction' } },
+    ],
+  },
+  {
+    id: 'ch3:causeway',
+    kind: 'story',
+    hubId: 'barrow',
+    title: CAUSEWAY_TITLE,
+    body: CAUSEWAY_BODY,
+    choices: [
+      { id: 'climb-mounds', label: 'Climb to the barrow mounds', sub: 'Old graves on the ridge.', tone: 'quiet', effects: { still: true, flash: CAUSEWAY_MOUNDS } },
+      { id: 'sunken-road', label: 'Follow the sunken road', sub: 'Deeper into the Barrow Trails.', tone: 'quiet', effects: { still: true, flash: CAUSEWAY_ROAD } },
+      { id: 'back-rustvein', label: 'Back to the Rustvein Gateway', tone: 'quiet', effects: { goto: 'ch3:rustvein' } },
     ],
   },
 ]
