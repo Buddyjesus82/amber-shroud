@@ -11,7 +11,7 @@ import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v254'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v254'"), 'build v233')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v255'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v255'"), 'build v233')
 
 const PICKS = [
   {
@@ -116,7 +116,9 @@ ok(typed.sceneId === 'spine:ridge' && typed.flash === CACHE_CONFIRM, 'typing the
 const hound = ready('outcast', 'spine:hound', 'spine')
 const walk = visibleChoices(hound).find((c) => c.effects.goto === 'ch1:leave')
 ok(!!walk && applyEffect(hound, walk.effects).flash === CACHE_CONFIRM && applyEffect(hound, walk.effects).sap === hound.sap, 'the camp walk onto the Bone Wash asks first')
-const camp = applyEffect(ready('prisoner', 'camp:wire', 'camp04'), { startChapter: 'cache-run', goto: 'ch1:leave', wireExit: true })
+// v255: the Wire asks only once the guard station is down (guard up blocks at once; see scripts/v255.ts).
+const wireReady = ready('prisoner', 'camp:wire', 'camp04')
+const camp = applyEffect({ ...wireReady, flags: { ...wireReady.flags, guardDown: true } }, { startChapter: 'cache-run', goto: 'ch1:leave', wireExit: true })
 ok(camp.sceneId === 'camp:wire' && camp.flash === CACHE_CONFIRM, 'the Wire asks before the Cache Run')
 const paddock = applyEffect(ready('vessel', 'thresh:paddock', 'threshold'), { startChapter: 'cache-run', goto: 'ch1:leave' })
 ok(paddock.sceneId === 'thresh:paddock' && paddock.flash === CACHE_CONFIRM, 'the Strider Paddock asks before the Cache Run')

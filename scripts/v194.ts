@@ -4,8 +4,8 @@ import { applyEffect, interpret, newGame, visibleChoices, WIRE_BLOCKED } from '.
 import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
-ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v254'"), 'SW cache v194')
-ok(readFileSync('src/version.ts', 'utf8').includes("'v254'"), 'Build label v194')
+ok(readFileSync('public/sw.js', 'utf8').includes("CACHE = 'amber-shroud-v255'"), 'SW cache v194')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v255'"), 'Build label v194')
 ok(WIRE_BLOCKED === "The Overseer's tower is still live—searchlights cut the sand to ribbons. You can't break the wire until that station is dropped.", 'block line verbatim')
 const at = (sceneId: string, flags: Record<string, unknown>): GameState => {
   const g = newGame('prisoner')
@@ -29,8 +29,11 @@ const exits: [string, string, Record<string, unknown>][] = [
 for (const [scene, id, f] of exits) {
   // Guard up: choice stays, press blocks with the flash, nothing moves.
   const s0 = at(scene, f)
-  // v233 (scripts/v233.ts 'the Wire asks before the Cache Run'): the Wire asks first, then Take it hits the block.
-  const b = press(s0, id)
+  // v255: with the guard station standing the press blocks at once, with no Cache Run ask first.
+  const b0 = visibleChoices(s0).find((x) => x.id === id)
+  ok(b0, `${scene}: ${id} visible`)
+  const b = b0 ? applyEffect(s0, b0.effects) : s0
+  ok(b.flags.cachePending === undefined, `${scene}/${id}: the blocked wire does not ask first`)
   ok(b.sceneId === scene && !b.chapterId && b.flash === WIRE_BLOCKED, `${scene}/${id}: guard up blocks`)
   ok(b.health === s0.health && b.sap === s0.sap && !b.flags.cacheBlind, `${scene}/${id}: block costs nothing`)
   // Guard down, no runner: leaves on foot, Health -3 and Sap -1 more than before.

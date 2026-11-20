@@ -657,6 +657,8 @@ function cacheSnapOf(state: GameState): string {
 function opensCacheRun(state: GameState, fx: Effect): boolean {
   if (fx.cacheCommit || fx.cacheTurn || fx.flag?.cacheStay) return false
   if (state.chapterId === 'cache-run' || state.flags.chapter1Done) return false
+  // v255: a Prisoner wire exit with the guard station still standing is blocked outright (WIRE_BLOCKED), with no point-of-no-return ask first.
+  if (fx.wireExit && state.door === 'prisoner' && !state.flags.guardDown) return false
   if (fx.startChapter === 'cache-run') return true
   return !!fx.goto && getScene(fx.goto, state.door).chapterId === 'cache-run'
 }

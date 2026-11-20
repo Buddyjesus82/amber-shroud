@@ -8,7 +8,7 @@ let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 void getScene // loads content first (import order)
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v254'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v254'"), 'build v253')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v255'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v255'"), 'build v253')
 
 const RIP = 'Metal shrieks across the yard. A Cartel look-out on the upper tier stops pacing and listens.'
 const LOOT_LINES: Record<string, string> = { scrap: 'Scrap +1.', salve: 'Resin +1.', vial_drop: 'Drop +1.' }

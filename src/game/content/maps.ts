@@ -227,8 +227,8 @@ export const HUB_MAPS: Record<string, HubMapDef> = {
       { id: 'courtyard', name: 'The Silt-Choked Courtyard', short: 'Courtyard', sceneId: 'ch3:courtyard', x: 78, y: 166, labelSide: 'above' },
       { id: 'junction', name: 'The Deep Junction', short: 'Junction', sceneId: 'ch3:junction', x: 78, y: 140, labelSide: 'above' },
       { id: 'rustvein', name: 'The Rustvein Gateway', short: 'Rustvein', sceneId: 'ch3:rustvein', x: 78, y: 114, labelSide: 'above' },
-      { id: 'causeway', name: 'The Barrow Causeway', short: 'Causeway', sceneId: 'ch3:causeway', x: 53, y: 130, labelSide: 'above' },
-      { id: 'ossuary', name: 'The Ossuary Cut', short: 'Ossuary', sceneId: 'ch3:ossuary', x: 53, y: 100, labelSide: 'above' },
+      { id: 'causeway', name: 'The Barrow Causeway', short: 'Causeway', sceneId: 'ch3:causeway', x: 55, y: 134, labelSide: 'below' },
+      { id: 'ossuary', name: 'The Ossuary Cut', short: 'Ossuary', sceneId: 'ch3:ossuary', x: 55, y: 116, labelSide: 'above' },
     ],
     edges: [
       { a: 'capture', b: 'trench', sap: 1 },
