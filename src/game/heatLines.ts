@@ -79,15 +79,22 @@ function freshText(was: unknown, now: unknown, rose: Partial<Record<Faction, num
 /**
  * v251: a button sub-line does not promise Heat a meter can no longer take (Jeramie). At 8, a "Cartel Heat +1."
  * sentence is dropped from the sub; the rest stays word for word. A sub that was only Heat lines is dropped.
- * Only whole sentences go: a Heat line inside a sentence ("sees you: Seeker Heat +1.") is left as it is.
+ * v252: a ": X Heat +N." tail inside a sentence becomes a full stop ("sees you: Seeker Heat +1." -> "sees you.").
  */
+const SUB_TAIL = /[ \t]*:[ \t]*(Cartel|Seekers?|Strays?) Heat \+\d+\.(?=\s|$)/g
 const SUB_LINE = /(^|(?<=[.!?]['"”’)]?)[ \t]+|\n)((Cartel|Seekers?|Strays?) Heat \+\d+\.)(?=\s|$)/g
 
 export function capHeatSub(sub: string | undefined, heat: Partial<Record<Faction, number>> | undefined): string | undefined {
   if (!sub || !heat) return sub
   if (!FACTIONS.some((f) => (heat[f] ?? 0) >= 8)) return sub
   let changed = false
-  const out = sub.replace(SUB_LINE, (all, lead: string, _line: string, name: string) => {
+  // v252: a ': X Heat +N.' tail closes its sentence with a full stop instead ("sees you: Seeker Heat +1." -> "sees you.").
+  const tailed = sub.replace(SUB_TAIL, (all, name: string) => {
+    if ((heat[NAME[name]] ?? 0) < 8) return all
+    changed = true
+    return '.'
+  })
+  const out = tailed.replace(SUB_LINE, (all, lead: string, _line: string, name: string) => {
     if ((heat[NAME[name]] ?? 0) < 8) return all
     changed = true
     return lead === '\n' ? '\n' : ''

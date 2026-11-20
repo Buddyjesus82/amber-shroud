@@ -51,7 +51,11 @@ export const CAUSEWAY_BODY = 'Past the gate, the trade road sinks into the earth
 export const CAUSEWAY_PAID = "Nobody calls out behind you. Whatever Marta wrote, it wasn't trouble."
 export const CAUSEWAY_SLIP = 'You keep low under the shutter. The pen stops scratching for a breath, then starts again.'
 export const CAUSEWAY_SLIP_HEAT = 'Cartel Heat +1.'
-export const CAUSEWAY_MOUNDS = "The ridge is steep and loose. You'll come back to the mounds when you have a reason to climb."
+/** v252: the trail-runner's cairn on the ridge (Jeramie). Approved lines, word for word. */
+export const CAUSEWAY_MOUNDS_SUB = 'A stack of stones on the crest.'
+export const CAUSEWAY_CAIRN = 'Halfway up the ridge, a flat slate sits balanced on three dark stones, the same mark inked on your map. Under it, someone left a wrapped bundle.'
+export const CAUSEWAY_CAIRN_EMPTY = 'The slate sits empty on its stones.'
+export const CAUSEWAY_CAIRN_PAY = ['Resin +1.', 'Scrap +1.']
 export const CAUSEWAY_ROAD = 'The flagstones run on, down toward a low choke in the rock. Not yet.'
 
 export const CH3_FIGHT_RESULT = 'It ends before it starts.'
@@ -332,7 +336,8 @@ export const chapterThreeScenes: Scene[] = [
     title: CAUSEWAY_TITLE,
     body: CAUSEWAY_BODY,
     choices: [
-      { id: 'climb-mounds', label: 'Climb to the barrow mounds', sub: 'Old graves on the ridge.', tone: 'quiet', effects: { still: true, flash: CAUSEWAY_MOUNDS } },
+      { id: 'climb-mounds', label: 'Climb to the barrow mounds', sub: CAUSEWAY_MOUNDS_SUB, tone: 'quiet', show: { flagUnset: 'causewayCairnTaken' }, effects: { still: true, add: { salve: 1, scrap: 1 }, flag: { causewayCairnTaken: true }, flash: `${CAUSEWAY_CAIRN}\n\n${CAUSEWAY_CAIRN_PAY.join('\n')}` } },
+      { id: 'climb-mounds-empty', label: 'Climb to the barrow mounds', sub: CAUSEWAY_MOUNDS_SUB, tone: 'quiet', show: { flag: 'causewayCairnTaken' }, effects: { still: true, flash: CAUSEWAY_CAIRN_EMPTY } },
       { id: 'sunken-road', label: 'Follow the sunken road', sub: 'Deeper into the Barrow Trails.', tone: 'quiet', effects: { still: true, flash: CAUSEWAY_ROAD } },
       { id: 'back-rustvein', label: 'Back to the Rustvein Gateway', tone: 'quiet', effects: { goto: 'ch3:rustvein' } },
     ],
