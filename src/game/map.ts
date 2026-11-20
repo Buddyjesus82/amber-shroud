@@ -258,6 +258,8 @@ export function ch3MapLocked(state: Pick<GameState, 'flags' | 'sceneId'>, sceneI
   if (sceneId === 'ch3:gatehouse' || sceneId === 'ch3:courtyard' || sceneId === 'ch3:junction') return !state.flags.crosshavenGateOpen
   // v249: the trade road past the Junction needs the trail-runner's map.
   if (sceneId === 'ch3:rustvein') return !state.flags.crosshavenGateOpen || !state.flags.barrowMap
+  // v250: the map never crosses the Rustvein toll for you. Once you have crossed, the walk is open.
+  if (sceneId === 'ch3:causeway') return !state.flags.causewayCrossed
   return false
 }
 
