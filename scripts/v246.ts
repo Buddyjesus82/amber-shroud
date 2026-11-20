@@ -8,7 +8,7 @@ import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v250'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v250'"), 'build v250')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v251'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v251'"), 'build v251')
 
 const CLOSED = "The noise of the perimeter drops behind you, replaced by the low hum of Crosshaven's outer filters. Lantern light cuts through the grease-haze on the shanties. You've made it off the flats, but the inner gates are locked tight."
 const OPEN = 'The noise of the perimeter drops behind you. The portcullis hangs high on its rusted drum, and the way in stands open.'

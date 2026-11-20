@@ -8,7 +8,7 @@ import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v250'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v250'"), 'build v239')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v251'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v251'"), 'build v239')
 ok(SWAP_CONFIRM('Hester Ellery', 'Sable Varn') === 'Hester Ellery will leave the party. Take Sable Varn instead?', 'approved line')
 
 const at = (door: GameState['door'], sceneId: string, flags: GameState['flags'], extra: Partial<GameState> = {}): GameState => {
