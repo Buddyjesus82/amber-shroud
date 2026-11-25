@@ -8,7 +8,7 @@ let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 const assert = ok
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v255'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v255'"), 'build v254')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v256'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v256'"), 'build v254')
 
 // Barrow geography holds: the chain and the Causeway -> Ossuary sunken road.
 {

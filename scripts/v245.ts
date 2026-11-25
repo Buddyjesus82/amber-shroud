@@ -10,7 +10,7 @@ import type { DoorId, GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v255'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v255'"), 'build v253')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v256'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v256'"), 'build v253')
 
 const row = (s: GameState, id: string) => visibleChoices(s).find((c) => c.id === id)
 const press = (s: GameState, id: string) => {

@@ -85,6 +85,7 @@ export type CoverKey =
   | 'amber_tick'
   | 'shard_pup'
   | 'zafir'
+  | 'zafir_pc'
   | 'ossa'
   | 'kaelen'
   | 'oiltooth'
@@ -280,6 +281,8 @@ const FILES: Record<CoverKey, string> = {
   sybella: 'sybella.jpg',
   thalia: 'thalia.jpg',
   zafir: 'bonewright.jpg',
+  // v256: the player character's own card cover (Varro keeps `zafir`).
+  zafir_pc: 'zafir-pc.jpg',
   ossa: 'ossa.jpg',
   kaelen: 'kaelen.jpg',
   oiltooth: 'oiltooth.jpg',
@@ -531,6 +534,7 @@ export const COVER_BAND: Record<CoverKey, [number, number]> = {
   sybella: [0.0, 0.6],
   thalia: [0.05, 0.88],
   zafir: [0.08, 0.78],
+  zafir_pc: [0.0, 0.9],
   ossa: [0.15, 0.95],
   kaelen: [0.05, 0.72],
   oiltooth: [0.05, 0.78],

@@ -10,7 +10,7 @@ import type { DoorId, GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v255'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v255'"), 'build v253')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v256'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v256'"), 'build v253')
 
 const C_BODY = 'The walls open onto a staging yard big enough to swallow a caravan. Transport frames lie rusted to their axles, half-buried in drifted silt, and collapsed scaffolding leans against the inner wall like broken ribs. The wind finds you here.'
 const J_BODY = 'The drainage tunnels meet here in a wide, dripping fork. Old runoff channels split off into the dark on either side, and between them a broad cut of worn stone runs on, rutted by wheels that stopped turning long ago. The old trade road.'

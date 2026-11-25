@@ -9,7 +9,7 @@ import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v255'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v255'"), 'build v253')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v256'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v256'"), 'build v253')
 
 const BODY = 'The flagstones tip down into a dry wash. Bleached ribs stick out of the sand like fence posts, and Cartel mile-markers lie snapped and half-buried among them. Boot tracks come in from every direction. Far fewer lead back out.'
 const ROWS: [string, string, string | undefined, string | undefined][] = [
