@@ -7,7 +7,7 @@ import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v255'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v255'"), 'build v255')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v256'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v256'"), 'build v255')
 
 // 1. Barrow map: Ossuary in the gap between Approach and Rustvein, well clear of the Relay-Siphon road.
 {
