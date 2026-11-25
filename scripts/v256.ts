@@ -17,7 +17,7 @@ const { InventorySheet } = await import('../src/components/InventorySheet.tsx')
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v256'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v256'"), 'build v256')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v257'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v257'"), 'build v256')
 
 const TITLE = 'The Shroud-Touched Orphan'
 const LOOK = 'Lean and sun-dark, in road-worn gear and a road wrap. Faint amber flecks run along his jaw and the backs of his hands. They catch low light, and only someone who knows what to look for would see them. His hands are rope-scarred. He sits still while others fidget, and he watches.'

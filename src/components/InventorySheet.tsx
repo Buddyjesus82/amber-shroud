@@ -65,6 +65,7 @@ export function InventorySheet({ state, onClose, onChange }: Props) {
             Close
           </button>
         </header>
+        <PlayerCard state={state} />
         <p className="kit-sap">
           Sap {state.sap}/{state.sapMax} · {sapLabel(state.sap)}. Health {state.health}/{state.healthMax}. Strike{' '}
           {equippedStrike(state)} · Shell {equippedShell(state)} (max {shellCap(state)}).{' '}
@@ -73,7 +74,6 @@ export function InventorySheet({ state, onClose, onChange }: Props) {
           </b>
           {load > cap ? ' Over the limit: nothing new fits until slots free up. More of a stack you carry still fits.' : ''}
         </p>
-        <PlayerCard state={state} />
         <PartyCard state={state} onChange={onChange} full />
         {heldText ? (
           <p className="bag-held">

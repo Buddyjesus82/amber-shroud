@@ -45,8 +45,8 @@ export function zafirCard(state: Pick<GameState, 'flags'>): ZafirCard {
   const f = state.flags
   const level = zafirCardState(state)
   const ossa = level >= 3
-  // State 4's approved text always carries the power and Sybella sentences; states 2-3 only once she has said it.
-  const sybella = level === 4 || !!f.heardWalkingAmber
+  // v257: the Sybella meeting and Ossa's naming are independent. The sand and Sybella lines wait for her, in every state.
+  const sybella = !!f.heardWalkingAmber
   const second = [ossa ? ORPHAN_OSSA : ORPHAN, NO_PAST, ossa ? HABITS_OSSA : HABITS, ...(sybella ? [SAND, SYBELLA] : [])].join(' ')
   const first = level === 4 ? `Zafir. ${LOOK}` : LOOK
   return {
