@@ -801,6 +801,8 @@ function hungerBeatCover(id: string, door: GameState['door']): CoverKey | null {
     'ch1:ossa-talk': 'beat_ossa_road',
     'maw:stilt': 'beat_stilts',
     'maw:ossa-day': 'beat_the_day',
+    // v258: the name is said in the same shade, under the same painting.
+    'maw:ossa-name': 'beat_the_day',
     'ch1:sybella': 'beat_sybella_road',
     'maw:smoke': 'beat_skiff_smoke',
     'maw:sybella-shadow': 'beat_her_shadow',

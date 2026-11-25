@@ -10,7 +10,7 @@ import { BUILD } from '../src/version.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v257'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v257'"), 'build v228')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v258'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v258'"), 'build v228')
 
 function vesselAt(sceneId: string, extra: Partial<GameState> = {}): GameState {
   const b = newGame('vessel')

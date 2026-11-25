@@ -9,7 +9,7 @@ import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v257'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v257'"), 'build v253')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v258'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v258'"), 'build v253')
 
 // ── The two approved tails, from the live content ──
 const WATCHER = 'He stays. A Watcher on the stair sees you: Seeker Heat +1.'

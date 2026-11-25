@@ -17,7 +17,7 @@ const { InventorySheet } = await import('../src/components/InventorySheet.tsx')
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v257'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v257'"), 'build v256')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v258'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v258'"), 'build v256')
 
 const TITLE = 'The Shroud-Touched Orphan'
 const LOOK = 'Lean and sun-dark, in road-worn gear and a road wrap. Faint amber flecks run along his jaw and the backs of his hands. They catch low light, and only someone who knows what to look for would see them. His hands are rope-scarred. He sits still while others fidget, and he watches.'
@@ -66,10 +66,13 @@ for (const door of ['prisoner', 'outcast', 'vessel'] as GameState['door'][]) {
   }
 }
 
-// Ossa's naming flag: nothing in the game sets it yet.
+// Ossa's naming flag. v256: nothing set it. Stale after v258 (Jeramie-approved Ossa name reveal), which sets it on
+// entering maw:ossa-name. Now: that one place sets it, and nothing else does.
 {
   const src = ['src/game/engine.ts', 'src/game/content/redMaw.ts', 'src/game/content/cacheRun.ts']
-  ok(src.every((p) => !readFileSync(p, 'utf8').includes(OSSA_NAMED_ZAFIR)), 'no scene sets ossaNamedZafir yet')
+  ok(!readFileSync('src/game/engine.ts', 'utf8').includes(OSSA_NAMED_ZAFIR) && !readFileSync('src/game/content/cacheRun.ts', 'utf8').includes(OSSA_NAMED_ZAFIR), 'engine and the Cache Run never touch ossaNamedZafir')
+  const sets = src.flatMap((p) => readFileSync(p, 'utf8').match(new RegExp(`${OSSA_NAMED_ZAFIR}: true`, 'g')) ?? [])
+  ok(sets.length === 1 && /id: 'maw:ossa-name',[\s\S]{0,200}onEnter: \{ flag: \{ ossaNamedZafir: true \} \}/.test(readFileSync('src/game/content/redMaw.ts', 'utf8')), 'only the maw:ossa-name reveal sets ossaNamedZafir')
   ok(!('zafirPc' in PEOPLE), 'zafirPc is not an NPC "who is" entry')
 }
 
