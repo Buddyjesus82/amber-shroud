@@ -305,7 +305,7 @@ Varro works out of a shaded stall, suture wire clamped between his teeth.`,
     card: `Ossa stands three feet above hungry sand on stilts lashed with cord repaired more times than made. A vial rides her hip, half-full, honest. She sees kit before faces.
 
 She is a living person on purpose. She falls funny. She does not die easy. A twice-tied knot means she can find you — not a marriage. A refusal to die separately if dying together is stupider.`,
-    scenes: ['ch1:p-ossa', 'ch1:o-ossa', 'ch1:ossa-talk', 'ch1:ossa-rob', 'maw:stilt', 'maw:ossa', 'maw:ossa-day'],
+    scenes: ['ch1:p-ossa', 'ch1:o-ossa', 'ch1:ossa-talk', 'ch1:ossa-rob', 'maw:stilt', 'maw:ossa', 'maw:ossa-day', 'maw:ossa-name'],
     later: {
       'ch1:p-ossa': `Stilts. She is counting the wire still in your cuffs. "You smell like a cage. I don't hide property."`,
       'ch1:o-ossa': `Stilts. Kin-height. Honest glass. She talks to you like a stranger. "Show empty glass if you have it. Don't lunge."`,

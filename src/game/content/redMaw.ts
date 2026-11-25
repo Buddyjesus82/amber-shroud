@@ -1,4 +1,5 @@
 import { SPARE_SAP_LOCK } from '../sapLock'
+import { OSSA_NAME_REVEAL, OSSA_NAMED_GREETING } from '../ossaName'
 import { FIELD_RESIN, FIELD_SCRAP, FIELD_SCRAP_HOT, FIELD_SURGERY, VARRO_CARD, VARRO_HEAL, VARRO_KNOT, VARRO_MARKET, VARRO_NAME, VARRO_SCRIP, VARRO_TALK, VARRO_WHOLE } from '../varroCard'
 import { tunnelsEntry } from './newPlaces'
 import { ROADS } from '../roads'
@@ -319,6 +320,12 @@ ${VARRO_MARKET}`,
         mode: 'replace',
         body: `She is alive. She makes sure you see it. "You took a Drop off a woman on sticks. The Maw has a sense of humor. I have a memory. Next run, do not stand in my shade unless you like falling."`,
       },
+      {
+        // v258: after the name. Replaces "The rest waits… Ask when you can hear it."
+        if: { flag: 'ossaNamedZafir' },
+        mode: 'replace',
+        body: OSSA_NAMED_GREETING,
+      },
     ],
     choices: [
       {
@@ -354,6 +361,14 @@ ${VARRO_MARKET}`,
         sub: 'She stops pretending she does not know you.',
         show: { all: [{ door: 'vessel' }, { flagUnset: 'ossaStillness' }, { flagUnset: 'ossaToldDay' }, { flagUnset: 'ossaRobbed' }] },
         effects: { flag: { ossaStillness: true }, goto: 'maw:ossa-day', ticks: 1 },
+      },
+      {
+        // v258: the name, once she has told the day. Gate is stillness (Prisoner's thanks test, or Vessel's quiet).
+        id: 'name',
+        label: 'Ask her the rest',
+        sub: 'She said it waits until you ask.',
+        show: { all: [{ flag: 'ossaToldDay' }, { flag: 'ossaStillness' }, { flagUnset: 'ossaNamedZafir' }] },
+        effects: { goto: 'maw:ossa-name', ticks: 1 },
       },
       { id: 'back', label: 'Give her the quiet', tone: 'quiet', effects: { goto: 'maw:stilt' } },
     ],
@@ -441,6 +456,17 @@ A breath. The cord in her hands gets a second knot. "That is the day. The rest I
         effects: { goto: 'maw:stilt', ticks: 1 },
       },
     ],
+  },
+  {
+    // v258: Ossa says the name. Same shade and the same painting as The Day.
+    id: 'maw:ossa-name',
+    hubId: 'redmaw',
+    kind: 'talk',
+    title: 'Ossa',
+    speaker: 'Ossa',
+    onEnter: { flag: { ossaNamedZafir: true } },
+    body: OSSA_NAME_REVEAL,
+    choices: [{ id: 'back', label: 'Give her the quiet', tone: 'quiet', effects: { goto: 'maw:stilt', ticks: 1 } }],
   },
   {
     id: 'maw:smoke',

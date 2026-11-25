@@ -15,7 +15,7 @@ const { PlayerCard } = await import('../src/components/PlayerCard.tsx')
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v257'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v257'"), 'build v257')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v258'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v258'"), 'build v257')
 
 const HIDDEN = 'The Shroud-Touched Orphan'
 const NAMED = 'Zafir — Ossa\u2019s Boy'
