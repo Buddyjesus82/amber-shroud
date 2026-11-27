@@ -9,7 +9,7 @@ import type { GameState } from '../src/game/types.ts'
 let fails = 0
 const ok = (c: unknown, m: string) => { if (!c) { fails++; console.log('FAIL', m) } }
 
-ok(readFileSync('src/version.ts', 'utf8').includes("'v258'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v258'"), 'build v258')
+ok(readFileSync('src/version.ts', 'utf8').includes("'v259'") && readFileSync('public/sw.js', 'utf8').includes("'amber-shroud-v259'"), 'build v258')
 
 const REVEAL = `She checks the wind over the rim first, the same as any morning. "Zafir," she says. "Your name is Zafir." Then she goes back to the cord.\n\nYou say it once, out loud. She nods, and that is all.`
 const GREETING = `She does not play the stranger anymore. "Zafir," she says, by way of hello. "I'm alive. Drink slow."`
