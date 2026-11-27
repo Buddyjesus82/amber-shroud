@@ -129,6 +129,9 @@ function maskedArt(flash: string | undefined | null): { art: string; band: CSSPr
   return { art: `${import.meta.env.BASE_URL}covers/${playCoverFile(key)}?v=82`, band: { '--band-top': top, '--band-bot': bot } as CSSProperties }
 }
 
+/** v259: short beats whose last line must sit above the fold on a phone. Tighter prose block; same text and art. */
+const COMPACT_STORY = new Set(['maw:ossa-name'])
+
 function heldStamp(s: GameState): string {
   return `${s.sceneId}|${s.updatedAt ?? 0}|${s.ticks}`
 }
@@ -583,7 +586,7 @@ export function PlayScreen({ state, onChange, onTitle, savedCue, saveToast }: Pr
           <img key={`img:${held ? held.art : artSrc}`} className="scene-img" src={held ? held.art : artSrc} alt="" onError={coverFallback} />
         </div>
 
-        <div className="story" ref={storyRef}>
+        <div className={`story${!held && COMPACT_STORY.has(scene.id) ? ' story-compact' : ''}`} ref={storyRef}>
           {(held ? held.face : face) ? <p className="speaker">{held ? held.face : face}</p> : null}
           {(held ? held.body : shownText(state, bodyOf(state)))
             .split('\n\n')
